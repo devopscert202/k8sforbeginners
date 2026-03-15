@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+body{
+font-family: Arial;
+background:#f5f7fb;
+margin:40px;
+}
+
+.flow{
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.step{
+background:#ffffff;
+border:2px solid #4CAF50;
+padding:15px;
+margin:10px;
+width:320px;
+text-align:center;
+border-radius:8px;
+box-shadow:2px 2px 8px rgba(0,0,0,0.2);
+}
+
+.arrow{
+font-size:28px;
+color:#555;
+}
+
+table{
+border-collapse:collapse;
+width:90%;
+margin:auto;
+margin-top:40px;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:10px;
+text-align:left;
+}
+
+th{
+background:#4CAF50;
+color:white;
+}
+
+h2{
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Kubeadm Init Installation Workflow</h2>
+
+<div class="flow">
+
+<div class="step">Start: kubeadm init Command</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Preflight Checks<br>
+CPU, Memory, Ports, Container Runtime</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Generate TLS Certificates<br>
+(API Server, Scheduler, etcd)</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Create kubeconfig Files<br>
+admin.conf, scheduler.conf</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Create Static Pod Manifests</div>
+<div class="arrow">⬇</div>
+
+<div class="step">kubelet Starts Control Plane Containers</div>
+<div class="arrow">⬇</div>
+
+<div class="step">API Server Starts Listening on Port 6443</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Upload Cluster Configuration</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Control Plane Node Initialized</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Generate Worker Join Token</div>
+<div class="arrow">⬇</div>
+
+<div class="step">Install CNI Network Plugin</div>
+
+</div>
+
+<br><br>
+
+<h2>Important kubeadm init Switches</h2>
+
+<table>
+
+<tr>
+<th>Switch</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+
+<tr>
+<td>--apiserver-advertise-address</td>
+<td>IP address the Kubernetes API Server will advertise to other nodes</td>
+<td>kubeadm init --apiserver-advertise-address=192.168.1.10</td>
+</tr>
+
+<tr>
+<td>--pod-network-cidr</td>
+<td>Defines the Pod network range required by CNI plugins like Calico or Flannel</td>
+<td>kubeadm init --pod-network-cidr=192.168.0.0/16</td>
+</tr>
+
+<tr>
+<td>--service-cidr</td>
+<td>Defines the IP address range used by Kubernetes Services</td>
+<td>kubeadm init --service-cidr=10.96.0.0/12</td>
+</tr>
+
+<tr>
+<td>--control-plane-endpoint</td>
+<td>Stable endpoint (DNS or Load Balancer) used for HA control plane setups</td>
+<td>kubeadm init --control-plane-endpoint=k8s-lb.company.com</td>
+</tr>
+
+<tr>
+<td>--kubernetes-version</td>
+<td>Specify which Kubernetes version to install</td>
+<td>kubeadm init --kubernetes-version=v1.30.0</td>
+</tr>
+
+<tr>
+<td>--node-name</td>
+<td>Specify the node name for the control plane</td>
+<td>kubeadm init --node-name=master-node</td>
+</tr>
+
+<tr>
+<td>--cri-socket</td>
+<td>Specify container runtime socket (containerd or CRI-O)</td>
+<td>kubeadm init --cri-socket=/run/containerd/containerd.sock</td>
+</tr>
+
+<tr>
+<td>--upload-certs</td>
+<td>Uploads control plane certificates so additional master nodes can join</td>
+<td>kubeadm init --upload-certs</td>
+</tr>
+
+<tr>
+<td>--ignore-preflight-errors</td>
+<td>Allows kubeadm to ignore specific environment validation errors</td>
+<td>kubeadm init --ignore-preflight-errors=Swap</td>
+</tr>
+
+<tr>
+<td>--config</td>
+<td>Uses a YAML configuration file instead of command line parameters</td>
+<td>kubeadm init --config=kubeadm-config.yaml</td>
+</tr>
+
+</table>
+
+<br><br>
+
+<h2>Example Custom Installation Command</h2>
+
+<pre>
+
+kubeadm init \
+--apiserver-advertise-address=192.168.1.10 \
+--pod-network-cidr=192.168.0.0/16 \
+--service-cidr=10.96.0.0/12 \
+--kubernetes-version=v1.30.0
+
+</pre>
+
+</body>
+</html>
