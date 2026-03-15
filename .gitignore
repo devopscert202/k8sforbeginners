@@ -1,0 +1,40 @@
+# Secrets and credentials
+*.env
+*.key
+*.pem
+*_rsa
+*_rsa.pub
+.secrets/
+credentials.json
+kubeconfig
+.kube/config
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Node modules
+node_modules/
