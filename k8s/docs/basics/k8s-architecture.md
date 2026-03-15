@@ -55,7 +55,9 @@ Think of Kubernetes as a modern shipping harbor:
 
 For a comprehensive visual understanding of Kubernetes architecture with interactive components, animations, and detailed explanations:
 
-### **[📊 View Interactive Kubernetes Architecture Diagram →](./interactive-k8s-architecture.html)**
+### **[📊 View Interactive Kubernetes Architecture Diagram →](https://devopscert202.github.io/k8sforbeginners/k8s/docs/basics/interactive-k8s-architecture.html)**
+
+> **Note**: The diagram opens in a rendered view with full interactivity. If the link doesn't work yet, GitHub Pages may still be enabling. You can also view the [source file](./interactive-k8s-architecture.html).
 
 **What you'll see:**
 - ✨ Animated flow diagrams showing component interactions
