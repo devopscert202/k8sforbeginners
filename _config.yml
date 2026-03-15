@@ -1,0 +1,57 @@
+# Site settings
+title: Kubernetes for Beginners
+description: Complete hands-on Kubernetes learning guide with labs, documentation, and interactive diagrams
+baseurl: "/k8sforbeginners"
+url: "https://devopscert202.github.io"
+
+# Theme
+theme: jekyll-theme-cayman
+# Alternative themes: minima, jekyll-theme-slate, jekyll-theme-primer
+
+# Markdown settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Plugins
+plugins:
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-titles-from-headings
+
+# Plugin configurations
+relative_links:
+  enabled: true
+  collections: false
+
+optional_front_matter:
+  remove_originals: false
+
+titles_from_headings:
+  enabled: true
+  strip_title: false
+  collections: false
+
+# Collections
+collections:
+  docs:
+    output: true
+
+# Exclude from processing
+exclude:
+  - .git
+  - .github
+  - node_modules
+  - vendor
+  - README.md
+
+# Include specific files
+include:
+  - k8s/docs
+  - k8s/labs
+
+# HTML files handling
+keep_files:
+  - k8s/docs/basics/interactive-k8s-architecture.html
