@@ -1,90 +1,96 @@
+# Kubernetes Architecture Overview
 
-## 🖼️ Kubernetes Cluster Architecture (Master–Worker Communication)
+## 🏗️ Introduction
 
-```
-                        ┌──────────────────────────────────────────┐
-                        │           CONTROL PLANE (MASTER)         │
-                        │------------------------------------------│
-                        │                                          │
-                        │  ┌────────────────────────────────────┐  │
-                        │  │              etcd                  │  │
-                        │  │  • Key-value store for cluster     │  │
-                        │  │    state and configuration data    │  │
-                        │  └────────────────────────────────────┘  │
-                        │                                          │
-                        │  ┌────────────────────────────────────┐  │
-                        │  │          API Server (kube-apiserver)│  │
-                        │  │  • Central management point         │  │
-                        │  │  • Accepts kubectl / REST requests  │  │
-                        │  │  • Communicates with etcd & nodes   │  │
-                        │  └────────────────────────────────────┘  │
-                        │                                          │
-                        │  ┌────────────────────────────────────┐  │
-                        │  │  Controller Manager (kube-controller)│ │
-                        │  │  • Watches cluster state            │  │
-                        │  │  • Maintains desired state          │  │
-                        │  └────────────────────────────────────┘  │
-                        │                                          │
-                        │  ┌────────────────────────────────────┐  │
-                        │  │       Scheduler (kube-scheduler)   │  │
-                        │  │  • Assigns pods to worker nodes    │  │
-                        │  └────────────────────────────────────┘  │
-                        └──────────────────────────────────────────┘
-                                           │
-                                           │
-                       API + gRPC Communication via Port 6443
-                                           │
-                                           ▼
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                            WORKER NODES (Minions)                              │
-│--------------------------------------------------------------------------------│
-│                                                                                │
-│  ┌────────────────────┐        ┌────────────────────┐        ┌────────────────┐│
-│  │   Kubelet          │        │   Kube Proxy       │        │   Container    ││
-│  │ • Communicates     │        │ • Manages network  │        │   Runtime      ││
-│  │   with API server  │        │   rules & traffic  │        │ • Runs Pods    ││
-│  │ • Ensures Pods run │        │   for Services     │        │   (Docker/CRI) ││
-│  │   as defined       │        │                    │        │                ││
-│  └────────────────────┘        └────────────────────┘        └────────────────┘│
-│                                                                                │
-│  ┌────────────────────────────────────────────────────────────────────────────┐ │
-│  │                                  PODS                                      │ │
-│  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐                 │ │
-│  │  │  Container A   │  │  Container B   │  │  Container C   │   ...           │ │
-│  │  └────────────────┘  └────────────────┘  └────────────────┘                 │ │
-│  │  (Applications)         (Sidecar)             (Backend)                     │ │
-│  └────────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                │
-└────────────────────────────────────────────────────────────────────────────────┘
+Kubernetes is a powerful container orchestration platform that automates the deployment, scaling, and management of containerized applications. Understanding its architecture is fundamental to working effectively with Kubernetes clusters.
 
-                           <---- Cluster Network / Pod Network ---->
-```
+The Kubernetes architecture follows a **master-worker** (control plane and worker nodes) pattern, where:
+
+- **Control Plane (Master Node)**: Manages the cluster, makes scheduling decisions, and responds to cluster events
+- **Worker Nodes**: Run the actual application workloads in containers
+
+## 📐 Key Components
+
+### Control Plane Components
+
+1. **API Server (kube-apiserver)** - The front-end for the Kubernetes control plane. All communication goes through this central hub.
+2. **etcd** - Distributed key-value store that holds all cluster data. The single source of truth.
+3. **Scheduler (kube-scheduler)** - Watches for newly created pods and assigns them to nodes based on resource requirements.
+4. **Controller Manager (kube-controller-manager)** - Runs controller processes that regulate the state of the cluster.
+5. **Cloud Controller Manager** - Integrates with cloud provider APIs for cloud-specific control logic.
+
+### Worker Node Components
+
+1. **Kubelet** - An agent that runs on each worker node, ensuring containers are running in pods.
+2. **Container Runtime** - Software responsible for running containers (containerd, CRI-O, Docker).
+3. **kube-proxy** - Network proxy that maintains network rules and enables service communication.
+4. **CNI Plugin** - Handles pod networking and IP address management (Calico, Flannel, Weave).
+
+## 🌐 How It All Works Together
+
+1. Users interact with the cluster via **kubectl** CLI, sending commands to the API Server
+2. The **API Server** validates and processes requests, storing state in **etcd**
+3. The **Scheduler** watches for unscheduled pods and assigns them to suitable nodes
+4. The **Kubelet** on each node receives instructions and manages pod lifecycle
+5. The **Container Runtime** actually starts and stops containers
+6. **kube-proxy** manages networking rules for service discovery and load balancing
+7. **Controllers** continuously monitor cluster state and make corrections to match desired state
+
+## 🎯 Real-World Analogy: Container Harbor
+
+Think of Kubernetes as a modern shipping harbor:
+
+- **Ship Captain (User)** brings cargo requests via kubectl
+- **Harbor Master (API Server)** coordinates all operations
+- **Crane Operator (Scheduler)** decides where to place containers
+- **Dock Supervisor (Kubelet)** manages dock workers
+- **Forklift Crew (Container Runtime)** moves physical containers
+- **Storage Yard (Pods)** holds the containers
+- **Traffic Control (kube-proxy)** routes vehicles efficiently
+- **Road System (CNI)** connects everything together
 
 ---
 
-### 🧠 **Component Summary**
+## 🎨 Interactive Architecture Diagram
 
-| **Layer**         | **Component**          | **Purpose**                                                                   |
-| ----------------- | ---------------------- | ----------------------------------------------------------------------------- |
-| **Control Plane** | **etcd**               | Stores all cluster data and state.                                            |
-|                   | **API Server**         | The main entry point; all commands (kubectl, controllers) communicate here.   |
-|                   | **Controller Manager** | Ensures the actual state matches the desired state (e.g., managing replicas). |
-|                   | **Scheduler**          | Decides which node runs each Pod based on resource availability.              |
-| **Worker Node**   | **Kubelet**            | Communicates with API Server; starts and monitors Pods.                       |
-|                   | **Kube Proxy**         | Manages networking and load balancing for Services.                           |
-|                   | **Container Runtime**  | Runs containers (Docker, containerd, etc.).                                   |
-| **Pods**          | **Containers**         | The smallest deployable unit in Kubernetes; runs applications.                |
+For a comprehensive visual understanding of Kubernetes architecture with interactive components, animations, and detailed explanations:
 
----
+### **[📊 View Interactive Kubernetes Architecture Diagram →](./interactive-k8s-architecture.html)**
 
-### 🔗 **Control Plane ↔ Worker Communication Summary**
+**What you'll see:**
+- ✨ Animated flow diagrams showing component interactions
+- 🖱️ Hover tooltips with detailed component descriptions
+- 🎯 Visual representation of control plane and worker nodes
+- 🔄 Real-time data flow animations
+- 🚢 Complete harbor analogy with storytelling flow
+- 📦 Pod lifecycle and networking visualization
 
-| **Direction**   | **Protocol / Port**   | **Purpose**                            |
-| --------------- | --------------------- | -------------------------------------- |
-| Master → Worker | TCP 10250             | API communication (Kubelet)            |
-| Worker → Master | TCP 6443              | Worker joins cluster via API server    |
-| All Nodes       | UDP/TCP 8472 / VXLAN  | Pod-to-Pod networking (Calico/Flannel) |
-| Worker ↔ Worker | TCP/UDP dynamic ports | Service load balancing via kube-proxy  |
+**Recommended for:**
+- Understanding component relationships
+- Visual learning and teaching
+- Certification preparation (CKA/CKAD)
+- Architectural presentations
 
 ---
 
+## 📚 Further Reading
+
+- [Official Kubernetes Architecture Documentation](https://kubernetes.io/docs/concepts/architecture/)
+- [Kubernetes Components](https://kubernetes.io/docs/concepts/overview/components/)
+- [Cluster Architecture](https://kubernetes.io/docs/concepts/architecture/nodes/)
+
+---
+
+## 🎓 Learning Path
+
+After understanding the architecture:
+
+1. **Basics** → [Pods](../workloads/pods.md), [Namespaces](../common/k8s-namespaces.md)
+2. **Workloads** → [Deployments](../workloads/deployments.md), [Services](../networking/services.md)
+3. **Networking** → [Ingress](../networking/ingress.md), [Network Policies](../networking/networkpolicies.md)
+4. **Security** → [RBAC](../security/rbac.md), [Pod Security Standards](../security/pod-security-standards.md)
+5. **Storage** → [Volumes](../storage/volumes.md), [Persistent Volumes](../storage/persistentvolumes.md)
+
+---
+
+**💡 Pro Tip**: Open the interactive diagram in a separate tab and refer to it while working through the labs for better understanding of how components interact!
