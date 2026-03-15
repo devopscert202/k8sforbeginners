@@ -257,48 +257,48 @@ Replace the PHP deployment with a WordPress deployment. Configure WordPress to c
 
 3. **Create the WordPress Deployment:**
    ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: wordpress
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: wordpress
-  template:
-    metadata:
-      labels:
-        app: wordpress
-    spec:
-      containers:
-      - name: wordpress
-        image: wordpress:latest
-        env:
-        - name: WORDPRESS_DB_HOST
-          value: mysql-service
-        - name: WORDPRESS_DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-user
-        - name: WORDPRESS_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-password
-        - name: WORDPRESS_DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-database
-        volumeMounts:
-        - mountPath: /var/www/html
-          name: wordpress-storage
-      volumes:
-      - name: wordpress-storage
-        persistentVolumeClaim:
-          claimName: wordpress-pvc
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+      name: wordpress
+   spec:
+      replicas: 1
+     selector:
+       matchLabels:
+         app: wordpress
+     template:
+       metadata:
+         labels:
+           app: wordpress
+       spec:
+         containers:
+         - name: wordpress
+           image: wordpress:latest
+           env:
+           - name: WORDPRESS_DB_HOST
+             value: mysql-service
+           - name: WORDPRESS_DB_USER
+             valueFrom:
+               secretKeyRef:
+                 name: mysql-secret
+                 key: mysql-user
+           - name: WORDPRESS_DB_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: mysql-secret
+                 key: mysql-password
+           - name: WORDPRESS_DB_NAME
+             valueFrom:
+               secretKeyRef:
+                 name: mysql-secret
+                 key: mysql-database
+           volumeMounts:
+           - mountPath: /var/www/html
+             name: wordpress-storage
+         volumes:
+         - name: wordpress-storage
+           persistentVolumeClaim:
+             claimName: wordpress-pvc
    ```
    Apply the configuration:
    ```bash
