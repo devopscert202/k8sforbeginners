@@ -21,6 +21,11 @@ desktop.ini
 *.swo
 *~
 
+# Claude Code settings
+.claude/
+.claude-*
+.anthropic/
+
 # Build artifacts
 _site/
 .sass-cache/
