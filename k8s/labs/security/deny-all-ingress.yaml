@@ -1,9 +1,9 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: simplilearn-deny-all
+  name: k8slearning-deny-all
 spec:
   podSelector:
     matchLabels:
-      app: simplilearn
+      app: k8slearning
   ingress: []

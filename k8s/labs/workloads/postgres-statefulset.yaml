@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: "appdb"
+  POSTGRES_USER: "appuser"
+  PGDATA: "/var/lib/postgresql/data/pgdata"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  labels:
+    app: postgres
+type: Opaque
+stringData:
+  POSTGRES_PASSWORD: "MySecurePassword123"  # In production, use external secret management
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-headless
+  labels:
+    app: postgres
+spec:
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    name: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  serviceName: "postgres-headless"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      initContainers:
+      # Init container to set proper permissions
+      - name: postgres-init
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          echo "Setting permissions on data directory..."
+          chown -R 999:999 /var/lib/postgresql/data
+          chmod 700 /var/lib/postgresql/data
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        envFrom:
+        - configMapRef:
+            name: postgres-config
+        - secretRef:
+            name: postgres-secret
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - appuser
+            - -d
+            - appdb
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - appuser
+            - -d
+            - appdb
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 2
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 5Gi
+---
+# Regular Service for client connections
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+---
+# Example client Pod to test PostgreSQL connection
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-client
+  labels:
+    app: postgres-client
+spec:
+  containers:
+  - name: postgres-client
+    image: postgres:16-alpine
+    command:
+    - sleep
+    - "3600"
+    env:
+    - name: PGHOST
+      value: "postgres-0.postgres-headless"
+    - name: PGDATABASE
+      value: "appdb"
+    - name: PGUSER
+      value: "appuser"
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-secret
+          key: POSTGRES_PASSWORD
+  restartPolicy: Never
+---
+# Usage:
+# 1. Deploy PostgreSQL:
+#    kubectl apply -f postgres-statefulset.yaml
+#
+# 2. Wait for PostgreSQL to be ready:
+#    kubectl wait --for=condition=ready pod/postgres-0 --timeout=300s
+#
+# 3. Connect using the client Pod:
+#    kubectl exec -it postgres-client -- psql
+#
+# 4. Or connect directly to postgres-0:
+#    kubectl exec -it postgres-0 -- psql -U appuser -d appdb
+#
+# 5. Create a test table:
+#    CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(100));
+#    INSERT INTO users (name) VALUES ('Alice'), ('Bob'), ('Charlie');
+#    SELECT * FROM users;
+#
+# 6. Test persistence by deleting the Pod:
+#    kubectl delete pod postgres-0
+#    kubectl wait --for=condition=ready pod/postgres-0 --timeout=300s
+#    kubectl exec -it postgres-0 -- psql -U appuser -d appdb -c "SELECT * FROM users;"

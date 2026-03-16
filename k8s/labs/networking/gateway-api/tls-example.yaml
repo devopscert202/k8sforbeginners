@@ -1,0 +1,163 @@
+---
+# This file demonstrates HTTPS/TLS configuration with Gateway API
+# Before applying, create a TLS secret:
+#
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#   -keyout tls.key -out tls.crt \
+#   -subj "/CN=app1.example.local/O=MyOrg"
+#
+# kubectl create secret tls gateway-tls-cert \
+#   --cert=tls.crt --key=tls.key
+
+---
+# Gateway with HTTPS listener
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: https-gateway
+  namespace: default
+spec:
+  gatewayClassName: nginx
+  listeners:
+  # HTTP listener (port 80) - can redirect to HTTPS
+  - name: http
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+      namespaces:
+        from: Same
+
+  # HTTPS listener (port 443) with TLS
+  - name: https
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+      namespaces:
+        from: Same
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: gateway-tls-cert
+        kind: Secret
+
+---
+# HTTPRoute for HTTPS traffic
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: https-gateway
+    sectionName: https  # Reference the HTTPS listener
+
+  hostnames:
+  - "app1.example.local"
+
+  rules:
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080
+
+---
+# HTTPRoute for HTTP to HTTPS redirect
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-to-https-redirect
+  namespace: default
+spec:
+  parentRefs:
+  - name: https-gateway
+    sectionName: http  # Reference the HTTP listener
+
+  hostnames:
+  - "app1.example.local"
+
+  rules:
+  - filters:
+    - type: RequestRedirect
+      requestRedirect:
+        scheme: https
+        statusCode: 301
+
+---
+# Gateway with multiple TLS certificates (SNI)
+# Server Name Indication (SNI) allows multiple certs on same IP
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: multi-cert-gateway
+  namespace: default
+spec:
+  gatewayClassName: nginx
+  listeners:
+  # Listener for app1.example.local
+  - name: app1-https
+    protocol: HTTPS
+    port: 443
+    hostname: "app1.example.local"
+    allowedRoutes:
+      namespaces:
+        from: Same
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: app1-tls-cert
+        kind: Secret
+
+  # Listener for app2.example.local
+  - name: app2-https
+    protocol: HTTPS
+    port: 443
+    hostname: "app2.example.local"
+    allowedRoutes:
+      namespaces:
+        from: Same
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: app2-tls-cert
+        kind: Secret
+
+---
+# Gateway with TLS passthrough
+# TLS termination happens at the backend, not at Gateway
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: Gateway
+metadata:
+  name: tls-passthrough-gateway
+  namespace: default
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - name: tls-passthrough
+    protocol: TLS
+    port: 443
+    hostname: "*.example.local"
+    allowedRoutes:
+      namespaces:
+        from: Same
+    tls:
+      mode: Passthrough
+
+---
+# TLSRoute for TLS passthrough
+# Note: This uses TLSRoute, not HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: tls-passthrough-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: tls-passthrough-gateway
+
+  hostnames:
+  - "app1.example.local"
+
+  rules:
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8443  # Backend handles TLS

@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: timezone-cronjob
+spec:
+  schedule: "0 9 * * 1-5"  # 9 AM on weekdays
+  timeZone: "America/New_York"  # Eastern Time
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox
+            command:
+            - /bin/sh
+            - -c
+            - date; echo "Good morning from New York!"
+          restartPolicy: OnFailure

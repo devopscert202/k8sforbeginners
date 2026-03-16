@@ -686,7 +686,7 @@ Here are some common pod and container status issues you may encounter, along wi
 By following these steps, you can troubleshoot various pod and container issues, including node tainting, incorrect image names, and common status problems, ensuring your Kubernetes deployments run smoothly.
 
 ---
-Here is the revised **Section 7: Understanding Application Troubleshooting** with all instances of "simplilearn" replaced with "ckacourse":
+Here is the revised **Section 7: Understanding Application Troubleshooting** with all instances of "k8slearning" replaced with "ckacourse":
 
 ---
 

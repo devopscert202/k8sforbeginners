@@ -1,0 +1,12 @@
+apiVersion: example.com/v1
+kind: Website
+metadata:
+  name: blog-site
+  namespace: default
+  labels:
+    app: blog
+    environment: production
+spec:
+  domain: blog.example.com
+  framework: nodejs
+  replicas: 2

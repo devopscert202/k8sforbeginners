@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-canary
+  labels:
+    app: canary-app
+spec:
+  clusterIP: None
+  selector:
+    app: canary-app
+  ports:
+  - port: 8080
+    name: http
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: canary-app
+  labels:
+    app: canary-app
+spec:
+  serviceName: "app-canary"
+  replicas: 5
+  selector:
+    matchLabels:
+      app: canary-app
+  # Partition update strategy for staged rollouts
+  # Pods with ordinal >= partition will be updated
+  # Pods with ordinal < partition will remain on old version
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 3  # Only update Pods 3 and 4 initially
+  template:
+    metadata:
+      labels:
+        app: canary-app
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.25
+        ports:
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - name: app-data
+          mountPath: /data
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+  volumeClaimTemplates:
+  - metadata:
+      name: app-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+---
+# Usage:
+# 1. Deploy with partition: 3
+#    - Pods 0, 1, 2 remain on old version
+#    - Pods 3, 4 get new version
+#
+# 2. Test Pod 3 and 4 with new version
+#
+# 3. If successful, set partition: 0 to update all:
+#    kubectl patch statefulset canary-app -p '{"spec":{"updateStrategy":{"rollingUpdate":{"partition":0}}}}'
+#
+# 4. Update image:
+#    kubectl set image statefulset/canary-app app=nginx:1.26

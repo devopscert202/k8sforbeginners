@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i 's/^# Lab 09: Pod Scheduling with NodeSelector/# Lab 26: Pod Scheduling with NodeSelector/' lab26-scheduling-nodeselector.md)",
+      "Bash(sed -i 's/^# Lab 10: Pod Scheduling with Node and Pod Affinity/# Lab 27: Pod Scheduling with Node and Pod Affinity/' lab27-scheduling-affinity.md)",
+      "Bash(sed -i 's/^# Lab 11: Pod Scheduling with PriorityClass/# Lab 28: Pod Scheduling with PriorityClass/' lab28-scheduling-priorityclass.md)"
+    ]
+  }
+}

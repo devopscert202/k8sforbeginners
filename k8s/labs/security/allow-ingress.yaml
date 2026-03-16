@@ -1,13 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: simplilearn-allow-ingress
+  name: k8slearning-allow-ingress
 spec:
   podSelector:
     matchLabels:
-      app: simplilearn
+      app: k8slearning
   ingress:
   - from:
       - podSelector:
           matchLabels:
-            app: simplilearn
+            app: k8slearning

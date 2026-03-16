@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-headless
+  labels:
+    app: stateful-app
+spec:
+  clusterIP: None  # Headless Service
+  selector:
+    app: stateful-app
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 9090
+    targetPort: 9090
+    name: metrics
+---
+# Example usage: This headless service can be used with any StatefulSet
+# by setting serviceName: "app-headless" in the StatefulSet spec
+#
+# DNS will be available as:
+# <pod-name>.app-headless.<namespace>.svc.cluster.local
+#
+# Example:
+# - myapp-0.app-headless.default.svc.cluster.local
+# - myapp-1.app-headless.default.svc.cluster.local
+# - myapp-2.app-headless.default.svc.cluster.local

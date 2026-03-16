@@ -1,0 +1,50 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: websites.example.com
+spec:
+  group: example.com
+  names:
+    kind: Website
+    listKind: WebsiteList
+    plural: websites
+    singular: website
+    shortNames:
+    - ws
+  scope: Namespaced
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        required:
+        - spec
+        properties:
+          spec:
+            type: object
+            required:
+            - domain
+            - framework
+            properties:
+              domain:
+                type: string
+                minLength: 1
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
+                description: "Valid domain name"
+              framework:
+                type: string
+                enum:
+                - nginx
+                - apache
+                - nodejs
+                - python
+                default: nginx
+                description: "Web server framework"
+              replicas:
+                type: integer
+                minimum: 1
+                maximum: 10
+                default: 1
+                description: "Number of replicas (1-10)"

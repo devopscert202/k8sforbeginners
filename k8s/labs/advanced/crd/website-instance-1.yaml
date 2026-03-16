@@ -1,0 +1,12 @@
+apiVersion: example.com/v1
+kind: Website
+metadata:
+  name: corporate-site
+  namespace: default
+  labels:
+    app: corporate
+    environment: production
+spec:
+  domain: www.example.com
+  framework: nginx
+  replicas: 3

@@ -1,0 +1,101 @@
+---
+# HTTPRoute for path-based routing
+# Routes traffic based on URL path
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: path-based-route
+  namespace: default
+spec:
+  # Reference to the Gateway this route uses
+  parentRefs:
+  - name: my-gateway
+    namespace: default
+
+  # Rules define routing logic
+  rules:
+  # Route /app1 to app1-blue-service
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /app1
+    backendRefs:
+    - name: app1-blue-service
+      port: 8080
+
+  # Route /app2 to app2-service
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /app2
+    backendRefs:
+    - name: app2-service
+      port: 8080
+
+  # Route /nginx to app3-service
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /nginx
+    backendRefs:
+    - name: app3-service
+      port: 80
+
+---
+# HTTPRoute with exact path matching
+# More specific than PathPrefix
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: exact-path-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  rules:
+  # Exact match for /health endpoint
+  - matches:
+    - path:
+        type: Exact
+        value: /health
+    backendRefs:
+    - name: app1-blue-service
+      port: 8080
+
+  # Exact match for /status endpoint
+  - matches:
+    - path:
+        type: Exact
+        value: /status
+    backendRefs:
+    - name: app2-service
+      port: 8080
+
+---
+# HTTPRoute with path rewriting
+# Similar to Ingress rewrite-target annotation
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: rewrite-path-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  rules:
+  # Request to /api/v1/users gets rewritten to /users
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /
+    backendRefs:
+    - name: app1-blue-service
+      port: 8080

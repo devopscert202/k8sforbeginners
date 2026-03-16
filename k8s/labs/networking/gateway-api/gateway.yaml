@@ -1,0 +1,80 @@
+---
+# Gateway resource - This is the entry point for traffic
+# Similar to an Ingress Controller, but more flexible
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+  namespace: default
+spec:
+  # Gateway class defines which controller handles this Gateway
+  gatewayClassName: nginx
+
+  # Listeners define how the Gateway accepts traffic
+  listeners:
+  # HTTP listener on port 80
+  - name: http
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+      namespaces:
+        from: Same  # Only routes in the same namespace
+
+  # HTTPS listener on port 443 (optional, for future TLS exercises)
+  - name: https
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+      namespaces:
+        from: Same
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: gateway-tls-cert
+        kind: Secret
+
+---
+# Alternative Gateway with specific hostname
+# Use this if you want to restrict which hosts can use this Gateway
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: hostname-gateway
+  namespace: default
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - name: http-specific-host
+    protocol: HTTP
+    port: 80
+    hostname: "*.example.local"  # Wildcard for *.example.local
+    allowedRoutes:
+      namespaces:
+        from: Same
+
+---
+# Gateway for multi-port scenarios
+# Useful for different protocols or port-based routing
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: multi-port-gateway
+  namespace: default
+spec:
+  gatewayClassName: nginx
+  listeners:
+  # Web traffic on 80
+  - name: web
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+      namespaces:
+        from: Same
+
+  # API traffic on 8080
+  - name: api
+    protocol: HTTP
+    port: 8080
+    allowedRoutes:
+      namespaces:
+        from: Same

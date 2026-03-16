@@ -58,14 +58,14 @@ NetworkPolicies depend on the underlying **CNI plugin** to enforce traffic rules
 ### **Section 1: Allow Ingress Traffic**
 
 #### **1. Create the Main Application Pod**
-Launch the main application pod with the `app=simplilearn` label:
+Launch the main application pod with the `app=k8slearning` label:
 ```bash
-kubectl run simplilearn --image=nginx --labels="app=simplilearn" --expose --port=80
+kubectl run k8slearning --image=nginx --labels="app=k8slearning" --expose --port=80
 ```
 Verify the pod and service:
 ```bash
 kubectl get pods
-kubectl get svc simplilearn
+kubectl get svc k8slearning
 ```
 
 #### **2. Create an Allow-Ingress NetworkPolicy**
@@ -74,16 +74,16 @@ Create a YAML file named `allow-ingress.yaml`:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: simplilearn-allow-ingress
+  name: k8slearning-allow-ingress
 spec:
   podSelector:
     matchLabels:
-      app: simplilearn
+      app: k8slearning
   ingress:
   - from:
       - podSelector:
           matchLabels:
-            app: simplilearn
+            app: k8slearning
 ```
 
 Apply the NetworkPolicy:
@@ -99,8 +99,8 @@ kubectl get networkpolicy
 #### **3. Test Allow Ingress**
 Run a testing pod **with matching labels**:
 ```bash
-kubectl run --image=nginx test-$RANDOM --labels="app=simplilearn"
-kubectl exec -it test-<podname> -- curl http://simplilearn
+kubectl run --image=nginx test-$RANDOM --labels="app=k8slearning"
+kubectl exec -it test-<podname> -- curl http://k8slearning
 ```
 
 Expected Result:
@@ -116,11 +116,11 @@ Create a YAML file named `deny-all-ingress.yaml`:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: simplilearn-deny-all
+  name: k8slearning-deny-all
 spec:
   podSelector:
     matchLabels:
-      app: simplilearn
+      app: k8slearning
   ingress: []
 ```
 
@@ -138,7 +138,7 @@ kubectl get networkpolicy
 Run a testing pod to verify blocked traffic:
 ```bash
 kubectl run --rm -i -t --image=alpine test-$RANDOM -- sh
-curl http://simplilearn
+curl http://k8slearning
 ```
 
 Expected Result:
@@ -151,14 +151,14 @@ Expected Result:
 1. **Allow Policy**:
    - Test with a matching label:
      ```bash
-     curl http://simplilearn
+     curl http://k8slearning
      ```
    - Result: NGINX default page loads, indicating **allowed ingress**.
 
 2. **Deny-All Policy**:
    - Test with any Pod, regardless of labels:
      ```bash
-     curl http://simplilearn
+     curl http://k8slearning
      ```
    - Result: Traffic is **blocked**, and the connection times out.
 
@@ -168,18 +168,18 @@ Expected Result:
 
 1. Delete the application pod:
    ```bash
-   kubectl delete pod simplilearn
+   kubectl delete pod k8slearning
    ```
 
 2. Delete the service:
    ```bash
-   kubectl delete svc simplilearn
+   kubectl delete svc k8slearning
    ```
 
 3. Delete the NetworkPolicies:
    ```bash
-   kubectl delete networkpolicy simplilearn-allow-ingress
-   kubectl delete networkpolicy simplilearn-deny-all
+   kubectl delete networkpolicy k8slearning-allow-ingress
+   kubectl delete networkpolicy k8slearning-deny-all
    ```
 
 ---

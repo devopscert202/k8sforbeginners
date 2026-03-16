@@ -19,6 +19,6 @@ spec:
         image: mysql:5.6
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: simplilearn
+          value: k8slearning
         - name: MYSQL_DATABASE
           value: database1

@@ -1,0 +1,118 @@
+---
+# HTTPRoute for host-based routing
+# Routes traffic based on the Host header (domain name)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: host-based-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+    namespace: default
+
+  # Define which hostnames this route handles
+  hostnames:
+  - "app1.example.local"
+
+  rules:
+  # All traffic to app1.example.local goes to app1-blue-service
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080
+
+---
+# HTTPRoute for a different hostname
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: host-based-route-app2
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  hostnames:
+  - "app2.example.local"
+
+  rules:
+  - backendRefs:
+    - name: app2-service
+      port: 8080
+
+---
+# HTTPRoute with wildcard hostname
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: wildcard-host-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  # Wildcard matches any subdomain
+  hostnames:
+  - "*.apps.local"
+
+  rules:
+  - backendRefs:
+    - name: app3-service
+      port: 80
+
+---
+# HTTPRoute combining host and path matching
+# Most specific routing: both host AND path must match
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: combined-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  hostnames:
+  - "api.example.local"
+
+  rules:
+  # api.example.local/v1 -> app1
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v1
+    backendRefs:
+    - name: app1-blue-service
+      port: 8080
+
+  # api.example.local/v2 -> app2
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v2
+    backendRefs:
+    - name: app2-service
+      port: 8080
+
+---
+# HTTPRoute using nip.io for dynamic DNS
+# nip.io provides wildcard DNS that resolves to the IP in the domain name
+# Example: 192.168.1.100.nip.io resolves to 192.168.1.100
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nipio-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  # Replace <GATEWAY-IP> with your actual Gateway IP
+  # Example: app1.192.168.49.2.nip.io
+  hostnames:
+  - "app1.<GATEWAY-IP>.nip.io"
+
+  rules:
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080

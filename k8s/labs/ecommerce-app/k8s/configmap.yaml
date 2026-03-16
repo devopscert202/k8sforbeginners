@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ecommerce-config
-  namespace: ecommerce-prod
-data:
-  DB_HOST: postgres
-  DB_USER: admin
-  DB_NAME: ecommerce

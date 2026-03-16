@@ -4,7 +4,7 @@ metadata:
   name: myservice
 spec:
   selector:
-    mycka: simplilearn
+    mycka: k8slearning
   ports:
   - protocol: TCP
     port: 80

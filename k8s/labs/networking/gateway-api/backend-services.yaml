@@ -1,0 +1,218 @@
+---
+# Deployment for App1 (Blue)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-blue
+  labels:
+    app: app1
+    version: blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app1
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: app1
+        version: blue
+    spec:
+      containers:
+      - name: echo
+        image: hashicorp/http-echo:latest
+        args:
+        - "-text=App1 Blue - Version 1.0"
+        - "-listen=:8080"
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+# Deployment for App1 (Green)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-green
+  labels:
+    app: app1
+    version: green
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app1
+      version: green
+  template:
+    metadata:
+      labels:
+        app: app1
+        version: green
+    spec:
+      containers:
+      - name: echo
+        image: hashicorp/http-echo:latest
+        args:
+        - "-text=App1 Green - Version 2.0"
+        - "-listen=:8080"
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+# Service for App1 Blue
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-blue-service
+  labels:
+    app: app1
+    version: blue
+spec:
+  selector:
+    app: app1
+    version: blue
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+
+---
+# Service for App1 Green
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-green-service
+  labels:
+    app: app1
+    version: green
+spec:
+  selector:
+    app: app1
+    version: green
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+
+---
+# Deployment for App2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app2
+  labels:
+    app: app2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app2
+  template:
+    metadata:
+      labels:
+        app: app2
+    spec:
+      containers:
+      - name: echo
+        image: hashicorp/http-echo:latest
+        args:
+        - "-text=App2 - Hello from Application 2"
+        - "-listen=:8080"
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+# Service for App2
+apiVersion: v1
+kind: Service
+metadata:
+  name: app2-service
+  labels:
+    app: app2
+spec:
+  selector:
+    app: app2
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+
+---
+# Deployment for App3 (Nginx)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app3-nginx
+  labels:
+    app: app3
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app3
+  template:
+    metadata:
+      labels:
+        app: app3
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+# Service for App3
+apiVersion: v1
+kind: Service
+metadata:
+  name: app3-service
+  labels:
+    app: app3
+spec:
+  selector:
+    app: app3
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  type: ClusterIP

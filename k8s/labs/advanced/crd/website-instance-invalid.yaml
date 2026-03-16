@@ -1,0 +1,9 @@
+apiVersion: example.com/v1
+kind: Website
+metadata:
+  name: invalid-site
+  namespace: default
+spec:
+  domain: ""  # Invalid: empty domain (should fail minLength validation)
+  framework: tomcat  # Invalid: not in enum (should fail)
+  replicas: 0  # Invalid: below minimum (should fail)

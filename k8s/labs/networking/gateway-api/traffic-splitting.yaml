@@ -1,0 +1,131 @@
+---
+# HTTPRoute with weighted traffic splitting (Canary deployment)
+# Splits traffic between multiple backend services based on weight
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: weighted-route-canary
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  hostnames:
+  - "app1.example.local"
+
+  rules:
+  # 90% traffic to blue (stable), 10% to green (canary)
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080
+      weight: 90
+    - name: app1-green-service
+      port: 8080
+      weight: 10
+
+---
+# HTTPRoute with 50/50 split (Blue-Green deployment)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: weighted-route-bluegreen
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  hostnames:
+  - "bluegreen.example.local"
+
+  rules:
+  # Equal traffic distribution for testing
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080
+      weight: 50
+    - name: app1-green-service
+      port: 8080
+      weight: 50
+
+---
+# HTTPRoute with progressive canary rollout
+# Start with 95/5, then adjust weights as confidence grows
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: progressive-canary
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  hostnames:
+  - "canary.example.local"
+
+  rules:
+  # Initial canary: 95% stable, 5% new version
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080
+      weight: 95
+    - name: app1-green-service
+      port: 8080
+      weight: 5
+
+---
+# HTTPRoute with header-based routing
+# Route specific users to canary version
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: header-based-canary
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  hostnames:
+  - "app1.example.local"
+
+  rules:
+  # If header "X-Canary: true", route to green version
+  - matches:
+    - headers:
+      - name: X-Canary
+        value: "true"
+    backendRefs:
+    - name: app1-green-service
+      port: 8080
+
+  # Default: route to blue version
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080
+
+---
+# HTTPRoute with multi-backend failover
+# Route to multiple backends with priorities
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: multi-backend-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: my-gateway
+
+  hostnames:
+  - "balanced.example.local"
+
+  rules:
+  # Distribute across three backends
+  - backendRefs:
+    - name: app1-blue-service
+      port: 8080
+      weight: 40
+    - name: app1-green-service
+      port: 8080
+      weight: 40
+    - name: app2-service
+      port: 8080
+      weight: 20

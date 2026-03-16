@@ -41,7 +41,7 @@ spec:
         image: mysql:5.6
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: simplilearn
+          value: k8slearning
         - name: MYSQL_DATABASE
           value: database1
 ```
@@ -99,7 +99,7 @@ spec:
         - name: WORDPRESS_DB_HOST
           value: mysql
         - name: WORDPRESS_DB_PASSWORD
-          value: simplilearn
+          value: k8slearning
         - name: WORDPRESS_DB_USER
           value: root
         - name: WORDPRESS_DB_NAME
