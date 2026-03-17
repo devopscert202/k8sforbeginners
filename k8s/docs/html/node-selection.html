@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Node Selection Process</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        .process-flow {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .phase {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .phase:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .phase.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            transform: scale(1.05);
+        }
+        .phase-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            line-height: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .phase-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        .phase-desc {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        .funnel-container {
+            margin: 20px 0;
+            position: relative;
+        }
+        .funnel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .funnel-stage {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        .funnel-stage:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .funnel-stage:nth-child(1) { width: 100%; background: linear-gradient(90deg, #667eea, #764ba2); }
+        .funnel-stage:nth-child(2) { width: 85%; background: linear-gradient(90deg, #667eea, #8e7cc3); }
+        .funnel-stage:nth-child(3) { width: 70%; background: linear-gradient(90deg, #667eea, #9d8fd4); }
+        .funnel-stage:nth-child(4) { width: 55%; background: linear-gradient(90deg, #667eea, #aea2e5); }
+        .funnel-stage:nth-child(5) { width: 40%; background: linear-gradient(90deg, #667eea, #bfb5f6); }
+        .funnel-stage-title {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+        .funnel-stage-info {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+        .factors-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .factor-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 10px;
+            border-radius: 6px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .factor-card:hover {
+            background: #e9ecef;
+            transform: translateX(3px);
+        }
+        .factor-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        .factor-title {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+        .factor-desc {
+            font-size: 10px;
+            color: #666;
+        }
+        .example-section {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .example-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 8px 0;
+        }
+        .info-panel {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .info-panel strong {
+            color: #1976d2;
+        }
+        .decision-tree {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .decision-node {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .decision-node:hover {
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+        .decision-node.pass {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+        .decision-node.fail {
+            border-color: #ef4444;
+            background: #fee2e2;
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            font-size: 11px;
+            margin: 10px 0;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Kubernetes Node Selection Process</h1>
+
+        <!-- Scheduler Phases -->
+        <div class="process-flow">
+            <div class="phase" onclick="highlightPhase(0)">
+                <div class="phase-number">1</div>
+                <div class="phase-title">PreFilter</div>
+                <div class="phase-desc">Check eligibility</div>
+            </div>
+            <div class="phase" onclick="highlightPhase(1)">
+                <div class="phase-number">2</div>
+                <div class="phase-title">Filter</div>
+                <div class="phase-desc">Eliminate unsuitable nodes</div>
+            </div>
+            <div class="phase" onclick="highlightPhase(2)">
+                <div class="phase-number">3</div>
+                <div class="phase-title">Score</div>
+                <div class="phase-desc">Rank remaining nodes</div>
+            </div>
+            <div class="phase" onclick="highlightPhase(3)">
+                <div class="phase-number">4</div>
+                <div class="phase-title">Bind</div>
+                <div class="phase-desc">Assign pod to node</div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <strong>Scheduler Framework:</strong> Kubernetes uses a modular, pluggable framework with extensible phases. The scheduler evaluates pod specifications against cluster state to find the optimal node placement.
+        </div>
+
+        <!-- Decision Factors -->
+        <h2 style="font-size: 16px; color: #2c3e50; margin: 15px 0 10px 0;">📊 Key Decision Factors</h2>
+        <div class="factors-grid">
+            <div class="factor-card">
+                <div class="factor-icon">💾</div>
+                <div class="factor-title">Resources</div>
+                <div class="factor-desc">CPU, Memory, Storage availability</div>
+            </div>
+            <div class="factor-card">
+                <div class="factor-icon">🧲</div>
+                <div class="factor-title">Affinity</div>
+                <div class="factor-desc">Node/Pod preference rules</div>
+            </div>
+            <div class="factor-card">
+                <div class="factor-icon">🚫</div>
+                <div class="factor-title">Taints</div>
+                <div class="factor-desc">Node restrictions & tolerations</div>
+            </div>
+            <div class="factor-card">
+                <div class="factor-icon">🌐</div>
+                <div class="factor-title">Topology</div>
+                <div class="factor-desc">Zone/rack distribution</div>
+            </div>
+        </div>
+
+        <!-- Visual Node Filtering Funnel -->
+        <h2 style="font-size: 16px; color: #2c3e50; margin: 15px 0 10px 0;">🔽 Node Filtering Process</h2>
+        <div class="funnel-container">
+            <div class="funnel">
+                <div class="funnel-stage">
+                    <div class="funnel-stage-title">Available Nodes: 100</div>
+                    <div class="funnel-stage-info">All cluster nodes</div>
+                </div>
+                <div class="funnel-stage">
+                    <div class="funnel-stage-title">After Resource Check: 60</div>
+                    <div class="funnel-stage-info">Nodes with sufficient CPU/Memory</div>
+                </div>
+                <div class="funnel-stage">
+                    <div class="funnel-stage-title">After Taints Filter: 40</div>
+                    <div class="funnel-stage-info">Nodes with matching tolerations</div>
+                </div>
+                <div class="funnel-stage">
+                    <div class="funnel-stage-title">After Affinity: 15</div>
+                    <div class="funnel-stage-info">Nodes matching labels/affinity</div>
+                </div>
+                <div class="funnel-stage">
+                    <div class="funnel-stage-title">Best Scored Node: 1</div>
+                    <div class="funnel-stage-info">Optimal node selected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Example Decision Tree -->
+        <h2 style="font-size: 16px; color: #2c3e50; margin: 15px 0 10px 0;">🌳 Example: Scheduling Decision</h2>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #d1fae5; border: 2px solid #10b981;"></div>
+                <span>Passed</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fee2e2; border: 2px solid #ef4444;"></div>
+                <span>Failed</span>
+            </div>
+        </div>
+        <div class="decision-tree">
+            <div class="decision-node fail">❌ Node1: Insufficient memory (has 1GB, needs 2GB)</div>
+            <div class="decision-node fail">❌ Node2: Taint key=gpu:NoSchedule (pod has no toleration)</div>
+            <div class="decision-node pass">✅ Node3: All checks passed, score: 85</div>
+            <div class="decision-node pass">✅ Node4: All checks passed, score: 92 → Selected!</div>
+            <div class="decision-node fail">❌ Node5: Missing label disktype=ssd (required by nodeSelector)</div>
+        </div>
+
+        <!-- YAML Example -->
+        <div class="example-section">
+            <div class="example-title">
+                <span>📄</span>
+                <span>Pod with Node Selection Constraints</span>
+            </div>
+            <pre>apiVersion: v1
+kind: Pod
+metadata:
+  name: node-selection-demo
+spec:
+  # Simple node selector (filter phase)
+  nodeSelector:
+    disktype: ssd
+
+  # Tolerations allow scheduling on tainted nodes
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "database"
+    effect: "NoSchedule"
+
+  # Node affinity for advanced selection
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "topology.kubernetes.io/zone"
+            operator: "In"
+            values:
+            - "us-west-1a"
+            - "us-west-1b"
+
+  containers:
+  - name: app
+    image: nginx:1.21
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "4Gi"
+        cpu: "2000m"</pre>
+        </div>
+
+        <div class="info-panel">
+            <strong>💡 Key Insight:</strong> The scheduler ensures pods are placed on nodes that meet ALL constraints. Resource requests are used for scheduling decisions (not limits). Node affinity and nodeSelector filter nodes, while scoring determines the best match among eligible nodes.
+        </div>
+    </div>
+
+    <script>
+        function highlightPhase(index) {
+            const phases = document.querySelectorAll('.phase');
+            phases.forEach((phase, i) => {
+                if (i === index) {
+                    phase.classList.add('active');
+                    setTimeout(() => phase.classList.remove('active'), 1500);
+                }
+            });
+        }
+
+        // Add interactive hover effects for decision tree
+        document.querySelectorAll('.decision-node').forEach(node => {
+            node.addEventListener('click', function() {
+                this.style.fontWeight = 'bold';
+                setTimeout(() => {
+                    this.style.fontWeight = 'normal';
+                }, 500);
+            });
+        });
+
+        // Add tooltip information on funnel stages
+        document.querySelectorAll('.funnel-stage').forEach(stage => {
+            stage.addEventListener('click', function() {
+                const info = this.querySelector('.funnel-stage-info');
+                info.style.fontWeight = 'bold';
+                info.style.fontSize = '12px';
+                setTimeout(() => {
+                    info.style.fontWeight = 'normal';
+                    info.style.fontSize = '11px';
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Taints & Tolerations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #34495e;
+            font-size: 18px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        /* Checkpoint Visualization */
+        .checkpoint-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .pod-box, .node-box {
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            min-width: 110px;
+        }
+
+        .pod-box {
+            background: #3498db;
+            color: white;
+        }
+
+        .pod-box.blocked {
+            background: #e74c3c;
+        }
+
+        .pod-box.allowed {
+            background: #2ecc71;
+        }
+
+        .node-box {
+            background: #34495e;
+            color: white;
+            position: relative;
+        }
+
+        .taint-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .arrow {
+            font-size: 30px;
+            color: #7f8c8d;
+        }
+
+        .arrow.blocked {
+            color: #e74c3c;
+        }
+
+        .arrow.allowed {
+            color: #2ecc71;
+        }
+
+        .checkpoint {
+            background: #f39c12;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            max-width: 120px;
+        }
+
+        .permit {
+            background: #2ecc71;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        /* Effect Comparison Table */
+        .effects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .effects-table th {
+            background: #3498db;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .effects-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .effects-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .effect-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .effect-noschedule {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .effect-prefernoschedule {
+            background: #f39c12;
+            color: white;
+        }
+
+        .effect-noexecute {
+            background: #c0392b;
+            color: white;
+        }
+
+        /* Matching Logic */
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .match-card {
+            background: #ecf0f1;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .match-card.no-match {
+            border-left-color: #e74c3c;
+        }
+
+        .match-card h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .match-item {
+            font-size: 11px;
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .match-icon {
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .match-icon.check {
+            color: #2ecc71;
+        }
+
+        .match-icon.cross {
+            color: #e74c3c;
+        }
+
+        /* YAML Code Blocks */
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 11px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .yaml-header {
+            font-size: 12px;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+        }
+
+        .yaml-icon {
+            background: #3498db;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-right: 8px;
+            font-size: 10px;
+        }
+
+        .yaml-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* Use Cases */
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .use-case {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .use-case strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        /* Interactive Controls */
+        .interactive-demo {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-noschedule {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-prefernoschedule {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-noexecute {
+            background: #c0392b;
+            color: white;
+        }
+
+        .btn-tolerate {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .demo-result {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .result-allowed {
+            border-color: #2ecc71;
+            color: #2ecc71;
+        }
+
+        .result-blocked {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .result-maybe {
+            border-color: #f39c12;
+            color: #f39c12;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kubernetes Taints & Tolerations</h1>
+        <p class="subtitle">Node Access Control: Checkpoint System for Pod Scheduling</p>
+
+        <!-- How It Works -->
+        <div class="section">
+            <h2>How It Works: Police Checkpoint Analogy</h2>
+            <div class="checkpoint-visual">
+                <div class="pod-box blocked">Pod<br>(No Permit)</div>
+                <div class="arrow blocked">✖</div>
+                <div class="checkpoint">
+                    Taint<br>Checkpoint
+                    <div style="font-size: 10px; margin-top: 5px;">gpu=true:NoSchedule</div>
+                </div>
+                <div class="arrow blocked">✖</div>
+                <div class="node-box">
+                    GPU Node
+                    <span class="taint-badge">Tainted</span>
+                </div>
+            </div>
+
+            <div class="checkpoint-visual">
+                <div class="pod-box allowed">
+                    Pod<br>
+                    <span class="permit">Has Toleration</span>
+                </div>
+                <div class="arrow allowed">→</div>
+                <div class="checkpoint">
+                    Taint<br>Checkpoint
+                    <div style="font-size: 10px; margin-top: 5px;">gpu=true:NoSchedule</div>
+                </div>
+                <div class="arrow allowed">✓</div>
+                <div class="node-box">
+                    GPU Node
+                    <span class="taint-badge">Tainted</span>
+                </div>
+            </div>
+
+            <p style="font-size: 12px; color: #7f8c8d; text-align: center; margin-top: 10px;">
+                <strong>Taints</strong> repel pods unless they have matching <strong>tolerations</strong> (permits) to override the restriction.
+            </p>
+        </div>
+
+        <!-- Taint Effects -->
+        <div class="section">
+            <h2>Taint Effects: Three Enforcement Levels</h2>
+            <table class="effects-table">
+                <thead>
+                    <tr>
+                        <th>Effect</th>
+                        <th>New Pods</th>
+                        <th>Existing Pods</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="effect-badge effect-noschedule">NoSchedule</span></td>
+                        <td>Blocks scheduling</td>
+                        <td>No impact</td>
+                        <td>Reserve nodes for specific workloads</td>
+                    </tr>
+                    <tr>
+                        <td><span class="effect-badge effect-prefernoschedule">PreferNoSchedule</span></td>
+                        <td>Tries to avoid</td>
+                        <td>No impact</td>
+                        <td>Soft preference, not strict</td>
+                    </tr>
+                    <tr>
+                        <td><span class="effect-badge effect-noexecute">NoExecute</span></td>
+                        <td>Blocks scheduling</td>
+                        <td>Evicts immediately</td>
+                        <td>Maintenance mode, force evacuation</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Matching Logic -->
+        <div class="section">
+            <h2>Matching Logic: How Tolerations Match Taints</h2>
+            <div class="matching-grid">
+                <div class="match-card">
+                    <h3>✓ Match Example (Pod Schedules)</h3>
+                    <div class="match-item">
+                        <span class="match-icon check">✓</span>
+                        <span><strong>Taint:</strong> gpu=true:NoSchedule</span>
+                    </div>
+                    <div class="match-item">
+                        <span class="match-icon check">✓</span>
+                        <span><strong>Toleration:</strong> key=gpu, value=true, effect=NoSchedule</span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: #2ecc71; font-weight: bold;">
+                        All three match: key, value, effect
+                    </div>
+                </div>
+
+                <div class="match-card no-match">
+                    <h3>✖ No Match (Pod Blocked)</h3>
+                    <div class="match-item">
+                        <span class="match-icon cross">✖</span>
+                        <span><strong>Taint:</strong> gpu=true:NoSchedule</span>
+                    </div>
+                    <div class="match-item">
+                        <span class="match-icon cross">✖</span>
+                        <span><strong>Toleration:</strong> key=gpu, value=false, effect=NoSchedule</span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: #e74c3c; font-weight: bold;">
+                        Value mismatch: true ≠ false
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #fff3cd; padding: 10px; border-radius: 6px; font-size: 11px; border-left: 4px solid #f39c12;">
+                <strong>Exists Operator:</strong> Using <code>operator: Exists</code> matches the taint key only (ignores value). Example: tolerate any gpu taint regardless of value.
+            </div>
+        </div>
+
+        <!-- YAML Examples -->
+        <div class="section">
+            <h2>YAML Configuration Examples</h2>
+            <div class="yaml-container">
+                <div>
+                    <div class="yaml-header">
+                        <span class="yaml-icon">NODE</span>
+                        Apply Taint to Node (kubectl command)
+                    </div>
+<pre>
+# Apply NoSchedule taint for GPU node
+kubectl taint nodes worker-node-1 \
+  gpu=true:NoSchedule
+
+# Apply NoExecute for maintenance
+kubectl taint nodes worker-node-2 \
+  maintenance=true:NoExecute
+
+# Remove taint (note the minus)
+kubectl taint nodes worker-node-1 \
+  gpu=true:NoSchedule-
+</pre>
+                </div>
+
+                <div>
+                    <div class="yaml-header">
+                        <span class="yaml-icon">POD</span>
+                        Pod with Toleration
+                    </div>
+<pre>
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ml-workload
+spec:
+  tolerations:
+  - key: "gpu"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  containers:
+  - name: tensorflow
+    image: tensorflow/tensorflow:latest-gpu
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="section">
+            <h2>Common Use Cases</h2>
+            <div class="use-cases">
+                <div class="use-case">
+                    <strong>GPU Nodes</strong>
+                    Taint: gpu=true:NoSchedule<br>
+                    Only ML/AI workloads with tolerations can access GPU nodes
+                </div>
+
+                <div class="use-case">
+                    <strong>Dedicated Production</strong>
+                    Taint: env=prod:NoSchedule<br>
+                    Isolate production workloads from test/dev pods
+                </div>
+
+                <div class="use-case">
+                    <strong>Maintenance Mode</strong>
+                    Taint: maintenance=true:NoExecute<br>
+                    Evacuate all pods except critical ones with tolerations
+                </div>
+
+                <div class="use-case">
+                    <strong>Database Nodes</strong>
+                    Taint: dedicated=db:NoSchedule<br>
+                    Reserve high-memory nodes for database workloads
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Demo -->
+        <div class="section">
+            <h2>Interactive Demo: Test Taint Effects</h2>
+            <div class="interactive-demo">
+                <div class="demo-controls">
+                    <button class="btn-noschedule" onclick="testTaint('NoSchedule', false)">
+                        NoSchedule (No Toleration)
+                    </button>
+                    <button class="btn-noschedule" onclick="testTaint('NoSchedule', true)">
+                        NoSchedule (With Toleration)
+                    </button>
+                    <button class="btn-prefernoschedule" onclick="testTaint('PreferNoSchedule', false)">
+                        PreferNoSchedule
+                    </button>
+                    <button class="btn-noexecute" onclick="testTaint('NoExecute', false)">
+                        NoExecute (No Toleration)
+                    </button>
+                    <button class="btn-reset" onclick="resetDemo()">
+                        Reset
+                    </button>
+                </div>
+                <div id="demoResult" class="demo-result">
+                    Click a button to test taint behavior
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reference -->
+        <div class="section">
+            <h2>Quick Reference</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 11px;">
+                <div style="background: #ecf0f1; padding: 10px; border-radius: 6px;">
+                    <strong style="color: #2c3e50; display: block; margin-bottom: 6px;">Toleration Operators</strong>
+                    <div><strong>Equal:</strong> Key, value, and effect must match exactly</div>
+                    <div><strong>Exists:</strong> Only key needs to match (ignores value)</div>
+                </div>
+
+                <div style="background: #ecf0f1; padding: 10px; border-radius: 6px;">
+                    <strong style="color: #2c3e50; display: block; margin-bottom: 6px;">Debugging Tips</strong>
+                    <div><code>kubectl describe node &lt;name&gt;</code> - View node taints</div>
+                    <div><code>kubectl describe pod &lt;name&gt;</code> - Check why pod is pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testTaint(effect, hasToleration) {
+            const resultDiv = document.getElementById('demoResult');
+            let message = '';
+            let className = '';
+
+            if (effect === 'NoSchedule') {
+                if (hasToleration) {
+                    message = '✓ Pod SCHEDULED: Toleration matches taint, pod can run on node';
+                    className = 'result-allowed';
+                } else {
+                    message = '✖ Pod BLOCKED: No toleration, cannot schedule on tainted node';
+                    className = 'result-blocked';
+                }
+            } else if (effect === 'PreferNoSchedule') {
+                message = '⚠ Pod MAY SCHEDULE: Scheduler tries to avoid but can schedule if needed';
+                className = 'result-maybe';
+            } else if (effect === 'NoExecute') {
+                if (hasToleration) {
+                    message = '✓ Pod CONTINUES: Toleration present, pod not evicted';
+                    className = 'result-allowed';
+                } else {
+                    message = '✖ Pod EVICTED: No toleration, existing pod removed immediately';
+                    className = 'result-blocked';
+                }
+            }
+
+            resultDiv.textContent = message;
+            resultDiv.className = 'demo-result ' + className;
+        }
+
+        function resetDemo() {
+            const resultDiv = document.getElementById('demoResult');
+            resultDiv.textContent = 'Click a button to test taint behavior';
+            resultDiv.className = 'demo-result';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StatefulSet vs Deployment - Kubernetes Workloads Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f6fa;
+            color: #1a1a2e;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #326CE5;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .comparison-table {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .table-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #326CE5;
+            color: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        td {
+            font-size: 0.85rem;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .feature-label {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .deployment-col {
+            background: #dbeafe;
+        }
+
+        .statefulset-col {
+            background: #fce7f3;
+        }
+
+        .visual-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .workload-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .deployment-title {
+            color: #2563eb;
+        }
+
+        .statefulset-title {
+            color: #ec4899;
+        }
+
+        .pod-naming {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .pod-naming-title {
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .pod-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        .pod-icon {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        .characteristics {
+            margin-top: 15px;
+        }
+
+        .char-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+
+        .check-icon {
+            color: #22c55e;
+            margin-right: 8px;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .yaml-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .yaml-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .yaml-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .yaml-example {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .yaml-key {
+            color: #60a5fa;
+        }
+
+        .yaml-string {
+            color: #34d399;
+        }
+
+        .yaml-number {
+            color: #fbbf24;
+        }
+
+        .yaml-comment {
+            color: #94a3b8;
+        }
+
+        .use-cases {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 25px;
+        }
+
+        .use-cases-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .use-case-box {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .deployment-box {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .statefulset-box {
+            background: #fdf2f8;
+            border-color: #ec4899;
+        }
+
+        .use-case-heading {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .use-case-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .use-case-list li {
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .use-case-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .visual-section,
+            .yaml-section,
+            .use-case-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>StatefulSet vs Deployment</h1>
+            <p class="subtitle">Choosing the Right Kubernetes Workload for Your Application</p>
+        </header>
+
+        <!-- Key Differences Table -->
+        <div class="comparison-table">
+            <div class="table-title">Key Differences</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th class="deployment-col">Deployment</th>
+                        <th class="statefulset-col">StatefulSet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="feature-label">Pod Identity</td>
+                        <td>Random hash-based names (unstable)</td>
+                        <td>Stable, ordered names (app-0, app-1, app-2)</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-label">Network Identity</td>
+                        <td>No stable network identity</td>
+                        <td>Stable DNS hostname per pod</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-label">Storage</td>
+                        <td>Shared or ephemeral storage</td>
+                        <td>Persistent, per-pod storage (PVCs)</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-label">Pod Creation Order</td>
+                        <td>Random, parallel</td>
+                        <td>Sequential, ordered (0 → 1 → 2)</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-label">Pod Termination Order</td>
+                        <td>Random, parallel</td>
+                        <td>Reverse order (2 → 1 → 0)</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-label">Scaling</td>
+                        <td>Fast, parallel scaling</td>
+                        <td>Graceful, one-at-a-time scaling</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-label">Updates</td>
+                        <td>Rolling updates (replace all)</td>
+                        <td>Rolling updates (ordered, one-by-one)</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-label">Use Case</td>
+                        <td>Stateless applications</td>
+                        <td>Stateful applications</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Visual Pod Naming Patterns -->
+        <div class="visual-section">
+            <!-- Deployment Card -->
+            <div class="workload-card">
+                <div class="card-title deployment-title">Deployment</div>
+
+                <div class="pod-naming">
+                    <div class="pod-naming-title">Pod Naming Pattern (Random)</div>
+                    <div class="pod-item">
+                        <span class="pod-icon">📦</span>
+                        <span>nginx-deployment-7d4c9b8f-xk2jm</span>
+                    </div>
+                    <div class="pod-item">
+                        <span class="pod-icon">📦</span>
+                        <span>nginx-deployment-7d4c9b8f-9t5kl</span>
+                    </div>
+                    <div class="pod-item">
+                        <span class="pod-icon">📦</span>
+                        <span>nginx-deployment-7d4c9b8f-hs8wp</span>
+                    </div>
+                </div>
+
+                <div class="characteristics">
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Pods are interchangeable</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>No stable network identity</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Stateless applications</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Fast, parallel scaling</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Shared or ephemeral storage</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- StatefulSet Card -->
+            <div class="workload-card">
+                <div class="card-title statefulset-title">StatefulSet</div>
+
+                <div class="pod-naming">
+                    <div class="pod-naming-title">Pod Naming Pattern (Ordered)</div>
+                    <div class="pod-item">
+                        <span class="pod-icon">📦</span>
+                        <span>mysql-0</span>
+                    </div>
+                    <div class="pod-item">
+                        <span class="pod-icon">📦</span>
+                        <span>mysql-1</span>
+                    </div>
+                    <div class="pod-item">
+                        <span class="pod-icon">📦</span>
+                        <span>mysql-2</span>
+                    </div>
+                </div>
+
+                <div class="characteristics">
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Stable, unique pod identity</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Stable network hostname</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Stateful applications</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Ordered, graceful scaling</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="check-icon">✓</span>
+                        <span>Persistent per-pod storage</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- YAML Examples -->
+        <div class="yaml-section">
+            <!-- Deployment YAML -->
+            <div class="yaml-card">
+                <div class="yaml-title deployment-title">Deployment YAML</div>
+                <div class="yaml-example"><span class="yaml-key">apiVersion:</span> <span class="yaml-string">apps/v1</span>
+<span class="yaml-key">kind:</span> <span class="yaml-string">Deployment</span>
+<span class="yaml-key">metadata:</span>
+  <span class="yaml-key">name:</span> <span class="yaml-string">nginx-deployment</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">replicas:</span> <span class="yaml-number">3</span>
+  <span class="yaml-key">selector:</span>
+    <span class="yaml-key">matchLabels:</span>
+      <span class="yaml-key">app:</span> <span class="yaml-string">nginx</span>
+  <span class="yaml-key">template:</span>
+    <span class="yaml-key">metadata:</span>
+      <span class="yaml-key">labels:</span>
+        <span class="yaml-key">app:</span> <span class="yaml-string">nginx</span>
+    <span class="yaml-key">spec:</span>
+      <span class="yaml-key">containers:</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-string">nginx</span>
+        <span class="yaml-key">image:</span> <span class="yaml-string">nginx:1.21</span>
+        <span class="yaml-key">ports:</span>
+        - <span class="yaml-key">containerPort:</span> <span class="yaml-number">80</span></div>
+            </div>
+
+            <!-- StatefulSet YAML -->
+            <div class="yaml-card">
+                <div class="yaml-title statefulset-title">StatefulSet YAML</div>
+                <div class="yaml-example"><span class="yaml-key">apiVersion:</span> <span class="yaml-string">apps/v1</span>
+<span class="yaml-key">kind:</span> <span class="yaml-string">StatefulSet</span>
+<span class="yaml-key">metadata:</span>
+  <span class="yaml-key">name:</span> <span class="yaml-string">mysql</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">serviceName:</span> <span class="yaml-string">mysql</span>  <span class="yaml-comment"># Headless service</span>
+  <span class="yaml-key">replicas:</span> <span class="yaml-number">3</span>
+  <span class="yaml-key">selector:</span>
+    <span class="yaml-key">matchLabels:</span>
+      <span class="yaml-key">app:</span> <span class="yaml-string">mysql</span>
+  <span class="yaml-key">template:</span>
+    <span class="yaml-key">metadata:</span>
+      <span class="yaml-key">labels:</span>
+        <span class="yaml-key">app:</span> <span class="yaml-string">mysql</span>
+    <span class="yaml-key">spec:</span>
+      <span class="yaml-key">containers:</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-string">mysql</span>
+        <span class="yaml-key">image:</span> <span class="yaml-string">mysql:5.7</span>
+        <span class="yaml-key">volumeMounts:</span>
+        - <span class="yaml-key">name:</span> <span class="yaml-string">data</span>
+          <span class="yaml-key">mountPath:</span> <span class="yaml-string">/var/lib/mysql</span>
+  <span class="yaml-key">volumeClaimTemplates:</span>  <span class="yaml-comment"># Per-pod PVC</span>
+  - <span class="yaml-key">metadata:</span>
+      <span class="yaml-key">name:</span> <span class="yaml-string">data</span>
+    <span class="yaml-key">spec:</span>
+      <span class="yaml-key">accessModes:</span> [<span class="yaml-string">"ReadWriteOnce"</span>]
+      <span class="yaml-key">resources:</span>
+        <span class="yaml-key">requests:</span>
+          <span class="yaml-key">storage:</span> <span class="yaml-string">10Gi</span></div>
+            </div>
+        </div>
+
+        <!-- Use Cases -->
+        <div class="use-cases">
+            <div class="use-cases-title">When to Use Each</div>
+            <div class="use-case-grid">
+                <div class="use-case-box deployment-box">
+                    <div class="use-case-heading">Use Deployment For:</div>
+                    <ul class="use-case-list">
+                        <li>Stateless web applications</li>
+                        <li>REST APIs and microservices</li>
+                        <li>Frontend applications (React, Angular)</li>
+                        <li>Worker processes without state</li>
+                        <li>Batch processing jobs</li>
+                        <li>Load balancers and proxies</li>
+                        <li>Applications that don't need persistent storage</li>
+                        <li>When fast scaling is priority</li>
+                    </ul>
+                </div>
+
+                <div class="use-case-box statefulset-box">
+                    <div class="use-case-heading">Use StatefulSet For:</div>
+                    <ul class="use-case-list">
+                        <li>Databases (MySQL, PostgreSQL, MongoDB)</li>
+                        <li>Distributed systems (Kafka, Zookeeper, Cassandra)</li>
+                        <li>Applications requiring stable network identity</li>
+                        <li>Applications with persistent data storage</li>
+                        <li>Master-slave/Primary-replica architectures</li>
+                        <li>Applications requiring ordered deployment</li>
+                        <li>Stateful cache systems (Redis with persistence)</li>
+                        <li>When pod identity matters</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

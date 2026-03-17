@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReplicaSet Scaling Behavior - Interactive Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            color: #326CE5;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background: #326CE5;
+            color: white;
+        }
+
+        .btn:hover {
+            background: #2558c7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .scenario-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .scenario-btn {
+            padding: 8px 16px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: #326CE5;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .scenario-btn.active {
+            background: #326CE5;
+            color: white;
+        }
+
+        .step-indicator {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #326CE5;
+        }
+
+        .step-indicator h2 {
+            color: #326CE5;
+            margin-bottom: 4px;
+            font-size: 1.2em;
+        }
+
+        .step-indicator p {
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .viz-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 200px;
+        }
+
+        .viz-header {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 1em;
+        }
+
+        .pods-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .pod {
+            width: 70px;
+            height: 85px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid #5a67d8;
+        }
+
+        .pod:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        .pod-icon {
+            font-size: 1.8em;
+            margin-bottom: 3px;
+        }
+
+        .pod-label {
+            color: white;
+            font-weight: 600;
+            font-size: 0.75em;
+        }
+
+        .pod-state {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .state-running {
+            background: #48bb78;
+        }
+
+        .state-starting {
+            background: #4299e1;
+            animation: pulse 1.5s infinite;
+        }
+
+        .state-terminating {
+            background: #ed8936;
+        }
+
+        .state-failed {
+            background: #f56565;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .replica-count {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #326CE5;
+            font-weight: 700;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-left: 3px solid #326CE5;
+        }
+
+        .info-card h3 {
+            color: #326CE5;
+            margin-bottom: 6px;
+            font-size: 0.95em;
+        }
+
+        .info-card p {
+            color: #4a5568;
+            font-size: 0.85em;
+            margin: 3px 0;
+        }
+
+        .yaml-section {
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .yaml-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            font-size: 0.85em;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #2d3748;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .tooltip.show {
+            display: block;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+            .controls, .scenario-selector {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .visualization-grid {
+                grid-template-columns: 1fr;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .pod {
+                width: 60px;
+                height: 75px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ReplicaSet Scaling Behavior</h1>
+        <p class="subtitle">Interactive visualization of ReplicaSet controller behavior</p>
+
+        <div class="scenario-selector">
+            <button class="scenario-btn active" data-scenario="scaleUp">Scale Up (2→5)</button>
+            <button class="scenario-btn" data-scenario="scaleDown">Scale Down (5→2)</button>
+            <button class="scenario-btn" data-scenario="selfHealing">Self-Healing</button>
+            <button class="scenario-btn" data-scenario="hpa">Manual vs HPA</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="playBtn">▶ Play</button>
+            <button class="btn btn-secondary" id="stepBtn">⏭ Next Step</button>
+            <button class="btn btn-danger" id="resetBtn">🔄 Reset</button>
+        </div>
+
+        <div class="step-indicator" id="stepIndicator">
+            <h2>Step 0: Initial State</h2>
+            <p>ReplicaSet is maintaining the desired replica count</p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot state-running"></div>
+                <span>Running</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot state-starting"></div>
+                <span>Starting</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot state-terminating"></div>
+                <span>Terminating</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot state-failed"></div>
+                <span>Failed</span>
+            </div>
+        </div>
+
+        <div class="visualization-grid">
+            <div class="viz-section">
+                <div class="viz-header">Current State</div>
+                <div class="pods-container" id="currentPods"></div>
+                <div class="replica-count" id="currentCount">Current: 2 pods</div>
+            </div>
+            <div class="viz-section">
+                <div class="viz-header">Desired State</div>
+                <div class="pods-container" id="desiredPods"></div>
+                <div class="replica-count" id="desiredCount">Desired: 2 pods</div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Scale Up</h3>
+                <p>ReplicaSet controller creates new pods when desired > current</p>
+                <p><strong>Process:</strong> New pods created → ContainerCreating → Running</p>
+            </div>
+            <div class="info-card">
+                <h3>Scale Down</h3>
+                <p>Controller terminates excess pods when current > desired</p>
+                <p><strong>Process:</strong> Pods marked for deletion → Terminating → Removed</p>
+            </div>
+            <div class="info-card">
+                <h3>Self-Healing</h3>
+                <p>Automatically replaces failed pods to maintain desired count</p>
+                <p><strong>Trigger:</strong> Pod crash, node failure, or manual deletion</p>
+            </div>
+            <div class="info-card">
+                <h3>Scaling Methods</h3>
+                <p><strong>Manual:</strong> kubectl scale or edit replicas field</p>
+                <p><strong>HPA:</strong> Automatic scaling based on CPU/memory metrics</p>
+            </div>
+        </div>
+
+        <div class="yaml-section">
+            <div class="section-title">ReplicaSet YAML Example</div>
+            <div class="yaml-example"><pre>apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend-rs
+  labels:
+    app: frontend
+spec:
+  replicas: 5          # Desired number of pod replicas
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+
+# Scale manually:
+kubectl scale replicaset frontend-rs --replicas=3
+
+# View ReplicaSet status:
+kubectl get replicaset frontend-rs</pre></div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Scenarios configuration
+        const scenarios = {
+            scaleUp: {
+                name: "Scale Up",
+                steps: [
+                    {
+                        title: "Step 0: Initial State",
+                        description: "ReplicaSet maintaining 2 replicas. All pods running healthy.",
+                        current: 2,
+                        desired: 2,
+                        currentStates: ['running', 'running'],
+                        desiredStates: ['running', 'running']
+                    },
+                    {
+                        title: "Step 1: Replicas Updated",
+                        description: "Admin updates replicas field from 2 to 5. ReplicaSet detects mismatch.",
+                        current: 2,
+                        desired: 5,
+                        currentStates: ['running', 'running'],
+                        desiredStates: ['running', 'running', 'starting', 'starting', 'starting']
+                    },
+                    {
+                        title: "Step 2: Creating New Pods",
+                        description: "Controller creates 3 new pods. Pods in ContainerCreating state.",
+                        current: 5,
+                        desired: 5,
+                        currentStates: ['running', 'running', 'starting', 'starting', 'starting'],
+                        desiredStates: ['running', 'running', 'running', 'running', 'running']
+                    },
+                    {
+                        title: "Step 3: Scale Complete",
+                        description: "All 5 pods running. Desired state achieved. ReplicaSet stable.",
+                        current: 5,
+                        desired: 5,
+                        currentStates: ['running', 'running', 'running', 'running', 'running'],
+                        desiredStates: ['running', 'running', 'running', 'running', 'running']
+                    }
+                ]
+            },
+            scaleDown: {
+                name: "Scale Down",
+                steps: [
+                    {
+                        title: "Step 0: Initial State",
+                        description: "ReplicaSet maintaining 5 replicas. All pods running healthy.",
+                        current: 5,
+                        desired: 5,
+                        currentStates: ['running', 'running', 'running', 'running', 'running'],
+                        desiredStates: ['running', 'running', 'running', 'running', 'running']
+                    },
+                    {
+                        title: "Step 1: Replicas Reduced",
+                        description: "Admin scales down from 5 to 2 replicas. Controller detects excess pods.",
+                        current: 5,
+                        desired: 2,
+                        currentStates: ['running', 'running', 'running', 'running', 'running'],
+                        desiredStates: ['running', 'running']
+                    },
+                    {
+                        title: "Step 2: Terminating Pods",
+                        description: "Controller marks 3 pods for deletion. Graceful shutdown initiated.",
+                        current: 5,
+                        desired: 2,
+                        currentStates: ['running', 'running', 'terminating', 'terminating', 'terminating'],
+                        desiredStates: ['running', 'running']
+                    },
+                    {
+                        title: "Step 3: Scale Complete",
+                        description: "Excess pods removed. 2 pods running. Desired state achieved.",
+                        current: 2,
+                        desired: 2,
+                        currentStates: ['running', 'running'],
+                        desiredStates: ['running', 'running']
+                    }
+                ]
+            },
+            selfHealing: {
+                name: "Self-Healing",
+                steps: [
+                    {
+                        title: "Step 0: Healthy State",
+                        description: "ReplicaSet maintaining 3 replicas. All pods healthy and running.",
+                        current: 3,
+                        desired: 3,
+                        currentStates: ['running', 'running', 'running'],
+                        desiredStates: ['running', 'running', 'running']
+                    },
+                    {
+                        title: "Step 1: Pod Failure",
+                        description: "One pod crashes or is manually deleted. Current < Desired detected.",
+                        current: 2,
+                        desired: 3,
+                        currentStates: ['running', 'running'],
+                        desiredStates: ['running', 'running', 'starting']
+                    },
+                    {
+                        title: "Step 2: Replacement Started",
+                        description: "Controller immediately creates replacement pod to restore desired count.",
+                        current: 3,
+                        desired: 3,
+                        currentStates: ['running', 'running', 'starting'],
+                        desiredStates: ['running', 'running', 'running']
+                    },
+                    {
+                        title: "Step 3: Healed",
+                        description: "Replacement pod running. Desired replica count restored automatically.",
+                        current: 3,
+                        desired: 3,
+                        currentStates: ['running', 'running', 'running'],
+                        desiredStates: ['running', 'running', 'running']
+                    }
+                ]
+            },
+            hpa: {
+                name: "Manual vs HPA",
+                steps: [
+                    {
+                        title: "Step 0: Base Load",
+                        description: "Application running with minimal load. HPA target: 50% CPU.",
+                        current: 2,
+                        desired: 2,
+                        currentStates: ['running', 'running'],
+                        desiredStates: ['running', 'running']
+                    },
+                    {
+                        title: "Step 1: Load Increase",
+                        description: "CPU usage increases to 80%. HPA calculates need for more replicas.",
+                        current: 2,
+                        desired: 4,
+                        currentStates: ['running', 'running'],
+                        desiredStates: ['running', 'running', 'starting', 'starting']
+                    },
+                    {
+                        title: "Step 2: HPA Auto-Scale",
+                        description: "HPA automatically updates ReplicaSet replicas field to 4. No manual intervention.",
+                        current: 4,
+                        desired: 4,
+                        currentStates: ['running', 'running', 'starting', 'starting'],
+                        desiredStates: ['running', 'running', 'running', 'running']
+                    },
+                    {
+                        title: "Step 3: Scaled State",
+                        description: "All 4 pods running. CPU per pod reduced to 40%. HPA satisfied.",
+                        current: 4,
+                        desired: 4,
+                        currentStates: ['running', 'running', 'running', 'running'],
+                        desiredStates: ['running', 'running', 'running', 'running']
+                    }
+                ]
+            }
+        };
+
+        // State
+        let currentScenario = 'scaleUp';
+        let currentStep = 0;
+        let isPlaying = false;
+        let playInterval = null;
+
+        // DOM elements
+        const playBtn = document.getElementById('playBtn');
+        const stepBtn = document.getElementById('stepBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const currentPods = document.getElementById('currentPods');
+        const desiredPods = document.getElementById('desiredPods');
+        const currentCount = document.getElementById('currentCount');
+        const desiredCount = document.getElementById('desiredCount');
+        const tooltip = document.getElementById('tooltip');
+
+        // Initialize
+        function init() {
+            renderStep(currentScenario, currentStep);
+            setupEventListeners();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            playBtn.addEventListener('click', togglePlay);
+            stepBtn.addEventListener('click', nextStep);
+            resetBtn.addEventListener('click', reset);
+
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.addEventListener('click', () => changeScenario(btn.dataset.scenario));
+            });
+        }
+
+        // Change scenario
+        function changeScenario(scenario) {
+            pause();
+            currentScenario = scenario;
+            currentStep = 0;
+
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.scenario === scenario);
+            });
+
+            renderStep(scenario, 0);
+        }
+
+        // Toggle play/pause
+        function togglePlay() {
+            if (isPlaying) {
+                pause();
+            } else {
+                play();
+            }
+        }
+
+        // Play
+        function play() {
+            const steps = scenarios[currentScenario].steps;
+            if (currentStep >= steps.length - 1) {
+                reset();
+            }
+
+            isPlaying = true;
+            playBtn.textContent = '⏸ Pause';
+
+            playInterval = setInterval(() => {
+                if (currentStep < steps.length - 1) {
+                    nextStep();
+                } else {
+                    pause();
+                }
+            }, 2000);
+        }
+
+        // Pause
+        function pause() {
+            isPlaying = false;
+            playBtn.textContent = '▶ Play';
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+
+        // Next step
+        function nextStep() {
+            const steps = scenarios[currentScenario].steps;
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderStep(currentScenario, currentStep);
+            }
+        }
+
+        // Reset
+        function reset() {
+            pause();
+            currentStep = 0;
+            renderStep(currentScenario, 0);
+        }
+
+        // Render step
+        function renderStep(scenario, stepIndex) {
+            const step = scenarios[scenario].steps[stepIndex];
+
+            stepIndicator.querySelector('h2').textContent = step.title;
+            stepIndicator.querySelector('p').textContent = step.description;
+
+            currentCount.textContent = `Current: ${step.current} pod${step.current !== 1 ? 's' : ''}`;
+            desiredCount.textContent = `Desired: ${step.desired} pod${step.desired !== 1 ? 's' : ''}`;
+
+            renderPods(currentPods, step.current, step.currentStates);
+            renderPods(desiredPods, step.desired, step.desiredStates);
+        }
+
+        // Render pods
+        function renderPods(container, count, states) {
+            container.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const pod = createPod(i, states[i] || 'running');
+                container.appendChild(pod);
+            }
+        }
+
+        // Create pod element
+        function createPod(index, state) {
+            const pod = document.createElement('div');
+            pod.className = 'pod';
+
+            const stateIcon = {
+                'running': '✓',
+                'starting': '⟳',
+                'terminating': '✕',
+                'failed': '✗'
+            };
+
+            const stateClass = {
+                'running': 'state-running',
+                'starting': 'state-starting',
+                'terminating': 'state-terminating',
+                'failed': 'state-failed'
+            };
+
+            pod.innerHTML = `
+                <div class="pod-icon">📦</div>
+                <div class="pod-label">Pod ${index + 1}</div>
+                <div class="pod-state ${stateClass[state]}">${stateIcon[state]}</div>
+            `;
+
+            pod.addEventListener('mouseenter', (e) => showTooltip(e, index, state));
+            pod.addEventListener('mouseleave', hideTooltip);
+            pod.addEventListener('mousemove', moveTooltip);
+
+            return pod;
+        }
+
+        // Tooltip functions
+        function showTooltip(e, index, state) {
+            const descriptions = {
+                'running': 'Pod is healthy and ready',
+                'starting': 'Pod is being created',
+                'terminating': 'Pod is shutting down',
+                'failed': 'Pod has crashed or failed'
+            };
+
+            tooltip.innerHTML = `
+                <strong>Pod ${index + 1}</strong><br>
+                State: ${state.charAt(0).toUpperCase() + state.slice(1)}<br>
+                <em>${descriptions[state]}</em>
+            `;
+            tooltip.classList.add('show');
+            moveTooltip(e);
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('show');
+        }
+
+        function moveTooltip(e) {
+            tooltip.style.left = `${e.clientX + 15}px`;
+            tooltip.style.top = `${e.clientY + 15}px`;
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

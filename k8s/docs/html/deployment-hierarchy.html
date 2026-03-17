@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Deployment Hierarchy - Interactive Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f6fa;
+            color: #1a1a2e;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #326CE5;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: #326CE5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #326CE5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.3);
+        }
+
+        .btn.active {
+            background: #326CE5;
+            color: white;
+        }
+
+        .diagram-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        /* Hierarchy View Styles */
+        .hierarchy-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            padding: 20px;
+        }
+
+        .level {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .level-title {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+        }
+
+        .resource-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .resource-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .deployment-box {
+            border: 3px solid #326CE5;
+            background: linear-gradient(135deg, #e8f4fd 0%, #d1e7f8 100%);
+            max-width: 450px;
+        }
+
+        .replicaset-box {
+            border: 3px solid #8b5cf6;
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            max-width: 650px;
+        }
+
+        .pod-container {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pod-box {
+            border: 3px solid #22c55e;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .resource-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .resource-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .deployment-icon {
+            background: #326CE5;
+            color: white;
+        }
+
+        .replicaset-icon {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .pod-icon {
+            background: #22c55e;
+            color: white;
+        }
+
+        .resource-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .resource-kind {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .resource-details {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .label-display {
+            background: rgba(50, 108, 229, 0.1);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #1e293b;
+        }
+
+        .connector {
+            width: 3px;
+            height: 40px;
+            background: linear-gradient(180deg, #326CE5 0%, #8b5cf6 50%, #22c55e 100%);
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .connector::before {
+            content: '↓';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            color: #326CE5;
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            width: 320px;
+            margin-bottom: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: #1e293b;
+        }
+
+        .resource-box:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #60a5fa;
+        }
+
+        .tooltip-desc {
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        /* Creation Flow Styles */
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .flow-step:nth-child(1) { animation-delay: 0.2s; }
+        .flow-step:nth-child(2) { animation-delay: 0.4s; }
+        .flow-step:nth-child(3) { animation-delay: 0.6s; }
+        .flow-step:nth-child(4) { animation-delay: 0.8s; }
+        .flow-step:nth-child(5) { animation-delay: 1.0s; }
+        .flow-step:nth-child(6) { animation-delay: 1.2s; }
+        .flow-step:nth-child(7) { animation-delay: 1.4s; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-number {
+            background: #326CE5;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .step-detail {
+            font-size: 0.85rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* Label Matching View */
+        .matching-demo {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .selector-box {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .selector-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .label-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .match-arrow {
+            font-size: 2rem;
+            color: #22c55e;
+            text-align: center;
+        }
+
+        /* YAML Examples */
+        .yaml-section {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .yaml-title {
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .yaml-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .yaml-comment {
+            color: #94a3b8;
+        }
+
+        .yaml-key {
+            color: #60a5fa;
+        }
+
+        .yaml-value {
+            color: #34d399;
+        }
+
+        /* Deletion Impact View */
+        .deletion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .deletion-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #ef4444;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .deletion-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .deletion-card h3 {
+            font-size: 1rem;
+            color: #1e293b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .deletion-card p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .impact-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .impact-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .impact-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .impact-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .code-inline {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #334155;
+        }
+
+        .highlight-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .highlight-box strong {
+            color: #92400e;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .matching-demo {
+                grid-template-columns: 1fr;
+            }
+
+            .match-arrow {
+                transform: rotate(90deg);
+            }
+
+            .pod-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .pod-box {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .controls {
+                display: none;
+            }
+            .tooltip {
+                display: none;
+            }
+        }
+
+        /* Animation for pods */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.02);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Deployment → ReplicaSet → Pod Hierarchy</h1>
+            <p class="subtitle">Understanding Kubernetes workload management - Hover over components for details</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" onclick="showView('hierarchy')">Hierarchy View</button>
+            <button class="btn" onclick="showView('creation')">Creation Flow</button>
+            <button class="btn" onclick="showView('labels')">Label Matching</button>
+            <button class="btn" onclick="showView('yaml')">YAML Examples</button>
+            <button class="btn" onclick="showView('deletion')">Deletion Impact</button>
+        </div>
+
+        <!-- Hierarchy View -->
+        <div id="hierarchy-view" class="diagram-container">
+            <div class="hierarchy-diagram">
+                <!-- Deployment Level -->
+                <div class="level">
+                    <div class="level-title">Level 1: Deployment</div>
+                    <div class="resource-box deployment-box">
+                        <div class="resource-header">
+                            <div class="resource-icon deployment-icon">D</div>
+                            <div>
+                                <div class="resource-name">nginx-deployment</div>
+                                <div class="resource-kind">Deployment</div>
+                            </div>
+                        </div>
+                        <div class="resource-details">
+                            <strong>Replicas:</strong> 3<br>
+                            <strong>Strategy:</strong> Rolling Update<br>
+                            <strong>Purpose:</strong> Declarative updates for Pods and ReplicaSets
+                        </div>
+                        <div class="label-display">
+                            <strong>Selector:</strong> app: nginx
+                        </div>
+                        <div class="tooltip">
+                            <div class="tooltip-title">Deployment Controller</div>
+                            <div class="tooltip-desc">
+                                Provides declarative updates for Pods and ReplicaSets. Manages rolling updates, rollbacks, and scaling operations. Creates and owns ReplicaSets.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="connector"></div>
+
+                <!-- ReplicaSet Level -->
+                <div class="level">
+                    <div class="level-title">Level 2: ReplicaSet (Managed by Deployment)</div>
+                    <div class="resource-box replicaset-box">
+                        <div class="resource-header">
+                            <div class="resource-icon replicaset-icon">RS</div>
+                            <div>
+                                <div class="resource-name">nginx-deployment-75675f5897</div>
+                                <div class="resource-kind">ReplicaSet</div>
+                            </div>
+                        </div>
+                        <div class="resource-details">
+                            <strong>Desired:</strong> 3 | <strong>Current:</strong> 3 | <strong>Ready:</strong> 3<br>
+                            <strong>Purpose:</strong> Ensures exact number of Pod replicas<br>
+                            <strong>Owner:</strong> nginx-deployment
+                        </div>
+                        <div class="label-display">
+                            <strong>Selector:</strong> app: nginx, pod-template-hash: 75675f5897
+                        </div>
+                        <div class="tooltip">
+                            <div class="tooltip-title">ReplicaSet Controller</div>
+                            <div class="tooltip-desc">
+                                Maintains a stable set of replica Pods running at any given time. Uses label selectors to identify which Pods to manage. Created and owned by Deployment.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="connector"></div>
+
+                <!-- Pod Level -->
+                <div class="level">
+                    <div class="level-title">Level 3: Pods (Managed by ReplicaSet)</div>
+                    <div class="pod-container">
+                        <div class="resource-box pod-box pulse">
+                            <div class="resource-header">
+                                <div class="resource-icon pod-icon">P</div>
+                                <div>
+                                    <div class="resource-name">nginx-...-7ci7o</div>
+                                    <div class="resource-kind">Pod</div>
+                                </div>
+                            </div>
+                            <div class="resource-details">
+                                <strong>Status:</strong> Running<br>
+                                <strong>IP:</strong> 10.244.1.5<br>
+                                <strong>Node:</strong> worker-1
+                            </div>
+                            <div class="label-display">
+                                app: nginx<br>
+                                pod-template-hash: 75675f5897
+                            </div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Pod 1</div>
+                                <div class="tooltip-desc">
+                                    Running nginx container. If this Pod is deleted, the ReplicaSet immediately creates a replacement to maintain desired count.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-box pod-box pulse">
+                            <div class="resource-header">
+                                <div class="resource-icon pod-icon">P</div>
+                                <div>
+                                    <div class="resource-name">nginx-...-a1b2c</div>
+                                    <div class="resource-kind">Pod</div>
+                                </div>
+                            </div>
+                            <div class="resource-details">
+                                <strong>Status:</strong> Running<br>
+                                <strong>IP:</strong> 10.244.2.8<br>
+                                <strong>Node:</strong> worker-2
+                            </div>
+                            <div class="label-display">
+                                app: nginx<br>
+                                pod-template-hash: 75675f5897
+                            </div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Pod 2</div>
+                                <div class="tooltip-desc">
+                                    Running nginx container. Managed by ReplicaSet, which ensures this Pod is healthy and running.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-box pod-box pulse">
+                            <div class="resource-header">
+                                <div class="resource-icon pod-icon">P</div>
+                                <div>
+                                    <div class="resource-name">nginx-...-d3e4f</div>
+                                    <div class="resource-kind">Pod</div>
+                                </div>
+                            </div>
+                            <div class="resource-details">
+                                <strong>Status:</strong> Running<br>
+                                <strong>IP:</strong> 10.244.1.9<br>
+                                <strong>Node:</strong> worker-1
+                            </div>
+                            <div class="label-display">
+                                app: nginx<br>
+                                pod-template-hash: 75675f5897
+                            </div>
+                            <div class="tooltip">
+                                <div class="tooltip-title">Pod 3</div>
+                                <div class="tooltip-desc">
+                                    Running nginx container. Part of the replica set maintaining 3 desired replicas.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Key Concept:</strong> The Deployment owns the ReplicaSet, and the ReplicaSet owns the Pods. This ownership is tracked via <code class="code-inline">metadata.ownerReferences</code> field, enabling cascading deletion and proper lifecycle management.
+            </div>
+        </div>
+
+        <!-- Creation Flow View -->
+        <div id="creation-view" class="diagram-container" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Creation Flow: From kubectl to Running Pods</h2>
+
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">User Creates Deployment</div>
+                    <div class="step-detail">
+                        <code class="code-inline">kubectl apply -f deployment.yaml</code><br>
+                        You define the desired state: 3 nginx Pods with specific container image and configuration.
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">API Server Validates and Stores</div>
+                    <div class="step-detail">
+                        The API Server validates the Deployment spec, authenticates the request, and stores the desired state in etcd. The Deployment object now exists in the cluster.
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">Deployment Controller Creates ReplicaSet</div>
+                    <div class="step-detail">
+                        The Deployment Controller watches for new Deployment objects. It creates a ReplicaSet with name format: <code class="code-inline">[deployment-name]-[hash]</code>. The hash is derived from the Pod template to enable version tracking.
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">ReplicaSet Controller Creates Pods</div>
+                    <div class="step-detail">
+                        The ReplicaSet Controller sees the new ReplicaSet and creates 3 Pod objects (matching the replicas: 3 spec). Each Pod gets a unique name with the ReplicaSet prefix plus a random suffix.
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <div class="step-title">Scheduler Assigns Pods to Nodes</div>
+                    <div class="step-detail">
+                        The Scheduler watches for unscheduled Pods and assigns each to an optimal worker node based on resource availability, affinity rules, taints, and tolerations.
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <div class="step-title">Kubelet Starts Containers</div>
+                    <div class="step-detail">
+                        The Kubelet on each node sees Pods assigned to it, pulls the nginx container image, and instructs the container runtime (containerd/CRI-O) to start the containers.
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">7</div>
+                <div class="step-content">
+                    <div class="step-title">Continuous Reconciliation</div>
+                    <div class="step-detail">
+                        All controllers continuously watch the cluster state. If a Pod dies, the ReplicaSet Controller creates a new one. If you update the Deployment, it creates a new ReplicaSet and gradually transitions Pods.
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Important:</strong> This entire process is declarative. You declare what you want (3 nginx Pods), and Kubernetes controllers work continuously to make it happen and keep it that way.
+            </div>
+        </div>
+
+        <!-- Label Matching View -->
+        <div id="labels-view" class="diagram-container" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">How Label Selectors Connect the Hierarchy</h2>
+
+            <div class="matching-demo">
+                <div class="selector-box">
+                    <div class="selector-title">Deployment Selector</div>
+                    <div class="label-item">
+                        <strong>spec.selector.matchLabels:</strong><br>
+                        &nbsp;&nbsp;app: nginx
+                    </div>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-top: 12px;">
+                        Deployment uses this to find its ReplicaSets and Pods
+                    </p>
+                </div>
+
+                <div class="match-arrow">⟹</div>
+
+                <div class="selector-box">
+                    <div class="selector-title">ReplicaSet & Pod Labels</div>
+                    <div class="label-item">
+                        <strong>metadata.labels:</strong><br>
+                        &nbsp;&nbsp;app: nginx<br>
+                        &nbsp;&nbsp;pod-template-hash: 75675f5897
+                    </div>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-top: 12px;">
+                        ReplicaSets and Pods have these labels
+                    </p>
+                </div>
+            </div>
+
+            <div class="yaml-section">
+                <div class="yaml-title">How Label Matching Works</div>
+                <div class="yaml-code"><span class="yaml-comment"># Deployment specifies what labels to match</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">selector:</span>
+    <span class="yaml-key">matchLabels:</span>
+      <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>  <span class="yaml-comment"># Must match Pod template labels</span>
+  <span class="yaml-key">template:</span>
+    <span class="yaml-key">metadata:</span>
+      <span class="yaml-key">labels:</span>
+        <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>  <span class="yaml-comment"># These labels are applied to Pods</span></div>
+            </div>
+
+            <h3 style="margin: 30px 0 16px 0; color: #1e293b;">The pod-template-hash Label</h3>
+            <p style="color: #64748b; margin-bottom: 16px;">
+                Kubernetes automatically adds a <code class="code-inline">pod-template-hash</code> label to distinguish Pods from different versions during rolling updates.
+            </p>
+
+            <div class="matching-demo">
+                <div class="selector-box">
+                    <div class="selector-title">Old ReplicaSet (v1)</div>
+                    <div class="label-item">
+                        app: nginx<br>
+                        pod-template-hash: <strong style="color: #ef4444;">75675f5897</strong>
+                    </div>
+                </div>
+
+                <div class="match-arrow">vs</div>
+
+                <div class="selector-box">
+                    <div class="selector-title">New ReplicaSet (v2)</div>
+                    <div class="label-item">
+                        app: nginx<br>
+                        pod-template-hash: <strong style="color: #22c55e;">8f9d6c4b21</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Why This Matters:</strong> The pod-template-hash ensures that Pods from different ReplicaSets don't conflict during rolling updates. Each ReplicaSet manages only its own version of Pods.
+            </div>
+
+            <h3 style="margin: 30px 0 16px 0; color: #1e293b;">Ownership References</h3>
+            <p style="color: #64748b; margin-bottom: 16px;">
+                Besides labels, Kubernetes uses <code class="code-inline">ownerReferences</code> to track the ownership chain:
+            </p>
+
+            <div class="yaml-section">
+                <div class="yaml-title">Pod's ownerReferences Field</div>
+                <div class="yaml-code"><span class="yaml-key">metadata:</span>
+  <span class="yaml-key">ownerReferences:</span>
+  - <span class="yaml-key">apiVersion:</span> <span class="yaml-value">apps/v1</span>
+    <span class="yaml-key">kind:</span> <span class="yaml-value">ReplicaSet</span>
+    <span class="yaml-key">name:</span> <span class="yaml-value">nginx-deployment-75675f5897</span>
+    <span class="yaml-key">uid:</span> <span class="yaml-value">e129deca-f864-481b-bb16-b27abfd92292</span>
+    <span class="yaml-key">controller:</span> <span class="yaml-value">true</span>  <span class="yaml-comment"># This ReplicaSet is the controller</span>
+    <span class="yaml-key">blockOwnerDeletion:</span> <span class="yaml-value">true</span>  <span class="yaml-comment"># Prevents deleting owner if dependents exist</span></div>
+            </div>
+        </div>
+
+        <!-- YAML Examples View -->
+        <div id="yaml-view" class="diagram-container" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Complete YAML Examples</h2>
+
+            <div class="yaml-section">
+                <div class="yaml-title">1. Deployment YAML</div>
+                <div class="yaml-code"><span class="yaml-key">apiVersion:</span> <span class="yaml-value">apps/v1</span>
+<span class="yaml-key">kind:</span> <span class="yaml-value">Deployment</span>
+<span class="yaml-key">metadata:</span>
+  <span class="yaml-key">name:</span> <span class="yaml-value">nginx-deployment</span>
+  <span class="yaml-key">labels:</span>
+    <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">replicas:</span> <span class="yaml-value">3</span>  <span class="yaml-comment"># Desired number of Pods</span>
+  <span class="yaml-key">selector:</span>
+    <span class="yaml-key">matchLabels:</span>
+      <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>  <span class="yaml-comment"># Must match template.metadata.labels</span>
+  <span class="yaml-key">template:</span>  <span class="yaml-comment"># Pod template - used by ReplicaSet to create Pods</span>
+    <span class="yaml-key">metadata:</span>
+      <span class="yaml-key">labels:</span>
+        <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>  <span class="yaml-comment"># Labels applied to each Pod</span>
+    <span class="yaml-key">spec:</span>
+      <span class="yaml-key">containers:</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-value">nginx</span>
+        <span class="yaml-key">image:</span> <span class="yaml-value">nginx:1.14.2</span>
+        <span class="yaml-key">ports:</span>
+        - <span class="yaml-key">containerPort:</span> <span class="yaml-value">80</span></div>
+            </div>
+
+            <div class="yaml-section">
+                <div class="yaml-title">2. ReplicaSet YAML (Auto-created by Deployment)</div>
+                <div class="yaml-code"><span class="yaml-key">apiVersion:</span> <span class="yaml-value">apps/v1</span>
+<span class="yaml-key">kind:</span> <span class="yaml-value">ReplicaSet</span>
+<span class="yaml-key">metadata:</span>
+  <span class="yaml-key">name:</span> <span class="yaml-value">nginx-deployment-75675f5897</span>  <span class="yaml-comment"># Auto-generated name</span>
+  <span class="yaml-key">ownerReferences:</span>  <span class="yaml-comment"># Tracks owner (Deployment)</span>
+  - <span class="yaml-key">apiVersion:</span> <span class="yaml-value">apps/v1</span>
+    <span class="yaml-key">kind:</span> <span class="yaml-value">Deployment</span>
+    <span class="yaml-key">name:</span> <span class="yaml-value">nginx-deployment</span>
+    <span class="yaml-key">controller:</span> <span class="yaml-value">true</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">replicas:</span> <span class="yaml-value">3</span>
+  <span class="yaml-key">selector:</span>
+    <span class="yaml-key">matchLabels:</span>
+      <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>
+      <span class="yaml-key">pod-template-hash:</span> <span class="yaml-value">75675f5897</span>  <span class="yaml-comment"># Auto-added hash</span>
+  <span class="yaml-key">template:</span>
+    <span class="yaml-key">metadata:</span>
+      <span class="yaml-key">labels:</span>
+        <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>
+        <span class="yaml-key">pod-template-hash:</span> <span class="yaml-value">75675f5897</span>
+    <span class="yaml-key">spec:</span>
+      <span class="yaml-key">containers:</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-value">nginx</span>
+        <span class="yaml-key">image:</span> <span class="yaml-value">nginx:1.14.2</span>
+        <span class="yaml-key">ports:</span>
+        - <span class="yaml-key">containerPort:</span> <span class="yaml-value">80</span></div>
+            </div>
+
+            <div class="yaml-section">
+                <div class="yaml-title">3. Pod YAML (Auto-created by ReplicaSet)</div>
+                <div class="yaml-code"><span class="yaml-key">apiVersion:</span> <span class="yaml-value">v1</span>
+<span class="yaml-key">kind:</span> <span class="yaml-value">Pod</span>
+<span class="yaml-key">metadata:</span>
+  <span class="yaml-key">name:</span> <span class="yaml-value">nginx-deployment-75675f5897-7ci7o</span>  <span class="yaml-comment"># Auto-generated</span>
+  <span class="yaml-key">labels:</span>
+    <span class="yaml-key">app:</span> <span class="yaml-value">nginx</span>
+    <span class="yaml-key">pod-template-hash:</span> <span class="yaml-value">75675f5897</span>
+  <span class="yaml-key">ownerReferences:</span>  <span class="yaml-comment"># Tracks owner (ReplicaSet)</span>
+  - <span class="yaml-key">apiVersion:</span> <span class="yaml-value">apps/v1</span>
+    <span class="yaml-key">kind:</span> <span class="yaml-value">ReplicaSet</span>
+    <span class="yaml-key">name:</span> <span class="yaml-value">nginx-deployment-75675f5897</span>
+    <span class="yaml-key">controller:</span> <span class="yaml-value">true</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">containers:</span>
+  - <span class="yaml-key">name:</span> <span class="yaml-value">nginx</span>
+    <span class="yaml-key">image:</span> <span class="yaml-value">nginx:1.14.2</span>
+    <span class="yaml-key">ports:</span>
+    - <span class="yaml-key">containerPort:</span> <span class="yaml-value">80</span>
+  <span class="yaml-key">nodeName:</span> <span class="yaml-value">worker-1</span>  <span class="yaml-comment"># Assigned by Scheduler</span>
+<span class="yaml-key">status:</span>
+  <span class="yaml-key">phase:</span> <span class="yaml-value">Running</span>
+  <span class="yaml-key">podIP:</span> <span class="yaml-value">10.244.1.5</span></div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Notice:</strong> Only the Deployment YAML is created by users. The ReplicaSet and Pod YAMLs are automatically generated by Kubernetes controllers, with ownership references and template hashes added automatically.
+            </div>
+        </div>
+
+        <!-- Deletion Impact View -->
+        <div id="deletion-view" class="diagram-container" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">What Happens When You Delete?</h2>
+
+            <div class="deletion-grid">
+                <div class="deletion-card">
+                    <h3>🔴 Delete Deployment</h3>
+                    <p><strong>Command:</strong> <code class="code-inline">kubectl delete deployment nginx-deployment</code></p>
+                    <p><strong>Impact:</strong> Cascading deletion removes everything:</p>
+                    <ul style="margin-left: 20px; font-size: 0.85rem; color: #64748b;">
+                        <li>Deployment is deleted</li>
+                        <li>All owned ReplicaSets are deleted</li>
+                        <li>All Pods managed by those ReplicaSets are deleted</li>
+                    </ul>
+                    <span class="impact-badge impact-critical">CRITICAL - Complete Removal</span>
+                    <p style="margin-top: 12px; font-size: 0.85rem; color: #64748b;">
+                        <strong>Result:</strong> Your entire application is removed from the cluster. All 3 nginx Pods stop running.
+                    </p>
+                </div>
+
+                <div class="deletion-card">
+                    <h3>🟡 Delete ReplicaSet</h3>
+                    <p><strong>Command:</strong> <code class="code-inline">kubectl delete replicaset nginx-deployment-75675f5897</code></p>
+                    <p><strong>Impact:</strong> Immediate recreation by Deployment controller:</p>
+                    <ul style="margin-left: 20px; font-size: 0.85rem; color: #64748b;">
+                        <li>ReplicaSet is deleted</li>
+                        <li>All Pods are deleted</li>
+                        <li>Deployment controller creates new ReplicaSet</li>
+                        <li>New Pods are created</li>
+                    </ul>
+                    <span class="impact-badge impact-warning">WARNING - Recreated Automatically</span>
+                    <p style="margin-top: 12px; font-size: 0.85rem; color: #64748b;">
+                        <strong>Result:</strong> Brief downtime, then application returns to desired state. Not recommended - manage via Deployment instead.
+                    </p>
+                </div>
+
+                <div class="deletion-card">
+                    <h3>🔵 Delete Pod</h3>
+                    <p><strong>Command:</strong> <code class="code-inline">kubectl delete pod nginx-deployment-75675f5897-7ci7o</code></p>
+                    <p><strong>Impact:</strong> Single Pod replacement:</p>
+                    <ul style="margin-left: 20px; font-size: 0.85rem; color: #64748b;">
+                        <li>Specific Pod is deleted</li>
+                        <li>ReplicaSet detects count is now 2/3</li>
+                        <li>New Pod is created immediately</li>
+                        <li>Other 2 Pods continue running</li>
+                    </ul>
+                    <span class="impact-badge impact-info">INFO - Self-Healing</span>
+                    <p style="margin-top: 12px; font-size: 0.85rem; color: #64748b;">
+                        <strong>Result:</strong> One Pod restarts. This is how Kubernetes provides self-healing - replica count is always maintained.
+                    </p>
+                </div>
+            </div>
+
+            <h3 style="margin: 30px 0 16px 0; color: #1e293b;">Cascading Deletion Options</h3>
+            <p style="color: #64748b; margin-bottom: 16px;">
+                You can control cascade behavior with the <code class="code-inline">--cascade</code> flag:
+            </p>
+
+            <div class="yaml-section">
+                <div class="yaml-title">Cascade Deletion Options</div>
+                <div class="yaml-code"><span class="yaml-comment"># Default: Foreground cascade (waits for dependents to delete)</span>
+kubectl delete deployment nginx-deployment
+
+<span class="yaml-comment"># Background cascade (deletes immediately, dependents removed asynchronously)</span>
+kubectl delete deployment nginx-deployment --cascade=background
+
+<span class="yaml-comment"># Orphan (keeps ReplicaSets and Pods running)</span>
+kubectl delete deployment nginx-deployment --cascade=orphan</div>
+            </div>
+
+            <h3 style="margin: 30px 0 16px 0; color: #1e293b;">Scaling Impact</h3>
+            <p style="color: #64748b; margin-bottom: 16px;">
+                When you scale a Deployment, changes propagate down the hierarchy:
+            </p>
+
+            <div class="deletion-grid">
+                <div class="deletion-card" style="border-left-color: #22c55e;">
+                    <h3>Scale Up: replicas: 3 → 5</h3>
+                    <p><strong>Command:</strong> <code class="code-inline">kubectl scale deployment nginx-deployment --replicas=5</code></p>
+                    <p><strong>Process:</strong></p>
+                    <ul style="margin-left: 20px; font-size: 0.85rem; color: #64748b;">
+                        <li>Deployment updates ReplicaSet spec</li>
+                        <li>ReplicaSet creates 2 new Pods</li>
+                        <li>Scheduler assigns to nodes</li>
+                        <li>Kubelets start containers</li>
+                    </ul>
+                    <span class="impact-badge impact-info">SCALE UP - 2 New Pods Added</span>
+                </div>
+
+                <div class="deletion-card" style="border-left-color: #f59e0b;">
+                    <h3>Scale Down: replicas: 3 → 1</h3>
+                    <p><strong>Command:</strong> <code class="code-inline">kubectl scale deployment nginx-deployment --replicas=1</code></p>
+                    <p><strong>Process:</strong></p>
+                    <ul style="margin-left: 20px; font-size: 0.85rem; color: #64748b;">
+                        <li>Deployment updates ReplicaSet spec</li>
+                        <li>ReplicaSet marks 2 Pods for deletion</li>
+                        <li>Pods are gracefully terminated</li>
+                        <li>1 Pod remains running</li>
+                    </ul>
+                    <span class="impact-badge impact-warning">SCALE DOWN - 2 Pods Removed</span>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Best Practice:</strong> Always manage your application through the Deployment. Don't manually edit ReplicaSets or delete individual Pods (except for troubleshooting). The Deployment controller ensures proper rolling updates and rollback capabilities.
+            </div>
+
+            <h3 style="margin: 30px 0 16px 0; color: #1e293b;">Rolling Update Behavior</h3>
+            <p style="color: #64748b; margin-bottom: 16px;">
+                When you update the Deployment (e.g., change container image), a controlled rollout occurs:
+            </p>
+
+            <div class="yaml-section">
+                <div class="yaml-title">Rolling Update Process</div>
+                <div class="yaml-code"><span class="yaml-comment"># Update the container image</span>
+kubectl set image deployment/nginx-deployment nginx=nginx:1.16.1
+
+<span class="yaml-comment"># What happens behind the scenes:</span>
+<span class="yaml-comment"># 1. New ReplicaSet created: nginx-deployment-8f9d6c4b21</span>
+<span class="yaml-comment"># 2. Old ReplicaSet scaled down gradually: 3 → 2 → 1 → 0</span>
+<span class="yaml-comment"># 3. New ReplicaSet scaled up gradually: 0 → 1 → 2 → 3</span>
+<span class="yaml-comment"># 4. Old ReplicaSet kept (scaled to 0) for rollback capability</span>
+
+<span class="yaml-comment"># During the update:</span>
+kubectl get replicasets
+<span class="yaml-comment"># NAME                          DESIRED   CURRENT   READY</span>
+<span class="yaml-comment"># nginx-deployment-75675f5897   1         1         1     # Old</span>
+<span class="yaml-comment"># nginx-deployment-8f9d6c4b21   2         2         2     # New</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showView(view) {
+            // Hide all views
+            document.getElementById('hierarchy-view').style.display = 'none';
+            document.getElementById('creation-view').style.display = 'none';
+            document.getElementById('labels-view').style.display = 'none';
+            document.getElementById('yaml-view').style.display = 'none';
+            document.getElementById('deletion-view').style.display = 'none';
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected view
+            document.getElementById(view + '-view').style.display = 'block';
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DaemonSet Distribution Pattern | Kubernetes for Beginners</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #718096;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 15px;
+        }
+        h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .visual-container {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+        }
+        .cluster-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .node {
+            background: white;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .node:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .node-header {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .pod-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .node.new {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        .node.removed {
+            border-color: #f56565;
+            background: #fff5f5;
+            opacity: 0.5;
+        }
+        .scenario-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .arrow {
+            font-size: 32px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .scenario-label {
+            text-align: center;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .use-case {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        .use-case-title {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+        .use-case-desc {
+            color: #4a5568;
+            font-size: 11px;
+        }
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin-top: 8px;
+        }
+        .yaml-header {
+            background: #4a5568;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px 6px 0 0;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: -12px;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+        }
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #cbd5e0;
+        }
+        .legend-box.normal { background: white; }
+        .legend-box.new { background: #f0fff4; border-color: #48bb78; }
+        .legend-box.removed { background: #fff5f5; border-color: #f56565; }
+        .legend-box.pod { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .key-points {
+            background: #edf2f7;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        .key-points ul {
+            margin-left: 20px;
+        }
+        .key-points li {
+            color: #2d3748;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .node-selector-example {
+            background: #fffbeb;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin-top: 10px;
+        }
+        .node-selector-title {
+            font-weight: bold;
+            color: #92400e;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧩 DaemonSet Distribution Pattern</h1>
+            <p class="subtitle">Ensuring One Pod Per Node in Kubernetes</p>
+        </header>
+
+        <div class="section">
+            <h2>📊 Core Concept: One Pod Per Node</h2>
+            <div class="visual-container">
+                <div class="scenario-label">Initial Cluster State</div>
+                <div class="cluster-grid">
+                    <div class="node">
+                        <div class="node-header">🖥️ Node-1</div>
+                        <div class="pod-box">📦 DS Pod</div>
+                    </div>
+                    <div class="node">
+                        <div class="node-header">🖥️ Node-2</div>
+                        <div class="pod-box">📦 DS Pod</div>
+                    </div>
+                    <div class="node">
+                        <div class="node-header">🖥️ Node-3</div>
+                        <div class="pod-box">📦 DS Pod</div>
+                    </div>
+                </div>
+                <div class="key-points">
+                    <ul>
+                        <li>DaemonSet automatically schedules <strong>exactly one pod</strong> on each node</li>
+                        <li>No manual scheduling required - fully automated by Kubernetes</li>
+                        <li>Ideal for cluster-wide node-level services</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>➕ Automatic Pod Creation on Node Addition</h2>
+            <div class="visual-container">
+                <div class="scenario-container">
+                    <div>
+                        <div class="scenario-label">Before</div>
+                        <div class="cluster-grid">
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-1</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-2</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-3</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div>
+                        <div class="scenario-label">After (New Node Added)</div>
+                        <div class="cluster-grid">
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-1</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-2</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-3</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node new">
+                                <div class="node-header">✨ Node-4</div>
+                                <div class="pod-box">📦 DS Pod ✨</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="key-points">
+                    <ul>
+                        <li>New node joins cluster → DaemonSet controller detects it</li>
+                        <li>Pod automatically created and scheduled on new node</li>
+                        <li>No manual intervention required</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>➖ Automatic Pod Cleanup on Node Removal</h2>
+            <div class="visual-container">
+                <div class="scenario-container">
+                    <div>
+                        <div class="scenario-label">Before</div>
+                        <div class="cluster-grid">
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-1</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-2</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-3</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div>
+                        <div class="scenario-label">After (Node Removed)</div>
+                        <div class="cluster-grid">
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-1</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node">
+                                <div class="node-header">🖥️ Node-2</div>
+                                <div class="pod-box">📦 DS Pod</div>
+                            </div>
+                            <div class="node removed">
+                                <div class="node-header">🗑️ Node-3</div>
+                                <div style="font-size: 11px; color: #f56565; margin-top: 5px;">Pod Terminated</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="key-points">
+                    <ul>
+                        <li>Node removed or drained → Pod gracefully terminated</li>
+                        <li>Automatic cleanup prevents orphaned pods</li>
+                        <li>Maintains cluster consistency</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Node Selector: Targeted Deployment</h2>
+            <div class="visual-container">
+                <div class="scenario-label">DaemonSet with nodeSelector: disktype=ssd</div>
+                <div class="cluster-grid">
+                    <div class="node">
+                        <div class="node-header">🖥️ Node-1<br><small>disktype=ssd</small></div>
+                        <div class="pod-box">📦 DS Pod</div>
+                    </div>
+                    <div class="node">
+                        <div class="node-header">🖥️ Node-2<br><small>disktype=hdd</small></div>
+                        <div style="font-size: 11px; color: #718096; margin-top: 8px;">No Pod</div>
+                    </div>
+                    <div class="node">
+                        <div class="node-header">🖥️ Node-3<br><small>disktype=ssd</small></div>
+                        <div class="pod-box">📦 DS Pod</div>
+                    </div>
+                </div>
+                <div class="node-selector-example">
+                    <div class="node-selector-title">📌 Node Selector Use Case</div>
+                    <p style="font-size: 11px; color: #92400e;">Deploy storage drivers only on nodes with SSD disks, or monitoring agents only on production nodes.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💼 Common Use Cases</h2>
+            <div class="use-cases">
+                <div class="use-case">
+                    <div class="use-case-title">📊 Monitoring Agents</div>
+                    <div class="use-case-desc">Prometheus Node Exporter, Datadog Agent - collect metrics from every node</div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-title">📝 Log Collection</div>
+                    <div class="use-case-desc">Fluentd, Filebeat, Logstash - gather logs from node and container filesystems</div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-title">🌐 Network Plugins</div>
+                    <div class="use-case-desc">CNI plugins, kube-proxy - manage pod networking on each node</div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-title">💾 Storage Drivers</div>
+                    <div class="use-case-desc">CSI node drivers - enable persistent volume mounting capabilities</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 YAML Example: Monitoring Agent DaemonSet</h2>
+            <div class="yaml-header">daemonset-monitoring.yaml</div>
+            <pre>apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-monitoring-agent
+  namespace: monitoring
+  labels:
+    app: monitoring-agent
+spec:
+  selector:
+    matchLabels:
+      app: monitoring-agent
+  template:
+    metadata:
+      labels:
+        app: monitoring-agent
+    spec:
+      # Optional: Target specific nodes
+      nodeSelector:
+        monitoring: enabled
+      containers:
+      - name: agent
+        image: prom/node-exporter:v1.7.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9100
+          name: metrics
+        # Access host metrics
+        volumeMounts:
+        - name: proc
+          mountPath: /host/proc
+          readOnly: true
+        - name: sys
+          mountPath: /host/sys
+          readOnly: true
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+      - name: sys
+        hostPath:
+          path: /sys
+      # Run on master nodes if needed
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule</pre>
+        </div>
+
+        <div class="section">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box normal"></div>
+                    <span>Regular Node</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box new"></div>
+                    <span>New Node</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box removed"></div>
+                    <span>Removed Node</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box pod"></div>
+                    <span>DaemonSet Pod</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Architecture - Interactive Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f6fa;
+            color: #1a1a2e;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #326CE5;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: #326CE5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #326CE5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.3);
+        }
+
+        .btn.active {
+            background: #326CE5;
+            color: white;
+        }
+
+        .diagram-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .architecture {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .plane {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .plane-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .control-plane {
+            background: linear-gradient(135deg, #e8f4fd 0%, #d1e7f8 100%);
+            border-color: #326CE5;
+        }
+
+        .worker-plane {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #22c55e;
+        }
+
+        .component {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .component:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .component-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .component-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .control-icon {
+            background: #326CE5;
+        }
+
+        .worker-icon {
+            background: #22c55e;
+        }
+
+        /* Tooltip styles */
+        .component-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            width: 300px;
+            margin-bottom: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .component-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: #1e293b;
+        }
+
+        .component:hover .component-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #60a5fa;
+        }
+
+        .tooltip-desc {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .tooltip-role {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            border-top: 1px solid #334155;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .tooltip-role strong {
+            color: #22c55e;
+        }
+
+        .flow-diagram {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fafbfc;
+            border-radius: 8px;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .flow-step:nth-child(1) { animation-delay: 0.2s; }
+        .flow-step:nth-child(2) { animation-delay: 0.4s; }
+        .flow-step:nth-child(3) { animation-delay: 0.6s; }
+        .flow-step:nth-child(4) { animation-delay: 0.8s; }
+        .flow-step:nth-child(5) { animation-delay: 1.0s; }
+        .flow-step:nth-child(6) { animation-delay: 1.2s; }
+        .flow-step:nth-child(7) { animation-delay: 1.4s; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-number {
+            background: #326CE5;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            margin-right: 16px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+
+        .step-detail {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #326CE5;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .info-card h3 {
+            font-size: 1rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .info-card p {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .architecture {
+                grid-template-columns: 1fr;
+            }
+
+            .component-tooltip {
+                width: 250px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .controls {
+                display: none;
+            }
+            .component-tooltip {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Kubernetes Architecture</h1>
+            <p class="subtitle">Understanding Control Plane and Worker Node Components - Hover over components for details</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" onclick="showView('architecture')">Architecture View</button>
+            <button class="btn" onclick="showView('flow')">Request Flow</button>
+            <button class="btn" onclick="showView('components')">Component Details</button>
+        </div>
+
+        <div id="architecture-view" class="diagram-container">
+            <div class="architecture">
+                <div class="plane control-plane">
+                    <div class="plane-title">Control Plane</div>
+
+                    <div class="component">
+                        <div class="component-name">
+                            <span class="icon control-icon"></span>API Server
+                        </div>
+                        <div class="component-desc">Central hub - all communication goes through here</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">🎯 API Server (kube-apiserver)</div>
+                            <div class="tooltip-desc">
+                                The front door to Kubernetes. Every kubectl command, controller action, and kubelet update goes through the API server.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> Validates, authenticates, and authorizes all requests. It's the only component that directly communicates with etcd.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="component">
+                        <div class="component-name">
+                            <span class="icon control-icon"></span>etcd
+                        </div>
+                        <div class="component-desc">Key-value database storing cluster state</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">💾 etcd</div>
+                            <div class="tooltip-desc">
+                                Distributed key-value store that holds all cluster data. It's the single source of truth for the entire cluster state.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> If etcd goes down, the cluster loses its memory. Regular backups are critical for disaster recovery.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="component">
+                        <div class="component-name">
+                            <span class="icon control-icon"></span>Scheduler
+                        </div>
+                        <div class="component-desc">Decides which node should run each pod</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">📅 Scheduler (kube-scheduler)</div>
+                            <div class="tooltip-desc">
+                                Watches for newly created pods with no assigned node and selects the best node for them to run on.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> Considers resource requirements, hardware/software constraints, affinity/anti-affinity, taints/tolerations, and data locality when making placement decisions.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="component">
+                        <div class="component-name">
+                            <span class="icon control-icon"></span>Controller Manager
+                        </div>
+                        <div class="component-desc">Maintains desired state across the cluster</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">🔄 Controller Manager (kube-controller-manager)</div>
+                            <div class="tooltip-desc">
+                                Runs multiple controllers in a single process: Node Controller, ReplicaSet Controller, Deployment Controller, Service Controller, and more.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> Each controller watches the cluster state and makes changes to move the actual state closer to the desired state.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plane worker-plane">
+                    <div class="plane-title">Worker Nodes</div>
+
+                    <div class="component">
+                        <div class="component-name">
+                            <span class="icon worker-icon"></span>Kubelet
+                        </div>
+                        <div class="component-desc">Node agent that ensures containers are running</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">🤖 Kubelet</div>
+                            <div class="tooltip-desc">
+                                The primary node agent that runs on each node. It watches the API server for pods scheduled to its node.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> Starts containers, monitors their health, reports status back to the control plane, and ensures pods are running and healthy.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="component">
+                        <div class="component-name">
+                            <span class="icon worker-icon"></span>Kube-proxy
+                        </div>
+                        <div class="component-desc">Manages network rules for service discovery</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">🌐 Kube-proxy</div>
+                            <div class="tooltip-desc">
+                                Network proxy that runs on each node. Maintains network rules that allow communication to pods from inside or outside the cluster.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> Implements service abstraction by maintaining iptables or IPVS rules, enabling service discovery and load balancing.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="component">
+                        <div class="component-name">
+                            <span class="icon worker-icon"></span>Container Runtime
+                        </div>
+                        <div class="component-desc">Runs containers (containerd, CRI-O, Docker)</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">📦 Container Runtime</div>
+                            <div class="tooltip-desc">
+                                Software responsible for pulling images, creating containers, and managing their lifecycle. Common runtimes: containerd, CRI-O.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> Kubelet communicates with the container runtime via CRI (Container Runtime Interface) to manage containers.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="component pulse">
+                        <div class="component-name">
+                            <span class="icon worker-icon"></span>Pods (Your Apps)
+                        </div>
+                        <div class="component-desc">Where your applications actually run</div>
+                        <div class="component-tooltip">
+                            <div class="tooltip-title">🎨 Pods</div>
+                            <div class="tooltip-desc">
+                                The smallest deployable unit in Kubernetes. A pod can contain one or more containers that share network and storage.
+                            </div>
+                            <div class="tooltip-role">
+                                <strong>Key Role:</strong> This is where your application code actually executes. Containers in a pod share the same IP and can communicate via localhost.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="flow-view" class="diagram-container" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Request Flow: Creating a Deployment</h2>
+
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">User runs kubectl command</div>
+                        <div class="step-detail">$ kubectl create deployment nginx --image=nginx</div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">API Server receives request</div>
+                        <div class="step-detail">Validates, authenticates, and authorizes the request</div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Stored in etcd</div>
+                        <div class="step-detail">Cluster state updated with new deployment object</div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Controller Manager notices new deployment</div>
+                        <div class="step-detail">Deployment controller creates a ReplicaSet to manage pods</div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Scheduler assigns pods to nodes</div>
+                        <div class="step-detail">Picks optimal nodes based on resources and constraints</div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-title">Kubelet starts containers</div>
+                        <div class="step-detail">Pulls images and creates containers on assigned nodes via container runtime</div>
+                    </div>
+                </div>
+
+                <div class="flow-step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <div class="step-title">Your app is running!</div>
+                        <div class="step-detail">Kube-proxy sets up networking for service discovery and load balancing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="components-view" class="diagram-container" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Component Deep Dive</h2>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🎯 API Server</h3>
+                    <p><strong>Role:</strong> Front door to Kubernetes</p>
+                    <p><strong>Why it matters:</strong> Every kubectl command, controller action, and kubelet update goes through the API server. It's the only component that talks to etcd.</p>
+                    <p><strong>Port:</strong> 6443 (default)</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>💾 etcd</h3>
+                    <p><strong>Role:</strong> Distributed key-value store</p>
+                    <p><strong>Why it matters:</strong> Stores all cluster data. If etcd goes down, the cluster loses its "memory". That's why backups are critical.</p>
+                    <p><strong>Port:</strong> 2379 (client), 2380 (peer)</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>📅 Scheduler</h3>
+                    <p><strong>Role:</strong> Pod placement decision maker</p>
+                    <p><strong>Why it matters:</strong> Considers resources, affinity rules, taints/tolerations to find the best node for each pod.</p>
+                    <p><strong>Decision factors:</strong> CPU, memory, disk, custom resources</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>🔄 Controller Manager</h3>
+                    <p><strong>Role:</strong> Runs control loops</p>
+                    <p><strong>Why it matters:</strong> Contains controllers like ReplicaSet controller, Deployment controller, Node controller. Keeps actual state = desired state.</p>
+                    <p><strong>Controllers:</strong> 20+ built-in controllers</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>🤖 Kubelet</h3>
+                    <p><strong>Role:</strong> Node agent</p>
+                    <p><strong>Why it matters:</strong> Watches API server for pods assigned to its node. Starts containers, monitors health, reports status back.</p>
+                    <p><strong>Port:</strong> 10250 (API), 10255 (read-only)</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>🌐 Kube-proxy</h3>
+                    <p><strong>Role:</strong> Network proxy on each node</p>
+                    <p><strong>Why it matters:</strong> Maintains network rules (iptables/IPVS) so services can route traffic to the right pods.</p>
+                    <p><strong>Modes:</strong> iptables (default), IPVS, userspace</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>📦 Container Runtime</h3>
+                    <p><strong>Role:</strong> Runs containers</p>
+                    <p><strong>Why it matters:</strong> Pulls images, creates containers, manages container lifecycle. Kubelet talks to it via CRI (Container Runtime Interface).</p>
+                    <p><strong>Options:</strong> containerd, CRI-O, Docker (deprecated)</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>🎨 Pods</h3>
+                    <p><strong>Role:</strong> Smallest deployable unit</p>
+                    <p><strong>Why it matters:</strong> One or more containers that share network/storage. This is where your application code actually runs.</p>
+                    <p><strong>IP:</strong> Each pod gets a unique cluster IP</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showView(view) {
+            // Hide all views
+            document.getElementById('architecture-view').style.display = 'none';
+            document.getElementById('flow-view').style.display = 'none';
+            document.getElementById('components-view').style.display = 'none';
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected view
+            document.getElementById(view + '-view').style.display = 'block';
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

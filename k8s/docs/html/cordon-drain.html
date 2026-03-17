@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Cordon & Drain Workflow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            padding: 20px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #326CE5 0%, #2557C7 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 13px;
+            opacity: 0.95;
+        }
+        .content {
+            padding: 25px 30px;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        .tab.active {
+            background: #326CE5;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* State Flow Diagram */
+        .state-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 25px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .state {
+            text-align: center;
+            position: relative;
+        }
+        .state-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 3px solid #326CE5;
+            border-radius: 10px;
+            padding: 15px 20px;
+            min-width: 160px;
+            transition: all 0.3s;
+        }
+        .state-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(50, 108, 229, 0.2);
+        }
+        .state-box.ready {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        }
+        .state-box.cordoned {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        }
+        .state-box.drained {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        }
+        .state-label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .state-status {
+            font-size: 11px;
+            color: #666;
+            font-style: italic;
+        }
+        .arrow {
+            font-size: 28px;
+            color: #326CE5;
+            font-weight: bold;
+        }
+
+        /* Visual Timeline */
+        .timeline {
+            margin: 25px 0;
+        }
+        .timeline-row {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            gap: 15px;
+        }
+        .node-label {
+            min-width: 100px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+        }
+        .pods {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+        }
+        .pod {
+            width: 40px;
+            height: 40px;
+            background: #326CE5;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            transition: all 0.4s;
+        }
+        .pod.migrating {
+            opacity: 0.4;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+        }
+        .pod.empty {
+            background: #e0e0e0;
+            border: 2px dashed #999;
+        }
+
+        /* Command Blocks */
+        .command-section {
+            margin: 20px 0;
+        }
+        .command-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #326CE5;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .command-icon {
+            width: 20px;
+            height: 20px;
+            background: #326CE5;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            white-space: pre;
+            margin: 8px 0;
+            border-left: 4px solid #326CE5;
+        }
+        .output {
+            background: #1e1e1e;
+            color: #a9dc76;
+            border-left-color: #28a745;
+        }
+
+        /* Comparison Table */
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .comparison-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #fafafa;
+            transition: all 0.3s;
+        }
+        .comparison-card:hover {
+            border-color: #326CE5;
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.15);
+        }
+        .comparison-card h3 {
+            color: #326CE5;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .comparison-card ul {
+            list-style: none;
+            font-size: 12px;
+            color: #555;
+        }
+        .comparison-card li {
+            margin: 5px 0;
+            padding-left: 18px;
+            position: relative;
+        }
+        .comparison-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Process Flow SVG */
+        .process-diagram {
+            margin: 25px 0;
+            text-align: center;
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .note {
+            background: #e7f3ff;
+            border-left: 4px solid #326CE5;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 15px 0;
+            color: #333;
+        }
+        .note strong {
+            color: #326CE5;
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            .state-flow {
+                flex-direction: column;
+            }
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Kubernetes Cordon & Drain Workflow</h1>
+            <p>Node Maintenance & Pod Migration Guide</p>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('workflow')">Workflow Overview</button>
+                <button class="tab" onclick="showTab('commands')">Commands & Examples</button>
+                <button class="tab" onclick="showTab('best-practices')">Best Practices</button>
+            </div>
+
+            <!-- Tab 1: Workflow Overview -->
+            <div id="workflow" class="tab-content active">
+                <h2 style="font-size: 18px; color: #333; margin-bottom: 15px;">3-State Node Lifecycle</h2>
+
+                <div class="state-flow">
+                    <div class="state">
+                        <div class="state-box ready">
+                            <div class="state-label">Ready</div>
+                            <div class="state-status">Schedulable</div>
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="state">
+                        <div class="state-box cordoned">
+                            <div class="state-label">Cordoned</div>
+                            <div class="state-status">SchedulingDisabled</div>
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="state">
+                        <div class="state-box drained">
+                            <div class="state-label">Drained</div>
+                            <div class="state-status">Empty & Disabled</div>
+                        </div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="state">
+                        <div class="state-box ready">
+                            <div class="state-label">Ready</div>
+                            <div class="state-status">Schedulable</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison">
+                    <div class="comparison-card">
+                        <h3>Cordon</h3>
+                        <ul>
+                            <li>Blocks new pods</li>
+                            <li>Existing pods run</li>
+                            <li>Reversible instantly</li>
+                            <li>No disruption</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card">
+                        <h3>Drain</h3>
+                        <ul>
+                            <li>Evicts all pods</li>
+                            <li>Respects PDB</li>
+                            <li>Graceful shutdown</li>
+                            <li>Auto cordons node</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card">
+                        <h3>Uncordon</h3>
+                        <ul>
+                            <li>Re-enables scheduling</li>
+                            <li>Pods can schedule</li>
+                            <li>No auto migration</li>
+                            <li>Post-maintenance</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 16px; color: #333; margin: 25px 0 15px;">Pod Migration Timeline</h3>
+
+                <div class="timeline">
+                    <div style="font-weight: 600; font-size: 13px; margin-bottom: 10px; color: #326CE5;">Before Drain:</div>
+                    <div class="timeline-row">
+                        <div class="node-label">worker-node-1</div>
+                        <div class="pods">
+                            <div class="pod">P1</div>
+                            <div class="pod">P2</div>
+                            <div class="pod">P3</div>
+                            <div class="pod">P4</div>
+                        </div>
+                    </div>
+                    <div class="timeline-row">
+                        <div class="node-label">worker-node-2</div>
+                        <div class="pods">
+                            <div class="pod">P5</div>
+                            <div class="pod">P6</div>
+                        </div>
+                    </div>
+
+                    <div style="font-weight: 600; font-size: 13px; margin: 20px 0 10px; color: #ffc107;">During Drain:</div>
+                    <div class="timeline-row">
+                        <div class="node-label">worker-node-1</div>
+                        <div class="pods">
+                            <div class="pod migrating">P1</div>
+                            <div class="pod migrating">P2</div>
+                            <div class="pod migrating">P3</div>
+                            <div class="pod migrating">P4</div>
+                        </div>
+                    </div>
+                    <div class="timeline-row">
+                        <div class="node-label">worker-node-2</div>
+                        <div class="pods">
+                            <div class="pod">P5</div>
+                            <div class="pod">P6</div>
+                            <div class="pod" style="background: #ffc107;">P1</div>
+                            <div class="pod" style="background: #ffc107;">P2</div>
+                            <div class="pod" style="background: #ffc107;">P3</div>
+                            <div class="pod" style="background: #ffc107;">P4</div>
+                        </div>
+                    </div>
+
+                    <div style="font-weight: 600; font-size: 13px; margin: 20px 0 10px; color: #dc3545;">After Drain:</div>
+                    <div class="timeline-row">
+                        <div class="node-label">worker-node-1</div>
+                        <div class="pods">
+                            <div class="pod empty"></div>
+                            <div class="pod empty"></div>
+                            <div class="pod empty"></div>
+                            <div class="pod empty"></div>
+                        </div>
+                    </div>
+                    <div class="timeline-row">
+                        <div class="node-label">worker-node-2</div>
+                        <div class="pods">
+                            <div class="pod">P5</div>
+                            <div class="pod">P6</div>
+                            <div class="pod">P1</div>
+                            <div class="pod">P2</div>
+                            <div class="pod">P3</div>
+                            <div class="pod">P4</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="note">
+                    <strong>Note:</strong> Drain respects PodDisruptionBudget (PDB) to ensure application availability. DaemonSets remain on the node unless <code>--ignore-daemonsets</code> is used.
+                </div>
+            </div>
+
+            <!-- Tab 2: Commands & Examples -->
+            <div id="commands" class="tab-content">
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">1</div>
+                        Cordon a Node (Block New Pods)
+                    </div>
+                    <pre>kubectl cordon worker-node-1</pre>
+                    <pre class="output">NAME             STATUS                     ROLES    AGE    VERSION
+master           Ready                      control  10d    v1.27.4
+worker-node-1    Ready,SchedulingDisabled   &lt;none&gt;   10d    v1.27.4
+worker-node-2    Ready                      &lt;none&gt;   10d    v1.27.4</pre>
+                </div>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">2</div>
+                        Drain a Node (Evict All Pods)
+                    </div>
+                    <pre>kubectl drain worker-node-1 --ignore-daemonsets --force</pre>
+                    <div class="note">
+                        <strong>Flags:</strong>
+                        <ul style="margin: 8px 0 0 20px; font-size: 12px;">
+                            <li><code>--ignore-daemonsets</code> - Skip DaemonSet pods (system components)</li>
+                            <li><code>--force</code> - Force eviction for pods without controllers</li>
+                            <li><code>--delete-emptydir-data</code> - Delete pods with emptyDir volumes</li>
+                            <li><code>--grace-period=30</code> - Graceful termination period (seconds)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">3</div>
+                        Verify Pod Migration
+                    </div>
+                    <pre>kubectl get pods -o wide</pre>
+                    <pre class="output">NAME          READY   STATUS    RESTARTS   AGE   NODE
+sample-pod    1/1     Running   0          2m    worker-node-2</pre>
+                </div>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">4</div>
+                        Uncordon a Node (Re-enable Scheduling)
+                    </div>
+                    <pre>kubectl uncordon worker-node-1</pre>
+                    <pre class="output">NAME             STATUS    ROLES    AGE    VERSION
+master           Ready     control  10d    v1.27.4
+worker-node-1    Ready     &lt;none&gt;   10d    v1.27.4
+worker-node-2    Ready     &lt;none&gt;   10d    v1.27.4</pre>
+                </div>
+
+                <h3 style="font-size: 16px; color: #333; margin: 25px 0 15px;">Example Pod YAML</h3>
+                <pre>apiVersion: v1
+kind: Pod
+metadata:
+  name: sample-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.23
+    ports:
+    - containerPort: 80</pre>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">✓</div>
+                        Deploy & Verify
+                    </div>
+                    <pre>kubectl apply -f sample-pod.yaml
+kubectl get pods -o wide</pre>
+                </div>
+            </div>
+
+            <!-- Tab 3: Best Practices -->
+            <div id="best-practices" class="tab-content">
+                <h2 style="font-size: 18px; color: #333; margin-bottom: 15px;">Best Practices & Common Scenarios</h2>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">⚠</div>
+                        Pre-Drain Checklist
+                    </div>
+                    <ul style="list-style: disc; margin-left: 25px; font-size: 13px; color: #555;">
+                        <li>Verify cluster has sufficient capacity for migrated pods</li>
+                        <li>Check PodDisruptionBudgets (PDBs) won't block eviction</li>
+                        <li>Review DaemonSets - use <code>--ignore-daemonsets</code> flag</li>
+                        <li>Ensure StatefulSets have proper replica management</li>
+                        <li>Backup critical pod configurations before draining</li>
+                    </ul>
+                </div>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">🔄</div>
+                        Node Maintenance Workflow
+                    </div>
+                    <pre># Step 1: Cordon the node
+kubectl cordon worker-node-1
+
+# Step 2: Drain workloads
+kubectl drain worker-node-1 --ignore-daemonsets --force
+
+# Step 3: Perform maintenance (OS upgrade, patches, etc.)
+# ... maintenance operations ...
+
+# Step 4: Uncordon when ready
+kubectl uncordon worker-node-1
+
+# Step 5: Verify node is schedulable
+kubectl get nodes
+kubectl describe node worker-node-1</pre>
+                </div>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">📋</div>
+                        Use Case: Rolling Node Upgrades
+                    </div>
+                    <pre># Upgrade worker-node-1
+kubectl drain worker-node-1 --ignore-daemonsets --delete-emptydir-data
+# Upgrade Kubernetes version or OS
+kubectl uncordon worker-node-1
+
+# Wait for node to be Ready, then repeat for next node
+kubectl drain worker-node-2 --ignore-daemonsets --delete-emptydir-data
+# Upgrade worker-node-2
+kubectl uncordon worker-node-2</pre>
+                </div>
+
+                <div class="command-section">
+                    <div class="command-title">
+                        <div class="command-icon">🚨</div>
+                        Troubleshooting Common Issues
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <strong style="font-size: 13px; color: #dc3545;">Issue: Drain hangs or fails</strong>
+                        <ul style="list-style: disc; margin: 8px 0 15px 25px; font-size: 12px; color: #555;">
+                            <li>Check PodDisruptionBudget constraints: <code>kubectl get pdb</code></li>
+                            <li>Review pods blocking eviction: <code>kubectl get pods --field-selector spec.nodeName=worker-node-1</code></li>
+                            <li>Use <code>--force</code> for orphaned pods without controllers</li>
+                            <li>Increase grace period: <code>--grace-period=60</code></li>
+                        </ul>
+
+                        <strong style="font-size: 13px; color: #dc3545;">Issue: Pods not rescheduling</strong>
+                        <ul style="list-style: disc; margin: 8px 0 15px 25px; font-size: 12px; color: #555;">
+                            <li>Check cluster resource availability: <code>kubectl top nodes</code></li>
+                            <li>Verify node affinity/taints aren't blocking scheduling</li>
+                            <li>Review scheduler events: <code>kubectl get events --sort-by='.lastTimestamp'</code></li>
+                        </ul>
+
+                        <strong style="font-size: 13px; color: #dc3545;">Issue: DaemonSet pods remain after drain</strong>
+                        <ul style="list-style: disc; margin: 8px 0 0 25px; font-size: 12px; color: #555;">
+                            <li>This is expected behavior - DaemonSets run on all nodes</li>
+                            <li>Use <code>--ignore-daemonsets</code> to skip them during drain</li>
+                            <li>DaemonSets (monitoring, logging agents) should stay active</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="note">
+                    <strong>Critical Reminder:</strong> Always verify node status with <code>kubectl get nodes</code> and pod distribution with <code>kubectl get pods -o wide</code> after each operation. Never drain all nodes simultaneously - maintain cluster availability.
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+                    <strong style="color: #28a745; font-size: 13px;">Summary Table</strong>
+                    <table style="width: 100%; margin-top: 10px; font-size: 12px; border-collapse: collapse;">
+                        <tr style="background: #e9ecef;">
+                            <th style="padding: 8px; text-align: left; border-bottom: 2px solid #dee2e6;">Command</th>
+                            <th style="padding: 8px; text-align: left; border-bottom: 2px solid #dee2e6;">Purpose</th>
+                            <th style="padding: 8px; text-align: left; border-bottom: 2px solid #dee2e6;">Effect on Pods</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><code>kubectl cordon</code></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">Mark node unschedulable</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">Existing pods unaffected</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;"><code>kubectl drain</code></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">Evict pods & mark unschedulable</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">Running pods rescheduled</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><code>kubectl uncordon</code></td>
+                            <td style="padding: 8px;">Mark node schedulable</td>
+                            <td style="padding: 8px;">Allows new pod scheduling</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Mark selected tab as active
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

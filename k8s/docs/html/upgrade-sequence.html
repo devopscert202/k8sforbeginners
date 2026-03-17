@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Control Plane & Worker Upgrade Sequence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 25px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            font-size: 26px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .best-practices {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .best-practices h3 {
+            color: #c53030;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .best-practices ul {
+            margin-left: 20px;
+            font-size: 12px;
+            color: #2d3748;
+        }
+
+        .best-practices li {
+            margin-bottom: 3px;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 15px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+
+        .phase {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px;
+            background: #f7fafc;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .phase-header:hover {
+            background: #edf2f7;
+            transform: translateX(3px);
+        }
+
+        .phase-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 15px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            z-index: 1;
+        }
+
+        .phase-title {
+            flex: 1;
+        }
+
+        .phase-title h2 {
+            font-size: 18px;
+            color: #2d3748;
+            margin-bottom: 3px;
+        }
+
+        .phase-title p {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .phase-content {
+            margin-left: 75px;
+            padding-left: 15px;
+            border-left: 2px solid #e2e8f0;
+        }
+
+        .step {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .step:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 13px;
+        }
+
+        .step-description {
+            font-size: 12px;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        pre {
+            background: #1a202c;
+            color: #68d391;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 11px;
+            line-height: 1.4;
+            margin-top: 6px;
+        }
+
+        .command-label {
+            color: #90cdf4;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+            margin-bottom: 3px;
+        }
+
+        .warning {
+            background: #fffaf0;
+            border-left: 3px solid #ed8936;
+            padding: 8px 12px;
+            margin: 8px 0;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+
+        .info {
+            background: #ebf8ff;
+            border-left: 3px solid #4299e1;
+            padding: 8px 12px;
+            margin: 8px 0;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+
+        .collapse-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .collapse-btn:hover {
+            background: #764ba2;
+        }
+
+        .phase-content.collapsed {
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #e2e8f0;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 15px;
+            }
+            .phase-header:hover,
+            .step:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kubernetes Control Plane & Worker Upgrade Sequence</h1>
+        <div class="subtitle">Complete step-by-step upgrade procedure with commands</div>
+
+        <div class="best-practices">
+            <h3>Critical Pre-Upgrade Best Practices</h3>
+            <ul>
+                <li><strong>Backup etcd first</strong> - Always create etcd snapshot before starting</li>
+                <li><strong>One minor version at a time</strong> - Cannot skip versions (1.30 → 1.31 → 1.32)</li>
+                <li><strong>Test in staging</strong> - Validate upgrade in non-production environment</li>
+                <li><strong>Control plane first</strong> - Always upgrade control plane before worker nodes</li>
+                <li><strong>Version skew policy</strong> - Worker nodes can lag by 1 minor version max</li>
+            </ul>
+        </div>
+
+        <div class="timeline">
+            <!-- Pre-Flight Phase -->
+            <div class="phase">
+                <div class="phase-header" onclick="togglePhase(this)">
+                    <div class="phase-icon">0</div>
+                    <div class="phase-title">
+                        <h2>Pre-Flight: Backup & Preparation</h2>
+                        <p>Critical first step - backup cluster state</p>
+                    </div>
+                    <button class="collapse-btn">Hide</button>
+                </div>
+                <div class="phase-content">
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Backup etcd Database</div>
+                        </div>
+                        <div class="step-description">Create a snapshot of etcd to enable rollback if upgrade fails</div>
+                        <div class="warning">⚠️ CRITICAL: Without this backup, you cannot rollback a failed upgrade</div>
+                        <div class="command-label">Set environment variables:</div>
+<pre>export ETCDCTL_API=3
+export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
+export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
+export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/server.crt
+export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/server.key</pre>
+                        <div class="command-label">Create snapshot:</div>
+<pre>sudo etcdctl snapshot save /backup/etcd-snapshot-$(date +%Y%m%d-%H%M%S).db</pre>
+                        <div class="command-label">Verify backup:</div>
+<pre>sudo etcdctl snapshot status /backup/etcd-snapshot-*.db</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Check Cluster Health</div>
+                        </div>
+                        <div class="step-description">Verify current cluster status before proceeding</div>
+<pre>kubectl version --short
+kubectl get nodes -o wide
+kubectl get pods -A
+kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 1: Control Plane -->
+            <div class="phase">
+                <div class="phase-header" onclick="togglePhase(this)">
+                    <div class="phase-icon">1</div>
+                    <div class="phase-title">
+                        <h2>Phase 1: Control Plane Upgrade</h2>
+                        <p>Upgrade control plane components first</p>
+                    </div>
+                    <button class="collapse-btn">Hide</button>
+                </div>
+                <div class="phase-content">
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Upgrade kubeadm on Control Plane Node</div>
+                        </div>
+                        <div class="step-description">Install target version of kubeadm</div>
+                        <div class="command-label">For Ubuntu/Debian:</div>
+<pre>sudo apt-mark unhold kubeadm
+sudo apt-get update
+sudo apt-get install -y kubeadm=1.32.0-00
+sudo apt-mark hold kubeadm
+kubeadm version</pre>
+                        <div class="command-label">For RHEL/CentOS:</div>
+<pre>sudo yum install -y kubeadm-1.32.0-0 --disableexcludes=kubernetes
+kubeadm version</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Drain Control Plane Node</div>
+                        </div>
+                        <div class="step-description">Safely evict workloads from control plane node</div>
+<pre>kubectl drain &lt;control-plane-node&gt; --ignore-daemonsets --delete-emptydir-data</pre>
+                        <div class="info">This marks the node as unschedulable and evicts pods</div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Plan and Apply Upgrade</div>
+                        </div>
+                        <div class="step-description">Review upgrade plan and apply to control plane</div>
+                        <div class="command-label">Check upgrade plan:</div>
+<pre>sudo kubeadm upgrade plan</pre>
+                        <div class="command-label">Apply upgrade (first control plane node):</div>
+<pre>sudo kubeadm upgrade apply v1.32.0</pre>
+                        <div class="command-label">For additional control plane nodes:</div>
+<pre>sudo kubeadm upgrade node</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <div class="step-title">Upgrade kubelet and kubectl</div>
+                        </div>
+                        <div class="step-description">Upgrade kubelet and kubectl on control plane node</div>
+                        <div class="command-label">For Ubuntu/Debian:</div>
+<pre>sudo apt-mark unhold kubelet kubectl
+sudo apt-get update
+sudo apt-get install -y kubelet=1.32.0-00 kubectl=1.32.0-00
+sudo apt-mark hold kubelet kubectl</pre>
+                        <div class="command-label">For RHEL/CentOS:</div>
+<pre>sudo yum install -y kubelet-1.32.0-0 kubectl-1.32.0-0 --disableexcludes=kubernetes</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">5</div>
+                            <div class="step-title">Restart kubelet and Uncordon Node</div>
+                        </div>
+                        <div class="step-description">Restart kubelet service and bring node back online</div>
+<pre>sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+kubectl uncordon &lt;control-plane-node&gt;
+kubectl get nodes</pre>
+                        <div class="info">Control plane node should now show v1.32.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 2: Worker Nodes -->
+            <div class="phase">
+                <div class="phase-header" onclick="togglePhase(this)">
+                    <div class="phase-icon">2</div>
+                    <div class="phase-title">
+                        <h2>Phase 2: Worker Node Upgrade (One at a Time)</h2>
+                        <p>Upgrade each worker node sequentially</p>
+                    </div>
+                    <button class="collapse-btn">Hide</button>
+                </div>
+                <div class="phase-content">
+                    <div class="warning">⚠️ Repeat this phase for EACH worker node, one at a time to maintain workload availability</div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Cordon and Drain Worker Node</div>
+                        </div>
+                        <div class="step-description">Prevent new pods and evict existing workloads (run from control plane)</div>
+<pre>kubectl cordon &lt;worker-node-name&gt;
+kubectl drain &lt;worker-node-name&gt; --ignore-daemonsets --delete-emptydir-data</pre>
+                        <div class="info">Workloads will be rescheduled to other available nodes</div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-title">SSH to Worker Node and Upgrade kubeadm</div>
+                        </div>
+                        <div class="step-description">Connect to worker node and install target kubeadm version</div>
+                        <div class="command-label">For Ubuntu/Debian:</div>
+<pre>sudo apt-mark unhold kubeadm
+sudo apt-get update
+sudo apt-get install -y kubeadm=1.32.0-00
+sudo apt-mark hold kubeadm</pre>
+                        <div class="command-label">For RHEL/CentOS:</div>
+<pre>sudo yum install -y kubeadm-1.32.0-0 --disableexcludes=kubernetes</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Upgrade Node Configuration</div>
+                        </div>
+                        <div class="step-description">Apply kubeadm upgrade to worker node configuration</div>
+<pre>sudo kubeadm upgrade node</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <div class="step-title">Upgrade kubelet and kubectl</div>
+                        </div>
+                        <div class="step-description">Install target versions of kubelet and kubectl</div>
+                        <div class="command-label">For Ubuntu/Debian:</div>
+<pre>sudo apt-mark unhold kubelet kubectl
+sudo apt-get update
+sudo apt-get install -y kubelet=1.32.0-00 kubectl=1.32.0-00
+sudo apt-mark hold kubelet kubectl</pre>
+                        <div class="command-label">For RHEL/CentOS:</div>
+<pre>sudo yum install -y kubelet-1.32.0-0 kubectl-1.32.0-0 --disableexcludes=kubernetes</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">5</div>
+                            <div class="step-title">Restart kubelet Service</div>
+                        </div>
+                        <div class="step-description">Reload systemd and restart kubelet</div>
+<pre>sudo systemctl daemon-reload
+sudo systemctl restart kubelet</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">6</div>
+                            <div class="step-title">Uncordon Node and Verify</div>
+                        </div>
+                        <div class="step-description">Bring node back online and verify upgrade (run from control plane)</div>
+<pre>kubectl uncordon &lt;worker-node-name&gt;
+kubectl get nodes -o wide</pre>
+                        <div class="info">Worker node should now show v1.32.0 and Ready status</div>
+                    </div>
+
+                    <div class="warning">Repeat steps 1-6 for each remaining worker node</div>
+                </div>
+            </div>
+
+            <!-- Phase 3: Validation -->
+            <div class="phase">
+                <div class="phase-header" onclick="togglePhase(this)">
+                    <div class="phase-icon">✓</div>
+                    <div class="phase-title">
+                        <h2>Phase 3: Post-Upgrade Validation</h2>
+                        <p>Verify cluster health and functionality</p>
+                    </div>
+                    <button class="collapse-btn">Hide</button>
+                </div>
+                <div class="phase-content">
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Verify All Nodes Upgraded</div>
+                        </div>
+                        <div class="step-description">Check that all nodes are running target version</div>
+<pre>kubectl version --short
+kubectl get nodes -o wide</pre>
+                        <div class="info">All nodes should show v1.32.0 and Ready status</div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Check System Components</div>
+                        </div>
+                        <div class="step-description">Verify all system pods are running</div>
+<pre>kubectl get pods -n kube-system
+kubectl get pods -A</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Test Sample Workload</div>
+                        </div>
+                        <div class="step-description">Deploy test pod to validate cluster functionality</div>
+<pre>kubectl run nginx-test --image=nginx:latest --port=80
+kubectl expose pod nginx-test --port=80 --type=NodePort
+kubectl get svc nginx-test
+
+# Test access, then cleanup:
+kubectl delete pod nginx-test
+kubectl delete svc nginx-test</pre>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <div class="step-title">Check for Issues</div>
+                        </div>
+                        <div class="step-description">Review recent events and verify no deprecated APIs</div>
+<pre>kubectl get events -A --sort-by='.lastTimestamp' | tail -20
+kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>Kubernetes Upgrade Sequence</strong> |
+            Always backup before upgrading |
+            Upgrade one minor version at a time |
+            Control plane must be upgraded first
+        </div>
+    </div>
+
+    <script>
+        function togglePhase(header) {
+            const content = header.nextElementSibling;
+            const button = header.querySelector('.collapse-btn');
+
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                button.textContent = 'Hide';
+            } else {
+                content.classList.add('collapsed');
+                button.textContent = 'Show';
+            }
+        }
+
+        // Add smooth scrolling
+        document.querySelectorAll('.phase-header').forEach(header => {
+            header.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'BUTTON') {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes etcd Backup & Restore Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #326CE5;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #326CE5;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box strong {
+            color: #2c5282;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+
+        .info-box li {
+            margin-bottom: 3px;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        .section-header {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #326CE5;
+        }
+
+        .step {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: #326CE5;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 600;
+            margin-right: 10px;
+            font-size: 0.95em;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1em;
+        }
+
+        .step-desc {
+            color: #4a5568;
+            font-size: 0.88em;
+            margin-bottom: 10px;
+            padding-left: 40px;
+        }
+
+        .command-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.78em;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin-left: 40px;
+        }
+
+        .command-block pre {
+            margin: 0;
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        .warning-box {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .warning-box strong {
+            color: #c53030;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        .warning-box p {
+            color: #4a5568;
+            font-size: 0.85em;
+            margin: 3px 0;
+        }
+
+        @media (max-width: 900px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kubernetes etcd Backup & Restore</h1>
+        <p class="subtitle">Essential guide for protecting your cluster state</p>
+
+        <div class="info-box">
+            <strong>Critical Certificate Files Required:</strong>
+            <ul>
+                <li><strong>CA Certificate:</strong> /etc/kubernetes/pki/etcd/ca.crt</li>
+                <li><strong>Server Certificate:</strong> /etc/kubernetes/pki/etcd/server.crt</li>
+                <li><strong>Server Key:</strong> /etc/kubernetes/pki/etcd/server.key</li>
+            </ul>
+        </div>
+
+        <div class="two-column">
+            <!-- BACKUP SECTION -->
+            <div class="section">
+                <div class="section-header">Backup Process</div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Find etcd Endpoint</div>
+                    </div>
+                    <div class="step-desc">Extract the etcd client URL from the pod manifest</div>
+                    <div class="command-block"><pre># Extract etcd endpoint
+export ETCD_ENDPOINTS=$(grep -oP \
+  '(?<=--advertise-client-urls=)\S+' \
+  /etc/kubernetes/manifests/etcd.yaml)
+
+# Verify
+echo $ETCD_ENDPOINTS
+# Output: https://172.31.28.251:2379</pre></div>
+                </div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Create Snapshot</div>
+                    </div>
+                    <div class="step-desc">Use etcdctl to save a snapshot of the cluster state</div>
+                    <div class="command-block"><pre>sudo ETCDCTL_API=3 /usr/bin/etcdctl \
+  --endpoints="$ETCD_ENDPOINTS" \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  snapshot save /tmp/etcd_backup.db</pre></div>
+                </div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Verify Snapshot</div>
+                    </div>
+                    <div class="step-desc">Confirm the backup file is valid</div>
+                    <div class="command-block"><pre>sudo ETCDCTL_API=3 /usr/bin/etcdctl \
+  snapshot status /tmp/etcd_backup.db \
+  --write-out=table
+
+# Output:
+# +----------+---------+--------+-------------+
+# |   HASH   | VERSION |  SIZE  | TOTAL KEYS  |
+# +----------+---------+--------+-------------+
+# | 123abcd  |  3.5.0  | 5.1 MB |    3500     |
+# +----------+---------+--------+-------------+</pre></div>
+                </div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Store Safely</div>
+                    </div>
+                    <div class="step-desc">Move backup to secure off-cluster storage</div>
+                    <div class="command-block"><pre># Copy to backup location
+sudo cp /tmp/etcd_backup.db \
+  /backup/etcd-$(date +%Y%m%d-%H%M%S).db
+
+# Or upload to cloud storage
+# aws s3 cp /tmp/etcd_backup.db \
+#   s3://backups/etcd/</pre></div>
+                </div>
+            </div>
+
+            <!-- RESTORE SECTION -->
+            <div class="section">
+                <div class="section-header">Restore Process</div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Stop API Server</div>
+                    </div>
+                    <div class="step-desc">Prevent writes during restore by moving the manifest</div>
+                    <div class="command-block"><pre># Move kube-apiserver manifest
+sudo mv \
+  /etc/kubernetes/manifests/kube-apiserver.yaml \
+  /tmp/kube-apiserver.yaml
+
+# Wait for apiserver pod to stop
+kubectl get pods -n kube-system | \
+  grep apiserver</pre></div>
+                </div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Restore Snapshot</div>
+                    </div>
+                    <div class="step-desc">Extract backup to new data directory</div>
+                    <div class="command-block"><pre>sudo ETCDCTL_API=3 /usr/bin/etcdctl \
+  snapshot restore /tmp/etcd_backup.db \
+  --data-dir=/var/lib/etcd-new \
+  --name=master-restored
+
+# Note: No certs needed for restore
+# (local operation)</pre></div>
+                </div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Update etcd Config</div>
+                    </div>
+                    <div class="step-desc">Point etcd to restored data directory</div>
+                    <div class="command-block"><pre># Edit manifest:
+# /etc/kubernetes/manifests/etcd.yaml
+
+# Update these lines:
+- --data-dir=/var/lib/etcd-new
+- --name=master-restored
+- --initial-cluster=master-restored=\
+    https://172.31.28.251:2380
+- --initial-cluster-state=new
+
+# Save and exit
+# etcd pod restarts automatically</pre></div>
+                </div>
+
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Restart API Server</div>
+                    </div>
+                    <div class="step-desc">Restore kube-apiserver and verify cluster</div>
+                    <div class="command-block"><pre># Move manifest back
+sudo mv /tmp/kube-apiserver.yaml \
+  /etc/kubernetes/manifests/kube-apiserver.yaml
+
+# Wait for pods to come up
+kubectl get pods -n kube-system
+
+# Verify cluster state
+kubectl get nodes
+kubectl get pods -A</pre></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <strong>Important Notes:</strong>
+            <p>• Always test restore procedures in non-production environments first</p>
+            <p>• Backup regularly: before upgrades, major changes, and on a daily schedule</p>
+            <p>• Store backups in secure, off-cluster locations with proper retention policies</p>
+            <p>• Document your cluster's specific certificate paths and etcd endpoint</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes RBAC Authorization Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 26px;
+        }
+        .flow-section {
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+        }
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .flow-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            min-width: 140px;
+        }
+        .flow-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        .flow-box.user { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .flow-box.api { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .flow-box.rbac { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .flow-box.decision { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .flow-box.allow { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+        .flow-box.deny { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); }
+        .arrow {
+            font-size: 24px;
+            color: #7f8c8d;
+        }
+        .rbac-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .rbac-card {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .rbac-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        .rbac-card.active {
+            border-color: #667eea;
+            background: #e8eaf6;
+        }
+        .rbac-card h3 {
+            font-size: 15px;
+            color: #667eea;
+            margin-bottom: 6px;
+        }
+        .rbac-card .scope {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .rbac-card .scope.cluster { background: #e74c3c; }
+        .rbac-card .description {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        .code-section {
+            margin-top: 15px;
+        }
+        .code-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        .code-tab {
+            padding: 6px 12px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        .code-tab:hover {
+            background: #dee2e6;
+        }
+        .code-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        .code-content {
+            display: none;
+        }
+        .code-content.active {
+            display: block;
+        }
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 11px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        .example-scenario {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .example-scenario h3 {
+            font-size: 14px;
+            color: #856404;
+            margin-bottom: 6px;
+        }
+        .example-scenario p {
+            font-size: 12px;
+            color: #856404;
+            margin-bottom: 4px;
+        }
+        .hierarchy {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+        .hierarchy-item {
+            text-align: center;
+            flex: 1;
+        }
+        .hierarchy-box {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .hierarchy-box.namespace { background: #3498db; }
+        .hierarchy-box.cluster { background: #e74c3c; }
+        .hierarchy-list {
+            font-size: 11px;
+            color: #555;
+            text-align: left;
+            padding-left: 15px;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Kubernetes RBAC Authorization Flow</h1>
+
+        <!-- Authorization Flow -->
+        <div class="flow-section">
+            <div class="section-title">1. Authorization Flow</div>
+            <div class="flow-container">
+                <div class="flow-box user" onclick="showInfo('user')">👤 User/ServiceAccount</div>
+                <span class="arrow">→</span>
+                <div class="flow-box api" onclick="showInfo('api')">📡 API Request</div>
+                <span class="arrow">→</span>
+                <div class="flow-box rbac" onclick="showInfo('rbac')">🔍 RBAC Check</div>
+                <span class="arrow">→</span>
+                <div class="flow-box decision" onclick="showInfo('decision')">⚖️ Decision</div>
+            </div>
+            <div class="flow-container">
+                <div class="flow-box allow" onclick="showInfo('allow')">✅ Allow</div>
+                <div class="flow-box deny" onclick="showInfo('deny')">❌ Deny</div>
+            </div>
+        </div>
+
+        <!-- Example Scenario -->
+        <div class="example-scenario">
+            <h3>📋 Example Scenario: User Requesting Pod Access</h3>
+            <p><strong>Request:</strong> User "jane" tries to list pods in "default" namespace</p>
+            <p><strong>Flow:</strong> jane → kubectl get pods → API Server → Check RoleBinding → Verify pod-reader Role → Allow/Deny</p>
+            <p><strong>Result:</strong> If jane has pod-reader RoleBinding, request is allowed ✅</p>
+        </div>
+
+        <!-- RBAC Components -->
+        <div class="flow-section">
+            <div class="section-title">2. RBAC Components (Click to view YAML)</div>
+            <div class="rbac-grid">
+                <div class="rbac-card" onclick="showCode('role')">
+                    <h3>Role</h3>
+                    <span class="scope">Namespace</span>
+                    <div class="description">Defines permissions within a specific namespace</div>
+                </div>
+                <div class="rbac-card" onclick="showCode('rolebinding')">
+                    <h3>RoleBinding</h3>
+                    <span class="scope">Namespace</span>
+                    <div class="description">Assigns a Role to users/groups/service accounts</div>
+                </div>
+                <div class="rbac-card" onclick="showCode('clusterrole')">
+                    <h3>ClusterRole</h3>
+                    <span class="scope cluster">Cluster</span>
+                    <div class="description">Defines cluster-wide permissions for all namespaces</div>
+                </div>
+                <div class="rbac-card" onclick="showCode('clusterrolebinding')">
+                    <h3>ClusterRoleBinding</h3>
+                    <span class="scope cluster">Cluster</span>
+                    <div class="description">Assigns a ClusterRole cluster-wide to subjects</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="code-section">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode('role')">Role</button>
+                <button class="code-tab" onclick="showCode('rolebinding')">RoleBinding</button>
+                <button class="code-tab" onclick="showCode('clusterrole')">ClusterRole</button>
+                <button class="code-tab" onclick="showCode('clusterrolebinding')">ClusterRoleBinding</button>
+            </div>
+
+            <div id="role-code" class="code-content active">
+                <pre>apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]</pre>
+            </div>
+
+            <div id="rolebinding-code" class="code-content">
+                <pre>apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects:
+- kind: User
+  name: jane
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io</pre>
+            </div>
+
+            <div id="clusterrole-code" class="code-content">
+                <pre>apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: secret-reader
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]</pre>
+            </div>
+
+            <div id="clusterrolebinding-code" class="code-content">
+                <pre>apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: read-secrets-global
+subjects:
+- kind: Group
+  name: managers
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: secret-reader
+  apiGroup: rbac.authorization.k8s.io</pre>
+            </div>
+        </div>
+
+        <!-- Permission Hierarchy -->
+        <div class="flow-section">
+            <div class="section-title">3. Permission Hierarchy: Namespace vs Cluster Scope</div>
+            <div class="hierarchy">
+                <div class="hierarchy-item">
+                    <div class="hierarchy-box namespace">🗂️ Namespace Scope</div>
+                    <ul class="hierarchy-list">
+                        <li><strong>Role:</strong> Permissions in one namespace</li>
+                        <li><strong>RoleBinding:</strong> Assigns Role in namespace</li>
+                        <li><strong>Resources:</strong> Pods, Services, ConfigMaps</li>
+                        <li><strong>Use Case:</strong> Team/project isolation</li>
+                    </ul>
+                </div>
+                <div class="hierarchy-item">
+                    <div class="hierarchy-box cluster">🌐 Cluster Scope</div>
+                    <ul class="hierarchy-list">
+                        <li><strong>ClusterRole:</strong> Permissions across all namespaces</li>
+                        <li><strong>ClusterRoleBinding:</strong> Assigns ClusterRole globally</li>
+                        <li><strong>Resources:</strong> Nodes, PVs, Namespaces</li>
+                        <li><strong>Use Case:</strong> Cluster admin operations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showCode(type) {
+            // Hide all code contents
+            document.querySelectorAll('.code-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Remove active from all tabs
+            document.querySelectorAll('.code-tab').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Remove active from all cards
+            document.querySelectorAll('.rbac-card').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected code
+            document.getElementById(type + '-code').classList.add('active');
+            // Activate corresponding tab
+            document.querySelectorAll('.code-tab').forEach(tab => {
+                if (tab.textContent.toLowerCase().replace(/\s/g, '') === type) {
+                    tab.classList.add('active');
+                }
+            });
+            // Activate corresponding card
+            document.querySelectorAll('.rbac-card').forEach(card => {
+                if (card.querySelector('h3').textContent.toLowerCase().replace(/\s/g, '') === type) {
+                    card.classList.add('active');
+                }
+            });
+        }
+
+        function showInfo(stage) {
+            const messages = {
+                'user': 'User or ServiceAccount initiates an action (e.g., kubectl get pods)',
+                'api': 'Request sent to API Server with authentication credentials',
+                'rbac': 'API Server checks RBAC Controller: Does subject have RoleBinding/ClusterRoleBinding? Do bound Role/ClusterRole permissions allow this action?',
+                'decision': 'RBAC Controller evaluates all applicable bindings and roles',
+                'allow': '✅ Request is allowed - API Server performs the operation',
+                'deny': '❌ Request is denied - User receives "Forbidden" error (403)'
+            };
+            alert(messages[stage]);
+        }
+    </script>
+</body>
+</html>

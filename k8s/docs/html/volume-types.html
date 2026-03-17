@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Volume Types Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            line-height: 1.4;
+            font-size: 11px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 24px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .volume-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        }
+
+        .volume-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .volume-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .icon {
+            font-size: 32px;
+            margin-bottom: 6px;
+        }
+
+        .volume-card h3 {
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: inherit;
+        }
+
+        .volume-card.active h3 {
+            color: white;
+        }
+
+        .properties {
+            font-size: 9px;
+            line-height: 1.3;
+        }
+
+        .property {
+            margin: 3px 0;
+            padding: 2px 4px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 3px;
+            color: #2d3748;
+        }
+
+        .volume-card.active .property {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .decision-tree {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .decision-tree h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .decision-item {
+            margin: 6px 0;
+            padding: 6px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #48bb78;
+            font-size: 10px;
+        }
+
+        .decision-item strong {
+            color: #667eea;
+            font-size: 11px;
+        }
+
+        .yaml-section {
+            margin-top: 15px;
+            padding: 12px;
+            background: #1e293b;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .yaml-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .yaml-section h3 {
+            color: #60a5fa;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            line-height: 1.4;
+            white-space: pre;
+            border: 1px solid #334155;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 10px;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+            padding: 6px;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        .comparison-table td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 8px;
+            font-weight: bold;
+            margin: 2px;
+        }
+
+        .badge-yes { background: #c6f6d5; color: #22543d; }
+        .badge-no { background: #fed7d7; color: #742a2a; }
+        .badge-pod { background: #bee3f8; color: #2c5282; }
+        .badge-node { background: #feebc8; color: #7c2d12; }
+        .badge-cluster { background: #e9d8fd; color: #44337a; }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 9px;
+        }
+
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗂️ Kubernetes Volume Types Comparison</h1>
+
+        <div class="comparison-grid">
+            <div class="volume-card" data-type="emptydir">
+                <div class="icon">📦</div>
+                <h3>emptyDir</h3>
+                <div class="properties">
+                    <div class="property">🔄 Ephemeral</div>
+                    <div class="property">📍 Pod Scope</div>
+                    <div class="property">⚡ Fast</div>
+                </div>
+            </div>
+
+            <div class="volume-card" data-type="hostpath">
+                <div class="icon">💾</div>
+                <h3>hostPath</h3>
+                <div class="properties">
+                    <div class="property">💾 Host Persistent</div>
+                    <div class="property">🖥️ Node Scope</div>
+                    <div class="property">⚠️ Node-Bound</div>
+                </div>
+            </div>
+
+            <div class="volume-card" data-type="pv-pvc">
+                <div class="icon">🗄️</div>
+                <h3>PV/PVC</h3>
+                <div class="properties">
+                    <div class="property">✅ Persistent</div>
+                    <div class="property">🌐 Cluster Scope</div>
+                    <div class="property">🔒 Decoupled</div>
+                </div>
+            </div>
+
+            <div class="volume-card" data-type="configmap">
+                <div class="icon">⚙️</div>
+                <h3>ConfigMap</h3>
+                <div class="properties">
+                    <div class="property">📄 Config Data</div>
+                    <div class="property">📖 Read-Only</div>
+                    <div class="property">🔄 Dynamic</div>
+                </div>
+            </div>
+
+            <div class="volume-card" data-type="secret">
+                <div class="icon">🔐</div>
+                <h3>Secret</h3>
+                <div class="properties">
+                    <div class="property">🔑 Sensitive Data</div>
+                    <div class="property">📖 Read-Only</div>
+                    <div class="property">🔒 Encoded</div>
+                </div>
+            </div>
+        </div>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Persistence</th>
+                    <th>Scope</th>
+                    <th>Multi-Pod Access</th>
+                    <th>Primary Use Case</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>emptyDir</strong></td>
+                    <td><span class="badge badge-no">Ephemeral</span></td>
+                    <td><span class="badge badge-pod">Pod</span></td>
+                    <td><span class="badge badge-yes">Within Pod</span></td>
+                    <td>Temporary cache, scratch space</td>
+                </tr>
+                <tr>
+                    <td><strong>hostPath</strong></td>
+                    <td><span class="badge badge-yes">Host-Bound</span></td>
+                    <td><span class="badge badge-node">Node</span></td>
+                    <td><span class="badge badge-no">Same Node Only</span></td>
+                    <td>Access host logs/files, testing</td>
+                </tr>
+                <tr>
+                    <td><strong>PV/PVC</strong></td>
+                    <td><span class="badge badge-yes">Persistent</span></td>
+                    <td><span class="badge badge-cluster">Cluster</span></td>
+                    <td><span class="badge badge-yes">Yes (RWX)</span></td>
+                    <td>Databases, stateful apps</td>
+                </tr>
+                <tr>
+                    <td><strong>ConfigMap</strong></td>
+                    <td><span class="badge badge-yes">Persistent</span></td>
+                    <td><span class="badge badge-cluster">Cluster</span></td>
+                    <td><span class="badge badge-yes">Yes</span></td>
+                    <td>Non-sensitive configuration</td>
+                </tr>
+                <tr>
+                    <td><strong>Secret</strong></td>
+                    <td><span class="badge badge-yes">Persistent</span></td>
+                    <td><span class="badge badge-cluster">Cluster</span></td>
+                    <td><span class="badge badge-yes">Yes</span></td>
+                    <td>Passwords, tokens, certificates</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="decision-tree">
+            <h2>🎯 Decision Tree: Which Volume Type to Use?</h2>
+            <div class="decision-item">
+                <strong>Need temporary data during Pod lifetime?</strong> → Use <code>emptyDir</code>
+                <br>• Shared cache between containers • Temporary processing • Scratch space
+            </div>
+            <div class="decision-item">
+                <strong>Need to access host node files/directories?</strong> → Use <code>hostPath</code>
+                <br>• Access host logs • Testing/debugging • Single-node clusters only
+            </div>
+            <div class="decision-item">
+                <strong>Need persistent storage across Pod restarts?</strong> → Use <code>PV/PVC</code>
+                <br>• Databases • User uploads • Application state
+            </div>
+            <div class="decision-item">
+                <strong>Need to inject configuration data?</strong> → Use <code>ConfigMap</code>
+                <br>• Application config • Environment variables • Non-sensitive settings
+            </div>
+            <div class="decision-item">
+                <strong>Need to store sensitive information?</strong> → Use <code>Secret</code>
+                <br>• Database passwords • API keys • TLS certificates
+            </div>
+        </div>
+
+        <div id="yaml-emptydir" class="yaml-section">
+            <h3>📦 emptyDir Example</h3>
+            <pre>apiVersion: v1
+kind: Pod
+metadata:
+  name: emptydir-example
+spec:
+  containers:
+  - name: app
+    image: busybox
+    command: ["/bin/sh", "-c"]
+    args: ["echo 'Writing to cache' > /data/cache.txt && sleep 3600"]
+    volumeMounts:
+    - mountPath: "/data"
+      name: cache-volume
+  - name: sidecar
+    image: busybox
+    command: ["/bin/sh", "-c"]
+    args: ["while true; do cat /data/cache.txt 2>/dev/null; sleep 5; done"]
+    volumeMounts:
+    - mountPath: "/data"
+      name: cache-volume
+  volumes:
+  - name: cache-volume
+    emptyDir: {}  # Deleted when Pod terminates</pre>
+        </div>
+
+        <div id="yaml-hostpath" class="yaml-section">
+            <h3>💾 hostPath Example</h3>
+            <pre>apiVersion: v1
+kind: Pod
+metadata:
+  name: hostpath-example
+spec:
+  containers:
+  - name: log-reader
+    image: busybox
+    command: ["/bin/sh", "-c"]
+    args: ["tail -f /host/syslog"]
+    volumeMounts:
+    - mountPath: "/host"
+      name: host-volume
+      readOnly: true
+  volumes:
+  - name: host-volume
+    hostPath:
+      path: /var/log  # Accesses host node's /var/log
+      type: Directory  # Must exist on host</pre>
+        </div>
+
+        <div id="yaml-pv-pvc" class="yaml-section">
+            <h3>🗄️ PV/PVC Example</h3>
+            <pre>---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-example
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce  # RWO, ROX, or RWX
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: /mnt/data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-example
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-pod
+spec:
+  containers:
+  - name: app
+    image: nginx
+    volumeMounts:
+    - mountPath: "/usr/share/nginx/html"
+      name: storage
+  volumes:
+  - name: storage
+    persistentVolumeClaim:
+      claimName: pvc-example</pre>
+        </div>
+
+        <div id="yaml-configmap" class="yaml-section">
+            <h3>⚙️ ConfigMap Example</h3>
+            <pre>---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  app.properties: |
+    database.host=db.example.com
+    database.port=5432
+    log.level=INFO
+  ui.json: |
+    {
+      "theme": "dark",
+      "language": "en"
+    }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmap-pod
+spec:
+  containers:
+  - name: app
+    image: myapp:1.0
+    volumeMounts:
+    - name: config
+      mountPath: "/etc/config"
+      readOnly: true
+  volumes:
+  - name: config
+    configMap:
+      name: app-config  # Mounts all keys as files</pre>
+        </div>
+
+        <div id="yaml-secret" class="yaml-section">
+            <h3>🔐 Secret Example</h3>
+            <pre>---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+data:
+  # Base64 encoded values
+  username: YWRtaW4=        # 'admin'
+  password: cGFzc3dvcmQxMjM=  # 'password123'
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-pod
+spec:
+  containers:
+  - name: app
+    image: postgres:13
+    env:
+    - name: POSTGRES_USER
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: username
+    - name: POSTGRES_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: db-secret
+          key: password
+    volumeMounts:
+    - name: secret-volume
+      mountPath: "/etc/secrets"
+      readOnly: true
+  volumes:
+  - name: secret-volume
+    secret:
+      secretName: db-secret  # Also mountable as files</pre>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.volume-card');
+
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const type = this.getAttribute('data-type');
+
+                    // Remove active class from all cards
+                    cards.forEach(c => c.classList.remove('active'));
+
+                    // Add active class to clicked card
+                    this.classList.add('active');
+
+                    // Hide all YAML sections
+                    document.querySelectorAll('.yaml-section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+
+                    // Show corresponding YAML section
+                    const yamlSection = document.getElementById('yaml-' + type);
+                    if (yamlSection) {
+                        yamlSection.classList.add('active');
+                        yamlSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

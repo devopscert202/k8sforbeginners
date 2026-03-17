@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Component Upgrade Order</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .upgrade-pipeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 25px 0;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+
+        .upgrade-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-weight: bold;
+            font-size: 22px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .step-number:hover {
+            transform: scale(1.1);
+        }
+
+        .step-1 .step-number { background: #3182ce; }
+        .step-2 .step-number { background: #38a169; }
+        .step-3 .step-number { background: #d69e2e; }
+
+        .step-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .step-subtitle {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .arrow {
+            font-size: 35px;
+            color: #cbd5e0;
+            margin: 0 10px;
+        }
+
+        .info-section {
+            margin: 20px 0;
+            padding: 18px;
+            border-left: 4px solid #3182ce;
+            background: #ebf8ff;
+            border-radius: 6px;
+        }
+
+        .info-section h3 {
+            color: #2c5282;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-section p, .info-section ul {
+            color: #2d3748;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info-section ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .info-section li {
+            margin-bottom: 6px;
+        }
+
+        .command-section {
+            display: none;
+            margin: 20px 0;
+            padding: 18px;
+            background: #2d3748;
+            border-radius: 8px;
+            color: #e2e8f0;
+        }
+
+        .command-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .command-section h4 {
+            color: #90cdf4;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        pre {
+            background: #1a202c;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 12px;
+            line-height: 1.5;
+            border: 1px solid #4a5568;
+        }
+
+        code {
+            color: #68d391;
+            font-family: 'Courier New', monospace;
+        }
+
+        .comment {
+            color: #a0aec0;
+        }
+
+        .control-plane-box {
+            margin: 20px 0;
+            padding: 18px;
+            background: #fef5e7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 6px;
+        }
+
+        .control-plane-box h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .component-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .component-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #fbbf24;
+            font-size: 13px;
+            color: #78350f;
+            font-weight: 500;
+        }
+
+        .warning-box {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            border-radius: 6px;
+        }
+
+        .warning-box h3 {
+            color: #991b1b;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .warning-box p {
+            color: #7f1d1d;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .tip-box {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            border-radius: 6px;
+        }
+
+        .tip-box h3 {
+            color: #065f46;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .tip-box p {
+            color: #064e3b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            color: #718096;
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kubernetes Component Upgrade Order</h1>
+        <p class="subtitle">The critical sequence for upgrading Kubernetes components on each node</p>
+
+        <div class="upgrade-pipeline">
+            <div class="upgrade-step step-1">
+                <div class="step-number" onclick="toggleCommands('step1')">1</div>
+                <div class="step-title">kubeadm</div>
+                <div class="step-subtitle">Cluster Orchestrator</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="upgrade-step step-2">
+                <div class="step-number" onclick="toggleCommands('step2')">2</div>
+                <div class="step-title">kubelet</div>
+                <div class="step-subtitle">Node Agent</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="upgrade-step step-3">
+                <div class="step-number" onclick="toggleCommands('step3')">3</div>
+                <div class="step-title">kubectl</div>
+                <div class="step-subtitle">CLI Client</div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>Why This Order Matters</h3>
+            <ul>
+                <li><strong>kubeadm first:</strong> Updates control plane components (API server, controller-manager, scheduler) and validates cluster compatibility</li>
+                <li><strong>kubelet second:</strong> Restarts node services to match control plane version; requires kubeadm's configuration</li>
+                <li><strong>kubectl last:</strong> Client-side tool with no cluster impact; can even lag behind by one minor version</li>
+            </ul>
+        </div>
+
+        <div class="control-plane-box">
+            <h3>Control Plane Components (Updated by kubeadm)</h3>
+            <div class="component-list">
+                <div class="component-item">kube-apiserver</div>
+                <div class="component-item">kube-controller-manager</div>
+                <div class="component-item">kube-scheduler</div>
+                <div class="component-item">etcd</div>
+            </div>
+        </div>
+
+        <div class="command-section" id="step1-commands">
+            <h4>Step 1: Upgrade kubeadm</h4>
+
+            <p style="margin-bottom: 10px;">Unhold the package, upgrade, and re-hold:</p>
+            <pre><code><span class="comment"># Debian/Ubuntu</span>
+sudo apt-mark unhold kubeadm
+sudo apt-get update
+sudo apt-get install -y kubeadm=1.32.0-00
+sudo apt-mark hold kubeadm
+
+<span class="comment"># RHEL/CentOS</span>
+sudo yum install -y kubeadm-1.32.0-0 --disableexcludes=kubernetes</code></pre>
+
+            <p style="margin-bottom: 10px;">Verify version and plan the upgrade:</p>
+            <pre><code>kubeadm version
+
+<span class="comment"># On first control plane node only</span>
+sudo kubeadm upgrade plan
+sudo kubeadm upgrade apply v1.32.0
+
+<span class="comment"># On additional control plane/worker nodes</span>
+sudo kubeadm upgrade node</code></pre>
+        </div>
+
+        <div class="command-section" id="step2-commands">
+            <h4>Step 2: Upgrade kubelet</h4>
+
+            <p style="margin-bottom: 10px;">Drain the node first (run from control plane):</p>
+            <pre><code>kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data</code></pre>
+
+            <p style="margin-bottom: 10px;">Upgrade kubelet package:</p>
+            <pre><code><span class="comment"># Debian/Ubuntu</span>
+sudo apt-mark unhold kubelet
+sudo apt-get update
+sudo apt-get install -y kubelet=1.32.0-00
+sudo apt-mark hold kubelet
+
+<span class="comment"># RHEL/CentOS</span>
+sudo yum install -y kubelet-1.32.0-0 --disableexcludes=kubernetes</code></pre>
+
+            <p style="margin-bottom: 10px;">Restart kubelet service:</p>
+            <pre><code>sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+<span class="comment"># Verify kubelet is running</span>
+sudo systemctl status kubelet</code></pre>
+
+            <p style="margin-bottom: 10px;">Uncordon the node (run from control plane):</p>
+            <pre><code>kubectl uncordon &lt;node-name&gt;</code></pre>
+        </div>
+
+        <div class="command-section" id="step3-commands">
+            <h4>Step 3: Upgrade kubectl</h4>
+
+            <p style="margin-bottom: 10px;">Upgrade kubectl (usually done with kubelet):</p>
+            <pre><code><span class="comment"># Debian/Ubuntu</span>
+sudo apt-mark unhold kubectl
+sudo apt-get update
+sudo apt-get install -y kubectl=1.32.0-00
+sudo apt-mark hold kubectl
+
+<span class="comment"># RHEL/CentOS</span>
+sudo yum install -y kubectl-1.32.0-0 --disableexcludes=kubernetes</code></pre>
+
+            <p style="margin-bottom: 10px;">Verify the upgrade:</p>
+            <pre><code>kubectl version --client
+kubectl get nodes  <span class="comment"># Check all nodes show new version</span></code></pre>
+        </div>
+
+        <div class="warning-box">
+            <h3>Critical: Package Hold/Unhold</h3>
+            <p><strong>apt-mark hold</strong> prevents automatic upgrades. Always <strong>unhold</strong> before upgrading, then <strong>re-hold</strong> after installation to prevent unintended version changes during system updates.</p>
+        </div>
+
+        <div class="tip-box">
+            <h3>Complete Upgrade Command Sequence</h3>
+            <p>For quick reference, the full upgrade sequence for a single node (Debian/Ubuntu):</p>
+        </div>
+
+        <pre><code><span class="comment"># 1. Upgrade kubeadm</span>
+sudo apt-mark unhold kubeadm && \
+sudo apt-get update && \
+sudo apt-get install -y kubeadm=1.32.0-00 && \
+sudo apt-mark hold kubeadm
+
+<span class="comment"># 2. Apply upgrade (control plane) or upgrade node config (workers)</span>
+sudo kubeadm upgrade apply v1.32.0  <span class="comment"># First control plane</span>
+<span class="comment"># OR</span>
+sudo kubeadm upgrade node  <span class="comment"># Additional nodes</span>
+
+<span class="comment"># 3. Drain node (from control plane)</span>
+kubectl drain &lt;node-name&gt; --ignore-daemonsets --delete-emptydir-data
+
+<span class="comment"># 4. Upgrade kubelet and kubectl</span>
+sudo apt-mark unhold kubelet kubectl && \
+sudo apt-get update && \
+sudo apt-get install -y kubelet=1.32.0-00 kubectl=1.32.0-00 && \
+sudo apt-mark hold kubelet kubectl
+
+<span class="comment"># 5. Restart kubelet</span>
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+<span class="comment"># 6. Uncordon node (from control plane)</span>
+kubectl uncordon &lt;node-name&gt;
+
+<span class="comment"># 7. Verify</span>
+kubectl get nodes -o wide</code></pre>
+
+        <div class="info-section">
+            <h3>Version Skew Policy</h3>
+            <p><strong>Key Rules:</strong></p>
+            <ul>
+                <li>kubelet version must not exceed kube-apiserver version</li>
+                <li>kubectl can be ±1 minor version from kube-apiserver</li>
+                <li>Upgrade one minor version at a time (e.g., 1.30 → 1.31 → 1.32)</li>
+                <li>Control plane should be upgraded before worker nodes</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p><strong>Click on the numbered circles above to toggle command details</strong></p>
+            <p>Kubernetes Component Upgrade Order Guide | For k8sforbeginners</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleCommands(step) {
+            const commandSection = document.getElementById(step + '-commands');
+            const allSections = document.querySelectorAll('.command-section');
+
+            allSections.forEach(section => {
+                if (section.id === step + '-commands') {
+                    section.classList.toggle('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+        }
+
+        // Show step 1 by default
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('step1-commands').classList.add('active');
+        });
+    </script>
+</body>
+</html>

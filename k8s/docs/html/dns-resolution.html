@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNS Resolution Flow in Kubernetes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #326ce5 0%, #2557c5 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 18px 24px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #5a6c7d;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+            color: #326ce5;
+        }
+
+        .tab.active {
+            background: white;
+            color: #326ce5;
+            border-bottom: 3px solid #326ce5;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Query Flow Styles */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #326ce5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .flow-step:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.2);
+        }
+
+        .flow-step.active {
+            background: #e7f0ff;
+            border-left-color: #13aa52;
+            box-shadow: 0 6px 16px rgba(19, 170, 82, 0.25);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #326ce5;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+
+        .flow-step.active .step-number {
+            background: #13aa52;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #5a6c7d;
+            line-height: 1.6;
+        }
+
+        .step-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #326ce5;
+            display: none;
+        }
+
+        .flow-step.active .step-details {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 500px; }
+        }
+
+        .arrow-down {
+            text-align: center;
+            color: #326ce5;
+            font-size: 2em;
+            margin: -10px 0;
+        }
+
+        /* DNS Naming Styles */
+        .naming-section {
+            margin: 30px 0;
+        }
+
+        .fqdn-breakdown {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .fqdn-parts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .fqdn-part {
+            flex: 1;
+            min-width: 150px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .fqdn-part:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px);
+        }
+
+        .fqdn-part h3 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .fqdn-part p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .dns-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .dns-type-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-top: 4px solid #326ce5;
+            transition: all 0.3s ease;
+        }
+
+        .dns-type-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .dns-type-card h3 {
+            color: #326ce5;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+
+        .dns-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        /* dnsPolicy Comparison Styles */
+        .policy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .policy-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .policy-card:hover {
+            border-color: #326ce5;
+            box-shadow: 0 8px 20px rgba(50, 108, 229, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .policy-card h3 {
+            color: #326ce5;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .policy-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #e7f0ff;
+            color: #326ce5;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .policy-description {
+            color: #5a6c7d;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .policy-use-case {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .policy-use-case strong {
+            color: #f57c00;
+        }
+
+        /* Code Block Styles */
+        .code-section {
+            margin: 30px 0;
+        }
+
+        .code-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .code-block .keyword { color: #c678dd; }
+        .code-block .string { color: #98c379; }
+        .code-block .number { color: #d19a66; }
+        .code-block .comment { color: #5c6370; font-style: italic; }
+
+        /* Resolution Result Styles */
+        .resolution-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .resolution-result {
+            padding: 30px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .resolution-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+        }
+
+        .resolution-failure {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+        }
+
+        .resolution-result h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .resolution-success h3 { color: #155724; }
+        .resolution-failure h3 { color: #721c24; }
+
+        .result-icon {
+            font-size: 1.5em;
+        }
+
+        .resolution-steps {
+            list-style: none;
+            padding: 0;
+        }
+
+        .resolution-steps li {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #326ce5;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #2c3e50;
+            color: white;
+            text-align: left;
+            border-radius: 6px;
+            padding: 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #2c3e50 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #326ce5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2557c5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: #e7f0ff;
+            border-left: 4px solid #326ce5;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            color: #326ce5;
+            margin-bottom: 10px;
+        }
+
+        .warning-box {
+            background: #fff8e1;
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .warning-box h4 {
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .resolution-comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .fqdn-parts {
+                flex-direction: column;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .tab {
+                padding: 14px 16px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DNS Resolution Flow in Kubernetes</h1>
+            <p>Interactive Guide to Understanding Service Discovery and DNS Resolution</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'query-flow')">Query Flow</button>
+            <button class="tab" onclick="openTab(event, 'dns-naming')">DNS Naming</button>
+            <button class="tab" onclick="openTab(event, 'dns-policy')">dnsPolicy Modes</button>
+            <button class="tab" onclick="openTab(event, 'resolution')">Resolution Examples</button>
+        </div>
+
+        <!-- Tab 1: Query Flow -->
+        <div id="query-flow" class="tab-content active">
+            <h2>DNS Query Resolution Flow</h2>
+            <p style="color: #5a6c7d; margin-bottom: 20px;">Click on each step to see detailed information about the DNS resolution process.</p>
+
+            <div class="control-panel">
+                <button class="btn btn-primary" onclick="startAnimation()">Start Animation</button>
+                <button class="btn btn-secondary" onclick="resetAnimation()">Reset</button>
+            </div>
+
+            <div class="flow-container" id="flowContainer">
+                <div class="flow-step" data-step="1" onclick="activateStep(1)">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Pod Initiates DNS Query</div>
+                        <div class="step-description">
+                            Application in Pod requests DNS resolution for <span class="tooltip">service name<span class="tooltiptext">Service names can be short (my-nginx) or fully qualified (my-nginx.default.svc.cluster.local)</span></span>
+                        </div>
+                        <div class="step-details">
+                            <strong>Example Query:</strong> <code>nslookup my-nginx</code>
+                            <br><br>
+                            <strong>Pod's /etc/resolv.conf:</strong>
+                            <div class="dns-example">
+nameserver 10.32.0.10
+search default.svc.cluster.local svc.cluster.local cluster.local
+options ndots:5
+                            </div>
+                            <p style="margin-top: 10px; color: #5a6c7d;">The kubelet configures each Pod's DNS settings, pointing to CoreDNS cluster IP.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <div class="flow-step" data-step="2" onclick="activateStep(2)">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Query Sent to CoreDNS</div>
+                        <div class="step-description">
+                            DNS query is forwarded to <span class="tooltip">CoreDNS<span class="tooltiptext">CoreDNS is the cluster DNS server running in kube-system namespace, replacing the older kube-dns</span></span> service (kube-dns)
+                        </div>
+                        <div class="step-details">
+                            <strong>CoreDNS Service:</strong>
+                            <div class="dns-example">
+kubectl get svc kube-dns -n kube-system
+NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)
+kube-dns   ClusterIP   10.32.0.10   &lt;none&gt;        53/UDP,53/TCP
+                            </div>
+                            <p style="margin-top: 10px; color: #5a6c7d;">CoreDNS pods receive the query through the kube-dns service endpoint.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <div class="flow-step" data-step="3" onclick="activateStep(3)">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">CoreDNS Processes Query</div>
+                        <div class="step-description">
+                            CoreDNS expands short names using <span class="tooltip">search domains<span class="tooltiptext">Search domains allow using short names (my-nginx) which expand to FQDNs (my-nginx.default.svc.cluster.local)</span></span> and queries Kubernetes API
+                        </div>
+                        <div class="step-details">
+                            <strong>Query Expansion Process:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px; color: #5a6c7d;">
+                                <li><code>my-nginx</code> → <code>my-nginx.default.svc.cluster.local</code></li>
+                                <li>If not found → <code>my-nginx.svc.cluster.local</code></li>
+                                <li>If not found → <code>my-nginx.cluster.local</code></li>
+                            </ul>
+                            <p style="margin-top: 10px; color: #5a6c7d;">CoreDNS uses the Kubernetes plugin to query the API server for Service and Endpoint information.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <div class="flow-step" data-step="4" onclick="activateStep(4)">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Service Lookup</div>
+                        <div class="step-description">
+                            CoreDNS queries Kubernetes API to find the <span class="tooltip">Service<span class="tooltiptext">Services provide stable DNS names and IP addresses for dynamic sets of Pods</span></span> matching the DNS name
+                        </div>
+                        <div class="step-details">
+                            <strong>Service Resolution Types:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px; color: #5a6c7d;">
+                                <li><strong>Normal Service (ClusterIP):</strong> Returns the Service's cluster IP address</li>
+                                <li><strong>Headless Service (clusterIP: None):</strong> Returns all Pod IPs directly</li>
+                                <li><strong>ExternalName Service:</strong> Returns a CNAME record to external DNS name</li>
+                            </ul>
+                            <div class="dns-example">
+# Normal Service
+my-nginx.default.svc.cluster.local → 10.100.200.50 (ClusterIP)
+
+# Headless Service
+my-nginx.default.svc.cluster.local → 172.17.0.3, 172.17.0.4 (Pod IPs)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <div class="flow-step" data-step="5" onclick="activateStep(5)">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Endpoint Resolution</div>
+                        <div class="step-description">
+                            For normal Services, <span class="tooltip">Endpoints<span class="tooltiptext">Endpoints track the IP addresses of Pods backing a Service</span></span> are checked to find backing Pod IPs
+                        </div>
+                        <div class="step-details">
+                            <strong>Endpoint Lookup:</strong>
+                            <div class="dns-example">
+kubectl get endpoints my-nginx
+NAME       ENDPOINTS                     AGE
+my-nginx   172.17.0.3:80,172.17.0.4:80   5m
+                            </div>
+                            <p style="margin-top: 10px; color: #5a6c7d;">
+                                While DNS returns the ClusterIP, traffic to that IP is load-balanced by kube-proxy to the Pod IPs listed in Endpoints.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <div class="flow-step" data-step="6" onclick="activateStep(6)">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-title">DNS Response Returned</div>
+                        <div class="step-description">
+                            CoreDNS returns DNS response with <span class="tooltip">A/AAAA record<span class="tooltiptext">A records map names to IPv4 addresses, AAAA records map to IPv6 addresses</span></span> containing IP address(es)
+                        </div>
+                        <div class="step-details">
+                            <strong>DNS Response Format:</strong>
+                            <div class="dns-example">
+;; QUESTION SECTION:
+;my-nginx.default.svc.cluster.local. IN A
+
+;; ANSWER SECTION:
+my-nginx.default.svc.cluster.local. 30 IN A 10.100.200.50
+                            </div>
+                            <p style="margin-top: 10px; color: #5a6c7d;">
+                                The Pod receives the IP address and can now connect to the Service.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <div class="flow-step" data-step="7" onclick="activateStep(7)">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <div class="step-title">Connection Established</div>
+                        <div class="step-description">
+                            Pod uses resolved IP to connect; <span class="tooltip">kube-proxy<span class="tooltiptext">kube-proxy manages network rules for Service traffic routing and load balancing</span></span> routes traffic to healthy Pod
+                        </div>
+                        <div class="step-details">
+                            <strong>Traffic Flow:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px; color: #5a6c7d;">
+                                <li>Pod connects to ClusterIP (10.100.200.50:80)</li>
+                                <li>kube-proxy intercepts traffic via iptables/IPVS rules</li>
+                                <li>Traffic is load-balanced to one of the healthy backend Pods</li>
+                                <li>Connection established with selected Pod (172.17.0.3:80 or 172.17.0.4:80)</li>
+                            </ul>
+                            <div class="info-box">
+                                <h4>Key Point</h4>
+                                DNS resolution is separate from traffic routing. DNS provides the Service IP, while kube-proxy handles the actual Pod selection and load balancing.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: DNS Naming -->
+        <div id="dns-naming" class="tab-content">
+            <h2>DNS Naming Conventions in Kubernetes</h2>
+
+            <div class="fqdn-breakdown">
+                <h2 style="text-align: center; margin-bottom: 10px;">FQDN Breakdown</h2>
+                <p style="text-align: center; font-size: 1.8em; font-weight: bold; margin-bottom: 20px;">
+                    my-nginx.default.svc.cluster.local
+                </p>
+                <div class="fqdn-parts">
+                    <div class="fqdn-part">
+                        <h3>my-nginx</h3>
+                        <p>Service Name</p>
+                    </div>
+                    <div class="fqdn-part">
+                        <h3>default</h3>
+                        <p>Namespace</p>
+                    </div>
+                    <div class="fqdn-part">
+                        <h3>svc</h3>
+                        <p>Service Indicator</p>
+                    </div>
+                    <div class="fqdn-part">
+                        <h3>cluster.local</h3>
+                        <p>Cluster Domain</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Namespace Isolation</h4>
+                <p>Queries without namespace specification are limited to the Pod's namespace. To access services in other namespaces, specify the namespace:</p>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li><code>data</code> - Only searches in current namespace</li>
+                    <li><code>data.prod</code> - Accesses service in 'prod' namespace</li>
+                    <li><code>data.prod.svc.cluster.local</code> - Fully qualified domain name</li>
+                </ul>
+            </div>
+
+            <div class="dns-types">
+                <div class="dns-type-card">
+                    <h3>Service A/AAAA Records</h3>
+                    <p><strong>Format:</strong> <code>service-name.namespace.svc.cluster-domain</code></p>
+                    <div class="dns-example">
+# Normal Service (ClusterIP)
+my-nginx.default.svc.cluster.local
+→ Returns: 10.100.200.50
+
+# Headless Service (clusterIP: None)
+my-nginx.default.svc.cluster.local
+→ Returns: 172.17.0.3, 172.17.0.4, 172.17.0.5
+                    </div>
+                    <p style="margin-top: 10px; color: #5a6c7d;">
+                        Normal services return a single stable ClusterIP. Headless services return all Pod IPs directly for client-side load balancing.
+                    </p>
+                </div>
+
+                <div class="dns-type-card">
+                    <h3>Service SRV Records</h3>
+                    <p><strong>Format:</strong> <code>_port-name._protocol.service-name.namespace.svc.cluster-domain</code></p>
+                    <div class="dns-example">
+# Named port SRV record
+_http._tcp.my-nginx.default.svc.cluster.local
+→ Returns: port + domain name
+
+# For headless service
+_http._tcp.my-nginx.default.svc.cluster.local
+→ Returns: Multiple records with Pod hostnames
+                    </div>
+                    <p style="margin-top: 10px; color: #5a6c7d;">
+                        SRV records enable service discovery for named ports, providing both port numbers and target hostnames.
+                    </p>
+                </div>
+
+                <div class="dns-type-card">
+                    <h3>Pod A/AAAA Records</h3>
+                    <p><strong>Format:</strong> <code>pod-ip.namespace.pod.cluster-domain</code></p>
+                    <div class="dns-example">
+# Pod with IP 172.17.0.3
+172-17-0-3.default.pod.cluster.local
+→ Returns: 172.17.0.3
+
+# Service-scoped Pod record
+172-17-0-3.my-nginx.default.svc.cluster.local
+→ Returns: 172.17.0.3
+                    </div>
+                    <p style="margin-top: 10px; color: #5a6c7d;">
+                        Pod DNS records use dashes instead of dots in IP addresses. These are automatically created by CoreDNS.
+                    </p>
+                </div>
+
+                <div class="dns-type-card">
+                    <h3>Pod with Hostname/Subdomain</h3>
+                    <p><strong>Format:</strong> <code>hostname.subdomain.namespace.svc.cluster-domain</code></p>
+                    <div class="dns-example">
+# Pod with hostname and subdomain
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox1
+spec:
+  hostname: busybox-1
+  subdomain: busybox-subdomain
+  ...
+
+# Resulting FQDN
+busybox-1.busybox-subdomain.default.svc.cluster.local
+                    </div>
+                    <p style="margin-top: 10px; color: #5a6c7d;">
+                        Requires both hostname and subdomain fields. A matching headless Service with the subdomain name must exist.
+                    </p>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Service DNS Configuration Example</h3>
+                <div class="code-block">
+<span class="keyword">apiVersion:</span> v1
+<span class="keyword">kind:</span> Service
+<span class="keyword">metadata:</span>
+  <span class="keyword">name:</span> my-nginx
+  <span class="keyword">namespace:</span> default
+<span class="keyword">spec:</span>
+  <span class="keyword">type:</span> ClusterIP
+  <span class="keyword">selector:</span>
+    <span class="keyword">app:</span> nginx
+  <span class="keyword">ports:</span>
+    - <span class="keyword">name:</span> http
+      <span class="keyword">port:</span> <span class="number">80</span>
+      <span class="keyword">targetPort:</span> <span class="number">80</span>
+      <span class="keyword">protocol:</span> TCP
+
+<span class="comment"># DNS Records Created:
+# - A/AAAA: my-nginx.default.svc.cluster.local → ClusterIP
+# - SRV: _http._tcp.my-nginx.default.svc.cluster.local → 80 + hostname</span>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Pod with Custom DNS Configuration Example</h3>
+                <div class="code-block">
+<span class="keyword">apiVersion:</span> v1
+<span class="keyword">kind:</span> Pod
+<span class="keyword">metadata:</span>
+  <span class="keyword">name:</span> busybox-1
+  <span class="keyword">labels:</span>
+    <span class="keyword">app:</span> busybox
+<span class="keyword">spec:</span>
+  <span class="keyword">hostname:</span> busybox-1
+  <span class="keyword">subdomain:</span> busybox-service
+  <span class="keyword">containers:</span>
+  - <span class="keyword">name:</span> busybox
+    <span class="keyword">image:</span> busybox:1.28
+    <span class="keyword">command:</span> [<span class="string">"sleep"</span>, <span class="string">"3600"</span>]
+
+<span class="comment"># Requires matching headless Service:
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: busybox-service
+# spec:
+#   clusterIP: None
+#   selector:
+#     app: busybox
+
+# Resulting FQDN: busybox-1.busybox-service.default.svc.cluster.local</span>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <h4>Important Limitations</h4>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li><strong>FQDN Length:</strong> When using <code>setHostnameAsFQDN: true</code>, Linux hostname field is limited to 64 characters. Longer FQDNs will cause Pod startup failure.</li>
+                    <li><strong>Headless Service Required:</strong> For Pod hostname/subdomain DNS to work, a matching headless Service must exist with the same name as the subdomain.</li>
+                    <li><strong>Search Domain Order:</strong> Queries are tried in order of search domains. This can cause delays if the service is in a later search domain.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 3: dnsPolicy Modes -->
+        <div id="dns-policy" class="tab-content">
+            <h2>DNS Policy Modes in Kubernetes</h2>
+            <p style="color: #5a6c7d; margin-bottom: 30px;">
+                The <code>dnsPolicy</code> field in Pod spec determines how DNS resolution is configured. Choose the appropriate policy based on your networking requirements.
+            </p>
+
+            <div class="policy-grid">
+                <div class="policy-card">
+                    <h3>
+                        ClusterFirst
+                        <span class="policy-badge">DEFAULT</span>
+                    </h3>
+                    <p class="policy-description">
+                        Uses cluster DNS (CoreDNS) for resolution. Any DNS query that does not match the cluster domain suffix is forwarded to the upstream nameserver inherited from the node.
+                    </p>
+                    <div class="dns-example">
+<span class="keyword">dnsPolicy:</span> ClusterFirst
+
+<span class="comment"># /etc/resolv.conf</span>
+nameserver 10.32.0.10
+search default.svc.cluster.local svc.cluster.local cluster.local
+options ndots:5
+                    </div>
+                    <div class="policy-use-case">
+                        <strong>Use Case:</strong> Standard Pods that need to discover Kubernetes Services and resolve external DNS names.
+                    </div>
+                </div>
+
+                <div class="policy-card">
+                    <h3>Default</h3>
+                    <p class="policy-description">
+                        Pod inherits DNS resolution from the node. Bypasses cluster DNS entirely and uses the node's <code>/etc/resolv.conf</code> configuration.
+                    </p>
+                    <div class="dns-example">
+<span class="keyword">dnsPolicy:</span> Default
+
+<span class="comment"># Inherits from node's /etc/resolv.conf
+# (varies by node configuration)</span>
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+search example.com
+                    </div>
+                    <div class="policy-use-case">
+                        <strong>Use Case:</strong> Pods that don't need Kubernetes Service discovery and should use standard DNS resolution.
+                    </div>
+                </div>
+
+                <div class="policy-card">
+                    <h3>ClusterFirstWithHostNet</h3>
+                    <p class="policy-description">
+                        For Pods using <code>hostNetwork: true</code>. Ensures cluster DNS is used even when the Pod shares the host's network namespace.
+                    </p>
+                    <div class="dns-example">
+<span class="keyword">hostNetwork:</span> <span class="number">true</span>
+<span class="keyword">dnsPolicy:</span> ClusterFirstWithHostNet
+
+<span class="comment"># /etc/resolv.conf</span>
+nameserver 10.32.0.10
+search default.svc.cluster.local svc.cluster.local cluster.local
+options ndots:5
+                    </div>
+                    <div class="policy-use-case">
+                        <strong>Use Case:</strong> Pods using host networking that still need to resolve Kubernetes Services (e.g., monitoring agents, network tools).
+                    </div>
+                </div>
+
+                <div class="policy-card">
+                    <h3>None</h3>
+                    <p class="policy-description">
+                        Ignores all DNS settings from the cluster. Requires explicit <code>dnsConfig</code> to specify custom DNS configuration. Provides complete control over DNS settings.
+                    </p>
+                    <div class="dns-example">
+<span class="keyword">dnsPolicy:</span> <span class="string">"None"</span>
+<span class="keyword">dnsConfig:</span>
+  <span class="keyword">nameservers:</span>
+    - 8.8.8.8
+  <span class="keyword">searches:</span>
+    - my-custom.search.suffix
+  <span class="keyword">options:</span>
+    - <span class="keyword">name:</span> ndots
+      <span class="keyword">value:</span> <span class="string">"1"</span>
+                    </div>
+                    <div class="policy-use-case">
+                        <strong>Use Case:</strong> Testing custom DNS resolvers, specific DNS requirements, or integration with external DNS systems.
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Example: Pod with hostNetwork and ClusterFirstWithHostNet</h3>
+                <div class="code-block">
+<span class="keyword">apiVersion:</span> v1
+<span class="keyword">kind:</span> Pod
+<span class="keyword">metadata:</span>
+  <span class="keyword">name:</span> busybox-hostnetwork
+<span class="keyword">spec:</span>
+  <span class="keyword">containers:</span>
+  - <span class="keyword">name:</span> busybox
+    <span class="keyword">image:</span> busybox:1.28
+    <span class="keyword">command:</span> [<span class="string">"sleep"</span>, <span class="string">"3600"</span>]
+  <span class="keyword">hostNetwork:</span> <span class="number">true</span>
+  <span class="keyword">dnsPolicy:</span> ClusterFirstWithHostNet
+
+<span class="comment"># This configuration:
+# - Pod uses host's network stack (shares host IP)
+# - But still resolves Kubernetes Services via CoreDNS
+# - Can resolve both cluster Services and external DNS names</span>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Example: Pod with Custom DNS Configuration (dnsPolicy: None)</h3>
+                <div class="code-block">
+<span class="keyword">apiVersion:</span> v1
+<span class="keyword">kind:</span> Pod
+<span class="keyword">metadata:</span>
+  <span class="keyword">name:</span> custom-dns-pod
+<span class="keyword">spec:</span>
+  <span class="keyword">containers:</span>
+  - <span class="keyword">name:</span> nginx
+    <span class="keyword">image:</span> nginx
+  <span class="keyword">dnsPolicy:</span> <span class="string">"None"</span>
+  <span class="keyword">dnsConfig:</span>
+    <span class="keyword">nameservers:</span>
+      - 8.8.8.8
+      - 1.1.1.1
+    <span class="keyword">searches:</span>
+      - my-custom.search.suffix
+      - another.search.domain
+    <span class="keyword">options:</span>
+      - <span class="keyword">name:</span> ndots
+        <span class="keyword">value:</span> <span class="string">"1"</span>
+      - <span class="keyword">name:</span> timeout
+        <span class="keyword">value:</span> <span class="string">"2"</span>
+
+<span class="comment"># Resulting /etc/resolv.conf:
+# nameserver 8.8.8.8
+# nameserver 1.1.1.1
+# search my-custom.search.suffix another.search.domain
+# options ndots:1 timeout:2</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>dnsConfig Options Explained</h4>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li><strong>nameservers:</strong> List of DNS server IP addresses (maximum 3)</li>
+                    <li><strong>searches:</strong> DNS search domains for hostname lookups (maximum 6)</li>
+                    <li><strong>options:</strong> List of DNS resolver options
+                        <ul style="margin-top: 5px;">
+                            <li><code>ndots</code>: Minimum number of dots in a name to query as absolute before trying search domains (default: 5)</li>
+                            <li><code>timeout</code>: Timeout for DNS queries in seconds</li>
+                            <li><code>attempts</code>: Number of DNS query attempts</li>
+                            <li><code>edns0</code>: Enable DNS extensions</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="naming-section">
+                <h3>Comparison Table</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead style="background: #326ce5; color: white;">
+                        <tr>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">DNS Policy</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Resolves K8s Services</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Resolves External DNS</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">When to Use</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 12px; border: 1px solid #ddd;"><strong>ClusterFirst</strong></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">✅ Yes</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">✅ Yes (via upstream)</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Default - most Pods</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd;"><strong>Default</strong></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">❌ No</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">✅ Yes (from node)</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">No K8s service discovery needed</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 12px; border: 1px solid #ddd;"><strong>ClusterFirstWithHostNet</strong></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">✅ Yes</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">✅ Yes (via upstream)</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">hostNetwork=true Pods</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd;"><strong>None</strong></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Depends on dnsConfig</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Depends on dnsConfig</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Custom DNS requirements</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 4: Resolution Examples -->
+        <div id="resolution" class="tab-content">
+            <h2>DNS Resolution Examples</h2>
+            <p style="color: #5a6c7d; margin-bottom: 30px;">
+                Compare successful and failed DNS resolution scenarios to understand common issues and best practices.
+            </p>
+
+            <div class="resolution-comparison">
+                <div class="resolution-result resolution-success">
+                    <h3>
+                        <span class="result-icon">✅</span>
+                        Successful Resolution
+                    </h3>
+                    <ul class="resolution-steps">
+                        <li><strong>Query:</strong> <code>nslookup my-nginx</code></li>
+                        <li><strong>Pod Namespace:</strong> default</li>
+                        <li><strong>Search Domain:</strong> default.svc.cluster.local</li>
+                        <li><strong>Expanded Query:</strong> my-nginx.default.svc.cluster.local</li>
+                        <li><strong>Service Found:</strong> Yes (in default namespace)</li>
+                        <li><strong>ClusterIP:</strong> 10.100.200.50</li>
+                        <li><strong>Result:</strong> Connection successful</li>
+                    </ul>
+                    <div class="dns-example" style="margin-top: 15px;">
+Server:    10.32.0.10
+Address:   10.32.0.10#53
+
+Name:      my-nginx.default.svc.cluster.local
+Address:   10.100.200.50
+                    </div>
+                </div>
+
+                <div class="resolution-result resolution-failure">
+                    <h3>
+                        <span class="result-icon">❌</span>
+                        Failed Resolution
+                    </h3>
+                    <ul class="resolution-steps">
+                        <li><strong>Query:</strong> <code>nslookup data</code></li>
+                        <li><strong>Pod Namespace:</strong> test</li>
+                        <li><strong>Search Domain:</strong> test.svc.cluster.local</li>
+                        <li><strong>Expanded Query:</strong> data.test.svc.cluster.local</li>
+                        <li><strong>Service Found:</strong> No (service is in prod namespace)</li>
+                        <li><strong>Error:</strong> NXDOMAIN (Non-Existent Domain)</li>
+                        <li><strong>Solution:</strong> Use <code>data.prod</code> or full FQDN</li>
+                    </ul>
+                    <div class="dns-example" style="margin-top: 15px;">
+Server:    10.32.0.10
+Address:   10.32.0.10#53
+
+** server can't find data: NXDOMAIN
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Scenario 1: Cross-Namespace Service Access</h3>
+                <div class="code-block">
+<span class="comment"># Pod in 'test' namespace trying to access service in 'prod' namespace</span>
+
+<span class="comment"># ❌ FAILS - searches only in test namespace</span>
+curl data
+
+<span class="comment"># ✅ SUCCESS - specifies prod namespace</span>
+curl data.prod
+
+<span class="comment"># ✅ SUCCESS - uses full FQDN</span>
+curl data.prod.svc.cluster.local
+
+<span class="comment"># DNS Query Expansion:
+# Query: data
+#   1. data.test.svc.cluster.local (NOT FOUND)
+#   2. data.svc.cluster.local (NOT FOUND)
+#   3. data.cluster.local (NOT FOUND)
+#   Result: NXDOMAIN
+
+# Query: data.prod
+#   1. data.prod.test.svc.cluster.local (NOT FOUND)
+#   2. data.prod.svc.cluster.local (FOUND!)
+#   Result: Success</span>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Scenario 2: Headless Service Resolution</h3>
+                <div class="code-block">
+<span class="comment"># Normal Service - returns ClusterIP</span>
+$ nslookup my-nginx.default.svc.cluster.local
+Name:      my-nginx.default.svc.cluster.local
+Address:   10.100.200.50
+
+<span class="comment"># Headless Service - returns all Pod IPs</span>
+$ nslookup my-nginx-headless.default.svc.cluster.local
+Name:      my-nginx-headless.default.svc.cluster.local
+Address:   172.17.0.3
+Name:      my-nginx-headless.default.svc.cluster.local
+Address:   172.17.0.4
+Name:      my-nginx-headless.default.svc.cluster.local
+Address:   172.17.0.5
+
+<span class="comment"># Headless Service YAML:
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: my-nginx-headless
+# spec:
+#   clusterIP: None  # This makes it headless
+#   selector:
+#     app: nginx</span>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Scenario 3: Pod DNS with Hostname/Subdomain</h3>
+                <div class="code-block">
+<span class="comment"># Pod configuration</span>
+<span class="keyword">apiVersion:</span> v1
+<span class="keyword">kind:</span> Pod
+<span class="keyword">metadata:</span>
+  <span class="keyword">name:</span> web-1
+<span class="keyword">spec:</span>
+  <span class="keyword">hostname:</span> web-1
+  <span class="keyword">subdomain:</span> web-service
+  ...
+
+<span class="comment"># Headless Service (REQUIRED)</span>
+<span class="keyword">apiVersion:</span> v1
+<span class="keyword">kind:</span> Service
+<span class="keyword">metadata:</span>
+  <span class="keyword">name:</span> web-service
+<span class="keyword">spec:</span>
+  <span class="keyword">clusterIP:</span> None
+  ...
+
+<span class="comment"># ✅ DNS Resolution</span>
+$ nslookup web-1.web-service.default.svc.cluster.local
+Name:      web-1.web-service.default.svc.cluster.local
+Address:   172.17.0.10
+
+<span class="comment"># ❌ Without headless Service - DNS will fail
+# Pod hostname/subdomain requires matching headless Service</span>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3>Scenario 4: External DNS Resolution</h3>
+                <div class="code-block">
+<span class="comment"># With ClusterFirst (default policy)</span>
+$ nslookup google.com
+Server:    10.32.0.10
+Address:   10.32.0.10#53
+
+Non-authoritative answer:
+Name:      google.com
+Address:   142.250.185.78
+
+<span class="comment"># Flow:
+# 1. Query sent to CoreDNS (10.32.0.10)
+# 2. CoreDNS sees it's not a cluster domain
+# 3. CoreDNS forwards to upstream DNS (from node)
+# 4. Response returned through CoreDNS to Pod</span>
+
+<span class="comment"># With Default policy - bypasses CoreDNS</span>
+$ nslookup google.com
+Server:    8.8.8.8
+Address:   8.8.8.8#53
+
+Non-authoritative answer:
+Name:      google.com
+Address:   142.250.185.78
+
+<span class="comment"># Flow:
+# 1. Query sent directly to node's DNS (8.8.8.8)
+# 2. No CoreDNS involvement
+# 3. Cannot resolve Kubernetes Services</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Best Practices for DNS Resolution</h4>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li><strong>Use full FQDNs for cross-namespace access:</strong> Specify namespace explicitly to avoid ambiguity and reduce DNS query attempts.</li>
+                    <li><strong>Prefer short names within the same namespace:</strong> Simplifies configuration and leverages search domains efficiently.</li>
+                    <li><strong>Use headless Services for StatefulSets:</strong> Provides stable, predictable DNS names for each Pod.</li>
+                    <li><strong>Monitor CoreDNS performance:</strong> Watch for DNS resolution delays which can impact application latency.</li>
+                    <li><strong>Configure ndots appropriately:</strong> Lower ndots value (e.g., 2) can reduce DNS queries for external domains.</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h4>Common DNS Issues and Solutions</h4>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li><strong>NXDOMAIN errors:</strong> Check namespace, service name spelling, and ensure Service exists.</li>
+                    <li><strong>Slow DNS resolution:</strong> High ndots value causes many search domain attempts. Consider using FQDNs with trailing dot (e.g., <code>google.com.</code>).</li>
+                    <li><strong>Cannot resolve Services with hostNetwork:</strong> Use <code>dnsPolicy: ClusterFirstWithHostNet</code> instead of default.</li>
+                    <li><strong>Custom DNS not working:</strong> Ensure <code>dnsPolicy: "None"</code> is set when using <code>dnsConfig</code>.</li>
+                    <li><strong>Pod hostname DNS fails:</strong> Verify matching headless Service exists with <code>clusterIP: None</code>.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        let animationInterval = null;
+
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+
+            // Reset animation if switching away from query flow
+            if (tabName !== 'query-flow') {
+                resetAnimation();
+            }
+        }
+
+        function activateStep(stepNumber) {
+            // Deactivate all steps
+            const steps = document.querySelectorAll('.flow-step');
+            steps.forEach(step => step.classList.remove('active'));
+
+            // Activate clicked step
+            const clickedStep = document.querySelector(`.flow-step[data-step="${stepNumber}"]`);
+            if (clickedStep) {
+                clickedStep.classList.add('active');
+                currentStep = stepNumber;
+            }
+        }
+
+        function startAnimation() {
+            resetAnimation();
+            currentStep = 1;
+
+            animationInterval = setInterval(() => {
+                activateStep(currentStep);
+                currentStep++;
+
+                if (currentStep > 7) {
+                    clearInterval(animationInterval);
+                    currentStep = 0;
+                }
+            }, 2500);
+        }
+
+        function resetAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+
+            const steps = document.querySelectorAll('.flow-step');
+            steps.forEach(step => step.classList.remove('active'));
+            currentStep = 0;
+        }
+
+        // Initialize tooltips behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth scrolling for better UX
+            document.querySelectorAll('.flow-step').forEach(step => {
+                step.addEventListener('click', function() {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

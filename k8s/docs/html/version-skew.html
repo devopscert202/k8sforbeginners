@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Version Skew Policy Matrix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .rule-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .rule-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .rule-card h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .rule-card .version-range {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .rule-card .description {
+            font-size: 13px;
+            opacity: 0.95;
+        }
+
+        .matrix-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .matrix-table thead {
+            background: #34495e;
+            color: white;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .matrix-table th {
+            font-weight: 600;
+        }
+
+        .matrix-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .compatible {
+            background-color: #d4edda !important;
+            color: #155724;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .compatible:hover {
+            background-color: #c3e6cb !important;
+        }
+
+        .incompatible {
+            background-color: #f8d7da !important;
+            color: #721c24;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .incompatible:hover {
+            background-color: #f5c6cb !important;
+        }
+
+        .component-label {
+            font-weight: 600;
+            background-color: #e9ecef;
+            text-align: left !important;
+            padding-left: 15px !important;
+        }
+
+        .examples-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .example-box {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .example-box.valid {
+            background-color: #d4edda;
+            border-color: #28a745;
+        }
+
+        .example-box.invalid {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .example-box h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .example-box ul {
+            margin-left: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .best-practices {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .best-practices h3 {
+            font-size: 16px;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .best-practices ul {
+            margin-left: 20px;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #856404;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .version-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .version-selector label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 10px;
+            color: #2c3e50;
+        }
+
+        .version-selector select {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .rule-card:hover,
+            .compatible:hover,
+            .incompatible:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kubernetes Version Skew Policy Matrix</h1>
+        <p class="subtitle">Interactive Compatibility Reference Guide</p>
+
+        <!-- Version Skew Rules -->
+        <div class="rules-grid">
+            <div class="rule-card" data-tooltip="kube-apiserver is the baseline version (N) for all other components">
+                <h3>kube-apiserver</h3>
+                <div class="version-range">N (Baseline)</div>
+                <div class="description">Central API server - always upgrade first</div>
+            </div>
+
+            <div class="rule-card" data-tooltip="kubelet can be up to 2 minor versions behind kube-apiserver">
+                <h3>kubelet</h3>
+                <div class="version-range">N to N-2</div>
+                <div class="description">Worker node agent - gradual upgrade</div>
+            </div>
+
+            <div class="rule-card" data-tooltip="kubectl can be 1 version ahead or behind kube-apiserver">
+                <h3>kubectl</h3>
+                <div class="version-range">N+1 to N-1</div>
+                <div class="description">CLI tool - flexible versioning</div>
+            </div>
+
+            <div class="rule-card" data-tooltip="Control plane components can be 1 minor version behind kube-apiserver">
+                <h3>kube-controller-manager<br>kube-scheduler</h3>
+                <div class="version-range">N to N-1</div>
+                <div class="description">Control plane components</div>
+            </div>
+        </div>
+
+        <!-- Version Selector -->
+        <div class="version-selector">
+            <label for="apiVersion">Select kube-apiserver version:</label>
+            <select id="apiVersion" onchange="updateMatrix()">
+                <option value="1.30">v1.30.x</option>
+                <option value="1.29">v1.29.x</option>
+                <option value="1.28" selected>v1.28.x</option>
+                <option value="1.27">v1.27.x</option>
+            </select>
+        </div>
+
+        <!-- Compatibility Matrix -->
+        <div class="matrix-section">
+            <h2 class="section-title">Compatibility Matrix</h2>
+            <table class="matrix-table" id="compatibilityMatrix">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th id="ver-2"></th>
+                        <th id="ver-1"></th>
+                        <th id="ver-0"></th>
+                        <th id="ver+1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="component-label">kube-apiserver</td>
+                        <td class="incompatible" data-tooltip="API server cannot be behind other components">✗</td>
+                        <td class="incompatible" data-tooltip="API server cannot be behind other components">✗</td>
+                        <td class="compatible" data-tooltip="This is the baseline version (N)">✓</td>
+                        <td class="incompatible" data-tooltip="No component can be ahead of API server">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="component-label">kubelet</td>
+                        <td class="compatible" data-tooltip="kubelet can be 2 versions behind (N-2)">✓</td>
+                        <td class="compatible" data-tooltip="kubelet can be 1 version behind (N-1)">✓</td>
+                        <td class="compatible" data-tooltip="kubelet can match API server version (N)">✓</td>
+                        <td class="incompatible" data-tooltip="kubelet cannot be ahead of API server">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="component-label">kubectl</td>
+                        <td class="incompatible" data-tooltip="kubectl cannot be 2 versions behind">✗</td>
+                        <td class="compatible" data-tooltip="kubectl can be 1 version behind (N-1)">✓</td>
+                        <td class="compatible" data-tooltip="kubectl can match API server version (N)">✓</td>
+                        <td class="compatible" data-tooltip="kubectl can be 1 version ahead (N+1)">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="component-label">kube-controller-manager</td>
+                        <td class="incompatible" data-tooltip="Controller manager cannot be 2 versions behind">✗</td>
+                        <td class="compatible" data-tooltip="Controller manager can be 1 version behind (N-1)">✓</td>
+                        <td class="compatible" data-tooltip="Controller manager can match API server version (N)">✓</td>
+                        <td class="incompatible" data-tooltip="Controller manager cannot be ahead of API server">✗</td>
+                    </tr>
+                    <tr>
+                        <td class="component-label">kube-scheduler</td>
+                        <td class="incompatible" data-tooltip="Scheduler cannot be 2 versions behind">✗</td>
+                        <td class="compatible" data-tooltip="Scheduler can be 1 version behind (N-1)">✓</td>
+                        <td class="compatible" data-tooltip="Scheduler can match API server version (N)">✓</td>
+                        <td class="incompatible" data-tooltip="Scheduler cannot be ahead of API server">✗</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box compatible"></div>
+                    <span>Compatible (Supported)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box incompatible"></div>
+                    <span>Incompatible (Not Supported)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Examples -->
+        <div class="matrix-section">
+            <h2 class="section-title">Version Combination Examples</h2>
+            <div class="examples-section">
+                <div class="example-box valid">
+                    <h4>✓ Valid Combinations</h4>
+                    <ul>
+                        <li><strong>Scenario 1:</strong> API v1.28, kubelet v1.27, kubectl v1.28</li>
+                        <li><strong>Scenario 2:</strong> API v1.28, kubelet v1.26, kubectl v1.29</li>
+                        <li><strong>Scenario 3:</strong> API v1.28, all components v1.28</li>
+                    </ul>
+                </div>
+
+                <div class="example-box invalid">
+                    <h4>✗ Invalid Combinations</h4>
+                    <ul>
+                        <li><strong>Error 1:</strong> API v1.28, kubelet v1.29 (kubelet ahead)</li>
+                        <li><strong>Error 2:</strong> API v1.28, kubelet v1.25 (3 versions behind)</li>
+                        <li><strong>Error 3:</strong> API v1.28, kubectl v1.25 (2 versions behind)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="best-practices">
+            <h3>Best Practices for Kubernetes Upgrades</h3>
+            <ul>
+                <li><strong>Upgrade Order:</strong> Always upgrade kube-apiserver first, then controller-manager/scheduler, then kubelet, finally kubectl</li>
+                <li><strong>Sequential Upgrades:</strong> Only upgrade one minor version at a time (e.g., 1.27 → 1.28 → 1.29)</li>
+                <li><strong>Never Skip Versions:</strong> Kubernetes does not support skipping minor versions during upgrades</li>
+                <li><strong>Gradual Node Upgrades:</strong> Upgrade worker nodes one at a time using drain/cordon to minimize disruption</li>
+                <li><strong>Test First:</strong> Always test upgrades in staging environment before production</li>
+                <li><strong>Backup etcd:</strong> Create etcd snapshots before any control plane upgrade</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Tooltip functionality
+        const tooltip = document.getElementById('tooltip');
+        const tooltipElements = document.querySelectorAll('[data-tooltip]');
+
+        tooltipElements.forEach(element => {
+            element.addEventListener('mouseenter', (e) => {
+                const text = element.getAttribute('data-tooltip');
+                tooltip.textContent = text;
+                tooltip.style.display = 'block';
+                updateTooltipPosition(e);
+            });
+
+            element.addEventListener('mousemove', updateTooltipPosition);
+
+            element.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+        });
+
+        function updateTooltipPosition(e) {
+            const offset = 15;
+            let x = e.clientX + offset;
+            let y = e.clientY + offset;
+
+            // Prevent tooltip from going off screen
+            if (x + tooltip.offsetWidth > window.innerWidth) {
+                x = e.clientX - tooltip.offsetWidth - offset;
+            }
+
+            if (y + tooltip.offsetHeight > window.innerHeight) {
+                y = e.clientY - tooltip.offsetHeight - offset;
+            }
+
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = y + 'px';
+        }
+
+        // Update matrix based on selected version
+        function updateMatrix() {
+            const select = document.getElementById('apiVersion');
+            const baseVersion = parseFloat(select.value);
+
+            // Update column headers
+            document.getElementById('ver-2').textContent = `v${(baseVersion - 0.02).toFixed(2)}.x`;
+            document.getElementById('ver-1').textContent = `v${(baseVersion - 0.01).toFixed(2)}.x`;
+            document.getElementById('ver-0').textContent = `v${baseVersion.toFixed(2)}.x`;
+            document.getElementById('ver+1').textContent = `v${(baseVersion + 0.01).toFixed(2)}.x`;
+
+            // Update example scenarios
+            const validExample = document.querySelector('.example-box.valid ul');
+            validExample.innerHTML = `
+                <li><strong>Scenario 1:</strong> API v${baseVersion.toFixed(2)}, kubelet v${(baseVersion - 0.01).toFixed(2)}, kubectl v${baseVersion.toFixed(2)}</li>
+                <li><strong>Scenario 2:</strong> API v${baseVersion.toFixed(2)}, kubelet v${(baseVersion - 0.02).toFixed(2)}, kubectl v${(baseVersion + 0.01).toFixed(2)}</li>
+                <li><strong>Scenario 3:</strong> API v${baseVersion.toFixed(2)}, all components v${baseVersion.toFixed(2)}</li>
+            `;
+
+            const invalidExample = document.querySelector('.example-box.invalid ul');
+            invalidExample.innerHTML = `
+                <li><strong>Error 1:</strong> API v${baseVersion.toFixed(2)}, kubelet v${(baseVersion + 0.01).toFixed(2)} (kubelet ahead)</li>
+                <li><strong>Error 2:</strong> API v${baseVersion.toFixed(2)}, kubelet v${(baseVersion - 0.03).toFixed(2)} (3 versions behind)</li>
+                <li><strong>Error 3:</strong> API v${baseVersion.toFixed(2)}, kubectl v${(baseVersion - 0.02).toFixed(2)} (2 versions behind)</li>
+            `;
+        }
+
+        // Initialize matrix on load
+        updateMatrix();
+
+        // Add click feedback for interactive cells
+        const cells = document.querySelectorAll('.compatible, .incompatible');
+        cells.forEach(cell => {
+            cell.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

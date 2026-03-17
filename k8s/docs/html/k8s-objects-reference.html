@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Objects Reference - Complete Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #326ce5 0%, #2254d4 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-bar {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            border-color: #326ce5;
+            box-shadow: 0 0 0 3px rgba(50, 108, 229, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            border-bottom: 3px solid #dee2e6;
+            padding: 0 30px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 18px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: #326ce5;
+            background: rgba(50, 108, 229, 0.05);
+        }
+
+        .tab.active {
+            color: #326ce5;
+            border-bottom-color: #326ce5;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .objects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .object-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .object-card:hover {
+            border-color: #326ce5;
+            box-shadow: 0 8px 25px rgba(50, 108, 229, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .object-card.expanded {
+            grid-column: 1 / -1;
+            border-color: #326ce5;
+        }
+
+        .object-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .object-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .object-title h3 {
+            font-size: 1.4em;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+
+        .object-title .object-kind {
+            font-size: 0.85em;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .object-description {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .object-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .meta-badge {
+            background: #e7f3ff;
+            color: #326ce5;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .object-details {
+            display: none;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .object-card.expanded .object-details {
+            display: block;
+        }
+
+        .details-section {
+            margin-bottom: 25px;
+        }
+
+        .details-section h4 {
+            color: #326ce5;
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .details-section h4::before {
+            content: "▸";
+            font-size: 0.8em;
+        }
+
+        .details-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .details-section li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #495057;
+            line-height: 1.6;
+        }
+
+        .details-section li::before {
+            content: "●";
+            position: absolute;
+            left: 8px;
+            color: #326ce5;
+            font-size: 0.7em;
+        }
+
+        .yaml-section {
+            margin-top: 20px;
+        }
+
+        .yaml-toggle {
+            background: #326ce5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .yaml-toggle:hover {
+            background: #2254d4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.3);
+        }
+
+        .yaml-content {
+            display: none;
+            margin-top: 15px;
+            background: #282c34;
+            border-radius: 8px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .yaml-content.show {
+            display: block;
+        }
+
+        .yaml-header {
+            background: #1e2127;
+            padding: 12px 20px;
+            color: #abb2bf;
+            font-size: 0.9em;
+            border-bottom: 1px solid #181a1f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #326ce5;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #2254d4;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #abb2bf;
+            white-space: pre;
+        }
+
+        .yaml-key { color: #e06c75; }
+        .yaml-string { color: #98c379; }
+        .yaml-number { color: #d19a66; }
+        .yaml-comment { color: #5c6370; font-style: italic; }
+
+        .related-objects {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .related-objects h4 {
+            color: #495057;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .related-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .related-link {
+            background: white;
+            color: #326ce5;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            text-decoration: none;
+            border: 1px solid #326ce5;
+            transition: all 0.2s;
+        }
+
+        .related-link:hover {
+            background: #326ce5;
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .no-results h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            border-top: 2px solid #e9ecef;
+        }
+
+        @media (max-width: 768px) {
+            .objects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .tabs {
+                padding: 0 15px;
+            }
+
+            .tab {
+                padding: 15px 15px;
+                font-size: 14px;
+            }
+
+            .tab-content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚓ Kubernetes Objects Reference</h1>
+            <p>Complete guide to all Kubernetes objects with YAML examples</p>
+        </header>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Search for any Kubernetes object... (e.g., Pod, Service, Deployment)">
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="workloads">Workload Objects</button>
+            <button class="tab" data-tab="config">Configuration & Storage</button>
+            <button class="tab" data-tab="networking">Networking</button>
+            <button class="tab" data-tab="security">Security & Access Control</button>
+            <button class="tab" data-tab="resource">Resource Management</button>
+            <button class="tab" data-tab="advanced">Advanced Objects</button>
+        </div>
+
+        <div id="workloads" class="tab-content active">
+            <div class="objects-grid" id="workloadsGrid"></div>
+        </div>
+
+        <div id="config" class="tab-content">
+            <div class="objects-grid" id="configGrid"></div>
+        </div>
+
+        <div id="networking" class="tab-content">
+            <div class="objects-grid" id="networkingGrid"></div>
+        </div>
+
+        <div id="security" class="tab-content">
+            <div class="objects-grid" id="securityGrid"></div>
+        </div>
+
+        <div id="resource" class="tab-content">
+            <div class="objects-grid" id="resourceGrid"></div>
+        </div>
+
+        <div id="advanced" class="tab-content">
+            <div class="objects-grid" id="advancedGrid"></div>
+        </div>
+
+        <footer>
+            <p><strong>Kubernetes Objects Reference</strong> | Created: March 2026 | Compatible with Kubernetes 1.24+</p>
+            <p>Complete reference for administrators and developers</p>
+        </footer>
+    </div>
+
+    <script>
+        const k8sObjects = {
+            workloads: [
+                {
+                    name: "Pod",
+                    kind: "Pod",
+                    icon: "🔵",
+                    iconBg: "#e3f2fd",
+                    description: "The smallest deployable unit in Kubernetes. A Pod encapsulates one or more containers that share storage, network, and specifications.",
+                    useCases: ["Single container applications", "Tightly coupled multi-container apps", "Building blocks for higher-level controllers"],
+                    keyFields: ["spec.containers", "spec.volumes", "spec.restartPolicy", "metadata.labels"],
+                    yaml: `apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"`,
+                    related: ["Deployment", "ReplicaSet", "Service"]
+                },
+                {
+                    name: "ReplicaSet",
+                    kind: "ReplicaSet",
+                    icon: "🔄",
+                    iconBg: "#fff3e0",
+                    description: "Maintains a stable set of replica Pods running at any given time. Ensures specified number of pod replicas are available.",
+                    useCases: ["Maintain desired replica count", "Automatic Pod replacement", "Scaling applications"],
+                    keyFields: ["spec.replicas", "spec.selector", "spec.template"],
+                    yaml: `apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend-rs
+  labels:
+    app: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80`,
+                    related: ["Deployment", "Pod", "HorizontalPodAutoscaler"]
+                },
+                {
+                    name: "Deployment",
+                    kind: "Deployment",
+                    icon: "🚀",
+                    iconBg: "#e8f5e9",
+                    description: "Manages stateless applications with declarative updates, rolling updates, and rollback capabilities. Creates and manages ReplicaSets.",
+                    useCases: ["Web applications", "Stateless microservices", "Rolling updates", "Scaling workloads"],
+                    keyFields: ["spec.replicas", "spec.strategy", "spec.template", "spec.selector"],
+                    yaml: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10`,
+                    related: ["ReplicaSet", "Pod", "Service", "HorizontalPodAutoscaler"]
+                },
+                {
+                    name: "StatefulSet",
+                    kind: "StatefulSet",
+                    icon: "💾",
+                    iconBg: "#f3e5f5",
+                    description: "Manages stateful applications with stable network identities, persistent storage, and ordered deployment/scaling/deletion.",
+                    useCases: ["Databases (MySQL, PostgreSQL, MongoDB)", "Message queues (Kafka, RabbitMQ)", "Distributed systems (Cassandra, Elasticsearch)"],
+                    keyFields: ["spec.serviceName", "spec.replicas", "spec.volumeClaimTemplates", "spec.podManagementPolicy"],
+                    yaml: `apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-statefulset
+spec:
+  serviceName: "mysql"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 10Gi`,
+                    related: ["PersistentVolumeClaim", "Service", "Pod"]
+                },
+                {
+                    name: "DaemonSet",
+                    kind: "DaemonSet",
+                    icon: "👹",
+                    iconBg: "#fce4ec",
+                    description: "Ensures that a copy of a Pod runs on all (or selected) nodes in the cluster. Useful for node-level operations.",
+                    useCases: ["Log collection (Fluentd, Logstash)", "Monitoring agents (Prometheus Node Exporter)", "Network plugins", "Storage daemons"],
+                    keyFields: ["spec.selector", "spec.template", "spec.updateStrategy"],
+                    yaml: `apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-daemonset
+  labels:
+    app: fluentd
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        effect: NoSchedule
+      containers:
+      - name: fluentd
+        image: fluentd:latest
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log`,
+                    related: ["Pod", "Node", "Deployment"]
+                },
+                {
+                    name: "Job",
+                    kind: "Job",
+                    icon: "⚙️",
+                    iconBg: "#e0f2f1",
+                    description: "Creates one or more Pods and ensures a specified number successfully terminate. Ideal for batch processing and one-time tasks.",
+                    useCases: ["Batch data processing", "Database migrations", "ETL operations", "Backup tasks", "Report generation"],
+                    keyFields: ["spec.completions", "spec.parallelism", "spec.backoffLimit", "spec.template"],
+                    yaml: `apiVersion: batch/v1
+kind: Job
+metadata:
+  name: data-processing-job
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 4
+  template:
+    spec:
+      containers:
+      - name: processor
+        image: data-processor:latest
+        command: ["python", "process_data.py"]
+        env:
+        - name: DATA_SOURCE
+          value: "s3://my-bucket/data"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+      restartPolicy: OnFailure
+  ttlSecondsAfterFinished: 3600`,
+                    related: ["CronJob", "Pod"]
+                },
+                {
+                    name: "CronJob",
+                    kind: "CronJob",
+                    icon: "⏰",
+                    iconBg: "#fff9c4",
+                    description: "Creates Jobs on a scheduled basis using cron format. Perfect for recurring tasks and periodic operations.",
+                    useCases: ["Database backups", "Scheduled reports", "Cache warming", "Log rotation", "Data synchronization"],
+                    keyFields: ["spec.schedule", "spec.jobTemplate", "spec.successfulJobsHistoryLimit", "spec.concurrencyPolicy"],
+                    yaml: `apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-backup
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  timeZone: "America/New_York"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: backup-tool:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting backup at $(date)"
+              backup-script.sh
+              echo "Backup completed at $(date)"
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backups
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc`,
+                    related: ["Job", "Pod", "PersistentVolumeClaim"]
+                },
+                {
+                    name: "Static Pod",
+                    kind: "Pod",
+                    icon: "📌",
+                    iconBg: "#efebe9",
+                    description: "Pods managed directly by kubelet on a specific node, not through the API server. Typically used for control plane components.",
+                    useCases: ["Control plane components (kube-apiserver, etcd)", "System-level services", "Node-specific workloads"],
+                    keyFields: ["Same as Pod", "Placed in /etc/kubernetes/manifests/"],
+                    yaml: `apiVersion: v1
+kind: Pod
+metadata:
+  name: static-nginx
+  namespace: default
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "100m"
+      limits:
+        memory: "128Mi"
+        cpu: "200m"
+  # Place this file in /etc/kubernetes/manifests/ on the node
+  # The kubelet will automatically create and manage this Pod`,
+                    related: ["Pod", "Node", "Kubelet"]
+                }
+            ],
+            config: [
+                {
+                    name: "ConfigMap",
+                    kind: "ConfigMap",
+                    icon: "📄",
+                    iconBg: "#e1f5fe",
+                    description: "Stores non-confidential configuration data as key-value pairs. Decouples configuration from container images for portability.",
+                    useCases: ["Application settings", "Environment variables", "Configuration files", "Command-line arguments"],
+                    keyFields: ["data", "binaryData"],
+                    yaml: `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: default
+data:
+  # Simple key-value pairs
+  app.env: "production"
+  log.level: "info"
+  database.host: "mysql.default.svc.cluster.local"
+
+  # Configuration file
+  app.properties: |
+    server.port=8080
+    server.host=0.0.0.0
+    app.name=MyApplication
+    cache.enabled=true
+
+  # NGINX config
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    events {
+      worker_connections 1024;
+    }
+    http {
+      server {
+        listen 80;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+        }
+      }
+    }`,
+                    related: ["Pod", "Deployment", "Secret"]
+                },
+                {
+                    name: "Secret",
+                    kind: "Secret",
+                    icon: "🔐",
+                    iconBg: "#fff3e0",
+                    description: "Stores sensitive data like passwords, OAuth tokens, and SSH keys. Data is base64-encoded and can be encrypted at rest.",
+                    useCases: ["Database credentials", "API keys", "TLS certificates", "SSH keys", "Docker registry credentials"],
+                    keyFields: ["type", "data", "stringData"],
+                    yaml: `apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: default
+type: Opaque
+data:
+  # Base64 encoded values
+  username: YWRtaW4=        # 'admin'
+  password: cGFzc3dvcmQxMjM= # 'password123'
+---
+# TLS Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls-secret
+type: kubernetes.io/tls
+data:
+  tls.crt: LS0tLS1CRUdJTi... # Base64 cert
+  tls.key: LS0tLS1CRUdJTi... # Base64 key
+---
+# Docker Registry Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-secret
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: eyJhdXRocyI6...`,
+                    related: ["Pod", "Deployment", "ConfigMap", "ServiceAccount"]
+                },
+                {
+                    name: "PersistentVolume (PV)",
+                    kind: "PersistentVolume",
+                    icon: "💿",
+                    iconBg: "#e8eaf6",
+                    description: "A cluster-wide storage resource provisioned by administrator or dynamically via StorageClass. Exists independently of Pod lifecycle.",
+                    useCases: ["Persistent storage for databases", "Shared storage for applications", "NFS mounts", "Cloud storage (EBS, GCE PD)"],
+                    keyFields: ["spec.capacity", "spec.accessModes", "spec.persistentVolumeReclaimPolicy", "spec.storageClassName"],
+                    yaml: `apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/data/mysql
+---
+# NFS PersistentVolume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  nfs:
+    server: nfs-server.default.svc.cluster.local
+    path: /exports`,
+                    related: ["PersistentVolumeClaim", "StorageClass", "Pod"]
+                },
+                {
+                    name: "PersistentVolumeClaim (PVC)",
+                    kind: "PersistentVolumeClaim",
+                    icon: "📦",
+                    iconBg: "#f3e5f5",
+                    description: "A request for storage by a user. PVCs are bound to PVs and used by Pods to access persistent storage.",
+                    useCases: ["Request storage for applications", "Database volumes", "Shared file storage"],
+                    keyFields: ["spec.accessModes", "spec.resources.requests.storage", "spec.storageClassName"],
+                    yaml: `apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi
+---
+# PVC with selector
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-pvc
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  selector:
+    matchLabels:
+      type: fast-storage`,
+                    related: ["PersistentVolume", "StorageClass", "Pod", "StatefulSet"]
+                },
+                {
+                    name: "StorageClass",
+                    kind: "StorageClass",
+                    icon: "🗄️",
+                    iconBg: "#e0f2f1",
+                    description: "Defines different classes of storage and enables dynamic provisioning of PersistentVolumes based on demand.",
+                    useCases: ["Dynamic volume provisioning", "Different storage tiers (SSD, HDD)", "Cloud storage integration"],
+                    keyFields: ["provisioner", "parameters", "reclaimPolicy", "allowVolumeExpansion"],
+                    yaml: `apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-storage
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+# GCE Persistent Disk
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gce-pd-ssd
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+  replication-type: regional-pd
+allowVolumeExpansion: true`,
+                    related: ["PersistentVolume", "PersistentVolumeClaim"]
+                },
+                {
+                    name: "Volume",
+                    kind: "Volume (Pod spec)",
+                    icon: "📁",
+                    iconBg: "#fff9c4",
+                    description: "Pod-level storage that exists as long as the Pod exists. Various types available: emptyDir, hostPath, configMap, secret, PVC.",
+                    useCases: ["Temporary storage", "Shared data between containers", "Mounting ConfigMaps/Secrets", "Node storage access"],
+                    keyFields: ["emptyDir", "hostPath", "configMap", "secret", "persistentVolumeClaim"],
+                    yaml: `apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-demo
+spec:
+  containers:
+  - name: app
+    image: nginx
+    volumeMounts:
+    - name: cache
+      mountPath: /cache
+    - name: config
+      mountPath: /config
+    - name: secrets
+      mountPath: /secrets
+      readOnly: true
+    - name: data
+      mountPath: /data
+  volumes:
+  # EmptyDir - temporary storage
+  - name: cache
+    emptyDir: {}
+  # ConfigMap volume
+  - name: config
+    configMap:
+      name: app-config
+  # Secret volume
+  - name: secrets
+    secret:
+      secretName: app-secrets
+  # PersistentVolumeClaim
+  - name: data
+    persistentVolumeClaim:
+      claimName: data-pvc`,
+                    related: ["Pod", "ConfigMap", "Secret", "PersistentVolumeClaim"]
+                }
+            ],
+            networking: [
+                {
+                    name: "Service",
+                    kind: "Service",
+                    icon: "🌐",
+                    iconBg: "#e8f5e9",
+                    description: "Provides stable networking endpoint for a set of Pods. Types: ClusterIP (internal), NodePort (external), LoadBalancer (cloud), ExternalName (DNS).",
+                    useCases: ["Load balancing", "Service discovery", "Internal/external communication", "Microservices connectivity"],
+                    keyFields: ["spec.type", "spec.selector", "spec.ports", "spec.clusterIP"],
+                    yaml: `# ClusterIP Service (default)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+---
+# NodePort Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-nodeport
+spec:
+  type: NodePort
+  selector:
+    app: web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+    nodePort: 30080
+---
+# LoadBalancer Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-lb
+spec:
+  type: LoadBalancer
+  selector:
+    app: web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+---
+# ExternalName Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-db
+spec:
+  type: ExternalName
+  externalName: db.example.com`,
+                    related: ["Pod", "Deployment", "Ingress", "Endpoints"]
+                },
+                {
+                    name: "Ingress",
+                    kind: "Ingress",
+                    icon: "🚪",
+                    iconBg: "#fce4ec",
+                    description: "Manages external HTTP/HTTPS access to services. Provides load balancing, SSL termination, and name-based virtual hosting.",
+                    useCases: ["HTTP/S routing", "Domain-based routing", "SSL/TLS termination", "API gateway"],
+                    keyFields: ["spec.rules", "spec.tls", "spec.backend"],
+                    yaml: `apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - example.com
+    - www.example.com
+    secretName: tls-secret
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-service
+            port:
+              number: 80
+  - host: blog.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: blog-service
+            port:
+              number: 80`,
+                    related: ["Service", "IngressController", "Secret"]
+                },
+                {
+                    name: "NetworkPolicy",
+                    kind: "NetworkPolicy",
+                    icon: "🛡️",
+                    iconBg: "#fff3e0",
+                    description: "Controls traffic flow at the IP address or port level for Pods. Implements network segmentation and security policies.",
+                    useCases: ["Restrict Pod communication", "Microsegmentation", "Zero-trust networking", "Compliance requirements"],
+                    keyFields: ["spec.podSelector", "spec.policyTypes", "spec.ingress", "spec.egress"],
+                    yaml: `# Allow ingress from specific Pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-policy
+  namespace: production
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    - namespaceSelector:
+        matchLabels:
+          name: production
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: database
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 53
+---
+# Deny all traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress`,
+                    related: ["Pod", "Namespace", "Service"]
+                },
+                {
+                    name: "Endpoints",
+                    kind: "Endpoints",
+                    icon: "🎯",
+                    iconBg: "#e1f5fe",
+                    description: "Lists the network endpoints (Pod IPs) for a Service. Automatically managed by Kubernetes based on Service selector.",
+                    useCases: ["Service backend discovery", "Manual endpoint management", "External service integration"],
+                    keyFields: ["subsets[].addresses", "subsets[].ports"],
+                    yaml: `# Automatically created for Service with selector
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: my-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+---
+# Manual Endpoints (for Service without selector)
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-service
+subsets:
+- addresses:
+  - ip: 192.168.1.100
+  - ip: 192.168.1.101
+  ports:
+  - port: 80
+    protocol: TCP`,
+                    related: ["Service", "EndpointSlices", "Pod"]
+                },
+                {
+                    name: "EndpointSlices",
+                    kind: "EndpointSlice",
+                    icon: "🔗",
+                    iconBg: "#f3e5f5",
+                    description: "Scalable method of tracking network endpoints. Splits Service endpoints into multiple slices for better performance in large clusters.",
+                    useCases: ["Large-scale deployments", "Improved scalability", "Reduced API server load"],
+                    keyFields: ["addressType", "endpoints", "ports"],
+                    yaml: `apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: my-service-abc
+  labels:
+    kubernetes.io/service-name: my-service
+addressType: IPv4
+ports:
+- name: http
+  protocol: TCP
+  port: 80
+endpoints:
+- addresses:
+  - "10.1.2.3"
+  conditions:
+    ready: true
+  hostname: pod-1
+  nodeName: node-1
+  zone: us-east-1a
+- addresses:
+  - "10.1.2.4"
+  conditions:
+    ready: true
+  hostname: pod-2
+  nodeName: node-2
+  zone: us-east-1b`,
+                    related: ["Service", "Endpoints", "Pod"]
+                }
+            ],
+            security: [
+                {
+                    name: "ServiceAccount",
+                    kind: "ServiceAccount",
+                    icon: "👤",
+                    iconBg: "#e8f5e9",
+                    description: "Provides an identity for processes running in a Pod to interact with the Kubernetes API server.",
+                    useCases: ["Pod authentication", "API access control", "CI/CD pipelines", "Workload identity"],
+                    keyFields: ["secrets", "imagePullSecrets", "automountServiceAccountToken"],
+                    yaml: `apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: app-sa
+  namespace: production
+automountServiceAccountToken: true
+imagePullSecrets:
+- name: registry-secret
+---
+# Pod using ServiceAccount
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-pod
+spec:
+  serviceAccountName: app-sa
+  containers:
+  - name: app
+    image: myapp:latest`,
+                    related: ["Role", "RoleBinding", "ClusterRole", "ClusterRoleBinding"]
+                },
+                {
+                    name: "Role",
+                    kind: "Role",
+                    icon: "🔑",
+                    iconBg: "#fff3e0",
+                    description: "Grants permissions within a specific namespace. Defines what actions can be performed on which resources.",
+                    useCases: ["Namespace-scoped permissions", "Developer access", "Application permissions"],
+                    keyFields: ["rules[].apiGroups", "rules[].resources", "rules[].verbs"],
+                    yaml: `apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+  namespace: development
+rules:
+# Read access to Pods
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+# Full access to ConfigMaps
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# Access to Deployments
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]`,
+                    related: ["RoleBinding", "ServiceAccount", "ClusterRole"]
+                },
+                {
+                    name: "RoleBinding",
+                    kind: "RoleBinding",
+                    icon: "🔗",
+                    iconBg: "#e1f5fe",
+                    description: "Binds a Role to subjects (users, groups, or ServiceAccounts) within a namespace.",
+                    useCases: ["Grant namespace permissions", "Assign roles to users", "Service account authorization"],
+                    keyFields: ["subjects", "roleRef"],
+                    yaml: `apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: development
+subjects:
+# User
+- kind: User
+  name: jane
+  apiGroup: rbac.authorization.k8s.io
+# Group
+- kind: Group
+  name: developers
+  apiGroup: rbac.authorization.k8s.io
+# ServiceAccount
+- kind: ServiceAccount
+  name: app-sa
+  namespace: development
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io`,
+                    related: ["Role", "ServiceAccount", "ClusterRoleBinding"]
+                },
+                {
+                    name: "ClusterRole",
+                    kind: "ClusterRole",
+                    icon: "🌟",
+                    iconBg: "#f3e5f5",
+                    description: "Grants permissions across the entire cluster or can be bound in specific namespaces. Used for cluster-wide resources.",
+                    useCases: ["Cluster-wide permissions", "Node management", "CRD access", "Admin roles"],
+                    keyFields: ["rules[].apiGroups", "rules[].resources", "rules[].verbs", "aggregationRule"],
+                    yaml: `apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin-role
+rules:
+# Full access to all resources
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+# Node Reader ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["nodes/status"]
+  verbs: ["get"]
+---
+# Aggregate ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring
+  labels:
+    rbac.example.com/aggregate-to-monitoring: "true"
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      rbac.example.com/aggregate-to-monitoring: "true"
+rules: []`,
+                    related: ["ClusterRoleBinding", "Role", "ServiceAccount"]
+                },
+                {
+                    name: "ClusterRoleBinding",
+                    kind: "ClusterRoleBinding",
+                    icon: "🔐",
+                    iconBg: "#fce4ec",
+                    description: "Binds a ClusterRole to subjects across the entire cluster.",
+                    useCases: ["Cluster-wide role assignment", "Admin access", "Cross-namespace permissions"],
+                    keyFields: ["subjects", "roleRef"],
+                    yaml: `apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-admin-binding
+subjects:
+- kind: User
+  name: admin@example.com
+  apiGroup: rbac.authorization.k8s.io
+- kind: Group
+  name: cluster-admins
+  apiGroup: rbac.authorization.k8s.io
+- kind: ServiceAccount
+  name: admin-sa
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io`,
+                    related: ["ClusterRole", "RoleBinding", "ServiceAccount"]
+                },
+                {
+                    name: "PodSecurityPolicy (Deprecated)",
+                    kind: "PodSecurityPolicy",
+                    icon: "⚠️",
+                    iconBg: "#ffebee",
+                    description: "DEPRECATED in Kubernetes 1.25. Replaced by Pod Security Standards. Controlled security-sensitive aspects of Pod specification.",
+                    useCases: ["DEPRECATED - Use Pod Security Standards instead"],
+                    keyFields: ["DEPRECATED - Use Pod Security Admission"],
+                    yaml: `# DEPRECATED - Use Pod Security Standards instead
+# Pod Security Standards Namespace Labels:
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: restricted-ns
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+# Levels: privileged, baseline, restricted`,
+                    related: ["Pod", "SecurityContext", "Namespace"]
+                },
+                {
+                    name: "SecurityContext",
+                    kind: "SecurityContext (Pod/Container spec)",
+                    icon: "🛡️",
+                    iconBg: "#e8eaf6",
+                    description: "Defines security settings for a Pod or Container. Controls user IDs, Linux capabilities, SELinux, seccomp, AppArmor.",
+                    useCases: ["Run as non-root", "Privilege escalation prevention", "Linux capabilities management", "Read-only root filesystem"],
+                    keyFields: ["runAsUser", "runAsGroup", "fsGroup", "capabilities", "readOnlyRootFilesystem", "allowPrivilegeEscalation"],
+                    yaml: `apiVersion: v1
+kind: Pod
+metadata:
+  name: security-demo
+spec:
+  # Pod-level SecurityContext
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - name: app
+    image: nginx
+    # Container-level SecurityContext
+    securityContext:
+      allowPrivilegeEscalation: false
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+        add:
+        - NET_BIND_SERVICE
+    volumeMounts:
+    - name: cache
+      mountPath: /cache
+  volumes:
+  - name: cache
+    emptyDir: {}`,
+                    related: ["Pod", "Deployment", "PodSecurityPolicy"]
+                }
+            ],
+            resource: [
+                {
+                    name: "Namespace",
+                    kind: "Namespace",
+                    icon: "📦",
+                    iconBg: "#e8f5e9",
+                    description: "Provides virtual clusters within a physical cluster. Enables resource isolation, quotas, and access control.",
+                    useCases: ["Multi-tenancy", "Environment separation (dev, staging, prod)", "Team isolation", "Resource organization"],
+                    keyFields: ["metadata.name", "metadata.labels"],
+                    yaml: `apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    environment: production
+    team: platform
+  annotations:
+    description: "Production environment namespace"
+---
+# Namespace with Pod Security Standards
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: secure-ns
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted`,
+                    related: ["ResourceQuota", "LimitRange", "NetworkPolicy"]
+                },
+                {
+                    name: "ResourceQuota",
+                    kind: "ResourceQuota",
+                    icon: "📊",
+                    iconBg: "#fff3e0",
+                    description: "Limits aggregate resource consumption per namespace. Controls CPU, memory, storage, and object counts.",
+                    useCases: ["Prevent resource exhaustion", "Fair resource allocation", "Cost control", "Multi-tenant clusters"],
+                    keyFields: ["spec.hard"],
+                    yaml: `apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: development
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+
+    # Object counts
+    pods: "50"
+    services: "20"
+    configmaps: "50"
+    persistentvolumeclaims: "10"
+    replicationcontrollers: "20"
+    secrets: "50"
+
+    # Storage
+    requests.storage: "100Gi"
+
+    # Service types
+    services.nodeports: "5"
+    services.loadbalancers: "2"`,
+                    related: ["Namespace", "LimitRange", "Pod"]
+                },
+                {
+                    name: "LimitRange",
+                    kind: "LimitRange",
+                    icon: "⚖️",
+                    iconBg: "#e1f5fe",
+                    description: "Enforces minimum and maximum resource limits, and provides default values for Pods and Containers in a namespace.",
+                    useCases: ["Default resource limits", "Min/max enforcement", "Prevent oversized requests", "Resource standardization"],
+                    keyFields: ["spec.limits[].type", "spec.limits[].default", "spec.limits[].defaultRequest", "spec.limits[].max", "spec.limits[].min"],
+                    yaml: `apiVersion: v1
+kind: LimitRange
+metadata:
+  name: resource-limits
+  namespace: development
+spec:
+  limits:
+  # Container limits
+  - type: Container
+    default:
+      memory: 512Mi
+      cpu: 500m
+    defaultRequest:
+      memory: 256Mi
+      cpu: 250m
+    max:
+      memory: 2Gi
+      cpu: 2
+    min:
+      memory: 64Mi
+      cpu: 100m
+
+  # Pod limits
+  - type: Pod
+    max:
+      memory: 4Gi
+      cpu: 4
+
+  # PVC limits
+  - type: PersistentVolumeClaim
+    max:
+      storage: 100Gi
+    min:
+      storage: 1Gi`,
+                    related: ["ResourceQuota", "Namespace", "Pod"]
+                },
+                {
+                    name: "HorizontalPodAutoscaler (HPA)",
+                    kind: "HorizontalPodAutoscaler",
+                    icon: "📈",
+                    iconBg: "#f3e5f5",
+                    description: "Automatically scales the number of Pods based on observed CPU/memory utilization or custom metrics.",
+                    useCases: ["Auto-scaling based on load", "Handle traffic spikes", "Cost optimization", "Performance maintenance"],
+                    keyFields: ["spec.scaleTargetRef", "spec.minReplicas", "spec.maxReplicas", "spec.metrics", "spec.behavior"],
+                    yaml: `# HPA v2 with multiple metrics
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-app-hpa
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-app
+  minReplicas: 2
+  maxReplicas: 50
+  metrics:
+  # CPU metric
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Memory metric
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # Custom metric
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 5
+        periodSeconds: 30
+      selectPolicy: Max`,
+                    related: ["Deployment", "ReplicaSet", "MetricsServer"]
+                },
+                {
+                    name: "VerticalPodAutoscaler (VPA)",
+                    kind: "VerticalPodAutoscaler",
+                    icon: "📊",
+                    iconBg: "#fce4ec",
+                    description: "Automatically adjusts CPU and memory requests/limits for containers based on usage. Requires VPA controller installation.",
+                    useCases: ["Right-size container resources", "Optimize resource usage", "Reduce over-provisioning"],
+                    keyFields: ["spec.targetRef", "spec.updatePolicy", "spec.resourcePolicy"],
+                    yaml: `apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: app-vpa
+  namespace: production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app-deployment
+  updatePolicy:
+    updateMode: "Auto"  # Off, Initial, Recreate, Auto
+  resourcePolicy:
+    containerPolicies:
+    - containerName: "*"
+      minAllowed:
+        cpu: 100m
+        memory: 128Mi
+      maxAllowed:
+        cpu: 2
+        memory: 4Gi
+      controlledResources:
+      - cpu
+      - memory`,
+                    related: ["Deployment", "HorizontalPodAutoscaler", "Pod"]
+                },
+                {
+                    name: "PodDisruptionBudget (PDB)",
+                    kind: "PodDisruptionBudget",
+                    icon: "🛡️",
+                    iconBg: "#fff9c4",
+                    description: "Limits the number of Pods that can be down simultaneously during voluntary disruptions (upgrades, drains).",
+                    useCases: ["Maintain availability during upgrades", "Cluster maintenance", "Node draining", "High availability"],
+                    keyFields: ["spec.minAvailable", "spec.maxUnavailable", "spec.selector"],
+                    yaml: `apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-pdb
+  namespace: production
+spec:
+  minAvailable: 2  # At least 2 Pods must be available
+  selector:
+    matchLabels:
+      app: web
+---
+# Using maxUnavailable
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-pdb
+spec:
+  maxUnavailable: 1  # At most 1 Pod can be unavailable
+  selector:
+    matchLabels:
+      app: api
+---
+# Using percentage
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: worker-pdb
+spec:
+  minAvailable: "75%"  # 75% of Pods must be available
+  selector:
+    matchLabels:
+      app: worker`,
+                    related: ["Deployment", "StatefulSet", "Node"]
+                },
+                {
+                    name: "PriorityClass",
+                    kind: "PriorityClass",
+                    icon: "⭐",
+                    iconBg: "#e8eaf6",
+                    description: "Defines the priority of Pods. Higher priority Pods can preempt lower priority ones during resource contention.",
+                    useCases: ["Critical workload prioritization", "Preemption control", "Resource scheduling"],
+                    keyFields: ["value", "globalDefault", "preemptionPolicy", "description"],
+                    yaml: `apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000000  # Higher value = higher priority
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: "High priority for critical workloads"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: low-priority
+value: 100
+globalDefault: false
+preemptionPolicy: Never
+description: "Low priority for batch jobs"
+---
+# Pod using PriorityClass
+apiVersion: v1
+kind: Pod
+metadata:
+  name: critical-app
+spec:
+  priorityClassName: high-priority
+  containers:
+  - name: app
+    image: critical-app:latest`,
+                    related: ["Pod", "Deployment", "Scheduler"]
+                }
+            ],
+            advanced: [
+                {
+                    name: "CustomResourceDefinition (CRD)",
+                    kind: "CustomResourceDefinition",
+                    icon: "🔧",
+                    iconBg: "#e8f5e9",
+                    description: "Extends Kubernetes API with custom resources. Enables creation of domain-specific objects and implements the Operator pattern.",
+                    useCases: ["Custom resource types", "Operator pattern", "Domain-specific abstractions", "API extensions"],
+                    keyFields: ["spec.group", "spec.names", "spec.scope", "spec.versions"],
+                    yaml: `apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: applications.example.com
+spec:
+  group: example.com
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              replicas:
+                type: integer
+                minimum: 1
+                maximum: 100
+              version:
+                type: string
+              database:
+                type: object
+                properties:
+                  host:
+                    type: string
+                  port:
+                    type: integer
+  scope: Namespaced
+  names:
+    plural: applications
+    singular: application
+    kind: Application
+    shortNames:
+    - app
+---
+# Using the custom resource
+apiVersion: example.com/v1
+kind: Application
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  version: "1.2.0"
+  database:
+    host: postgres.default.svc
+    port: 5432`,
+                    related: ["Operator", "CustomResource"]
+                },
+                {
+                    name: "Custom Scheduler",
+                    kind: "Pod (with schedulerName)",
+                    icon: "🎯",
+                    iconBg: "#fff3e0",
+                    description: "Allows Pods to use a custom scheduler instead of the default Kubernetes scheduler. Enables advanced scheduling logic.",
+                    useCases: ["Custom scheduling policies", "GPU scheduling", "Topology-aware scheduling", "Advanced placement"],
+                    keyFields: ["spec.schedulerName"],
+                    yaml: `# Custom Scheduler Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-scheduler
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: custom-scheduler
+  template:
+    metadata:
+      labels:
+        component: custom-scheduler
+    spec:
+      serviceAccountName: custom-scheduler
+      containers:
+      - name: scheduler
+        image: custom-scheduler:latest
+        command:
+        - /usr/local/bin/custom-scheduler
+        - --leader-elect=false
+        - --scheduler-name=custom-scheduler
+---
+# Pod using custom scheduler
+apiVersion: v1
+kind: Pod
+metadata:
+  name: custom-scheduled-pod
+spec:
+  schedulerName: custom-scheduler
+  containers:
+  - name: app
+    image: nginx
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"`,
+                    related: ["Pod", "Scheduler", "Node"]
+                },
+                {
+                    name: "RuntimeClass",
+                    kind: "RuntimeClass",
+                    icon: "⚙️",
+                    iconBg: "#e1f5fe",
+                    description: "Selects the container runtime configuration to use for running a Pod's containers. Supports different runtime handlers.",
+                    useCases: ["Multiple container runtimes", "gVisor/Kata Containers", "Security sandboxing", "Performance tuning"],
+                    keyFields: ["handler", "scheduling"],
+                    yaml: `apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: gvisor
+handler: runsc
+scheduling:
+  nodeSelector:
+    runtime: gvisor
+  tolerations:
+  - key: runtime
+    value: gvisor
+    effect: NoSchedule
+---
+# Kata Containers RuntimeClass
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: kata
+handler: kata
+---
+# Pod using RuntimeClass
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secure-pod
+spec:
+  runtimeClassName: gvisor
+  containers:
+  - name: app
+    image: nginx`,
+                    related: ["Pod", "Node", "ContainerRuntime"]
+                },
+                {
+                    name: "MutatingWebhookConfiguration",
+                    kind: "MutatingWebhookConfiguration",
+                    icon: "🔀",
+                    iconBg: "#f3e5f5",
+                    description: "Configures admission webhooks that can modify objects before they are stored. Used for injecting sidecars, defaults, and mutations.",
+                    useCases: ["Sidecar injection", "Default value injection", "Resource modification", "Policy enforcement"],
+                    keyFields: ["webhooks[].clientConfig", "webhooks[].rules", "webhooks[].admissionReviewVersions"],
+                    yaml: `apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: sidecar-injector
+webhooks:
+- name: sidecar.example.com
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: sidecar-injector
+      namespace: default
+      path: /mutate
+    caBundle: LS0tLS1CRUdJTi...
+  rules:
+  - operations:
+    - CREATE
+    - UPDATE
+    apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    resources:
+    - pods
+  failurePolicy: Ignore
+  sideEffects: None
+  namespaceSelector:
+    matchLabels:
+      sidecar-injection: enabled
+  reinvocationPolicy: Never
+  timeoutSeconds: 10`,
+                    related: ["ValidatingWebhookConfiguration", "Admission"]
+                },
+                {
+                    name: "ValidatingWebhookConfiguration",
+                    kind: "ValidatingWebhookConfiguration",
+                    icon: "✅",
+                    iconBg: "#fce4ec",
+                    description: "Configures admission webhooks that validate objects before they are stored. Can reject requests that don't meet criteria.",
+                    useCases: ["Policy enforcement", "Security validation", "Compliance checks", "Resource validation"],
+                    keyFields: ["webhooks[].clientConfig", "webhooks[].rules", "webhooks[].admissionReviewVersions"],
+                    yaml: `apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: pod-policy-validator
+webhooks:
+- name: validator.example.com
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    service:
+      name: policy-validator
+      namespace: default
+      path: /validate
+    caBundle: LS0tLS1CRUdJTi...
+  rules:
+  - operations:
+    - CREATE
+    - UPDATE
+    apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    resources:
+    - pods
+  failurePolicy: Fail
+  sideEffects: None
+  namespaceSelector:
+    matchExpressions:
+    - key: validation
+      operator: NotIn
+      values:
+      - disabled
+  timeoutSeconds: 10`,
+                    related: ["MutatingWebhookConfiguration", "Admission"]
+                }
+            ]
+        };
+
+        // Initialize the page
+        function init() {
+            renderAllObjects();
+            setupEventListeners();
+        }
+
+        function renderAllObjects() {
+            Object.keys(k8sObjects).forEach(category => {
+                const grid = document.getElementById(category + 'Grid');
+                k8sObjects[category].forEach(obj => {
+                    grid.appendChild(createObjectCard(obj));
+                });
+            });
+        }
+
+        function createObjectCard(obj) {
+            const card = document.createElement('div');
+            card.className = 'object-card';
+            card.dataset.name = obj.name.toLowerCase();
+            card.dataset.kind = obj.kind.toLowerCase();
+            card.dataset.description = obj.description.toLowerCase();
+
+            card.innerHTML = `
+                <div class="object-header">
+                    <div class="object-icon" style="background: ${obj.iconBg}">
+                        ${obj.icon}
+                    </div>
+                    <div class="object-title">
+                        <h3>${obj.name}</h3>
+                        <span class="object-kind">${obj.kind}</span>
+                    </div>
+                </div>
+                <div class="object-description">
+                    ${obj.description}
+                </div>
+                <div class="object-meta">
+                    <span class="meta-badge">Click to expand</span>
+                </div>
+                <div class="object-details">
+                    <div class="details-section">
+                        <h4>Use Cases</h4>
+                        <ul>
+                            ${obj.useCases.map(uc => `<li>${uc}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="details-section">
+                        <h4>Key Fields</h4>
+                        <ul>
+                            ${obj.keyFields.map(kf => `<li><code>${kf}</code></li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="yaml-section">
+                        <button class="yaml-toggle" onclick="toggleYaml(this)">
+                            📄 Show YAML Example
+                        </button>
+                        <div class="yaml-content">
+                            <div class="yaml-header">
+                                <span>${obj.name}.yaml</span>
+                                <button class="copy-btn" onclick="copyYaml(this)">Copy</button>
+                            </div>
+                            <pre>${escapeHtml(obj.yaml)}</pre>
+                        </div>
+                    </div>
+                    ${obj.related ? `
+                        <div class="related-objects">
+                            <h4>Related Objects</h4>
+                            <div class="related-links">
+                                ${obj.related.map(r => `<a href="#" class="related-link" onclick="searchFor('${r}'); return false;">${r}</a>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            card.addEventListener('click', function(e) {
+                if (!e.target.closest('.yaml-toggle') && !e.target.closest('.copy-btn') && !e.target.closest('.related-link')) {
+                    this.classList.toggle('expanded');
+                }
+            });
+
+            return card;
+        }
+
+        function setupEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                });
+            });
+
+            // Search
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                performSearch(searchTerm);
+            });
+        }
+
+        function performSearch(term) {
+            if (!term) {
+                document.querySelectorAll('.object-card').forEach(card => {
+                    card.style.display = 'block';
+                });
+                document.querySelectorAll('.no-results').forEach(el => el.remove());
+                return;
+            }
+
+            let hasResults = false;
+
+            document.querySelectorAll('.objects-grid').forEach(grid => {
+                let gridHasResults = false;
+                grid.querySelectorAll('.object-card').forEach(card => {
+                    const matches = card.dataset.name.includes(term) ||
+                                  card.dataset.kind.includes(term) ||
+                                  card.dataset.description.includes(term);
+
+                    card.style.display = matches ? 'block' : 'none';
+                    if (matches) {
+                        hasResults = true;
+                        gridHasResults = true;
+                    }
+                });
+
+                // Remove existing no-results message
+                const existingMsg = grid.querySelector('.no-results');
+                if (existingMsg) existingMsg.remove();
+
+                // Add no-results message if needed
+                if (!gridHasResults && grid.closest('.tab-content').classList.contains('active')) {
+                    const noResults = document.createElement('div');
+                    noResults.className = 'no-results';
+                    noResults.innerHTML = `
+                        <h3>No results found</h3>
+                        <p>Try searching for: Pod, Service, Deployment, ConfigMap, etc.</p>
+                    `;
+                    grid.appendChild(noResults);
+                }
+            });
+        }
+
+        function searchFor(term) {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = term;
+            performSearch(term.toLowerCase());
+        }
+
+        function toggleYaml(button) {
+            const yamlContent = button.nextElementSibling;
+            yamlContent.classList.toggle('show');
+            button.textContent = yamlContent.classList.contains('show') ?
+                '📄 Hide YAML Example' : '📄 Show YAML Example';
+        }
+
+        function copyYaml(button) {
+            const pre = button.closest('.yaml-content').querySelector('pre');
+            navigator.clipboard.writeText(pre.textContent).then(() => {
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

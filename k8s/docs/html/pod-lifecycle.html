@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Pod Lifecycle & States - Interactive Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f6fa;
+            color: #1a1a2e;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #326CE5;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            background: white;
+            color: #326CE5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.3);
+        }
+
+        .btn.active {
+            background: #326CE5;
+            color: white;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .diagram-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 30px;
+        }
+
+        /* Pod Phase States */
+        .phase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .phase-card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .phase-card.pending {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+        }
+
+        .phase-card.running {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #10b981;
+        }
+
+        .phase-card.succeeded {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            border-color: #3b82f6;
+        }
+
+        .phase-card.failed {
+            background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+            border-color: #ef4444;
+        }
+
+        .phase-card.unknown {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            border-color: #6b7280;
+        }
+
+        .phase-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .phase-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .phase-description {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        /* State Diagram SVG */
+        .state-diagram {
+            margin: 30px auto;
+            text-align: center;
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .pod-state {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pod-state:hover {
+            opacity: 0.8;
+        }
+
+        .flow-arrow {
+            stroke-dasharray: 5, 5;
+            animation: dash 1s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: rgba(30, 41, 59, 0.95);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        /* Container States */
+        .container-states {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .container-state-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .container-state-card:hover {
+            border-color: #326CE5;
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.2);
+        }
+
+        .container-state-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .container-state-icon {
+            font-size: 2rem;
+            margin-right: 12px;
+        }
+
+        .container-state-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .container-state-desc {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .container-state-details {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* YAML Examples */
+        .yaml-section {
+            margin-bottom: 30px;
+        }
+
+        .yaml-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .yaml-code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .yaml-code .key {
+            color: #7dd3fc;
+        }
+
+        .yaml-code .value {
+            color: #86efac;
+        }
+
+        .yaml-code .comment {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Timeline View */
+        .timeline {
+            position: relative;
+            margin: 40px 0;
+            padding: 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #326CE5 0%, #8b5cf6 100%);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #326CE5;
+            border: 4px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .timeline-phase {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #326CE5;
+            margin-bottom: 8px;
+        }
+
+        .timeline-desc {
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Conditions Table */
+        .conditions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .conditions-table th {
+            background: #326CE5;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .conditions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .conditions-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.true {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.false {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Restart Policy Cards */
+        .restart-policies {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .restart-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .restart-card:hover {
+            border-color: #326CE5;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(50, 108, 229, 0.2);
+        }
+
+        .restart-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .restart-desc {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .restart-usecase {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        .restart-usecase strong {
+            color: #1e293b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item {
+                flex-direction: column !important;
+                align-items: flex-start;
+                padding-left: 40px;
+            }
+
+            .timeline-content {
+                width: 100%;
+            }
+
+            .timeline-marker {
+                left: 20px;
+            }
+
+            .diagram-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kubernetes Pod Lifecycle & States</h1>
+            <p class="subtitle">Interactive visualization of pod phases, container states, and lifecycle transitions</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" onclick="showView('phases')">Pod Phases</button>
+            <button class="btn" onclick="showView('diagram')">State Diagram</button>
+            <button class="btn" onclick="showView('containers')">Container States</button>
+            <button class="btn" onclick="showView('timeline')">Lifecycle Timeline</button>
+            <button class="btn" onclick="showView('conditions')">Pod Conditions</button>
+            <button class="btn" onclick="showView('restarts')">Restart Policies</button>
+            <button class="btn" onclick="showView('examples')">YAML Examples</button>
+        </div>
+
+        <!-- Pod Phases View -->
+        <div id="phases-view" class="view-section active">
+            <div class="diagram-card">
+                <h2 class="section-title">Pod Phases Overview</h2>
+                <div class="phase-grid">
+                    <div class="phase-card pending"
+                         onmouseenter="showTooltip(event, 'Pod accepted by cluster but containers not yet ready. Includes time for scheduling and downloading container images.')"
+                         onmouseleave="hideTooltip()">
+                        <div class="phase-icon">⏳</div>
+                        <div class="phase-name">Pending</div>
+                        <div class="phase-description">Waiting for scheduling or image download</div>
+                    </div>
+
+                    <div class="phase-card running"
+                         onmouseenter="showTooltip(event, 'Pod bound to a node and all containers have been created. At least one container is running or starting/restarting.')"
+                         onmouseleave="hideTooltip()">
+                        <div class="phase-icon">✅</div>
+                        <div class="phase-name">Running</div>
+                        <div class="phase-description">Containers are executing successfully</div>
+                    </div>
+
+                    <div class="phase-card succeeded"
+                         onmouseenter="showTooltip(event, 'All containers in the Pod have terminated successfully with exit code 0 and will not be restarted.')"
+                         onmouseleave="hideTooltip()">
+                        <div class="phase-icon">🎉</div>
+                        <div class="phase-name">Succeeded</div>
+                        <div class="phase-description">All containers completed successfully</div>
+                    </div>
+
+                    <div class="phase-card failed"
+                         onmouseenter="showTooltip(event, 'All containers have terminated, and at least one exited with non-zero status or was terminated by the system.')"
+                         onmouseleave="hideTooltip()">
+                        <div class="phase-icon">❌</div>
+                        <div class="phase-name">Failed</div>
+                        <div class="phase-description">One or more containers failed</div>
+                    </div>
+
+                    <div class="phase-card unknown"
+                         onmouseenter="showTooltip(event, 'Pod state could not be obtained, typically due to an error communicating with the node where the Pod is running.')"
+                         onmouseleave="hideTooltip()">
+                        <div class="phase-icon">❓</div>
+                        <div class="phase-name">Unknown</div>
+                        <div class="phase-description">Communication error with node</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                    <h3 style="color: #1e293b; margin-bottom: 12px;">Key Points</h3>
+                    <ul style="color: #475569; line-height: 1.8; padding-left: 20px;">
+                        <li>Pods never move backward in phases - they only progress forward</li>
+                        <li>Once a Pod reaches Succeeded or Failed, it is considered terminated</li>
+                        <li>Controllers (like Deployments) can create new Pods to replace failed ones</li>
+                        <li>The Unknown phase indicates a problem with node communication, not the Pod itself</li>
+                        <li>Only one phase is active at any time for a given Pod</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- State Diagram View -->
+        <div id="diagram-view" class="view-section">
+            <div class="diagram-card">
+                <h2 class="section-title">Pod Lifecycle State Diagram</h2>
+                <div class="state-diagram">
+                    <svg viewBox="0 0 800 600" width="800" height="600">
+                        <!-- Pending State -->
+                        <g class="pod-state" onmouseenter="showTooltip(event, 'PENDING: Pod is accepted but waiting for node assignment, image pull, or other initialization tasks.')" onmouseleave="hideTooltip()">
+                            <rect x="300" y="20" width="200" height="80" rx="10" fill="#fbbf24" stroke="#f59e0b" stroke-width="3"/>
+                            <text x="400" y="50" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">⏳ Pending</text>
+                            <text x="400" y="75" text-anchor="middle" font-size="14" fill="#1e293b">Awaiting Resources</text>
+                        </g>
+
+                        <!-- Arrow: Pending to Running -->
+                        <path d="M 400 100 L 400 150" stroke="#326CE5" stroke-width="3" fill="none" marker-end="url(#arrowhead)" class="flow-arrow"/>
+                        <text x="420" y="130" font-size="12" fill="#326CE5" font-weight="600">Pod Scheduled</text>
+
+                        <!-- Running State -->
+                        <g class="pod-state" onmouseenter="showTooltip(event, 'RUNNING: Pod is bound to a node and containers are executing. At least one container is active.')" onmouseleave="hideTooltip()">
+                            <rect x="300" y="170" width="200" height="80" rx="10" fill="#34d399" stroke="#10b981" stroke-width="3"/>
+                            <text x="400" y="200" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">✅ Running</text>
+                            <text x="400" y="225" text-anchor="middle" font-size="14" fill="#1e293b">Containers Active</text>
+                        </g>
+
+                        <!-- Arrow: Running to Succeeded -->
+                        <path d="M 300 210 L 150 300" stroke="#326CE5" stroke-width="3" fill="none" marker-end="url(#arrowhead)" class="flow-arrow"/>
+                        <text x="200" y="250" font-size="12" fill="#326CE5" font-weight="600">All Exit 0</text>
+
+                        <!-- Arrow: Running to Failed -->
+                        <path d="M 500 210 L 650 300" stroke="#326CE5" stroke-width="3" fill="none" marker-end="url(#arrowhead)" class="flow-arrow"/>
+                        <text x="600" y="250" font-size="12" fill="#326CE5" font-weight="600">Error/Crash</text>
+
+                        <!-- Succeeded State -->
+                        <g class="pod-state" onmouseenter="showTooltip(event, 'SUCCEEDED: All containers terminated successfully. Typical for Jobs and CronJobs.')" onmouseleave="hideTooltip()">
+                            <rect x="50" y="320" width="200" height="80" rx="10" fill="#60a5fa" stroke="#3b82f6" stroke-width="3"/>
+                            <text x="150" y="350" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">🎉 Succeeded</text>
+                            <text x="150" y="375" text-anchor="middle" font-size="14" fill="#1e293b">Completed</text>
+                        </g>
+
+                        <!-- Failed State -->
+                        <g class="pod-state" onmouseenter="showTooltip(event, 'FAILED: One or more containers terminated with errors. May be restarted based on restart policy.')" onmouseleave="hideTooltip()">
+                            <rect x="550" y="320" width="200" height="80" rx="10" fill="#f87171" stroke="#ef4444" stroke-width="3"/>
+                            <text x="650" y="350" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">❌ Failed</text>
+                            <text x="650" y="375" text-anchor="middle" font-size="14" fill="#1e293b">Error State</text>
+                        </g>
+
+                        <!-- Restart Arrow (Failed to Running) -->
+                        <path d="M 650 320 Q 750 210 500 210" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5,5" fill="none" marker-end="url(#arrowhead-purple)"/>
+                        <text x="680" y="270" font-size="11" fill="#8b5cf6" font-weight="600">Restart Policy</text>
+
+                        <!-- Unknown State -->
+                        <g class="pod-state" onmouseenter="showTooltip(event, 'UNKNOWN: Cannot determine Pod state due to node communication failure.')" onmouseleave="hideTooltip()">
+                            <rect x="300" y="470" width="200" height="80" rx="10" fill="#d1d5db" stroke="#6b7280" stroke-width="3"/>
+                            <text x="400" y="500" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">❓ Unknown</text>
+                            <text x="400" y="525" text-anchor="middle" font-size="14" fill="#1e293b">Node Unreachable</text>
+                        </g>
+
+                        <!-- Arrow from Running to Unknown -->
+                        <path d="M 400 250 L 400 470" stroke="#6b7280" stroke-width="2" stroke-dasharray="3,3" fill="none"/>
+                        <text x="420" y="360" font-size="11" fill="#6b7280">Comm Failure</text>
+
+                        <!-- Arrow definitions -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#326CE5"/>
+                            </marker>
+                            <marker id="arrowhead-purple" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#8b5cf6"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div style="background: #fef3c7; padding: 20px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #f59e0b;">
+                    <h3 style="color: #92400e; margin-bottom: 12px;">💡 State Transition Rules</h3>
+                    <ul style="color: #78350f; line-height: 1.8; padding-left: 20px;">
+                        <li><strong>Forward Only:</strong> Pods never move backward in phases (no reverse transitions)</li>
+                        <li><strong>Terminal States:</strong> Succeeded and Failed are final states for that Pod instance</li>
+                        <li><strong>Restart Behavior:</strong> Restart policies affect containers, not Pod phases</li>
+                        <li><strong>Controller Actions:</strong> Deployments create new Pods (not restart old ones)</li>
+                        <li><strong>Grace Period:</strong> Default 30 seconds for graceful termination</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container States View -->
+        <div id="containers-view" class="view-section">
+            <div class="diagram-card">
+                <h2 class="section-title">Container States</h2>
+                <p style="text-align: center; color: #64748b; margin-bottom: 30px;">
+                    Each container in a Pod can be in one of three states at any time
+                </p>
+
+                <div class="container-states">
+                    <div class="container-state-card">
+                        <div class="container-state-header">
+                            <div class="container-state-icon">⏸️</div>
+                            <div class="container-state-name">Waiting</div>
+                        </div>
+                        <div class="container-state-desc">
+                            Container is not yet running and is still performing setup operations like pulling images, applying secrets, or waiting for dependencies.
+                        </div>
+                        <div class="container-state-details">
+                            <strong>Status Fields:</strong><br>
+                            • <code>reason</code>: Why container is waiting<br>
+                            • <code>message</code>: Detailed diagnostic info<br><br>
+                            <strong>Common Reasons:</strong><br>
+                            • ContainerCreating<br>
+                            • PodInitializing<br>
+                            • ImagePullBackOff
+                        </div>
+                    </div>
+
+                    <div class="container-state-card">
+                        <div class="container-state-header">
+                            <div class="container-state-icon">▶️</div>
+                            <div class="container-state-name">Running</div>
+                        </div>
+                        <div class="container-state-desc">
+                            Container has been successfully bound to a node and is currently executing. The process inside the container is active.
+                        </div>
+                        <div class="container-state-details">
+                            <strong>Status Fields:</strong><br>
+                            • <code>startedAt</code>: Timestamp when container entered Running state<br><br>
+                            <strong>Characteristics:</strong><br>
+                            • Main process is executing<br>
+                            • PostStart hook has completed (if defined)<br>
+                            • Liveness probes are active
+                        </div>
+                    </div>
+
+                    <div class="container-state-card">
+                        <div class="container-state-header">
+                            <div class="container-state-icon">⏹️</div>
+                            <div class="container-state-name">Terminated</div>
+                        </div>
+                        <div class="container-state-desc">
+                            Container has completed execution either successfully or with an error. The container may or may not be restarted based on the restart policy.
+                        </div>
+                        <div class="container-state-details">
+                            <strong>Status Fields:</strong><br>
+                            • <code>exitCode</code>: Exit status (0 = success)<br>
+                            • <code>signal</code>: Signal that terminated container<br>
+                            • <code>reason</code>: Human-readable termination reason<br>
+                            • <code>message</code>: Detailed termination message<br>
+                            • <code>startedAt</code> / <code>finishedAt</code>: Timing info
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #e0f2fe; padding: 20px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #0284c7;">
+                    <h3 style="color: #0c4a6e; margin-bottom: 12px;">📊 Container State vs Pod Phase</h3>
+                    <ul style="color: #075985; line-height: 1.8; padding-left: 20px;">
+                        <li><strong>Independence:</strong> Each container has its own state, independent of other containers</li>
+                        <li><strong>Pod Phase:</strong> Reflects the overall status of all containers combined</li>
+                        <li><strong>Multiple States:</strong> A single Pod can have containers in different states simultaneously</li>
+                        <li><strong>Monitoring:</strong> Use <code>kubectl describe pod</code> to see individual container states</li>
+                        <li><strong>Restart Tracking:</strong> Container restarts increment the restart count, not create new Pods</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline View -->
+        <div id="timeline-view" class="view-section">
+            <div class="diagram-card">
+                <h2 class="section-title">Pod Lifecycle Timeline</h2>
+                <p style="text-align: center; color: #64748b; margin-bottom: 40px;">
+                    A chronological view of a Pod's journey from creation to termination
+                </p>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">1. Pod Created</div>
+                            <div class="timeline-desc">
+                                Pod manifest is submitted to the API server. The Pod object is created with phase <strong>Pending</strong>. Pod is assigned a unique UID that never changes.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">2. Scheduler Assignment</div>
+                            <div class="timeline-desc">
+                                Kubernetes scheduler selects a node based on resource requirements, node affinity, taints/tolerations. Pod condition <strong>PodScheduled</strong> becomes True.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">3. Image Pull</div>
+                            <div class="timeline-desc">
+                                Kubelet on assigned node pulls container images from registry. Init containers (if defined) are pulled first. Container state: <strong>Waiting</strong> with reason "ContainerCreating".
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">4. Init Containers Run</div>
+                            <div class="timeline-desc">
+                                If defined, init containers execute sequentially. Each must complete successfully before the next starts. Pod condition <strong>Initialized</strong> becomes True when all complete.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">5. Main Containers Start</div>
+                            <div class="timeline-desc">
+                                Main application containers start in parallel. Pod phase changes to <strong>Running</strong>. PostStart lifecycle hooks execute. Container state: <strong>Running</strong>.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">6. Readiness Check</div>
+                            <div class="timeline-desc">
+                                Readiness probes determine when container is ready to accept traffic. Pod condition <strong>ContainersReady</strong> and <strong>Ready</strong> become True. Pod is added to Service endpoints.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">7. Steady State</div>
+                            <div class="timeline-desc">
+                                Pod is fully operational and serving requests. Liveness probes monitor container health. Restart policy applies if containers fail. Pod remains in <strong>Running</strong> phase.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">8. Termination Signal</div>
+                            <div class="timeline-desc">
+                                Deletion request received or node draining initiated. PreStop lifecycle hooks execute (if defined). Pod is removed from Service endpoints. Grace period (default 30s) begins.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">9. Graceful Shutdown</div>
+                            <div class="timeline-desc">
+                                SIGTERM signal sent to main process. Application should save state and close connections. After grace period expires, SIGKILL is sent to force termination.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-phase">10. Final State</div>
+                            <div class="timeline-desc">
+                                All containers terminated. Pod phase becomes <strong>Succeeded</strong> (all exit code 0) or <strong>Failed</strong> (at least one non-zero exit). Container state: <strong>Terminated</strong>.
+                            </div>
+                        </div>
+                        <div class="timeline-marker"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pod Conditions View -->
+        <div id="conditions-view" class="view-section">
+            <div class="diagram-card">
+                <h2 class="section-title">Pod Conditions</h2>
+                <p style="text-align: center; color: #64748b; margin-bottom: 30px;">
+                    Conditions provide detailed status information about a Pod's current state
+                </p>
+
+                <table class="conditions-table">
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Description</th>
+                            <th>True When</th>
+                            <th>False When</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PodScheduled</strong></td>
+                            <td>Pod has been assigned to a node</td>
+                            <td>Scheduler successfully bound Pod to a node</td>
+                            <td>Pod is waiting for node assignment (Pending)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Initialized</strong></td>
+                            <td>All init containers completed successfully</td>
+                            <td>All init containers exited with code 0, or no init containers defined</td>
+                            <td>Init containers are still running or failed</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ContainersReady</strong></td>
+                            <td>All containers in the Pod are ready</td>
+                            <td>All containers passed readiness checks (or no readiness probe defined)</td>
+                            <td>One or more containers not ready or still starting</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ready</strong></td>
+                            <td>Pod is ready to serve requests</td>
+                            <td>All containers ready AND all custom readiness gates passed</td>
+                            <td>Not all readiness conditions satisfied</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DisruptionTarget</strong></td>
+                            <td>Pod is being deleted due to disruption</td>
+                            <td>Pod deletion is in progress (eviction, node drain, etc.)</td>
+                            <td>Pod is not being disrupted</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: #f0fdf4; padding: 20px; border-radius: 10px; border-left: 4px solid #16a34a;">
+                        <h3 style="color: #14532d; margin-bottom: 12px;">✅ Checking Conditions</h3>
+                        <div style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; margin-top: 10px;">
+kubectl get pod &lt;pod-name&gt; -o jsonpath='{.status.conditions[*]}'
+
+kubectl describe pod &lt;pod-name&gt;
+                        </div>
+                    </div>
+
+                    <div style="background: #eff6ff; padding: 20px; border-radius: 10px; border-left: 4px solid #2563eb;">
+                        <h3 style="color: #1e3a8a; margin-bottom: 12px;">📋 Condition Fields</h3>
+                        <ul style="color: #1e40af; line-height: 1.8; padding-left: 20px; font-size: 0.9rem;">
+                            <li><code>type</code>: Name of the condition</li>
+                            <li><code>status</code>: True, False, Unknown</li>
+                            <li><code>lastProbeTime</code>: Last check time</li>
+                            <li><code>lastTransitionTime</code>: Status change time</li>
+                            <li><code>reason</code>: Machine-readable cause</li>
+                            <li><code>message</code>: Human-readable details</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background: #fef3c7; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #f59e0b;">
+                    <h3 style="color: #92400e; margin-bottom: 12px;">💡 Important Notes</h3>
+                    <ul style="color: #78350f; line-height: 1.8; padding-left: 20px;">
+                        <li><strong>Service Integration:</strong> Only Pods with Ready=True are added to Service endpoints</li>
+                        <li><strong>Custom Gates:</strong> Applications can define custom readiness gates for advanced scenarios</li>
+                        <li><strong>Condition History:</strong> Transitions are tracked with timestamps for debugging</li>
+                        <li><strong>Health vs Ready:</strong> Liveness checks health; Readiness checks traffic acceptance capability</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restart Policies View -->
+        <div id="restarts-view" class="view-section">
+            <div class="diagram-card">
+                <h2 class="section-title">Container Restart Policies</h2>
+                <p style="text-align: center; color: #64748b; margin-bottom: 30px;">
+                    Restart policies define how Kubernetes should handle container failures
+                </p>
+
+                <div class="restart-policies">
+                    <div class="restart-card">
+                        <div class="restart-header">Always</div>
+                        <div class="restart-desc">
+                            Kubernetes will always restart the container regardless of exit code. This is the default policy.
+                        </div>
+                        <div class="restart-usecase">
+                            <strong>Use Case:</strong><br>
+                            • Long-running services (web servers, APIs)<br>
+                            • Microservices that should always be available<br>
+                            • Deployments, DaemonSets, StatefulSets<br>
+                            • Default for most production workloads
+                        </div>
+                        <div style="margin-top: 15px; padding: 12px; background: #d1fae5; border-radius: 6px; font-size: 0.85rem; color: #065f46;">
+                            <strong>Behavior:</strong> Container restarts even on successful completion (exit 0). Backoff delay: 10s, 20s, 40s... up to 5 minutes.
+                        </div>
+                    </div>
+
+                    <div class="restart-card">
+                        <div class="restart-header">OnFailure</div>
+                        <div class="restart-desc">
+                            Kubernetes restarts the container only if it exits with a non-zero status (failure). Successful completions are not restarted.
+                        </div>
+                        <div class="restart-usecase">
+                            <strong>Use Case:</strong><br>
+                            • Batch Jobs that should retry on failure<br>
+                            • Data processing tasks<br>
+                            • Scripts that might fail but should succeed eventually<br>
+                            • Jobs with limited retry attempts
+                        </div>
+                        <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border-radius: 6px; font-size: 0.85rem; color: #78350f;">
+                            <strong>Behavior:</strong> Exit code 0 = Pod completes (Succeeded). Non-zero exit = restart with exponential backoff.
+                        </div>
+                    </div>
+
+                    <div class="restart-card">
+                        <div class="restart-header">Never</div>
+                        <div class="restart-desc">
+                            Kubernetes never restarts the container under any circumstances, regardless of exit status or failure reason.
+                        </div>
+                        <div class="restart-usecase">
+                            <strong>Use Case:</strong><br>
+                            • One-shot tasks or scripts<br>
+                            • Database migrations<br>
+                            • Backup jobs<br>
+                            • Debug containers for troubleshooting<br>
+                            • Jobs where manual intervention is required
+                        </div>
+                        <div style="margin-top: 15px; padding: 12px; background: #fee2e2; border-radius: 6px; font-size: 0.85rem; color: #991b1b;">
+                            <strong>Behavior:</strong> Container runs once and terminates. Pod phase becomes Succeeded or Failed based on exit code.
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; background: white; border: 2px solid #e2e8f0; border-radius: 10px; padding: 25px;">
+                    <h3 style="color: #1e293b; margin-bottom: 15px;">Restart Policy Decision Tree</h3>
+                    <svg viewBox="0 0 700 400" width="100%" height="400">
+                        <!-- Start -->
+                        <rect x="250" y="10" width="200" height="50" rx="25" fill="#326CE5" stroke="#1e40af" stroke-width="2"/>
+                        <text x="350" y="40" text-anchor="middle" font-size="16" font-weight="bold" fill="white">What type of workload?</text>
+
+                        <!-- Long-running -->
+                        <rect x="50" y="120" width="150" height="60" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+                        <text x="125" y="145" text-anchor="middle" font-size="14" font-weight="600" fill="#0c4a6e">Long-running</text>
+                        <text x="125" y="165" text-anchor="middle" font-size="12" fill="#075985">service/app</text>
+                        <path d="M 300 60 L 125 120" stroke="#64748b" stroke-width="2" fill="none"/>
+
+                        <!-- Batch Job -->
+                        <rect x="275" y="120" width="150" height="60" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="350" y="145" text-anchor="middle" font-size="14" font-weight="600" fill="#92400e">Batch job with</text>
+                        <text x="350" y="165" text-anchor="middle" font-size="12" fill="#78350f">retry capability</text>
+                        <path d="M 350 60 L 350 120" stroke="#64748b" stroke-width="2" fill="none"/>
+
+                        <!-- One-shot -->
+                        <rect x="500" y="120" width="150" height="60" rx="10" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+                        <text x="575" y="145" text-anchor="middle" font-size="14" font-weight="600" fill="#7f1d1d">One-shot</text>
+                        <text x="575" y="165" text-anchor="middle" font-size="12" fill="#991b1b">task/migration</text>
+                        <path d="M 400 60 L 575 120" stroke="#64748b" stroke-width="2" fill="none"/>
+
+                        <!-- Results -->
+                        <rect x="50" y="240" width="150" height="60" rx="10" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <text x="125" y="265" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Always</text>
+                        <text x="125" y="285" text-anchor="middle" font-size="11" fill="white">restartPolicy: Always</text>
+                        <path d="M 125 180 L 125 240" stroke="#10b981" stroke-width="3" fill="none" marker-end="url(#arrow-green)"/>
+
+                        <rect x="275" y="240" width="150" height="60" rx="10" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                        <text x="350" y="265" text-anchor="middle" font-size="16" font-weight="bold" fill="white">OnFailure</text>
+                        <text x="350" y="285" text-anchor="middle" font-size="11" fill="white">restartPolicy: OnFailure</text>
+                        <path d="M 350 180 L 350 240" stroke="#f59e0b" stroke-width="3" fill="none" marker-end="url(#arrow-yellow)"/>
+
+                        <rect x="500" y="240" width="150" height="60" rx="10" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+                        <text x="575" y="265" text-anchor="middle" font-size="16" font-weight="bold" fill="white">Never</text>
+                        <text x="575" y="285" text-anchor="middle" font-size="11" fill="white">restartPolicy: Never</text>
+                        <path d="M 575 180 L 575 240" stroke="#ef4444" stroke-width="3" fill="none" marker-end="url(#arrow-red)"/>
+
+                        <!-- Examples -->
+                        <text x="125" y="330" text-anchor="middle" font-size="11" fill="#64748b">Examples:</text>
+                        <text x="125" y="350" text-anchor="middle" font-size="10" fill="#64748b">Web servers, APIs,</text>
+                        <text x="125" y="365" text-anchor="middle" font-size="10" fill="#64748b">Deployments</text>
+
+                        <text x="350" y="330" text-anchor="middle" font-size="11" fill="#64748b">Examples:</text>
+                        <text x="350" y="350" text-anchor="middle" font-size="10" fill="#64748b">Jobs, data processing,</text>
+                        <text x="350" y="365" text-anchor="middle" font-size="10" fill="#64748b">retryable tasks</text>
+
+                        <text x="575" y="330" text-anchor="middle" font-size="11" fill="#64748b">Examples:</text>
+                        <text x="575" y="350" text-anchor="middle" font-size="10" fill="#64748b">DB migrations,</text>
+                        <text x="575" y="365" text-anchor="middle" font-size="10" fill="#64748b">one-off scripts</text>
+
+                        <defs>
+                            <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+                            </marker>
+                            <marker id="arrow-yellow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#f59e0b"/>
+                            </marker>
+                            <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#ef4444"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                    <h3 style="color: #1e293b; margin-bottom: 12px;">🔄 Restart Backoff Behavior</h3>
+                    <ul style="color: #475569; line-height: 1.8; padding-left: 20px;">
+                        <li><strong>Exponential Backoff:</strong> Delays between restarts: 10s, 20s, 40s, 80s, 160s (capped at 5 minutes)</li>
+                        <li><strong>Reset Timer:</strong> If container runs successfully for 10 minutes, backoff resets to 10s</li>
+                        <li><strong>CrashLoopBackOff:</strong> Status shown when container repeatedly crashes and is waiting for next restart</li>
+                        <li><strong>Restart Count:</strong> Tracked per container and visible in <code>kubectl get pods</code></li>
+                        <li><strong>Pod Phase:</strong> Restart policy affects containers, not Pod phase (Pod stays Running)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- YAML Examples View -->
+        <div id="examples-view" class="view-section">
+            <div class="diagram-card">
+                <h2 class="section-title">YAML Examples for Different States</h2>
+
+                <div class="yaml-section">
+                    <div class="yaml-header">1. Basic Pod with Restart Policy</div>
+                    <div class="yaml-code">
+<span class="key">apiVersion:</span> <span class="value">v1</span>
+<span class="key">kind:</span> <span class="value">Pod</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="value">nginx-pod</span>
+  <span class="key">labels:</span>
+    <span class="key">app:</span> <span class="value">nginx</span>
+<span class="key">spec:</span>
+  <span class="key">restartPolicy:</span> <span class="value">Always</span>  <span class="comment"># Default for long-running services</span>
+  <span class="key">containers:</span>
+  - <span class="key">name:</span> <span class="value">nginx</span>
+    <span class="key">image:</span> <span class="value">nginx:1.21</span>
+    <span class="key">ports:</span>
+    - <span class="key">containerPort:</span> <span class="value">80</span>
+                    </div>
+                </div>
+
+                <div class="yaml-section">
+                    <div class="yaml-header">2. Job with OnFailure Restart Policy</div>
+                    <div class="yaml-code">
+<span class="key">apiVersion:</span> <span class="value">batch/v1</span>
+<span class="key">kind:</span> <span class="value">Job</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="value">data-processing-job</span>
+<span class="key">spec:</span>
+  <span class="key">template:</span>
+    <span class="key">spec:</span>
+      <span class="key">restartPolicy:</span> <span class="value">OnFailure</span>  <span class="comment"># Retry on failure</span>
+      <span class="key">containers:</span>
+      - <span class="key">name:</span> <span class="value">processor</span>
+        <span class="key">image:</span> <span class="value">data-processor:v2</span>
+        <span class="key">command:</span> [<span class="value">"/bin/process-data.sh"</span>]
+                    </div>
+                </div>
+
+                <div class="yaml-section">
+                    <div class="yaml-header">3. Pod with Liveness and Readiness Probes</div>
+                    <div class="yaml-code">
+<span class="key">apiVersion:</span> <span class="value">v1</span>
+<span class="key">kind:</span> <span class="value">Pod</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="value">webapp-with-probes</span>
+<span class="key">spec:</span>
+  <span class="key">containers:</span>
+  - <span class="key">name:</span> <span class="value">webapp</span>
+    <span class="key">image:</span> <span class="value">myapp:latest</span>
+    <span class="key">ports:</span>
+    - <span class="key">containerPort:</span> <span class="value">8080</span>
+
+    <span class="comment"># Liveness: Is container running? Restart if fails</span>
+    <span class="key">livenessProbe:</span>
+      <span class="key">httpGet:</span>
+        <span class="key">path:</span> <span class="value">/healthz</span>
+        <span class="key">port:</span> <span class="value">8080</span>
+      <span class="key">initialDelaySeconds:</span> <span class="value">15</span>
+      <span class="key">periodSeconds:</span> <span class="value">10</span>
+      <span class="key">failureThreshold:</span> <span class="value">3</span>
+
+    <span class="comment"># Readiness: Is container ready for traffic?</span>
+    <span class="key">readinessProbe:</span>
+      <span class="key">httpGet:</span>
+        <span class="key">path:</span> <span class="value">/ready</span>
+        <span class="key">port:</span> <span class="value">8080</span>
+      <span class="key">initialDelaySeconds:</span> <span class="value">5</span>
+      <span class="key">periodSeconds:</span> <span class="value">5</span>
+                    </div>
+                </div>
+
+                <div class="yaml-section">
+                    <div class="yaml-header">4. Pod with Init Container</div>
+                    <div class="yaml-code">
+<span class="key">apiVersion:</span> <span class="value">v1</span>
+<span class="key">kind:</span> <span class="value">Pod</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="value">myapp-with-init</span>
+<span class="key">spec:</span>
+  <span class="comment"># Init containers run before main containers</span>
+  <span class="key">initContainers:</span>
+  - <span class="key">name:</span> <span class="value">init-db</span>
+    <span class="key">image:</span> <span class="value">busybox:1.35</span>
+    <span class="key">command:</span> [<span class="value">'sh'</span>, <span class="value">'-c'</span>, <span class="value">'until nslookup db-service; do sleep 2; done'</span>]
+
+  <span class="key">containers:</span>
+  - <span class="key">name:</span> <span class="value">myapp</span>
+    <span class="key">image:</span> <span class="value">myapp:v1</span>
+    <span class="key">ports:</span>
+    - <span class="key">containerPort:</span> <span class="value">80</span>
+                    </div>
+                </div>
+
+                <div class="yaml-section">
+                    <div class="yaml-header">5. Pod with Lifecycle Hooks</div>
+                    <div class="yaml-code">
+<span class="key">apiVersion:</span> <span class="value">v1</span>
+<span class="key">kind:</span> <span class="value">Pod</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="value">lifecycle-demo</span>
+<span class="key">spec:</span>
+  <span class="key">containers:</span>
+  - <span class="key">name:</span> <span class="value">nginx</span>
+    <span class="key">image:</span> <span class="value">nginx</span>
+    <span class="key">lifecycle:</span>
+      <span class="comment"># PostStart: Runs after container starts</span>
+      <span class="key">postStart:</span>
+        <span class="key">exec:</span>
+          <span class="key">command:</span> [<span class="value">"/bin/sh"</span>, <span class="value">"-c"</span>, <span class="value">"echo 'Started' > /usr/share/message"</span>]
+
+      <span class="comment"># PreStop: Runs before container terminates</span>
+      <span class="key">preStop:</span>
+        <span class="key">exec:</span>
+          <span class="key">command:</span> [<span class="value">"/bin/sh"</span>, <span class="value">"-c"</span>, <span class="value">"nginx -s quit; sleep 5"</span>]
+
+    <span class="comment"># Grace period for cleanup</span>
+  <span class="key">terminationGracePeriodSeconds:</span> <span class="value">30</span>
+                    </div>
+                </div>
+
+                <div class="yaml-section">
+                    <div class="yaml-header">6. CronJob with Never Restart Policy</div>
+                    <div class="yaml-code">
+<span class="key">apiVersion:</span> <span class="value">batch/v1</span>
+<span class="key">kind:</span> <span class="value">CronJob</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="value">database-backup</span>
+<span class="key">spec:</span>
+  <span class="key">schedule:</span> <span class="value">"0 2 * * *"</span>  <span class="comment"># 2 AM daily</span>
+  <span class="key">jobTemplate:</span>
+    <span class="key">spec:</span>
+      <span class="key">template:</span>
+        <span class="key">spec:</span>
+          <span class="key">restartPolicy:</span> <span class="value">Never</span>  <span class="comment"># Don't retry on failure</span>
+          <span class="key">containers:</span>
+          - <span class="key">name:</span> <span class="value">backup</span>
+            <span class="key">image:</span> <span class="value">backup-tool:v1</span>
+            <span class="key">command:</span> [<span class="value">"/backup.sh"</span>]
+                    </div>
+                </div>
+
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #16a34a;">
+                    <h3 style="color: #14532d; margin-bottom: 15px;">🛠️ Useful kubectl Commands</h3>
+                    <div class="yaml-code">
+<span class="comment"># Check Pod phase and conditions</span>
+kubectl get pod &lt;pod-name&gt; -o wide
+
+<span class="comment"># View detailed Pod status including container states</span>
+kubectl describe pod &lt;pod-name&gt;
+
+<span class="comment"># Watch Pod status changes in real-time</span>
+kubectl get pod &lt;pod-name&gt; -w
+
+<span class="comment"># Get Pod conditions in JSON format</span>
+kubectl get pod &lt;pod-name&gt; -o jsonpath='{.status.conditions[*]}'
+
+<span class="comment"># Check container restart count</span>
+kubectl get pod &lt;pod-name&gt; -o jsonpath='{.status.containerStatuses[*].restartCount}'
+
+<span class="comment"># View logs from previous container instance (after restart)</span>
+kubectl logs &lt;pod-name&gt; --previous
+
+<span class="comment"># Get events for troubleshooting</span>
+kubectl get events --field-selector involvedObject.name=&lt;pod-name&gt;
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tooltip Element -->
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        // View switching
+        function showView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active from all buttons
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected view
+            document.getElementById(viewName + '-view').classList.add('active');
+
+            // Highlight active button
+            event.target.classList.add('active');
+        }
+
+        // Tooltip functions
+        let tooltip = document.getElementById('tooltip');
+
+        function showTooltip(event, text) {
+            tooltip.textContent = text;
+            tooltip.classList.add('show');
+            updateTooltipPosition(event);
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('show');
+        }
+
+        function updateTooltipPosition(event) {
+            const x = event.clientX;
+            const y = event.clientY;
+
+            tooltip.style.left = (x + 15) + 'px';
+            tooltip.style.top = (y + 15) + 'px';
+        }
+
+        // Update tooltip position on mouse move
+        document.addEventListener('mousemove', (event) => {
+            if (tooltip.classList.contains('show')) {
+                updateTooltipPosition(event);
+            }
+        });
+
+        // Phase card click animation
+        document.querySelectorAll('.phase-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // Container state card hover effect
+        document.querySelectorAll('.container-state-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>

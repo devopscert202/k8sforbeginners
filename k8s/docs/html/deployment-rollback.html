@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Deployment Rollback - Interactive Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ebf0 100%);
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #326ce5 0%, #1a4d99 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-top: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 0 20px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 18px 28px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1em;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: #326ce5;
+            background: rgba(50, 108, 229, 0.05);
+        }
+
+        .tab.active {
+            color: #326ce5;
+            border-bottom-color: #326ce5;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px 30px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #326ce5;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #326ce5;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #495057;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .section p {
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            color: #495057;
+        }
+
+        .flow-diagram {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 2px solid #dee2e6;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .flow-step:hover {
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            background: #326ce5;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            flex-shrink: 0;
+            margin-right: 20px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h4 {
+            color: #326ce5;
+            margin-bottom: 8px;
+            font-size: 1.15em;
+        }
+
+        .step-content p {
+            color: #666;
+            margin: 0;
+        }
+
+        .arrow-down {
+            text-align: center;
+            color: #326ce5;
+            font-size: 2em;
+            margin: 10px 0;
+        }
+
+        .revision-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .revision-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .revision-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .revision-card.current {
+            border-color: #28a745;
+            background: #f0f9f4;
+        }
+
+        .revision-card.current::before {
+            content: "CURRENT";
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .revision-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #326ce5;
+            margin-bottom: 10px;
+        }
+
+        .revision-info {
+            margin: 10px 0;
+        }
+
+        .revision-info div {
+            margin: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .revision-info strong {
+            color: #495057;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .comparison-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            border: 2px solid #dee2e6;
+        }
+
+        .comparison-box h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #326ce5;
+        }
+
+        .comparison-box.before {
+            border-color: #dc3545;
+        }
+
+        .comparison-box.before h3 {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .comparison-box.after {
+            border-color: #28a745;
+        }
+
+        .comparison-box.after h3 {
+            color: #28a745;
+            border-color: #28a745;
+        }
+
+        .replicaset-box {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #326ce5;
+        }
+
+        .replicaset-box.active {
+            border-left-color: #28a745;
+            background: #f0f9f4;
+        }
+
+        .replicaset-box.inactive {
+            border-left-color: #6c757d;
+            opacity: 0.6;
+        }
+
+        .replicaset-name {
+            font-weight: bold;
+            color: #326ce5;
+            margin-bottom: 8px;
+        }
+
+        .replicaset-pods {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .pod-icon {
+            width: 30px;
+            height: 30px;
+            background: #326ce5;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .pod-icon.running {
+            background: #28a745;
+        }
+
+        .pod-icon.terminating {
+            background: #ffc107;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .code-block .comment {
+            color: #5c6370;
+        }
+
+        .code-block .command {
+            color: #61afef;
+        }
+
+        .code-block .output {
+            color: #98c379;
+        }
+
+        .code-block .keyword {
+            color: #c678dd;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #326ce5;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .info-box.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
+        .info-box.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .info-box.danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .info-box h4 {
+            color: #326ce5;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .info-box.warning h4 {
+            color: #856404;
+        }
+
+        .info-box.success h4 {
+            color: #155724;
+        }
+
+        .info-box.danger h4 {
+            color: #721c24;
+        }
+
+        .technical-diagram {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .diagram-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .diagram-box {
+            background: #f8f9fa;
+            border: 2px solid #326ce5;
+            border-radius: 8px;
+            padding: 20px;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .diagram-box.deployment {
+            border-color: #326ce5;
+            background: #e7f3ff;
+        }
+
+        .diagram-box.replicaset {
+            border-color: #17a2b8;
+            background: #d1ecf1;
+        }
+
+        .diagram-box.pod {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .diagram-arrow {
+            font-size: 2em;
+            color: #326ce5;
+            margin: 0 20px;
+        }
+
+        .diagram-label {
+            font-weight: bold;
+            color: #326ce5;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .diagram-details {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+
+        li {
+            margin: 10px 0;
+            color: #495057;
+        }
+
+        strong {
+            color: #326ce5;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+
+            .diagram-row {
+                flex-direction: column;
+            }
+
+            .diagram-arrow {
+                transform: rotate(90deg);
+                margin: 20px 0;
+            }
+
+            .tab {
+                padding: 15px 20px;
+                font-size: 0.9em;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Kubernetes Deployment Rollback</h1>
+            <p>Understanding how Kubernetes handles rollbacks and revision history</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="rollback-process">Rollback Process</button>
+            <button class="tab" data-tab="revision-history">Revision History</button>
+            <button class="tab" data-tab="before-after">Before/After</button>
+            <button class="tab" data-tab="commands">Commands</button>
+            <button class="tab" data-tab="how-it-works">How It Works</button>
+        </div>
+
+        <!-- Tab 1: Rollback Process -->
+        <div class="tab-content active" id="rollback-process">
+            <div class="section">
+                <h2>Rollback Process Flow</h2>
+                <p>When you perform a rollback, Kubernetes creates a <strong>new revision</strong> using the pod template from a previous revision. The revision numbers always increment forward - they never go backwards.</p>
+
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Initial State - Version 2 (Broken)</h4>
+                            <p>Your deployment is running version 2, but there's a problem. Current revision: 2</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Execute Rollback Command</h4>
+                            <p><code>kubectl rollout undo deployment/apache-deployment</code></p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Kubernetes Creates New Revision (3)</h4>
+                            <p>Kubernetes copies the pod template from revision 1 and creates revision 3 with it</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Rolling Update Process Begins</h4>
+                            <p>Old ReplicaSet (v2) scales down while old ReplicaSet (v1 template) scales up</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Rollback Complete - Version 1 Restored</h4>
+                            <p>Application now runs version 1 under revision 3. Revision history: 1, 2, 3</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <h4>Key Concept</h4>
+                    <p>Rollback doesn't mean going back to revision 1. It means creating a <strong>new revision (3)</strong> that uses the same pod template as revision 1. This maintains a complete audit trail of all changes.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Revision History -->
+        <div class="tab-content" id="revision-history">
+            <div class="section">
+                <h2>Understanding Revision History</h2>
+                <p>Kubernetes maintains a history of all deployment revisions. Each time you update or rollback a deployment, a new revision is created.</p>
+
+                <h3>Revision Progression Example</h3>
+                <div class="revision-cards">
+                    <div class="revision-card">
+                        <div class="revision-number">Revision 1</div>
+                        <div class="revision-info">
+                            <div><strong>Image:</strong> apache_v1</div>
+                            <div><strong>Status:</strong> Historical</div>
+                            <div><strong>Change:</strong> Initial deployment</div>
+                        </div>
+                    </div>
+
+                    <div class="revision-card">
+                        <div class="revision-number">Revision 2</div>
+                        <div class="revision-info">
+                            <div><strong>Image:</strong> apache_v2</div>
+                            <div><strong>Status:</strong> Historical</div>
+                            <div><strong>Change:</strong> Updated to version 2</div>
+                        </div>
+                    </div>
+
+                    <div class="revision-card current">
+                        <div class="revision-number">Revision 3</div>
+                        <div class="revision-info">
+                            <div><strong>Image:</strong> apache_v1</div>
+                            <div><strong>Status:</strong> Current</div>
+                            <div><strong>Change:</strong> Rolled back to v1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>How Revision History Works</h4>
+                    <ul>
+                        <li><strong>Sequential numbering:</strong> Revisions are numbered 1, 2, 3, etc. They never go backwards</li>
+                        <li><strong>ReplicaSet storage:</strong> Each revision corresponds to a ReplicaSet that stores the pod template</li>
+                        <li><strong>History limit:</strong> By default, Kubernetes keeps the last 10 revisions (configurable via <code>revisionHistoryLimit</code>)</li>
+                        <li><strong>Rollback creates new revision:</strong> Rolling back to revision 1 creates revision 3 with the same pod template</li>
+                    </ul>
+                </div>
+
+                <h3>After Multiple Updates and Rollbacks</h3>
+                <div class="revision-cards">
+                    <div class="revision-card">
+                        <div class="revision-number">Revision 1</div>
+                        <div class="revision-info">
+                            <div><strong>Image:</strong> apache_v1</div>
+                            <div><strong>Change:</strong> Initial</div>
+                        </div>
+                    </div>
+
+                    <div class="revision-card">
+                        <div class="revision-number">Revision 2</div>
+                        <div class="revision-info">
+                            <div><strong>Image:</strong> apache_v2</div>
+                            <div><strong>Change:</strong> Update to v2</div>
+                        </div>
+                    </div>
+
+                    <div class="revision-card">
+                        <div class="revision-number">Revision 3</div>
+                        <div class="revision-info">
+                            <div><strong>Image:</strong> apache_v1</div>
+                            <div><strong>Change:</strong> Rollback to v1</div>
+                        </div>
+                    </div>
+
+                    <div class="revision-card current">
+                        <div class="revision-number">Revision 4</div>
+                        <div class="revision-info">
+                            <div><strong>Image:</strong> apache_v2</div>
+                            <div><strong>Change:</strong> Rollback to v2</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <h4>Important Note</h4>
+                    <p>When you use <code>kubectl rollout undo</code> without specifying a revision, it rolls back to the immediately previous revision. When you use <code>--to-revision=N</code>, it rolls back to that specific revision's pod template.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Before/After Comparison -->
+        <div class="tab-content" id="before-after">
+            <div class="section">
+                <h2>Before and After Rollback Comparison</h2>
+                <p>See exactly what changes during a rollback at the ReplicaSet and Pod level.</p>
+
+                <div class="comparison-container">
+                    <div class="comparison-box before">
+                        <h3>Before Rollback</h3>
+                        <p><strong>Current Revision:</strong> 2 (apache_v2)</p>
+
+                        <div class="replicaset-box active">
+                            <div class="replicaset-name">apache-deployment-5d4f6b7c8d (v2)</div>
+                            <div><strong>Desired:</strong> 2 | <strong>Current:</strong> 2 | <strong>Ready:</strong> 2</div>
+                            <div class="replicaset-pods">
+                                <div class="pod-icon running">P1</div>
+                                <div class="pod-icon running">P2</div>
+                            </div>
+                        </div>
+
+                        <div class="replicaset-box inactive">
+                            <div class="replicaset-name">apache-deployment-6c5d7f8a9b (v1)</div>
+                            <div><strong>Desired:</strong> 0 | <strong>Current:</strong> 0 | <strong>Ready:</strong> 0</div>
+                            <div class="replicaset-pods">
+                                <small>No pods running</small>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <strong>Deployment Status:</strong>
+                            <div style="margin-top: 10px;">
+                                <div>Image: apache_v2</div>
+                                <div>Replicas: 2/2</div>
+                                <div>Available: 2</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-box after">
+                        <h3>After Rollback</h3>
+                        <p><strong>Current Revision:</strong> 3 (apache_v1)</p>
+
+                        <div class="replicaset-box inactive">
+                            <div class="replicaset-name">apache-deployment-5d4f6b7c8d (v2)</div>
+                            <div><strong>Desired:</strong> 0 | <strong>Current:</strong> 0 | <strong>Ready:</strong> 0</div>
+                            <div class="replicaset-pods">
+                                <small>No pods running</small>
+                            </div>
+                        </div>
+
+                        <div class="replicaset-box active">
+                            <div class="replicaset-name">apache-deployment-6c5d7f8a9b (v1)</div>
+                            <div><strong>Desired:</strong> 2 | <strong>Current:</strong> 2 | <strong>Ready:</strong> 2</div>
+                            <div class="replicaset-pods">
+                                <div class="pod-icon running">P1</div>
+                                <div class="pod-icon running">P2</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <strong>Deployment Status:</strong>
+                            <div style="margin-top: 10px;">
+                                <div>Image: apache_v1</div>
+                                <div>Replicas: 2/2</div>
+                                <div>Available: 2</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <h4>What Happened?</h4>
+                    <ul>
+                        <li>The v2 ReplicaSet (<code>apache-deployment-5d4f6b7c8d</code>) scaled down from 2 to 0</li>
+                        <li>The v1 ReplicaSet (<code>apache-deployment-6c5d7f8a9b</code>) scaled up from 0 to 2</li>
+                        <li>The same ReplicaSet from revision 1 was reused (Kubernetes doesn't create a duplicate)</li>
+                        <li>A new revision number (3) was created, but it points to the existing v1 ReplicaSet</li>
+                        <li>Rolling update strategy ensured zero downtime during the rollback</li>
+                    </ul>
+                </div>
+
+                <h3>During Rollback (Mid-Process)</h3>
+                <div class="technical-diagram">
+                    <div class="diagram-row">
+                        <div class="diagram-box replicaset">
+                            <div class="diagram-label">v2 ReplicaSet</div>
+                            <div class="replicaset-pods">
+                                <div class="pod-icon terminating">P1</div>
+                            </div>
+                            <div class="diagram-details">Scaling down: 1 → 0</div>
+                        </div>
+
+                        <div class="diagram-arrow">⟷</div>
+
+                        <div class="diagram-box replicaset">
+                            <div class="diagram-label">v1 ReplicaSet</div>
+                            <div class="replicaset-pods">
+                                <div class="pod-icon running">P1</div>
+                            </div>
+                            <div class="diagram-details">Scaling up: 1 → 2</div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 20px; color: #666;">
+                        Kubernetes ensures new pods are ready before terminating old ones
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Commands -->
+        <div class="tab-content" id="commands">
+            <div class="section">
+                <h2>Rollback Commands and Outputs</h2>
+
+                <h3>1. Check Current Status</h3>
+                <div class="code-block">
+<span class="comment"># View deployment status</span>
+<span class="command">$ kubectl get deployment apache-deployment</span>
+<span class="output">NAME                 READY   UP-TO-DATE   AVAILABLE   AGE
+apache-deployment    2/2     2            2           10m</span>
+
+<span class="comment"># View current image</span>
+<span class="command">$ kubectl describe deployment apache-deployment | grep Image</span>
+<span class="output">    Image:        karthickponcloud/k8slabs:apache_v2</span>
+                </div>
+
+                <h3>2. View Rollout History</h3>
+                <div class="code-block">
+<span class="command">$ kubectl rollout history deployment/apache-deployment</span>
+<span class="output">deployment.apps/apache-deployment
+REVISION  CHANGE-CAUSE
+1         Initial deployment
+2         Apache version 2</span>
+                </div>
+
+                <div class="info-box">
+                    <h4>Understanding the History Output</h4>
+                    <ul>
+                        <li><strong>REVISION:</strong> Sequential number for each change</li>
+                        <li><strong>CHANGE-CAUSE:</strong> Annotation describing the change (set via <code>--record</code> flag or <code>kubernetes.io/change-cause</code> annotation)</li>
+                        <li>The current revision is not specifically marked - you need to check deployment status</li>
+                    </ul>
+                </div>
+
+                <h3>3. Perform Rollback (Undo)</h3>
+                <div class="code-block">
+<span class="comment"># Rollback to previous revision</span>
+<span class="command">$ kubectl rollout undo deployment/apache-deployment</span>
+<span class="output">deployment.apps/apache-deployment rolled back</span>
+
+<span class="comment"># Watch the rollout status</span>
+<span class="command">$ kubectl rollout status deployment/apache-deployment</span>
+<span class="output">Waiting for deployment "apache-deployment" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "apache-deployment" rollout to finish: 1 old replicas are pending termination...
+deployment "apache-deployment" successfully rolled out</span>
+                </div>
+
+                <h3>4. Rollback to Specific Revision</h3>
+                <div class="code-block">
+<span class="comment"># View detailed history for a specific revision</span>
+<span class="command">$ kubectl rollout history deployment/apache-deployment --revision=1</span>
+<span class="output">deployment.apps/apache-deployment with revision #1
+Pod Template:
+  Labels:       app=apache
+  Containers:
+   apache-container:
+    Image:      karthickponcloud/k8slabs:apache_v1
+    Port:       80/TCP
+  Annotations:  kubernetes.io/change-cause: Initial deployment</span>
+
+<span class="comment"># Rollback to specific revision</span>
+<span class="command">$ kubectl rollout undo deployment/apache-deployment --to-revision=2</span>
+<span class="output">deployment.apps/apache-deployment rolled back</span>
+                </div>
+
+                <h3>5. Verify Rollback</h3>
+                <div class="code-block">
+<span class="comment"># Check deployment image</span>
+<span class="command">$ kubectl describe deployment apache-deployment | grep Image</span>
+<span class="output">    Image:        karthickponcloud/k8slabs:apache_v1</span>
+
+<span class="comment"># View updated history</span>
+<span class="command">$ kubectl rollout history deployment/apache-deployment</span>
+<span class="output">deployment.apps/apache-deployment
+REVISION  CHANGE-CAUSE
+2         Apache version 2
+3         Initial deployment</span>
+
+<span class="comment"># Note: Revision 1 is now gone, replaced by revision 3 with the same template</span>
+                </div>
+
+                <h3>6. View ReplicaSets</h3>
+                <div class="code-block">
+<span class="command">$ kubectl get replicasets -l app=apache</span>
+<span class="output">NAME                            DESIRED   CURRENT   READY   AGE
+apache-deployment-6c5d7f8a9b    2         2         2       15m   # v1 (active)
+apache-deployment-5d4f6b7c8d    0         0         0       10m   # v2 (inactive)</span>
+
+<span class="comment"># Each ReplicaSet corresponds to a specific pod template (revision)</span>
+                </div>
+
+                <div class="info-box warning">
+                    <h4>Important Notes</h4>
+                    <ul>
+                        <li><code>kubectl rollout undo</code> without <code>--to-revision</code> rolls back to the immediately previous revision</li>
+                        <li><code>--to-revision=N</code> lets you jump to any revision in the history</li>
+                        <li>After rollback, the old revision number disappears and is replaced with a new one</li>
+                        <li>Use <code>--record</code> flag or add annotations to track change causes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: How It Works -->
+        <div class="tab-content" id="how-it-works">
+            <div class="section">
+                <h2>Technical Deep Dive: How Rollback Works</h2>
+
+                <h3>The Relationship: Deployment → ReplicaSet → Pods</h3>
+                <div class="technical-diagram">
+                    <div class="diagram-row">
+                        <div class="diagram-box deployment">
+                            <div class="diagram-label">Deployment</div>
+                            <div class="diagram-details">
+                                Manages multiple<br>ReplicaSets
+                            </div>
+                        </div>
+
+                        <div class="diagram-arrow">→</div>
+
+                        <div class="diagram-box replicaset">
+                            <div class="diagram-label">ReplicaSet</div>
+                            <div class="diagram-details">
+                                Each revision creates<br>or reuses a ReplicaSet
+                            </div>
+                        </div>
+
+                        <div class="diagram-arrow">→</div>
+
+                        <div class="diagram-box pod">
+                            <div class="diagram-label">Pods</div>
+                            <div class="diagram-details">
+                                ReplicaSet manages<br>actual pod instances
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Step-by-Step: What Happens During Rollback</h3>
+
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Deployment Controller Receives Rollback Command</h4>
+                            <p>When you run <code>kubectl rollout undo</code>, the command is sent to the Kubernetes API server.</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Deployment Identifies Target Revision</h4>
+                            <p>The deployment controller looks up the target revision from its history. If no revision is specified, it uses the previous revision.</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Creates New Revision Entry</h4>
+                            <p>A new revision number is assigned (e.g., revision 3), even though the pod template comes from an older revision (e.g., revision 1).</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Reuses Existing ReplicaSet</h4>
+                            <p>Kubernetes finds the ReplicaSet from the target revision (it was scaled to 0) and prepares to scale it back up.</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Applies Rolling Update Strategy</h4>
+                            <p>The rollback follows the same rolling update strategy defined in the deployment (maxSurge, maxUnavailable).</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h4>Scales Old and New ReplicaSets</h4>
+                            <p>Old ReplicaSet (current/broken version) scales down while target ReplicaSet (previous/working version) scales up.</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <h4>Monitors Pod Readiness</h4>
+                            <p>New pods are created and must pass readiness checks before old pods are terminated.</p>
+                        </div>
+                    </div>
+
+                    <div class="arrow-down">↓</div>
+
+                    <div class="flow-step">
+                        <div class="step-number">8</div>
+                        <div class="step-content">
+                            <h4>Rollback Complete</h4>
+                            <p>All pods from the old version are terminated, and all pods from the target version are running and ready.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Key Technical Concepts</h3>
+
+                <div class="info-box">
+                    <h4>1. ReplicaSet Reuse</h4>
+                    <p>Kubernetes doesn't create a new ReplicaSet for a rollback if one with the same pod template already exists. It reuses the existing ReplicaSet from the target revision.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>2. Revision Number Always Increments</h4>
+                    <p>Even though you're "rolling back," the revision number moves forward. This maintains a chronological audit trail of all changes to the deployment.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>3. Rolling Update Strategy Applies</h4>
+                    <p>Rollback isn't instant - it follows the deployment's <code>strategy</code> configuration:</p>
+                    <ul>
+                        <li><strong>maxSurge:</strong> Maximum number of pods that can be created above the desired count</li>
+                        <li><strong>maxUnavailable:</strong> Maximum number of pods that can be unavailable during the update</li>
+                    </ul>
+                </div>
+
+                <div class="info-box warning">
+                    <h4>4. Revision History Limit</h4>
+                    <p>The <code>revisionHistoryLimit</code> field (default: 10) controls how many old ReplicaSets to keep. When this limit is exceeded, the oldest ReplicaSets are deleted, and you can no longer roll back to those revisions.</p>
+                </div>
+
+                <h3>Example Deployment Configuration</h3>
+                <div class="code-block">
+<span class="keyword">apiVersion:</span> apps/v1
+<span class="keyword">kind:</span> Deployment
+<span class="keyword">metadata:</span>
+  <span class="keyword">name:</span> apache-deployment
+<span class="keyword">spec:</span>
+  <span class="keyword">replicas:</span> 2
+  <span class="keyword">revisionHistoryLimit:</span> 10  <span class="comment"># Keep last 10 revisions</span>
+  <span class="keyword">strategy:</span>
+    <span class="keyword">type:</span> RollingUpdate
+    <span class="keyword">rollingUpdate:</span>
+      <span class="keyword">maxSurge:</span> 1           <span class="comment"># Can create 1 extra pod during update</span>
+      <span class="keyword">maxUnavailable:</span> 0     <span class="comment"># Always maintain full availability</span>
+  <span class="keyword">selector:</span>
+    <span class="keyword">matchLabels:</span>
+      <span class="keyword">app:</span> apache
+  <span class="keyword">template:</span>
+    <span class="keyword">metadata:</span>
+      <span class="keyword">labels:</span>
+        <span class="keyword">app:</span> apache
+    <span class="keyword">spec:</span>
+      <span class="keyword">containers:</span>
+      - <span class="keyword">name:</span> apache-container
+        <span class="keyword">image:</span> karthickponcloud/k8slabs:apache_v1
+        <span class="keyword">ports:</span>
+        - <span class="keyword">containerPort:</span> 80
+                </div>
+
+                <h3>Common Misconceptions</h3>
+
+                <div class="info-box danger">
+                    <h4>❌ Misconception: "Rollback reverts to revision 1"</h4>
+                    <p><strong>Reality:</strong> Rollback creates a new revision (e.g., 3) that uses the pod template from revision 1. The revision number never goes backwards.</p>
+                </div>
+
+                <div class="info-box danger">
+                    <h4>❌ Misconception: "Rollback is instantaneous"</h4>
+                    <p><strong>Reality:</strong> Rollback follows the rolling update strategy, gradually replacing pods to maintain availability.</p>
+                </div>
+
+                <div class="info-box danger">
+                    <h4>❌ Misconception: "Rollback creates a new ReplicaSet"</h4>
+                    <p><strong>Reality:</strong> Kubernetes reuses the existing ReplicaSet from the target revision, just scaling it back up.</p>
+                </div>
+
+                <div class="info-box success">
+                    <h4>✓ Best Practices</h4>
+                    <ul>
+                        <li>Always use <code>--record</code> flag or annotations to document changes</li>
+                        <li>Test rollbacks in non-production environments first</li>
+                        <li>Monitor rollout status with <code>kubectl rollout status</code></li>
+                        <li>Set appropriate <code>revisionHistoryLimit</code> based on your needs</li>
+                        <li>Configure proper readiness and liveness probes for safe rollbacks</li>
+                        <li>Use <code>--to-revision</code> to rollback to a specific known-good version</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    const targetContent = document.getElementById(tabId);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+
+            // Ensure first tab is active on load
+            if (tabs.length > 0) {
+                tabs[0].classList.add('active');
+            }
+            if (tabContents.length > 0) {
+                tabContents[0].classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
