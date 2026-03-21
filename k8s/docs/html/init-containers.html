@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Init Containers - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: #0f172a;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1280px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 28px; }
+        h1 { font-size: 2rem; color: #326ce5; margin-bottom: 8px; }
+        .subtitle { max-width: 760px; margin: 0 auto; color: #64748b; }
+        .controls { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+        .btn {
+            border: 1px solid #bfdbfe; background: white; color: #326ce5; border-radius: 999px;
+            padding: 10px 16px; cursor: pointer; font-weight: 700; transition: 0.25s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(50,108,229,0.16); }
+        .btn.active { background: #326ce5; color: white; }
+        .view { display: none; }
+        .view.active { display: block; }
+        .card {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 12px 32px rgba(15,23,42,0.08);
+            margin-bottom: 22px;
+        }
+        .section-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 14px; }
+        .section-lead { color: #64748b; margin-bottom: 18px; }
+        .grid-2, .grid-3, .stats, .tips { display: grid; gap: 16px; }
+        .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .tips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .tile {
+            border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px;
+            background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+        }
+        .tile h3 { font-size: 1rem; margin-bottom: 8px; }
+        .tile p, .tile li { color: #64748b; font-size: 0.92rem; }
+        .stat { border-radius: 16px; padding: 18px; color: white; min-height: 120px; }
+        .stat.blue { background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%); }
+        .stat.green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+        .stat.amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+        .stat.red { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%); }
+        .stat .label { font-size: 0.78rem; text-transform: uppercase; opacity: 0.88; }
+        .stat .value { font-size: 1.7rem; font-weight: 800; margin: 8px 0; }
+        .flow {
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px;
+        }
+        .flow-box, .chip {
+            border-radius: 16px; padding: 14px 16px; background: white; border: 2px solid #e2e8f0;
+        }
+        .flow-box { min-width: 180px; cursor: pointer; transition: 0.2s; }
+        .flow-box:hover, .flow-box.active { border-color: #326ce5; box-shadow: 0 10px 24px rgba(50,108,229,0.16); }
+        .flow-box.success { background: #f0fdf4; border-color: #86efac; }
+        .flow-box.warn { background: #fff7ed; border-color: #fdba74; }
+        .flow-box.error { background: #fef2f2; border-color: #fca5a5; }
+        .flow-label { font-size: 0.74rem; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+        .flow-name { font-weight: 800; margin-bottom: 6px; }
+        .flow-desc { color: #64748b; font-size: 0.88rem; }
+        .arrow { font-size: 1.3rem; color: #326ce5; font-weight: 800; }
+        .panel, .terminal, .status-box { border-radius: 16px; padding: 16px; }
+        .panel { background: #0f172a; color: #cbd5e1; min-height: 120px; }
+        .panel h3 { color: #93c5fd; margin-bottom: 8px; }
+        .status-box { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-weight: 700; margin-bottom: 14px; }
+        .sim-layout { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 18px; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .scenario-btn, .control-btn { border-radius: 12px; padding: 10px 14px; cursor: pointer; font-weight: 700; transition: 0.2s; }
+        .scenario-btn { background: white; border: 1px solid #e2e8f0; color: #334155; }
+        .scenario-btn.active, .scenario-btn:hover { border-color: #326ce5; color: #326ce5; }
+        .control-btn { border: none; }
+        .control-btn.primary { background: #326ce5; color: white; }
+        .control-btn.secondary { background: #e2e8f0; color: #334155; }
+        .control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .chip { min-width: 160px; }
+        .chip.running { background: #eff6ff; border-color: #93c5fd; }
+        .chip.succeeded { background: #f0fdf4; border-color: #86efac; }
+        .chip.waiting { background: #f8fafc; border-color: #cbd5e1; }
+        .chip.error { background: #fef2f2; border-color: #fca5a5; }
+        .chip-name { font-weight: 800; margin-bottom: 6px; }
+        .chip-state { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 0.76rem; font-weight: 800; background: #e2e8f0; color: #475569; }
+        .chip-state.running { background: #dbeafe; color: #1d4ed8; }
+        .chip-state.succeeded { background: #dcfce7; color: #166534; }
+        .chip-state.error { background: #fee2e2; color: #991b1b; }
+        .terminal {
+            background: #020617; color: #dbeafe; font-family: "Courier New", monospace;
+            white-space: pre-wrap; font-size: 0.84rem; min-height: 220px; border: 1px solid rgba(148,163,184,0.2);
+        }
+        table { width: 100%; border-collapse: collapse; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; }
+        th, td { padding: 14px; text-align: left; vertical-align: top; border-bottom: 1px solid #e2e8f0; }
+        th { background: #326ce5; color: white; font-size: 0.9rem; }
+        td { background: white; color: #334155; font-size: 0.92rem; }
+        details { border: 1px solid #e2e8f0; border-radius: 16px; background: white; margin-bottom: 14px; overflow: hidden; }
+        summary { cursor: pointer; padding: 16px 18px; font-weight: 800; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%); }
+        .details-body { padding: 0 18px 18px; }
+        pre {
+            background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 16px; overflow-x: auto;
+            font-size: 0.83rem; line-height: 1.55; margin-top: 12px; white-space: pre;
+        }
+        ul { padding-left: 18px; }
+        .tip { border-left: 6px solid #326ce5; border-radius: 16px; padding: 18px; background: white; box-shadow: 0 8px 20px rgba(15,23,42,0.05); }
+        .tip.warning { border-left-color: #f59e0b; }
+        .tip.danger { border-left-color: #ef4444; }
+        .tip.success { border-left-color: #22c55e; }
+        .tip h3 { margin-bottom: 8px; }
+        .tip p, .tip li { color: #64748b; font-size: 0.92rem; }
+        @media (max-width: 1024px) { .grid-2, .grid-3, .stats, .tips, .sim-layout { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            .card { padding: 20px; }
+            h1 { font-size: 1.6rem; }
+            .flow { flex-direction: column; align-items: stretch; }
+            .arrow { align-self: center; transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kubernetes Init Containers</h1>
+            <p class="subtitle">Interactive guide based on Lab 21. Explore ordered startup, dependency checks, shared volumes, multi-stage initialization, and failure handling before the main app container starts.</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" onclick="showView('overview', this)">Overview</button>
+            <button class="btn" onclick="showView('flow', this)">Lifecycle Flow</button>
+            <button class="btn" onclick="showView('simulator', this)">Lab Simulator</button>
+            <button class="btn" onclick="showView('yaml', this)">YAML & Commands</button>
+            <button class="btn" onclick="showView('debug', this)">Debug & Best Practices</button>
+        </div>
+
+        <div id="overview-view" class="view active">
+            <div class="card">
+                <h2 class="section-title">What Init Containers Do</h2>
+                <p class="section-lead">Init containers are specialized containers that run to completion before the regular application containers in a Pod are allowed to start.</p>
+                <div class="stats">
+                    <div class="stat blue"><div class="label">Execution</div><div class="value">Sequential</div><div>They run one by one in the order written in the manifest.</div></div>
+                    <div class="stat green"><div class="label">Success Rule</div><div class="value">Required</div><div>Every init container must succeed before the app can start.</div></div>
+                    <div class="stat amber"><div class="label">Typical Jobs</div><div class="value">Prepare</div><div>Wait for services, create config, check prerequisites, run migrations.</div></div>
+                    <div class="stat red"><div class="label">Failure Effect</div><div class="value">Blocked</div><div>The Pod does not proceed to app startup if init fails.</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title">Init Container vs Sidecar</h2>
+                <table>
+                    <thead>
+                        <tr><th>Feature</th><th>Init Container</th><th>Sidecar Container</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>When it runs</td><td>Before main containers</td><td>Alongside main containers</td></tr>
+                        <tr><td>Lifecycle</td><td>Runs once and exits</td><td>Runs continuously</td></tr>
+                        <tr><td>Execution order</td><td>Sequential</td><td>Parallel</td></tr>
+                        <tr><td>Purpose</td><td>Setup and initialization</td><td>Support and monitoring</td></tr>
+                        <tr><td>Failure impact</td><td>Pod startup is blocked</td><td>Pod may still continue</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title">Common Lab 21 Patterns</h2>
+                <div class="grid-3">
+                    <div class="tile"><h3>Wait for dependencies</h3><p>Use `getent hosts`, `nslookup`, or similar checks so the app does not start before required services are available.</p></div>
+                    <div class="tile"><h3>Generate config in a shared volume</h3><p>Init writes files to `emptyDir`; the main container later reads those files from the same volume.</p></div>
+                    <div class="tile"><h3>Break startup into stages</h3><p>Model startup as a series of smaller, auditable, ordered steps rather than one large boot script.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="flow-view" class="view">
+            <div class="card">
+                <h2 class="section-title">Pod Lifecycle with Init Containers</h2>
+                <p class="section-lead">Click a stage to inspect what Kubernetes is doing at that point.</p>
+                <div class="flow" id="flowLane">
+                    <div class="flow-box active" onclick="showFlowDetail(0, this)"><div class="flow-label">Step 1</div><div class="flow-name">Pod Created</div><div class="flow-desc">The Pod exists, but app startup is held back.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box" onclick="showFlowDetail(1, this)"><div class="flow-label">Step 2</div><div class="flow-name">Init #1 Runs</div><div class="flow-desc">Only the first init container is allowed to start.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box warn" onclick="showFlowDetail(2, this)"><div class="flow-label">Step 3</div><div class="flow-name">Later Init Waits</div><div class="flow-desc">The next init container is blocked until the current one succeeds.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box success" onclick="showFlowDetail(3, this)"><div class="flow-label">Step 4</div><div class="flow-name">All Init Complete</div><div class="flow-desc">The Pod becomes initialized and can move on.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box success" onclick="showFlowDetail(4, this)"><div class="flow-label">Step 5</div><div class="flow-name">App Starts</div><div class="flow-desc">Main containers now become eligible to run.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box error" onclick="showFlowDetail(5, this)"><div class="flow-label">Failure</div><div class="flow-name">Init Error</div><div class="flow-desc">A failing init container prevents app startup.</div></div>
+                </div>
+                <div class="status-box" id="flowStatus">Status progression: Pending -&gt; Init:0/N -&gt; Init:1/N -&gt; PodInitializing -&gt; Running</div>
+                <div class="panel" id="flowPanel">
+                    <h3>Pod Created</h3>
+                    <p>Kubernetes accepts the Pod and schedules it. Because init containers exist, the regular application container cannot start yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="simulator-view" class="view">
+            <div class="card">
+                <h2 class="section-title">Interactive Lab Simulator</h2>
+                <p class="section-lead">Step through the most important scenarios from `lab21-init-containers.md`.</p>
+                <div class="toolbar">
+                    <button class="scenario-btn active" onclick="setScenario('service', this)">Service Dependency</button>
+                    <button class="scenario-btn" onclick="setScenario('config', this)">Config Setup</button>
+                    <button class="scenario-btn" onclick="setScenario('multi', this)">Multi-Stage</button>
+                    <button class="scenario-btn" onclick="setScenario('failure', this)">Failure Handling</button>
+                    <button class="scenario-btn" onclick="setScenario('migration', this)">DB Migration</button>
+                </div>
+                <div class="sim-layout">
+                    <div class="card" style="margin-bottom:0;">
+                        <div class="toolbar">
+                            <button class="control-btn secondary" onclick="prevStep()">Back</button>
+                            <button class="control-btn primary" id="nextBtn" onclick="nextStep()">Next Step</button>
+                            <button class="control-btn secondary" onclick="resetScenario()">Reset</button>
+                        </div>
+                        <div style="font-weight:800;font-size:1.08rem;margin-bottom:6px;" id="simTitle">Service Dependency</div>
+                        <div style="color:#64748b;margin-bottom:14px;" id="simCounter">Step 1 of 4</div>
+                        <div class="flow" id="initStrip"></div>
+                        <div class="status-box">
+                            <div><strong>Pod status:</strong> <span id="podStatus">Init:0/2</span></div>
+                            <div><strong>Main container:</strong> <span id="mainState">Waiting for init containers</span></div>
+                        </div>
+                        <div class="terminal" id="simLog">Select a scenario and use Next Step to inspect state transitions.</div>
+                    </div>
+                    <div class="grid-2" style="grid-template-columns:1fr;">
+                        <div class="tile"><h3>How to read it</h3><p>Only one init container can run at a time. Later stages wait until earlier ones complete successfully.</p></div>
+                        <div class="tile"><h3>What to watch</h3><ul><li>Pod status like `Init:0/2` or `Init:Error`</li><li>Whether the main container is blocked</li><li>What the logs say the init container is waiting for</li></ul></div>
+                        <div class="tile"><h3>Why this matters</h3><p>Init containers let you separate setup work from your application image and make the Pod's startup behavior easier to explain and debug.</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="yaml-view" class="view">
+            <div class="card">
+                <h2 class="section-title">YAML & Commands from Lab 21</h2>
+                <p class="section-lead">Focused reference snippets from the markdown lab manual.</p>
+                <details open>
+                    <summary>Exercise 1: Service Dependency Pod</summary>
+                    <div class="details-body">
+                        <pre>apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+spec:
+  initContainers:
+  - name: init-myservice
+    image: registry.access.redhat.com/ubi8/ubi:latest
+    command: ['sh', '-c', 'until getent hosts myservice; do echo waiting for myservice; sleep 2; done;']
+  - name: init-mydb
+    image: registry.access.redhat.com/ubi8/ubi:latest
+    command: ['sh', '-c', 'until getent hosts mydb; do echo waiting for mydb; sleep 2; done;']
+  containers:
+  - name: myapp-container
+    image: registry.access.redhat.com/ubi8/ubi:latest
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']</pre>
+                        <pre>kubectl apply -f init2-container.yaml
+kubectl get pod myapp-pod
+kubectl describe pod myapp-pod
+kubectl logs myapp-pod -c init-myservice
+kubectl logs myapp-pod -c init-mydb -f</pre>
+                    </div>
+                </details>
+                <details>
+                    <summary>Exercise 2: Config Setup with emptyDir</summary>
+                    <div class="details-body">
+                        <pre>initContainers:
+  - name: install-config
+    image: busybox
+    volumeMounts:
+    - name: workdir
+      mountPath: /work-dir
+containers:
+  - name: main-app
+    image: busybox
+    volumeMounts:
+    - name: workdir
+      mountPath: /config
+volumes:
+  - name: workdir
+    emptyDir: {}</pre>
+                    </div>
+                </details>
+                <details>
+                    <summary>Exercise 4: Failure Handling</summary>
+                    <div class="details-body">
+                        <pre>apiVersion: v1
+kind: Pod
+metadata:
+  name: failing-init-pod
+spec:
+  initContainers:
+  - name: init-success
+    image: busybox
+    command: ['sh', '-c', 'echo "Init 1 succeeded"; exit 0']
+  - name: init-failure
+    image: busybox
+    command: ['sh', '-c', 'echo "Init 2 failed"; exit 1']
+  containers:
+  - name: main-container
+    image: busybox
+    command: ['sh', '-c', 'echo "Main container running"; sleep 3600']
+  restartPolicy: Never</pre>
+                    </div>
+                </details>
+                <details>
+                    <summary>Exercise 5: Database Migration Pattern</summary>
+                    <div class="details-body">
+                        <pre>initContainers:
+  - name: wait-for-db
+    image: busybox
+  - name: run-migrations
+    image: busybox
+    volumeMounts:
+    - name: migration-status
+      mountPath: /migrations
+containers:
+  - name: webapp
+    image: busybox
+    volumeMounts:
+    - name: migration-status
+      mountPath: /migrations
+volumes:
+  - name: migration-status
+    emptyDir: {}</pre>
+                        <pre>kubectl logs webapp-with-migration -c wait-for-db
+kubectl logs webapp-with-migration -c run-migrations
+kubectl logs webapp-with-migration</pre>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div id="debug-view" class="view">
+            <div class="card">
+                <h2 class="section-title">Best Practices</h2>
+                <div class="tips">
+                    <div class="tip"><h3>Keep each init step focused</h3><p>One init container per concern makes startup easier to understand and troubleshoot.</p></div>
+                    <div class="tip success"><h3>Use shared volumes deliberately</h3><p>Use `emptyDir` when init needs to hand off generated files or status data to the app container.</p></div>
+                    <div class="tip warning"><h3>Add useful log output</h3><p>When a Pod is stuck in `Init:*`, clear logs are usually the fastest way to find the bottleneck.</p></div>
+                    <div class="tip danger"><h3>No probes on init containers</h3><p>Readiness, liveness, and startup probes are not supported for init containers.</p></div>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="section-title">Useful Commands</h2>
+                <pre>kubectl logs &lt;pod&gt; -c &lt;init-container&gt;
+kubectl logs &lt;pod&gt; -c &lt;init-container&gt; -f
+kubectl describe pod &lt;pod&gt;
+kubectl get pod &lt;pod&gt; -w
+kubectl get pod &lt;pod&gt; -o jsonpath='{.spec.initContainers[*].name}'
+kubectl get pod &lt;pod&gt; -o jsonpath='{.status.initContainerStatuses[*].state}'</pre>
+            </div>
+            <div class="card">
+                <h2 class="section-title">What To Check When Something Breaks</h2>
+                <div class="grid-2">
+                    <div class="tile"><h3>Stuck in waiting</h3><ul><li>Check init logs</li><li>Verify the service or DNS dependency exists</li><li>Confirm network access if needed</li></ul></div>
+                    <div class="tile"><h3>Stuck in Init:Error</h3><ul><li>Use `kubectl describe pod`</li><li>Inspect exit code and error message</li><li>Review restart policy behavior</li></ul></div>
+                    <div class="tile"><h3>Shared data missing</h3><ul><li>Confirm the same volume is mounted in both containers</li><li>Check write path vs read path</li><li>Validate file permissions if needed</li></ul></div>
+                    <div class="tile"><h3>Init takes too long</h3><ul><li>Add timeout logic</li><li>Set resource requests and limits</li><li>Avoid endless loops without an exit condition</li></ul></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const flowDetails = [
+            ["Pod Created", "Kubernetes accepts and schedules the Pod. Since init containers exist, app containers are held back."],
+            ["Init #1 Runs", "Only the first init container starts. Kubernetes does not run multiple init containers in parallel."],
+            ["Later Init Waits", "Any later init container is blocked until the current one exits successfully."],
+            ["All Init Complete", "Once all init containers finish successfully, the Pod can proceed into main container startup."],
+            ["App Starts", "The regular application container now starts, using anything prepared by the init phase."],
+            ["Init Error", "If an init container fails, the main app does not start. Troubleshooting usually begins with logs and kubectl describe pod."]
+        ];
+
+        function showView(name, button) {
+            document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+            document.querySelectorAll('.btn').forEach((b) => b.classList.remove('active'));
+            document.getElementById(name + '-view').classList.add('active');
+            button.classList.add('active');
+        }
+
+        function showFlowDetail(index, element) {
+            document.querySelectorAll('#flowLane .flow-box').forEach((box) => box.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('flowPanel').innerHTML =
+                '<h3>' + flowDetails[index][0] + '</h3><p>' + flowDetails[index][1] + '</p>';
+            const statuses = [
+                'Status progression: Pending -> Init:0/N -> Init:1/N -> PodInitializing -> Running',
+                'Status focus: Init:0/N while the first init container is active',
+                'Status focus: later stages remain blocked until success',
+                'Status focus: all init complete -> PodInitializing',
+                'Status focus: Running',
+                'Status focus: Init:Error or repeated restart depending on restart policy'
+            ];
+            document.getElementById('flowStatus').textContent = statuses[index];
+        }
+
+        const scenarios = {
+            service: {
+                title: 'Service Dependency',
+                initNames: ['init-myservice', 'init-mydb'],
+                steps: [
+                    { states: ['running', 'waiting'], pod: 'Init:0/2', main: 'Waiting for init containers', log: '$ kubectl get pod myapp-pod\nmyapp-pod   0/1   Init:0/2\n\n$ kubectl logs myapp-pod -c init-myservice\nwaiting for myservice\nwaiting for myservice' },
+                    { states: ['succeeded', 'running'], pod: 'Init:1/2', main: 'Waiting for init containers', log: 'After creating Service myservice:\n\n$ kubectl get pod myapp-pod\nmyapp-pod   0/1   Init:1/2\n\n$ kubectl logs myapp-pod -c init-mydb -f\nwaiting for mydb\nwaiting for mydb' },
+                    { states: ['succeeded', 'succeeded'], pod: 'PodInitializing', main: 'Starting', log: 'After creating Service mydb:\n\nBoth init containers have completed.\nThe Pod transitions through PodInitializing.' },
+                    { states: ['succeeded', 'succeeded'], pod: 'Running', main: 'Running', log: '$ kubectl logs myapp-pod\nThe app is running!' }
+                ]
+            },
+            config: {
+                title: 'Config Setup',
+                initNames: ['install-config'],
+                steps: [
+                    { states: ['running'], pod: 'Init:0/1', main: 'Waiting for init containers', log: '$ kubectl logs config-init-pod -c install-config\nDownloading configuration...' },
+                    { states: ['succeeded'], pod: 'Running', main: 'Running', log: '$ kubectl logs config-init-pod\nStarting application...\nConfiguration file contents:\napp.name=MyApplication\napp.version=1.0.0\napp.environment=production\nApplication running...' }
+                ]
+            },
+            multi: {
+                title: 'Multi-Stage',
+                initNames: ['init-stage1', 'init-stage2', 'init-stage3'],
+                steps: [
+                    { states: ['running', 'waiting', 'waiting'], pod: 'Init:0/3', main: 'Waiting for init containers', log: '$ kubectl logs multi-init-pod -c init-stage1\nStage 1: Checking system requirements...' },
+                    { states: ['succeeded', 'running', 'waiting'], pod: 'Init:1/3', main: 'Waiting for init containers', log: '$ kubectl logs multi-init-pod -c init-stage2\nStage 2: Setting up database schema...\nStage 1 complete!\n<timestamp>' },
+                    { states: ['succeeded', 'succeeded', 'running'], pod: 'Init:2/3', main: 'Waiting for init containers', log: '$ kubectl logs multi-init-pod -c init-stage3\nStage 3: Loading initial data...\nStage 2 complete!\n<timestamp>' },
+                    { states: ['succeeded', 'succeeded', 'succeeded'], pod: 'Running', main: 'Running', log: '$ kubectl logs multi-init-pod\nApplication starting...\nInitialization history:\nStage 1 complete!\n<timestamp>\nStage 2 complete!\n<timestamp>\nStage 3 complete!\n<timestamp>\nApplication ready!' }
+                ]
+            },
+            failure: {
+                title: 'Failure Handling',
+                initNames: ['init-success', 'init-failure'],
+                steps: [
+                    { states: ['running', 'waiting'], pod: 'Init:0/2', main: 'Blocked', log: '$ kubectl logs failing-init-pod -c init-success\nInit 1 succeeded' },
+                    { states: ['succeeded', 'running'], pod: 'Init:1/2', main: 'Blocked', log: '$ kubectl logs failing-init-pod -c init-failure\nInit 2 failed' },
+                    { states: ['succeeded', 'error'], pod: 'Init:Error', main: 'Not started', log: '$ kubectl describe pod failing-init-pod\nReason: Error\nrestartPolicy: Never\n\nMain container never starts because the init sequence failed.' }
+                ]
+            },
+            migration: {
+                title: 'DB Migration',
+                initNames: ['wait-for-db', 'run-migrations'],
+                steps: [
+                    { states: ['running', 'waiting'], pod: 'Init:0/2', main: 'Waiting for init containers', log: '$ kubectl logs webapp-with-migration -c wait-for-db\nWaiting for database to be ready...\nAttempt 1: Checking database connection...' },
+                    { states: ['succeeded', 'running'], pod: 'Init:1/2', main: 'Waiting for init containers', log: '$ kubectl logs webapp-with-migration -c run-migrations\nRunning database migrations...\nMigration 001: Create users table\nMigration 002: Create products table' },
+                    { states: ['succeeded', 'succeeded'], pod: 'Running', main: 'Running', log: '$ kubectl logs webapp-with-migration\nStarting web application...\nmigration-complete\nWeb application is ready to serve traffic' }
+                ]
+            }
+        };
+
+        let currentScenario = 'service';
+        let currentStep = 0;
+
+        function renderScenario() {
+            const scenario = scenarios[currentScenario];
+            const step = scenario.steps[currentStep];
+            document.getElementById('simTitle').textContent = scenario.title;
+            document.getElementById('simCounter').textContent = 'Step ' + (currentStep + 1) + ' of ' + scenario.steps.length;
+            document.getElementById('podStatus').textContent = step.pod;
+            document.getElementById('mainState').textContent = step.main;
+            document.getElementById('simLog').textContent = step.log;
+            const strip = document.getElementById('initStrip');
+            strip.innerHTML = '';
+            scenario.initNames.forEach((name, i) => {
+                const state = step.states[i];
+                const chip = document.createElement('div');
+                chip.className = 'chip ' + state;
+                chip.innerHTML = '<div class="chip-name">' + name + '</div><div class="chip-state ' + state + '">' + state.toUpperCase() + '</div>';
+                strip.appendChild(chip);
+            });
+            document.getElementById('nextBtn').disabled = currentStep >= scenario.steps.length - 1;
+        }
+
+        function setScenario(name, button) {
+            currentScenario = name;
+            currentStep = 0;
+            document.querySelectorAll('.scenario-btn').forEach((btn) => btn.classList.remove('active'));
+            button.classList.add('active');
+            renderScenario();
+        }
+
+        function nextStep() {
+            const scenario = scenarios[currentScenario];
+            if (currentStep < scenario.steps.length - 1) {
+                currentStep += 1;
+                renderScenario();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep -= 1;
+                renderScenario();
+            }
+        }
+
+        function resetScenario() {
+            currentStep = 0;
+            renderScenario();
+        }
+
+        renderScenario();
+    </script>
+</body>
+</html>

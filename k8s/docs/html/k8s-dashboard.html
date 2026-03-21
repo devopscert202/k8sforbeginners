@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Dashboard - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 26%),
+                linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: #0f172a;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1320px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 28px; }
+        h1 { font-size: 2rem; color: #2563eb; margin-bottom: 8px; }
+        .subtitle { max-width: 850px; margin: 0 auto; color: #64748b; }
+        .controls { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+        .btn {
+            border: 1px solid #bfdbfe; background: white; color: #2563eb; border-radius: 999px;
+            padding: 10px 16px; cursor: pointer; font-weight: 700; transition: 0.25s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(37,99,235,0.15); }
+        .btn.active { background: #2563eb; color: white; }
+        .view { display: none; }
+        .view.active { display: block; }
+        .card {
+            background: rgba(255,255,255,0.92);
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 14px 34px rgba(15,23,42,0.08);
+            margin-bottom: 22px;
+        }
+        .section-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 14px; }
+        .section-lead { color: #64748b; margin-bottom: 18px; }
+        .grid-2, .grid-3, .stats, .tips { display: grid; gap: 16px; }
+        .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .tips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .tile, .step-card, .flow-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 18px;
+            background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+        }
+        .tile h3, .step-card h3 { font-size: 1rem; margin-bottom: 8px; }
+        .tile p, .tile li, .step-card p, .step-card li { color: #64748b; font-size: 0.92rem; }
+        .stat { border-radius: 18px; padding: 18px; color: white; min-height: 126px; }
+        .stat.blue { background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%); }
+        .stat.green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+        .stat.amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+        .stat.red { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%); }
+        .stat .label { font-size: 0.78rem; text-transform: uppercase; opacity: 0.88; }
+        .stat .value { font-size: 1.6rem; font-weight: 800; margin: 8px 0; }
+        .badge {
+            display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+        .badge.good { background: #dcfce7; color: #166534; }
+        .badge.warn { background: #fef3c7; color: #92400e; }
+        .badge.note { background: #dbeafe; color: #1d4ed8; }
+        .flow {
+            display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px;
+        }
+        .flow-box {
+            min-width: 180px; cursor: pointer; border-width: 2px; transition: 0.2s;
+        }
+        .flow-box:hover, .flow-box.active {
+            border-color: #2563eb; box-shadow: 0 10px 24px rgba(37,99,235,0.16);
+        }
+        .flow-label { font-size: 0.74rem; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+        .flow-name { font-weight: 800; margin-bottom: 6px; }
+        .flow-desc { color: #64748b; font-size: 0.88rem; }
+        .arrow { font-size: 1.3rem; color: #2563eb; font-weight: 800; }
+        .status-box, .panel, .terminal {
+            border-radius: 18px; padding: 16px;
+        }
+        .status-box { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-weight: 700; margin-bottom: 16px; }
+        .panel { background: #0f172a; color: #cbd5e1; min-height: 120px; }
+        .panel h3 { color: #93c5fd; margin-bottom: 8px; }
+        .terminal {
+            background: #020617; color: #dbeafe; font-family: "Courier New", monospace;
+            white-space: pre-wrap; font-size: 0.84rem; min-height: 220px; border: 1px solid rgba(148,163,184,0.2);
+        }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .scenario-btn, .control-btn {
+            border-radius: 12px; padding: 10px 14px; cursor: pointer; font-weight: 700; transition: 0.2s;
+        }
+        .scenario-btn { background: white; border: 1px solid #e2e8f0; color: #334155; }
+        .scenario-btn.active, .scenario-btn:hover { border-color: #2563eb; color: #2563eb; }
+        .control-btn { border: none; }
+        .control-btn.primary { background: #2563eb; color: white; }
+        .control-btn.secondary { background: #e2e8f0; color: #334155; }
+        .control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .chip {
+            border-radius: 16px; padding: 14px 16px; background: white; border: 2px solid #e2e8f0; min-width: 160px;
+        }
+        .chip.running { background: #eff6ff; border-color: #93c5fd; }
+        .chip.succeeded { background: #f0fdf4; border-color: #86efac; }
+        .chip.waiting { background: #f8fafc; border-color: #cbd5e1; }
+        .chip-name { font-weight: 800; margin-bottom: 6px; }
+        .chip-state { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 0.76rem; font-weight: 800; background: #e2e8f0; color: #475569; }
+        .chip-state.running { background: #dbeafe; color: #1d4ed8; }
+        .chip-state.succeeded { background: #dcfce7; color: #166534; }
+        details {
+            border: 1px solid #e2e8f0; border-radius: 16px; background: white; margin-bottom: 14px; overflow: hidden;
+        }
+        summary {
+            cursor: pointer; padding: 16px 18px; font-weight: 800; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+        }
+        .details-body { padding: 0 18px 18px; }
+        pre {
+            background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 16px; overflow-x: auto;
+            font-size: 0.83rem; line-height: 1.55; margin-top: 12px; white-space: pre;
+        }
+        ul { padding-left: 18px; }
+        .tip {
+            border-left: 6px solid #2563eb; border-radius: 16px; padding: 18px; background: white;
+            box-shadow: 0 8px 20px rgba(15,23,42,0.05);
+        }
+        .tip.warning { border-left-color: #f59e0b; }
+        .tip.danger { border-left-color: #ef4444; }
+        .tip.success { border-left-color: #22c55e; }
+        .tip h3 { margin-bottom: 8px; }
+        .tip p, .tip li { color: #64748b; font-size: 0.92rem; }
+        @media (max-width: 1024px) { .grid-2, .grid-3, .stats, .tips { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            .card { padding: 20px; }
+            h1 { font-size: 1.6rem; }
+            .flow { flex-direction: column; align-items: stretch; }
+            .arrow { align-self: center; transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kubernetes Dashboard</h1>
+            <p class="subtitle">Interactive guide for the open-source Kubernetes Dashboard: what it is, when we demo it, how we install and access it, and why it is different from cloud-managed cluster consoles.</p>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" onclick="showView('overview', this)">Concept</button>
+            <button class="btn" onclick="showView('install', this)">Install Flow</button>
+            <button class="btn" onclick="showView('access', this)">Access Flow</button>
+            <button class="btn" onclick="showView('yaml', this)">YAML & Commands</button>
+            <button class="btn" onclick="showView('guidance', this)">Guidance</button>
+        </div>
+
+        <div id="overview-view" class="view active">
+            <div class="card">
+                <h2 class="section-title">What This Dashboard Is</h2>
+                <p class="section-lead">Kubernetes Dashboard is an open-source, web-based UI for Kubernetes clusters. It helps visualize workloads, inspect resources, check logs and metrics, and perform some management tasks through a browser.</p>
+                <div class="stats">
+                    <div class="stat blue"><div class="label">Type</div><div class="value">Open Source</div><div>It is the community Kubernetes Dashboard project, not a cloud-provider console.</div></div>
+                    <div class="stat green"><div class="label">Best For</div><div class="value">Learning + Demo</div><div>Great for exploration, showing resources, and guided walkthroughs.</div></div>
+                    <div class="stat amber"><div class="label">Daily Ops</div><div class="value">Limited</div><div>Useful, but not usually the primary interface for continuous operations.</div></div>
+                    <div class="stat red"><div class="label">Security Note</div><div class="value">RBAC Matters</div><div>Access should be controlled carefully, especially if cluster-admin is used.</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title">What We Do vs What We Do Not Do</h2>
+                <div class="grid-2">
+                    <div class="tile">
+                        <span class="badge good">What we do</span>
+                        <h3 style="margin-top:10px;">Demo, explain, and explore</h3>
+                        <ul>
+                            <li>Install the Dashboard to understand the architecture and access pattern</li>
+                            <li>Use it to visualize namespaces, Pods, Deployments, Services, and metrics</li>
+                            <li>Show login with a token and browser access with port-forward</li>
+                            <li>Use it as a learning and demonstration aid</li>
+                        </ul>
+                    </div>
+                    <div class="tile">
+                        <span class="badge warn">What we do not do</span>
+                        <h3 style="margin-top:10px;">Treat it as the main operating interface</h3>
+                        <ul>
+                            <li>We do not rely on it for continuous day-to-day cluster management</li>
+                            <li>We do not equate it with managed cloud dashboards in EKS, AKS, or GKE</li>
+                            <li>We do not casually grant broad admin access in production</li>
+                            <li>We do not replace `kubectl`, automation, GitOps, or CI/CD with it</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title">Open Source Dashboard vs Cloud-Managed GUI</h2>
+                <div class="grid-3">
+                    <div class="tile">
+                        <span class="badge note">This lab</span>
+                        <h3 style="margin-top:10px;">Kubernetes Dashboard</h3>
+                        <p>Installed inside the cluster, usually exposed temporarily with port-forward or an ingress, and accessed using Kubernetes credentials such as a ServiceAccount token.</p>
+                    </div>
+                    <div class="tile">
+                        <span class="badge warn">Cloud platforms</span>
+                        <h3 style="margin-top:10px;">Provider console views</h3>
+                        <p>Cloud GUIs are platform products with their own integrations, identity controls, billing context, and managed-cluster views. They are related, but not the same product.</p>
+                    </div>
+                    <div class="tile">
+                        <span class="badge good">Practical takeaway</span>
+                        <h3 style="margin-top:10px;">Use the right tool</h3>
+                        <p>Use the Dashboard for understanding and demonstration. Use CLI, automation, and platform-native tooling for repeatable operational work.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="install-view" class="view">
+            <div class="card">
+                <h2 class="section-title">Installation Flow</h2>
+                <p class="section-lead">Click a step to understand the install sequence and what gets created in the cluster.</p>
+                <div class="flow" id="installFlow">
+                    <div class="flow-box active" onclick="showInstallDetail(0, this)"><div class="flow-label">Step 1</div><div class="flow-name">Apply Dashboard Manifest</div><div class="flow-desc">Deploy the open-source Dashboard components into `kubernetes-dashboard`.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box" onclick="showInstallDetail(1, this)"><div class="flow-label">Step 2</div><div class="flow-name">Namespace + RBAC + Deployments</div><div class="flow-desc">Kubernetes creates namespace, service accounts, roles, bindings, services, and deployments.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box" onclick="showInstallDetail(2, this)"><div class="flow-label">Step 3</div><div class="flow-name">Dashboard Pods Start</div><div class="flow-desc">Dashboard and metrics scraper Pods come up in the namespace.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box" onclick="showInstallDetail(3, this)"><div class="flow-label">Step 4</div><div class="flow-name">Create Access Identity</div><div class="flow-desc">Create `admin-user` ServiceAccount and bind it to a role for login.</div></div>
+                    <div class="arrow">-&gt;</div>
+                    <div class="flow-box" onclick="showInstallDetail(4, this)"><div class="flow-label">Step 5</div><div class="flow-name">Generate Token</div><div class="flow-desc">Create a token that the browser login screen will accept.</div></div>
+                </div>
+                <div class="status-box" id="installStatus">Install path: dashboard manifest -> resources created -> Pods running -> ServiceAccount -> token</div>
+                <div class="panel" id="installPanel">
+                    <h3>Apply Dashboard Manifest</h3>
+                    <p>The lab installs the open-source Kubernetes Dashboard using the recommended upstream manifest. This creates the main components in the `kubernetes-dashboard` namespace.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="access-view" class="view">
+            <div class="card">
+                <h2 class="section-title">Access Flow</h2>
+                <p class="section-lead">This lab uses temporary local access, which is exactly what makes it good for demos and learning.</p>
+                <div class="toolbar">
+                    <button class="scenario-btn active" onclick="setAccessScenario('demo', this)">Demo Access</button>
+                    <button class="scenario-btn" onclick="setAccessScenario('login', this)">Login Path</button>
+                    <button class="scenario-btn" onclick="setAccessScenario('observe', this)">What You Explore</button>
+                </div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="toolbar">
+                        <button class="control-btn secondary" onclick="prevAccessStep()">Back</button>
+                        <button class="control-btn primary" id="accessNextBtn" onclick="nextAccessStep()">Next Step</button>
+                        <button class="control-btn secondary" onclick="resetAccessScenario()">Reset</button>
+                    </div>
+                    <div style="font-weight:800;font-size:1.08rem;margin-bottom:6px;" id="accessTitle">Demo Access</div>
+                    <div style="color:#64748b;margin-bottom:14px;" id="accessCounter">Step 1 of 4</div>
+                    <div class="flow" id="accessStrip"></div>
+                    <div class="status-box">
+                        <div><strong>Local endpoint:</strong> <span id="accessEndpoint">https://localhost:8443</span></div>
+                        <div><strong>Why this access pattern:</strong> <span id="accessReason">Temporary, easy-to-teach, and does not require exposing the Dashboard publicly.</span></div>
+                    </div>
+                    <div class="terminal" id="accessLog">Follow the local access path used in the lab.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="yaml-view" class="view">
+            <div class="card">
+                <h2 class="section-title">YAML & Commands</h2>
+                <p class="section-lead">These are the key commands and manifest snippets that power the lab.</p>
+                <details open>
+                    <summary>Install the open-source Dashboard</summary>
+                    <div class="details-body">
+                        <pre>kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+kubectl get all -n kubernetes-dashboard
+kubectl get pods -n kubernetes-dashboard -w
+kubectl logs -n kubernetes-dashboard deployment/kubernetes-dashboard</pre>
+                    </div>
+                </details>
+                <details>
+                    <summary>Create the admin user from k8s-dashboard.yaml</summary>
+                    <div class="details-body">
+                        <pre>apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard</pre>
+                        <pre>kubectl apply -f k8s-dashboard.yaml</pre>
+                    </div>
+                </details>
+                <details>
+                    <summary>Create token and port-forward</summary>
+                    <div class="details-body">
+                        <pre>kubectl create token admin-user -n kubernetes-dashboard
+
+kubectl port-forward -n kubernetes-dashboard service/kubernetes-dashboard 8443:443</pre>
+                        <pre>https://localhost:8443</pre>
+                    </div>
+                </details>
+                <details>
+                    <summary>Tutorial variant using Helm / kong-proxy</summary>
+                    <div class="details-body">
+                        <pre>helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+
+kubectl -n kubernetes-dashboard create token admin-user
+kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8444:443</pre>
+                    </div>
+                </details>
+            </div>
+        </div>
+
+        <div id="guidance-view" class="view">
+            <div class="card">
+                <h2 class="section-title">How To Think About This Tool</h2>
+                <div class="tips">
+                    <div class="tip success"><h3>Use it for explanation and demos</h3><p>It is excellent when you want people to see Pods, Deployments, namespaces, logs, and metrics in a visual way.</p></div>
+                    <div class="tip warning"><h3>Do not confuse it with cloud GUIs</h3><p>Cloud dashboards are managed platform experiences. This Dashboard is an in-cluster open-source application with its own access model.</p></div>
+                    <div class="tip"><h3>Keep access temporary when teaching</h3><p>Port-forwarding plus a token is a clean demo path because it avoids exposing the Dashboard broadly.</p></div>
+                    <div class="tip danger"><h3>Avoid broad admin access casually</h3><p>The sample `cluster-admin` binding is easy for labs, but production setups should prefer least-privilege roles.</p></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title">What You Typically Show in a Demo</h2>
+                <div class="grid-3">
+                    <div class="step-card"><h3>Cluster overview</h3><p>Show namespaces, workload counts, and the overall Dashboard landing page.</p></div>
+                    <div class="step-card"><h3>Workload drill-down</h3><p>Open a Deployment or Pod, inspect events, logs, and resource details.</p></div>
+                    <div class="step-card"><h3>Simple action</h3><p>Scale a workload or browse a Service so learners connect the GUI to the underlying Kubernetes objects.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function showView(name, button) {
+            document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
+            document.querySelectorAll('.btn').forEach((b) => b.classList.remove('active'));
+            document.getElementById(name + '-view').classList.add('active');
+            button.classList.add('active');
+        }
+
+        const installDetails = [
+            ["Apply Dashboard Manifest", "The lab uses the recommended upstream deployment for the open-source Dashboard. This is the main install step that creates the Dashboard components in the cluster."],
+            ["Namespace + RBAC + Deployments", "Kubernetes creates the namespace, service account, roles, bindings, services, secrets, config maps, and deployment objects required by the Dashboard."],
+            ["Dashboard Pods Start", "You verify that the dashboard and metrics-scraper Pods become Running in the kubernetes-dashboard namespace before trying to access the UI."],
+            ["Create Access Identity", "The lab then creates an admin-user ServiceAccount and binds it to cluster-admin for easy lab access. This is convenient for demos, but too broad for production."],
+            ["Generate Token", "You generate a login token for that ServiceAccount and use it on the Dashboard sign-in page."]
+        ];
+
+        function showInstallDetail(index, element) {
+            document.querySelectorAll('#installFlow .flow-box').forEach((box) => box.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('installPanel').innerHTML =
+                '<h3>' + installDetails[index][0] + '</h3><p>' + installDetails[index][1] + '</p>';
+            const statuses = [
+                'Install path: upstream manifest -> cluster resources created',
+                'Install path: namespace, services, roles, bindings, deployments',
+                'Install path: verify Pods are healthy before access',
+                'Install path: add lab login identity',
+                'Install path: generate token for browser login'
+            ];
+            document.getElementById('installStatus').textContent = statuses[index];
+        }
+
+        const accessScenarios = {
+            demo: {
+                title: 'Demo Access',
+                steps: [
+                    { name: 'Port-forward', state: 'running', endpoint: 'https://localhost:8443', reason: 'Temporary, easy-to-teach, and does not require public exposure.', log: '$ kubectl port-forward -n kubernetes-dashboard service/kubernetes-dashboard 8443:443\nForwarding from 127.0.0.1:8443 -> 8443' },
+                    { name: 'Open Browser', state: 'succeeded', endpoint: 'https://localhost:8443', reason: 'The browser connects to the locally forwarded HTTPS endpoint.', log: 'Open the browser and visit:\nhttps://localhost:8443\n\nAccept the self-signed certificate warning in the browser.' },
+                    { name: 'Paste Token', state: 'succeeded', endpoint: 'https://localhost:8443', reason: 'Authentication uses a Kubernetes token instead of a public anonymous login.', log: 'Select Token on the login screen.\nPaste the generated ServiceAccount token.\nClick Sign In.' },
+                    { name: 'Explore UI', state: 'succeeded', endpoint: 'Dashboard Home', reason: 'Now the Dashboard can be used for guided exploration and demonstration.', log: 'Show namespaces, workloads, Pods, logs, services, and metrics if Metrics Server is available.' }
+                ]
+            },
+            login: {
+                title: 'Login Path',
+                steps: [
+                    { name: 'Create ServiceAccount', state: 'running', endpoint: 'admin-user', reason: 'The Dashboard needs a Kubernetes identity with permissions.', log: '$ kubectl apply -f k8s-dashboard.yaml\nserviceaccount/admin-user created' },
+                    { name: 'Bind Role', state: 'succeeded', endpoint: 'cluster-admin binding', reason: 'The lab gives the ServiceAccount broad access for simplicity.', log: 'clusterrolebinding.rbac.authorization.k8s.io/admin-user created' },
+                    { name: 'Create Token', state: 'succeeded', endpoint: 'Bearer token', reason: 'The token is the credential you paste into the login page.', log: '$ kubectl create token admin-user -n kubernetes-dashboard\neyJhbGciOi...' },
+                    { name: 'Sign In', state: 'succeeded', endpoint: 'Dashboard session', reason: 'The Dashboard uses that token to access the Kubernetes API.', log: 'Browser -> Dashboard -> Kubernetes API Server\nAuthentication succeeds and the UI loads.' }
+                ]
+            },
+            observe: {
+                title: 'What You Explore',
+                steps: [
+                    { name: 'Overview', state: 'running', endpoint: 'Cluster overview', reason: 'Start with a visual map of cluster health and resource counts.', log: 'Open the home page and show the namespace selector, workload cards, and basic cluster information.' },
+                    { name: 'Workloads', state: 'succeeded', endpoint: 'Deployments, Pods, Services', reason: 'This is where people connect YAML objects to what they see in the cluster.', log: 'Open a Deployment, then drill into its Pods and related Services.' },
+                    { name: 'Logs + Metrics', state: 'succeeded', endpoint: 'Troubleshooting view', reason: 'This is one of the strongest teaching moments in the Dashboard.', log: 'Show container logs and CPU or memory graphs if Metrics Server is installed.' },
+                    { name: 'Stop Demo', state: 'succeeded', endpoint: 'Return to CLI', reason: 'The Dashboard is useful for understanding, but most repeatable ops remain better in code and CLI workflows.', log: 'Close the browser, stop port-forward, and continue with kubectl, manifests, or GitOps workflows.' }
+                ]
+            }
+        };
+
+        let currentAccessScenario = 'demo';
+        let currentAccessStep = 0;
+
+        function renderAccessScenario() {
+            const scenario = accessScenarios[currentAccessScenario];
+            const step = scenario.steps[currentAccessStep];
+            document.getElementById('accessTitle').textContent = scenario.title;
+            document.getElementById('accessCounter').textContent = 'Step ' + (currentAccessStep + 1) + ' of ' + scenario.steps.length;
+            document.getElementById('accessEndpoint').textContent = step.endpoint;
+            document.getElementById('accessReason').textContent = step.reason;
+            document.getElementById('accessLog').textContent = step.log;
+            const strip = document.getElementById('accessStrip');
+            strip.innerHTML = '';
+            scenario.steps.forEach((item, index) => {
+                const state = index === currentAccessStep ? 'running' : (index < currentAccessStep ? 'succeeded' : 'waiting');
+                const chip = document.createElement('div');
+                chip.className = 'chip ' + state;
+                chip.innerHTML = '<div class="chip-name">' + item.name + '</div><div class="chip-state ' + state + '">' + state.toUpperCase() + '</div>';
+                strip.appendChild(chip);
+            });
+            document.getElementById('accessNextBtn').disabled = currentAccessStep >= scenario.steps.length - 1;
+        }
+
+        function setAccessScenario(name, button) {
+            currentAccessScenario = name;
+            currentAccessStep = 0;
+            document.querySelectorAll('.scenario-btn').forEach((btn) => btn.classList.remove('active'));
+            button.classList.add('active');
+            renderAccessScenario();
+        }
+
+        function nextAccessStep() {
+            const scenario = accessScenarios[currentAccessScenario];
+            if (currentAccessStep < scenario.steps.length - 1) {
+                currentAccessStep += 1;
+                renderAccessScenario();
+            }
+        }
+
+        function prevAccessStep() {
+            if (currentAccessStep > 0) {
+                currentAccessStep -= 1;
+                renderAccessScenario();
+            }
+        }
+
+        function resetAccessScenario() {
+            currentAccessStep = 0;
+            renderAccessScenario();
+        }
+
+        renderAccessScenario();
+    </script>
+</body>
+</html>

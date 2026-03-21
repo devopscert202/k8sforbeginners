@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Interactive Diagrams</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #2563eb;
+            --cyan: #06b6d4;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --bg: #f8fafc;
+            --green: #16a34a;
+            --amber: #d97706;
+            --rose: #e11d48;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(6, 182, 212, 0.10), transparent 26%),
+                linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--slate-900);
+            padding: 24px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 36px 24px;
+            border-radius: 28px;
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(8px);
+        }
+        h1 {
+            font-size: 2.3rem;
+            color: var(--blue);
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            max-width: 860px;
+            margin: 0 auto 18px;
+            color: var(--slate-500);
+            font-size: 1.03rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat {
+            border-radius: 20px;
+            padding: 18px;
+            color: white;
+            min-height: 118px;
+        }
+        .stat.blue { background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%); }
+        .stat.green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+        .stat.amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+        .stat.rose { background: linear-gradient(135deg, #be123c 0%, #fb7185 100%); }
+        .stat .label { font-size: 0.78rem; text-transform: uppercase; opacity: 0.88; }
+        .stat .value { font-size: 1.8rem; font-weight: 800; margin: 8px 0; }
+        .section {
+            margin-bottom: 28px;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .section-note {
+            color: var(--slate-500);
+            font-size: 0.96rem;
+            margin-bottom: 16px;
+        }
+        .catalog {
+            background: rgba(255,255,255,0.92);
+            border: 1px solid var(--slate-200);
+            border-radius: 20px;
+            padding: 10px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+        }
+        table.catalog-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .catalog-table th,
+        .catalog-table td {
+            padding: 14px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid var(--slate-200);
+        }
+        .catalog-table th {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--slate-500);
+            background: rgba(248, 250, 252, 0.9);
+        }
+        .catalog-table tr:last-child td {
+            border-bottom: none;
+        }
+        .tag {
+            display: inline-block;
+            margin-bottom: 8px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+        }
+        .tag.foundation { background: #dbeafe; color: #1d4ed8; }
+        .tag.ops { background: #dcfce7; color: #166534; }
+        .tag.prod { background: #fef3c7; color: #92400e; }
+        .tag.ref { background: #ffe4e6; color: #be123c; }
+        .category-name {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .category-copy {
+            color: var(--slate-500);
+            font-size: 0.9rem;
+        }
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px 14px;
+        }
+        .link-item {
+            padding: 8px 10px;
+            border: 1px solid var(--slate-200);
+            border-radius: 12px;
+            background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+        }
+        .link-item a {
+            text-decoration: none;
+            color: var(--blue);
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+        .link-item p {
+            color: var(--slate-500);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        .footer {
+            margin-top: 34px;
+            text-align: center;
+            color: var(--slate-500);
+            font-size: 0.92rem;
+            padding-bottom: 16px;
+        }
+        @media (max-width: 1200px) {
+            .stats { grid-template-columns: 1fr 1fr; }
+            .link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            h1 { font-size: 1.7rem; }
+            .stats, .link-grid { grid-template-columns: 1fr; }
+            .catalog-table, .catalog-table thead, .catalog-table tbody, .catalog-table th, .catalog-table td, .catalog-table tr {
+                display: block;
+            }
+            .catalog-table thead {
+                display: none;
+            }
+            .catalog-table td {
+                border-bottom: none;
+                padding-top: 8px;
+                padding-bottom: 8px;
+            }
+            .catalog-table tr {
+                border-bottom: 1px solid var(--slate-200);
+                padding: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kubernetes Interactive Diagrams</h1>
+            <p class="subtitle">A navigable home page for the self-contained HTML explainers in this folder. Use these pages to teach concepts visually, demo key Kubernetes flows, and help learners connect YAML, commands, and cluster behavior.</p>
+        </header>
+
+        <section class="stats">
+            <div class="stat blue"><div class="label">Interactive Pages</div><div class="value">28</div><div>Self-contained HTML explainers in this folder, including the new dashboard page and this home page.</div></div>
+            <div class="stat green"><div class="label">Best Use</div><div class="value">Learning</div><div>Great for demos, concept reinforcement, and visual walkthroughs.</div></div>
+            <div class="stat amber"><div class="label">Works Offline</div><div class="value">Yes</div><div>No runtime CDN or external JavaScript dependency is required.</div></div>
+            <div class="stat rose"><div class="label">Navigation</div><div class="value">Centralized</div><div>Use this page as the landing page for all diagram-based learning content.</div></div>
+        </section>
+
+        <section class="section">
+            <div class="section-title">Browse by Category</div>
+            <div class="section-note">Compact tabular layout with four category rows so more links stay visible at once.</div>
+            <div class="catalog">
+                <table class="catalog-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 22%;">Category</th>
+                            <th style="width: 55%;">Included Diagrams</th>
+                            <th style="width: 23%;">Recommended Use</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="tag foundation">Foundation</span>
+                                <div class="category-name">Foundations</div>
+                                <div class="category-copy">Core concepts and first-stop visual explainers for architecture, workloads, networking, and startup behavior.</div>
+                            </td>
+                            <td>
+                                <div class="link-grid">
+                                    <div class="link-item"><a href="./k8s-architecture-interactive.html">Architecture</a><p>Control plane and worker nodes</p></div>
+                                    <div class="link-item"><a href="./service-types-comparison.html">Service Types</a><p>ClusterIP, NodePort, LoadBalancer</p></div>
+                                    <div class="link-item"><a href="./pod-lifecycle.html">Pod Lifecycle</a><p>Phases and restart behavior</p></div>
+                                    <div class="link-item"><a href="./deployment-hierarchy.html">Deployment Hierarchy</a><p>Deployment to ReplicaSet to Pod</p></div>
+                                    <div class="link-item"><a href="./rolling-update.html">Rolling Update</a><p>Safe rollout progression</p></div>
+                                    <div class="link-item"><a href="./deployment-rollback.html">Deployment Rollback</a><p>Rollback flow</p></div>
+                                    <div class="link-item"><a href="./pod-communication.html">Pod Communication</a><p>Pod and Service networking</p></div>
+                                    <div class="link-item"><a href="./dns-resolution.html">DNS Resolution</a><p>Service discovery flow</p></div>
+                                    <div class="link-item"><a href="./init-containers.html">Init Containers</a><p>Sequential startup preparation</p></div>
+                                    <div class="link-item"><a href="./k8s-dashboard.html">K8s Dashboard</a><p>Open-source dashboard explainer</p></div>
+                                </div>
+                            </td>
+                            <td class="category-copy">Best for onboarding, classroom walkthroughs, and concept-first sessions before deeper operational topics.</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="tag ops">Ops</span>
+                                <div class="category-name">Storage, Security, Scheduling</div>
+                                <div class="category-copy">How Kubernetes stores data, controls access, isolates traffic, and decides where Pods run.</div>
+                            </td>
+                            <td>
+                                <div class="link-grid">
+                                    <div class="link-item"><a href="./pv-pvc-binding.html">PV / PVC Binding</a><p>Persistent storage binding</p></div>
+                                    <div class="link-item"><a href="./volume-types.html">Volume Types</a><p>Volume comparison</p></div>
+                                    <div class="link-item"><a href="./rbac-flow.html">RBAC Flow</a><p>Authorization model</p></div>
+                                    <div class="link-item"><a href="./security-context.html">Security Context</a><p>Container and Pod security</p></div>
+                                    <div class="link-item"><a href="./network-policy.html">Network Policy</a><p>Traffic filtering</p></div>
+                                    <div class="link-item"><a href="./node-selection.html">Node Selection</a><p>Scheduling constraints</p></div>
+                                    <div class="link-item"><a href="./taints-tolerations.html">Taints / Tolerations</a><p>Node repulsion and acceptance</p></div>
+                                    <div class="link-item"><a href="./affinity-antiaffinity.html">Affinity Rules</a><p>Placement attraction and avoidance</p></div>
+                                </div>
+                            </td>
+                            <td class="category-copy">Useful for platform operations, policy discussions, troubleshooting, and explaining why a workload runs where it does.</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="tag ops">Ops</span>
+                                <div class="category-name">Workload Operations</div>
+                                <div class="category-copy">Operational behavior for controllers, traffic handling, and node maintenance.</div>
+                            </td>
+                            <td>
+                                <div class="link-grid">
+                                    <div class="link-item"><a href="./replicaset-scaling.html">ReplicaSet Scaling</a><p>Replica count changes</p></div>
+                                    <div class="link-item"><a href="./statefulset-vs-deployment.html">StatefulSet vs Deployment</a><p>Stateful and stateless contrast</p></div>
+                                    <div class="link-item"><a href="./daemonset-pattern.html">DaemonSet Pattern</a><p>One Pod per node</p></div>
+                                    <div class="link-item"><a href="./service-lb-rollout.html">Service LB Rollout</a><p>Traffic during rollouts</p></div>
+                                    <div class="link-item"><a href="./cordon-drain.html">Cordon and Drain</a><p>Safe node maintenance</p></div>
+                                </div>
+                            </td>
+                            <td class="category-copy">Good for demonstrating controller behavior, production maintenance tasks, and how traffic and workloads shift over time.</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="tag prod">Production</span>
+                                <span class="tag ref">Reference</span>
+                                <div class="category-name">Upgrades, Recovery, Reference</div>
+                                <div class="category-copy">Compatibility, upgrades, disaster recovery, and quick object lookup.</div>
+                            </td>
+                            <td>
+                                <div class="link-grid">
+                                    <div class="link-item"><a href="./upgrade-sequence.html">Upgrade Sequence</a><p>Cluster upgrade path</p></div>
+                                    <div class="link-item"><a href="./component-upgrade-order.html">Component Upgrade Order</a><p>Safe component order</p></div>
+                                    <div class="link-item"><a href="./version-skew.html">Version Skew</a><p>Compatibility rules</p></div>
+                                    <div class="link-item"><a href="./etcd-backup-restore.html">etcd Backup Restore</a><p>Disaster recovery flow</p></div>
+                                    <div class="link-item"><a href="./k8s-objects-reference.html">Objects Reference</a><p>Quick browseable object guide</p></div>
+                                </div>
+                            </td>
+                            <td class="category-copy">Use these for reliability topics, admin training, upgrade planning, and review/reference sessions.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="footer">
+            Self-contained HTML, CSS, and JavaScript. Suitable for offline use, local browsing, and static hosting.
+        </div>
+    </div>
+</body>
+</html>

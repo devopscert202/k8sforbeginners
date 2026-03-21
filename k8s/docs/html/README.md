@@ -1,156 +1,87 @@
 # Kubernetes Interactive HTML Diagrams
 
-This directory contains 26 interactive HTML diagrams for learning Kubernetes concepts.
+This folder contains self-contained interactive HTML explainers for Kubernetes concepts, operations, and demos.
 
-## ✅ Browser Compatibility
+## Start Here
 
-All HTML files are:
-- **Self-contained** - No external CDN dependencies
-- **Pure HTML/CSS/JavaScript** - Standard browser APIs only
-- **Cross-browser compatible** - Works on Chrome, Firefox, Safari, Edge
-- **No CORS issues** - No external API calls or resources
-- **Mobile responsive** - Works on tablets and phones
+- Home page: [index.html](./index.html)
+- Example direct page: [k8s-architecture-interactive.html](./k8s-architecture-interactive.html)
 
-## 🚀 GitHub Pages / Jekyll Compatibility
+## Included Diagrams
 
-### Configuration Applied:
-The repository's `_config.yml` has been configured to properly serve these HTML files:
+### Foundations
 
-```yaml
-include:
-  - k8s/docs/html
+- `k8s-architecture-interactive.html` - Control plane and worker node overview
+- `service-types-comparison.html` - ClusterIP, NodePort, LoadBalancer, ExternalName
+- `pod-lifecycle.html` - Pod phases, conditions, and lifecycle transitions
+- `deployment-hierarchy.html` - Deployment to ReplicaSet to Pod hierarchy
+- `rolling-update.html` - Rolling update behavior and rollout concepts
+- `deployment-rollback.html` - Deployment rollback flow
+- `pod-communication.html` - Pod-to-Pod and Service communication
+- `dns-resolution.html` - Kubernetes DNS lookup flow
+- `init-containers.html` - Init containers, sequencing, and startup preparation
+- `k8s-dashboard.html` - Open-source Kubernetes Dashboard concept, install, and access flow
 
-keep_files:
-  - k8s/docs/html
-```
+### Storage, Security, and Scheduling
 
-### Accessing on GitHub Pages:
-Once deployed, files will be accessible at:
-```
-https://devopscert202.github.io/k8sforbeginners/k8s/docs/html/[filename].html
-```
+- `pv-pvc-binding.html` - PersistentVolume and PersistentVolumeClaim binding
+- `volume-types.html` - Kubernetes volume type comparison
+- `rbac-flow.html` - RBAC authorization flow
+- `security-context.html` - Security context behavior and hierarchy
+- `network-policy.html` - Traffic filtering with NetworkPolicy
+- `node-selection.html` - Node selection and scheduling constraints
+- `taints-tolerations.html` - Taints, tolerations, and scheduling outcomes
+- `affinity-antiaffinity.html` - Affinity and anti-affinity rules
 
-Example:
-```
-https://devopscert202.github.io/k8sforbeginners/k8s/docs/html/k8s-architecture-interactive.html
-```
+### Workload Operations
 
-### `.nojekyll` File:
-A `.nojekyll` file has been created in this directory to ensure Jekyll doesn't process these HTML files.
+- `replicaset-scaling.html` - ReplicaSet scaling behavior
+- `statefulset-vs-deployment.html` - StatefulSet versus Deployment
+- `daemonset-pattern.html` - DaemonSet placement model
+- `service-lb-rollout.html` - Service load balancing during rollouts
+- `cordon-drain.html` - Node maintenance workflow
 
-## 📁 Files Overview (26 Total)
+### Cluster Upgrades and Recovery
 
-### TIER 1: Foundations (8 diagrams)
-1. `k8s-architecture-interactive.html` - Control Plane + Worker Nodes
-2. `service-types-comparison.html` - ClusterIP, NodePort, LoadBalancer, ExternalName
-3. `pod-lifecycle.html` - Pod phases and states
-4. `deployment-hierarchy.html` - Deployment → ReplicaSet → Pod
-5. `rolling-update.html` - Rolling update strategy
-6. `deployment-rollback.html` - Rollback flow
-7. `pod-communication.html` - Pod-to-Pod and Service networking
-8. `dns-resolution.html` - DNS query flow
+- `upgrade-sequence.html` - Cluster upgrade sequencing
+- `component-upgrade-order.html` - Safe component upgrade order
+- `version-skew.html` - Version skew rules
+- `etcd-backup-restore.html` - etcd backup and restore concepts
 
-### TIER 2: Operations (10 diagrams)
-9. `pv-pvc-binding.html` - PV/PVC binding lifecycle
-10. `volume-types.html` - Volume types comparison
-11. `rbac-flow.html` - RBAC authorization
-12. `security-context.html` - Security context hierarchy
-13. `network-policy.html` - NetworkPolicy traffic filtering
-14. `node-selection.html` - Node selection process
-15. `taints-tolerations.html` - Taints and tolerations
-16. `affinity-antiaffinity.html` - Affinity and anti-affinity
-17. `replicaset-scaling.html` - ReplicaSet scaling
-18. `statefulset-vs-deployment.html` - StatefulSet vs Deployment
+### Reference
 
-### TIER 3: Production (7 diagrams)
-19. `cordon-drain.html` - Node maintenance workflow
-20. `service-lb-rollout.html` - Service load balancing during rollout
-21. `daemonset-pattern.html` - DaemonSet distribution
-22. `upgrade-sequence.html` - Cluster upgrade sequence
-23. `version-skew.html` - Version skew policy
-24. `component-upgrade-order.html` - Component upgrade order
-25. `etcd-backup-restore.html` - etcd backup and restore
+- `k8s-objects-reference.html` - Kubernetes object reference page
 
-### Reference (1 diagram)
-26. `k8s-objects-reference.html` - Complete K8s objects reference (41 objects)
+## Technical Notes
 
-## 🔧 Technical Details
+- All pages are self-contained HTML, CSS, and JavaScript
+- No CDN or external runtime dependencies
+- Suitable for offline viewing and GitHub Pages hosting
+- `.nojekyll` is present so static hosting is straightforward
 
-### No External Dependencies
-- All CSS is embedded in `<style>` tags
-- All JavaScript is embedded in `<script>` tags
-- No external fonts, icons, or libraries
-- No CDN links (no jQuery, Bootstrap, etc.)
+## Local Usage
 
-### Browser APIs Used (All Standard)
-- `document.getElementById()` - DOM access
-- `document.querySelectorAll()` - DOM queries
-- `element.classList` - CSS class manipulation
-- `element.style` - Inline style manipulation
-- `addEventListener()` - Event handling
+Open the home page directly in a browser:
 
-### YAML Code Formatting
-All YAML examples use:
-```html
-<pre style="white-space: pre;">
-  [YAML content here]
-</pre>
-```
-This preserves proper indentation and line breaks.
-
-## 📝 Usage Notes
-
-### Local Development
-Open any HTML file directly in a browser:
 ```bash
 # Windows
-start k8s-architecture-interactive.html
+start index.html
 
 # macOS
-open k8s-architecture-interactive.html
+open index.html
 
 # Linux
-xdg-open k8s-architecture-interactive.html
+xdg-open index.html
 ```
 
-### Linking from Markdown
-To link from markdown files in the repository:
-```markdown
-[Interactive K8s Architecture](html/k8s-architecture-interactive.html)
+## GitHub Pages Path Pattern
+
+If published, pages are expected at:
+
+```text
+https://<your-site>/<repo>/k8s/docs/html/index.html
 ```
 
-### Embedding in Documentation
-These files can be:
-- Linked from README.md or index.md
-- Embedded in iframe (if needed)
-- Served as standalone pages
-- Downloaded and used offline
+## Last Updated
 
-## ✅ Tested Environments
-
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
-- ✅ GitHub Pages with Jekyll
-- ✅ Local file system (file:// protocol)
-
-## 🐛 Known Issues
-
-**None!** All files are:
-- Self-contained
-- No external dependencies
-- No CORS issues
-- No browser-specific code
-- No Jekyll conflicts
-
-## 📞 Support
-
-For issues or questions about these diagrams, please open an issue in the GitHub repository.
-
----
-
-**Last Updated:** March 2026
-**Total Files:** 26 HTML diagrams
-**Total Size:** ~700KB
+March 2026
