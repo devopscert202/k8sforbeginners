@@ -1,4 +1,4 @@
-# Lab 39: StatefulSets & Stateful Applications
+# Lab 31: StatefulSets & Stateful Applications
 
 ## Overview
 In this lab, you will learn about StatefulSets, a Kubernetes workload type designed for stateful applications that require stable network identities, persistent storage, and ordered deployment. You'll deploy stateful applications like databases, understand the differences between StatefulSets and Deployments, and master techniques for managing stateful workloads in production.
@@ -1039,9 +1039,9 @@ spec:
 ## Next Steps
 
 Now that you understand StatefulSets, proceed to:
-- [Lab 14: Persistent Storage](lab14-persistent-storage.md) - Deep dive into storage concepts
-- [Lab 30: Health Checks and Probes](lab30-probes.md) - Implement health checks for stateful apps
-- [Lab 32: Resource Quotas & Limits](lab32-resource-quotas-limits.md) - Resource management
+- [Lab 39: Persistent Storage](lab39-storage-persistent-storage.md) - Deep dive into storage concepts
+- [Lab 09: Health Checks and Probes](lab09-pod-health-probes.md) - Implement health checks for stateful apps
+- [Lab 37: Resource Quotas & Limits](lab37-resmgmt-resource-quotas-limits.md) - Resource management
 
 ---
 

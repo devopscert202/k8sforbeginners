@@ -1,4 +1,4 @@
-# Lab 09: Pod Security Context
+# Lab 12: Pod Security Context
 
 ## Overview
 In this lab, you will learn how to configure security contexts for Pods and containers in Kubernetes. Security contexts define privilege and access control settings for a Pod or Container, helping you implement security best practices and the principle of least privilege.

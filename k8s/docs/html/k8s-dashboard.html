@@ -144,7 +144,7 @@
     <div class="container">
         <header>
             <h1>Kubernetes Dashboard</h1>
-            <p class="subtitle">Interactive guide for the open-source Kubernetes Dashboard: what it is, when we demo it, how we install and access it, and why it is different from cloud-managed cluster consoles.</p>
+            <p class="subtitle">Legacy reference for the open-source Kubernetes Dashboard. The upstream project is archived; for the current UI path in this repository, use Headlamp instead.</p>
         </header>
 
         <div class="controls">
@@ -158,7 +158,7 @@
         <div id="overview-view" class="view active">
             <div class="card">
                 <h2 class="section-title">What This Dashboard Is</h2>
-                <p class="section-lead">Kubernetes Dashboard is an open-source, web-based UI for Kubernetes clusters. It helps visualize workloads, inspect resources, check logs and metrics, and perform some management tasks through a browser.</p>
+                <p class="section-lead">Kubernetes Dashboard was an open-source, web-based UI for Kubernetes clusters. It is kept here as legacy context. For the current replacement path, see `k8s-headlamp-ui.md` and `k8s-ui-headlamp.html`.</p>
                 <div class="stats">
                     <div class="stat blue"><div class="label">Type</div><div class="value">Open Source</div><div>It is the community Kubernetes Dashboard project, not a cloud-provider console.</div></div>
                     <div class="stat green"><div class="label">Best For</div><div class="value">Learning + Demo</div><div>Great for exploration, showing resources, and guided walkthroughs.</div></div>
@@ -177,7 +177,7 @@
                             <li>Install the Dashboard to understand the architecture and access pattern</li>
                             <li>Use it to visualize namespaces, Pods, Deployments, Services, and metrics</li>
                             <li>Show login with a token and browser access with port-forward</li>
-                            <li>Use it as a learning and demonstration aid</li>
+                            <li>Use it as a legacy visual reference for older cluster workflows</li>
                         </ul>
                     </div>
                     <div class="tile">
@@ -209,7 +209,7 @@
                     <div class="tile">
                         <span class="badge good">Practical takeaway</span>
                         <h3 style="margin-top:10px;">Use the right tool</h3>
-                        <p>Use the Dashboard for understanding and demonstration. Use CLI, automation, and platform-native tooling for repeatable operational work.</p>
+                        <p>Use the Dashboard only as legacy context. Use CLI, automation, and platform-native tooling for repeatable operational work.</p>
                     </div>
                 </div>
             </div>
@@ -241,9 +241,9 @@
         <div id="access-view" class="view">
             <div class="card">
                 <h2 class="section-title">Access Flow</h2>
-                <p class="section-lead">This lab uses temporary local access, which is exactly what makes it good for demos and learning.</p>
+                <p class="section-lead">This setup uses temporary local access, which keeps the older workflow contained and easy to test.</p>
                 <div class="toolbar">
-                    <button class="scenario-btn active" onclick="setAccessScenario('demo', this)">Demo Access</button>
+                    <button class="scenario-btn active" onclick="setAccessScenario('demo', this)">Temporary Access</button>
                     <button class="scenario-btn" onclick="setAccessScenario('login', this)">Login Path</button>
                     <button class="scenario-btn" onclick="setAccessScenario('observe', this)">What You Explore</button>
                 </div>
@@ -329,9 +329,9 @@ kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy
             <div class="card">
                 <h2 class="section-title">How To Think About This Tool</h2>
                 <div class="tips">
-                    <div class="tip success"><h3>Use it for explanation and demos</h3><p>It is excellent when you want people to see Pods, Deployments, namespaces, logs, and metrics in a visual way.</p></div>
-                    <div class="tip warning"><h3>Do not confuse it with cloud GUIs</h3><p>Cloud dashboards are managed platform experiences. This Dashboard is an in-cluster open-source application with its own access model.</p></div>
-                    <div class="tip"><h3>Keep access temporary when teaching</h3><p>Port-forwarding plus a token is a clean demo path because it avoids exposing the Dashboard broadly.</p></div>
+                    <div class="tip success"><h3>Use it as legacy context</h3><p>It helps when reviewing older Dashboard-based workflows for Pods, Deployments, namespaces, logs, and metrics.</p></div>
+                    <div class="tip warning"><h3>Legacy note</h3><p>The upstream Kubernetes Dashboard repository is archived and recommends Headlamp instead. Use this page for older workflow context, and use `k8s-ui-headlamp.html` for the current UI setup path.</p></div>
+                    <div class="tip"><h3>Keep access temporary</h3><p>Port-forwarding plus a token avoids exposing the Dashboard broadly.</p></div>
                     <div class="tip danger"><h3>Avoid broad admin access casually</h3><p>The sample `cluster-admin` binding is easy for labs, but production setups should prefer least-privilege roles.</p></div>
                 </div>
             </div>
@@ -341,7 +341,7 @@ kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy
                 <div class="grid-3">
                     <div class="step-card"><h3>Cluster overview</h3><p>Show namespaces, workload counts, and the overall Dashboard landing page.</p></div>
                     <div class="step-card"><h3>Workload drill-down</h3><p>Open a Deployment or Pod, inspect events, logs, and resource details.</p></div>
-                    <div class="step-card"><h3>Simple action</h3><p>Scale a workload or browse a Service so learners connect the GUI to the underlying Kubernetes objects.</p></div>
+                    <div class="step-card"><h3>Simple action</h3><p>Scale a workload or browse a Service to connect the GUI to the underlying Kubernetes objects.</p></div>
                 </div>
             </div>
         </div>
@@ -358,7 +358,7 @@ kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy
             ["Apply Dashboard Manifest", "The lab uses the recommended upstream deployment for the open-source Dashboard. This is the main install step that creates the Dashboard components in the cluster."],
             ["Namespace + RBAC + Deployments", "Kubernetes creates the namespace, service account, roles, bindings, services, secrets, config maps, and deployment objects required by the Dashboard."],
             ["Dashboard Pods Start", "You verify that the dashboard and metrics-scraper Pods become Running in the kubernetes-dashboard namespace before trying to access the UI."],
-            ["Create Access Identity", "The lab then creates an admin-user ServiceAccount and binds it to cluster-admin for easy lab access. This is convenient for demos, but too broad for production."],
+            ["Create Access Identity", "The setup creates an admin-user ServiceAccount and binds it to cluster-admin for temporary access. This is too broad for production."],
             ["Generate Token", "You generate a login token for that ServiceAccount and use it on the Dashboard sign-in page."]
         ];
 
@@ -384,7 +384,7 @@ kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy
                     { name: 'Port-forward', state: 'running', endpoint: 'https://localhost:8443', reason: 'Temporary, easy-to-teach, and does not require public exposure.', log: '$ kubectl port-forward -n kubernetes-dashboard service/kubernetes-dashboard 8443:443\nForwarding from 127.0.0.1:8443 -> 8443' },
                     { name: 'Open Browser', state: 'succeeded', endpoint: 'https://localhost:8443', reason: 'The browser connects to the locally forwarded HTTPS endpoint.', log: 'Open the browser and visit:\nhttps://localhost:8443\n\nAccept the self-signed certificate warning in the browser.' },
                     { name: 'Paste Token', state: 'succeeded', endpoint: 'https://localhost:8443', reason: 'Authentication uses a Kubernetes token instead of a public anonymous login.', log: 'Select Token on the login screen.\nPaste the generated ServiceAccount token.\nClick Sign In.' },
-                    { name: 'Explore UI', state: 'succeeded', endpoint: 'Dashboard Home', reason: 'Now the Dashboard can be used for guided exploration and demonstration.', log: 'Show namespaces, workloads, Pods, logs, services, and metrics if Metrics Server is available.' }
+                    { name: 'Explore UI', state: 'succeeded', endpoint: 'Dashboard Home', reason: 'Now the Dashboard can be used to review namespaces, workloads, Pods, logs, services, and metrics.', log: 'Show namespaces, workloads, Pods, logs, services, and metrics if Metrics Server is available.' }
                 ]
             },
             login: {

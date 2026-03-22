@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kubernetes RBAC User Certificate Flow</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f4f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d9e2ef;
+      --blue: #2563eb; --cyan: #0891b2; --teal: #0f766e; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.1), transparent 26%),
+        radial-gradient(circle at top right, rgba(8,145,178,.1), transparent 26%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--ink); padding: 24px; line-height: 1.55;
+    }
+    .page { max-width: 1380px; margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #0891b2 100%);
+      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+    }
+    .eyebrow {
+      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
+      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    h1 { font-size: 2.45rem; margin-bottom: 12px; line-height: 1.15; }
+    .hero p { max-width: 940px; color: rgba(255,255,255,.88); font-size: 1rem; }
+    .hero-grid, .stats, .layout, .artifacts, .command-grid, .test-grid, .details-grid { display: grid; gap: 16px; }
+    .hero-grid { grid-template-columns: 1.3fr 1fr; margin-top: 22px; }
+    .hero-card, .panel, .step-card, .artifact, .command-card, .note, .details-card, .test-card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
+    }
+    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
+    .hero-card ul, .details-card ul { padding-left: 18px; }
+    .hero-card li + li, .details-card li + li { margin-top: 6px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 22px; }
+    .stat { border-radius: 20px; padding: 18px; color: white; min-height: 126px; }
+    .stat.blue { background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%); }
+    .stat.teal { background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%); }
+    .stat.amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .stat.rose { background: linear-gradient(135deg, #be123c 0%, #fb7185 100%); }
+    .stat-label { text-transform: uppercase; letter-spacing: .06em; font-size: .76rem; opacity: .88; }
+    .stat-value { font-size: 1.95rem; font-weight: 800; margin: 8px 0; }
+    .layout { grid-template-columns: 1.35fr .9fr; }
+    .panel { padding: 22px; }
+    .section-title { font-size: 1.45rem; margin-bottom: 8px; }
+    .section-copy { color: var(--muted); margin-bottom: 18px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .controls button {
+      border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; color: var(--ink); background: #e8eef8; cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .controls button:hover { transform: translateY(-1px); background: #dbe7fb; }
+    .controls button.active { background: linear-gradient(135deg, #1d4ed8 0%, #0891b2 100%); color: white; }
+    .flow-line { margin-left: 16px; padding-left: 28px; border-left: 4px solid #c9d8ef; }
+    .step-card { position: relative; padding: 18px 18px 18px 20px; margin-bottom: 16px; display: none; }
+    .step-card.visible { display: block; animation: appear .35s ease; }
+    .step-card::before {
+      content: ""; position: absolute; left: -38px; top: 22px; width: 16px; height: 16px; border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%); border: 4px solid #f4f7fb; box-shadow: 0 0 0 2px #bfd3f3;
+    }
+    .step-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+    .step-number { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--blue); font-weight: 800; }
+    .step-pill { padding: 5px 10px; border-radius: 999px; font-size: .76rem; font-weight: 800; color: white; }
+    .prepare { background: var(--violet); } .crypto { background: var(--amber); } .bind { background: var(--teal); } .kubeconfig { background: var(--blue); } .verify { background: var(--green); } .optional { background: var(--rose); }
+    .step-card h3, .artifact h3, .command-card h3, .test-card h3, .details-card h3 { font-size: 1rem; margin-bottom: 8px; }
+    .step-card p, .artifact p, .command-card p, .test-card p, .details-card li, .caption { color: var(--muted); font-size: .92rem; }
+    .mini-flow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .node { background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%); border: 1px solid #cfe0f6; color: #16345b; padding: 10px 12px; border-radius: 14px; font-weight: 700; font-size: .9rem; }
+    .arrow { align-self: center; font-weight: 900; color: #5d7aa5; padding: 0 2px; }
+    pre { background: #0f172a; color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: auto; font-size: .86rem; line-height: 1.55; margin: 12px 0; }
+    .artifacts, .command-grid, .test-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .artifact, .command-card, .test-card, .details-card { padding: 18px; }
+    .token { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .76rem; font-weight: 800; margin-right: 6px; margin-bottom: 8px; }
+    .file { background: #dbeafe; color: #1d4ed8; } .identity { background: #ede9fe; color: #6d28d9; } .allow { background: #dcfce7; color: #166534; } .deny { background: #ffe4e6; color: #be123c; }
+    .note { padding: 18px; background: linear-gradient(180deg, #fffdf5 0%, #fff8df 100%); border-color: #f5d38b; margin-top: 18px; }
+    .note h3, .note p { color: #8a4b08; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 1100px) { .hero-grid, .layout, .stats, .artifacts, .command-grid, .test-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.85rem; } .flow-line { margin-left: 8px; padding-left: 20px; } .step-card::before { left: -30px; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">Interactive RBAC Walkthrough</div>
+      <h1>Kubernetes User Certificate to RBAC Test Flow</h1>
+      <p>This page turns `rbacdemo.md` into a visual lab runbook: create the namespace, generate user certificates, bind the Role, wire the certificate into kubeconfig, switch context, confirm the namespace, and test both allowed and forbidden operations.</p>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <h2>What this shows</h2>
+          <ul>
+            <li>How `user3.key`, `user3.csr`, and `user3.crt` are created and signed with the cluster CA.</li>
+            <li>How `kubectl config set-credentials` stores the client certificate for `user3`.</li>
+            <li>How `kubectl config set-context` points `user3` at namespace `role`.</li>
+            <li>How testing proves both the allow path and the RBAC deny path.</li>
+          </ul>
+        </div>
+        <div class="hero-card">
+          <h2>Core idea</h2>
+          <ul>
+            <li>Authentication comes from the client certificate common name: `user3`.</li>
+            <li>Authorization comes from `Role` plus `RoleBinding` in namespace `role`.</li>
+            <li>The kubeconfig context glues together cluster, user, and namespace.</li>
+            <li>Success means the user is authenticated but only partially authorized.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat blue"><div class="stat-label">Namespace</div><div class="stat-value">role</div><div>All checks in this lab are scoped to one namespace.</div></div>
+      <div class="stat teal"><div class="stat-label">User Identity</div><div class="stat-value">user3</div><div>The certificate common name becomes the Kubernetes username.</div></div>
+      <div class="stat amber"><div class="stat-label">Trust Root</div><div class="stat-value">Cluster CA</div><div>The CSR is signed with the Kubernetes CA keypair.</div></div>
+      <div class="stat rose"><div class="stat-label">Proof</div><div class="stat-value">Allow + Deny</div><div>The test ends with a successful action and a forbidden ConfigMap request.</div></div>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <h2 class="section-title">Step-by-Step Flow</h2>
+        <p class="section-copy">Use the stage chips to focus on one phase, or show the whole end-to-end path.</p>
+        <div class="controls">
+          <button class="filter active" data-filter="all">Full Journey</button>
+          <button class="filter" data-filter="prepare">Prepare</button>
+          <button class="filter" data-filter="crypto">Certificate</button>
+          <button class="filter" data-filter="bind">RBAC Bindings</button>
+          <button class="filter" data-filter="kubeconfig">Kubeconfig</button>
+          <button class="filter" data-filter="verify">Testing</button>
+        </div>
+        <div class="flow-line">
+          <article class="step-card visible" data-group="prepare">
+            <div class="step-head"><div class="step-number">Step 1</div><div class="step-pill prepare">Prepare</div></div>
+            <h3>Create the namespace and working folder</h3>
+            <p>The lab starts by isolating the RBAC exercise inside namespace `role` and creating a folder to hold certificate artifacts.</p>
+            <div class="mini-flow">
+              <div class="node">Admin shell</div><div class="arrow">></div><div class="node">kubectl create namespace role</div><div class="arrow">></div><div class="node">mkdir role && cd role</div>
+            </div>
+            <pre>kubectl create namespace role
+mkdir role
+cd role</pre>
+            <div class="caption">Namespace scope matters because a `Role` never grants permissions outside the namespace where it exists.</div>
+          </article>
+
+          <article class="step-card visible" data-group="crypto">
+            <div class="step-head"><div class="step-number">Step 2</div><div class="step-pill crypto">Certificate</div></div>
+            <h3>Generate the private key and CSR</h3>
+            <p>The private key stays with the user, and the CSR carries the identity request. The most important field is the common name set to `user3`.</p>
+            <div class="mini-flow">
+              <div class="node">user3.key</div><div class="arrow">></div><div class="node">user3.csr</div><div class="arrow">></div><div class="node">CN=user3</div>
+            </div>
+            <pre>sudo openssl genrsa -out user3.key 2048
+sudo openssl req -new -key user3.key -out user3.csr
+
+Common Name (e.g., your name or your server's hostname) []: user3</pre>
+            <div class="caption">In this lab the certificate identity is user-based, not service-account based.</div>
+          </article>
+
+          <article class="step-card visible" data-group="crypto">
+            <div class="step-head"><div class="step-number">Step 3</div><div class="step-pill crypto">Certificate</div></div>
+            <h3>Sign the CSR with the Kubernetes CA</h3>
+            <p>Once the cluster CA signs the CSR, the resulting `user3.crt` becomes a client certificate the API server can trust.</p>
+            <div class="mini-flow">
+              <div class="node">user3.csr</div><div class="arrow">></div><div class="node">CA signs request</div><div class="arrow">></div><div class="node">user3.crt</div>
+            </div>
+            <pre>sudo openssl x509 -req \
+  -in user3.csr \
+  -CA /etc/kubernetes/pki/ca.crt \
+  -CAkey /etc/kubernetes/pki/ca.key \
+  -CAcreateserial \
+  -out user3.crt \
+  -days 500</pre>
+            <div class="caption">Authentication succeeds only because the API server already trusts the cluster CA that signed the certificate.</div>
+          </article>
+
+          <article class="step-card visible" data-group="bind">
+            <div class="step-head"><div class="step-number">Step 4</div><div class="step-pill bind">RBAC Bindings</div></div>
+            <h3>Create the Role and RoleBinding</h3>
+            <p>The `Role` contains verbs and resources, while the `RoleBinding` connects those rules to subject `user3` inside namespace `role`.</p>
+            <div class="mini-flow">
+              <div class="node">Role</div><div class="arrow">+</div><div class="node">RoleBinding</div><div class="arrow">></div><div class="node">user3 in namespace role</div>
+            </div>
+            <pre>kubectl create -f role.yaml
+kubectl get roles -n role
+
+kubectl create -f rolebinding.yaml
+kubectl get rolebinding -n role</pre>
+            <div class="caption">Without the binding, the certificate authenticates the user but still provides zero permissions.</div>
+          </article>
+
+          <article class="step-card visible" data-group="kubeconfig">
+            <div class="step-head"><div class="step-number">Step 5</div><div class="step-pill kubeconfig">Kubeconfig</div></div>
+            <h3>Exchange the certificate with kubectl using set-credentials</h3>
+            <p>This is the handoff point where local certificate files are attached to the logical kubeconfig user named `user3`.</p>
+            <div class="mini-flow">
+              <div class="node">user3.crt + user3.key</div><div class="arrow">></div><div class="node">kubectl config set-credentials</div><div class="arrow">></div><div class="node">authinfo=user3</div>
+            </div>
+            <pre>kubectl config set-credentials user3 \
+  --client-certificate=/home/labsuser/role/user3.crt \
+  --client-key=/home/labsuser/role/user3.key</pre>
+            <div class="caption">`set-credentials` does not change authorization. It only tells kubectl which credentials to present.</div>
+          </article>
+
+          <article class="step-card visible" data-group="kubeconfig">
+            <div class="step-head"><div class="step-number">Step 6</div><div class="step-pill kubeconfig">Kubeconfig</div></div>
+            <h3>Create and inspect the user context</h3>
+            <p>The new context combines the target cluster, authenticated user, and default namespace.</p>
+            <div class="mini-flow">
+              <div class="node">cluster=kubernetes</div><div class="arrow">+</div><div class="node">user=user3</div><div class="arrow">+</div><div class="node">namespace=role</div><div class="arrow">></div><div class="node">user3-context</div>
+            </div>
+            <pre>kubectl config set-context user3-context \
+  --cluster=kubernetes \
+  --namespace=role \
+  --user=user3
+
+kubectl config get-contexts</pre>
+            <pre>CURRENT   NAME                          CLUSTER      AUTHINFO           NAMESPACE
+*         kubernetes-admin@kubernetes   kubernetes   kubernetes-admin
+          user3-context                 kubernetes   user3              role</pre>
+            <div class="caption">`kubectl config get-contexts` is the checkpoint that proves the new namespace and identity are wired correctly.</div>
+          </article>
+
+          <article class="step-card visible" data-group="verify">
+            <div class="step-head"><div class="step-number">Step 7</div><div class="step-pill verify">Testing</div></div>
+            <h3>Switch to the user context and run positive tests</h3>
+            <p>After `kubectl config use-context user3-context`, every request is sent as `user3` to namespace `role` unless you override it.</p>
+            <div class="mini-flow">
+              <div class="node">kubectl</div><div class="arrow">></div><div class="node">client cert: user3</div><div class="arrow">></div><div class="node">API server authn</div><div class="arrow">></div><div class="node">RoleBinding authz</div>
+            </div>
+            <pre>kubectl config use-context user3-context
+sudo chmod 666 user3.key user3.crt
+
+kubectl get pods
+kubectl create deployment test --image=docker.io/httpd -n role
+kubectl get deployment</pre>
+            <div class="caption">If the Role allows these verbs and resources, the API server returns success.</div>
+          </article>
+
+          <article class="step-card visible" data-group="verify">
+            <div class="step-head"><div class="step-number">Step 8</div><div class="step-pill verify">Testing</div></div>
+            <h3>Run the negative test to prove RBAC denial</h3>
+            <p>The same authenticated user is accepted by the API server, but RBAC blocks `configmaps` because the Role does not grant that permission.</p>
+            <div class="mini-flow">
+              <div class="node">user3 authenticated</div><div class="arrow">></div><div class="node">requests ConfigMap create</div><div class="arrow">></div><div class="node">RBAC check fails</div><div class="arrow">></div><div class="node">Forbidden</div>
+            </div>
+            <pre>kubectl create configmap my-config \
+  --from-literal=key1=config1 \
+  --kubeconfig=config
+
+error: failed to create configmap: configmaps is forbidden:
+User "user3" cannot create resource "configmaps"
+in API group "" in the namespace "role"</pre>
+            <div class="caption">Authentication answers “who are you?” Authorization answers “what may you do?” This failure is an authorization failure, not an authentication failure.</div>
+          </article>
+
+          <article class="step-card visible" data-group="verify">
+            <div class="step-head"><div class="step-number">Step 9</div><div class="step-pill optional">Optional</div></div>
+            <h3>Distribute the certificate to another node</h3>
+            <p>The markdown also includes optional file movement steps when you want to run `kubectl` as this user from another machine or worker node.</p>
+            <pre>scp user3.crt worker-node-1:/role/
+scp user3.key worker-node-1:/role/
+
+mkdir -p /role
+cd /role
+vi user3.crt
+vi user3.key</pre>
+            <div class="caption">The trust relationship stays the same. You are only moving the user's credential files to a different client location.</div>
+          </article>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <h2 class="section-title">What Changes Where</h2>
+        <p class="section-copy">This side panel helps connect file artifacts, kubeconfig entries, and API server behavior.</p>
+        <div class="details-grid">
+          <div class="details-card">
+            <h3>Authentication path</h3>
+            <ul>
+              <li>The certificate subject common name is interpreted as the Kubernetes user name.</li>
+              <li>When `kubectl` connects, it presents `user3.crt` and proves possession of `user3.key`.</li>
+              <li>The API server validates the certificate chain against the trusted cluster CA.</li>
+            </ul>
+          </div>
+          <div class="details-card">
+            <h3>Authorization path</h3>
+            <ul>
+              <li>`Role` defines the allowed verbs and resources in namespace `role`.</li>
+              <li>`RoleBinding` maps subject `user3` to that Role.</li>
+              <li>If no matching rule exists, the request is denied even though authentication succeeded.</li>
+            </ul>
+          </div>
+          <div class="details-card">
+            <h3>Context path</h3>
+            <ul>
+              <li>`set-credentials` adds a named credential entry to kubeconfig.</li>
+              <li>`set-context` adds the cluster, user, and namespace tuple.</li>
+              <li>`use-context` changes the active default for future `kubectl` commands.</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel" style="margin-top: 22px;">
+      <h2 class="section-title">Artifacts and Outcomes</h2>
+      <p class="section-copy">Each artifact has a specific job in the overall flow.</p>
+      <div class="artifacts">
+        <div class="artifact"><span class="token file">File</span><h3>`user3.key`</h3><p>User private key. It proves the client owns the certificate and must be protected.</p></div>
+        <div class="artifact"><span class="token file">File</span><h3>`user3.csr`</h3><p>Unsigned identity request sent to the cluster CA. It contains the subject details including common name.</p></div>
+        <div class="artifact"><span class="token file">File</span><span class="token identity">Identity</span><h3>`user3.crt`</h3><p>Signed client certificate trusted by the API server, representing user `user3`.</p></div>
+        <div class="artifact"><span class="token identity">Kubeconfig</span><h3>`user3-context`</h3><p>The context entry that switches the namespace to `role` and the auth identity to `user3`.</p></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 22px;">
+      <h2 class="section-title">Command Checkpoints</h2>
+      <p class="section-copy">These are the most useful command checkpoints to demo live during training.</p>
+      <div class="command-grid">
+        <div class="command-card"><h3>Check the context list</h3><p>Confirms the new user and namespace entry exists.</p><pre>kubectl config get-contexts</pre></div>
+        <div class="command-card"><h3>Switch to the user</h3><p>Moves the active client identity from admin to `user3`.</p><pre>kubectl config use-context user3-context</pre></div>
+        <div class="command-card"><h3>Positive authorization test</h3><p>Shows a request that should succeed if the Role is correct.</p><pre>kubectl get pods
+kubectl create deployment test --image=docker.io/httpd -n role</pre></div>
+        <div class="command-card"><h3>Negative authorization test</h3><p>Shows RBAC rejecting a disallowed resource type.</p><pre>kubectl create configmap my-config --from-literal=key1=config1</pre></div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 22px;">
+      <h2 class="section-title">Expected End State</h2>
+      <p class="section-copy">The lab is successful when these outcomes are true at the same time.</p>
+      <div class="test-grid">
+        <div class="test-card"><span class="token allow">Allowed</span><h3>Authentication succeeds</h3><p>The API server trusts the certificate signed by the cluster CA and recognizes the client as `user3`.</p></div>
+        <div class="test-card"><span class="token allow">Allowed</span><h3>Role-scoped actions work</h3><p>The user can run the verbs and resources granted by the Role in namespace `role`.</p></div>
+        <div class="test-card"><span class="token deny">Denied</span><h3>Unlisted resources fail</h3><p>The user is blocked from `configmaps` because no matching RBAC rule was granted.</p></div>
+        <div class="test-card"><span class="token identity">Context</span><h3>Namespace stays pinned</h3><p>The active context defaults the user into namespace `role` until another context is selected.</p></div>
+      </div>
+      <div class="note">
+        <h3>Teaching note</h3>
+        <p>This walkthrough demonstrates classic X.509 client-certificate authentication. In many enterprises, human users are integrated through OIDC or a webhook-backed identity layer, while certificates remain common for admin access, cluster bootstrap, or automation.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.filter');
+    const cards = document.querySelectorAll('.step-card');
+    function setFilter(group) {
+      buttons.forEach((button) => button.classList.toggle('active', button.dataset.filter === group));
+      cards.forEach((card) => card.classList.toggle('visible', group === 'all' || card.dataset.group === group));
+    }
+    buttons.forEach((button) => button.addEventListener('click', () => setFilter(button.dataset.filter)));
+  </script>
+</body>
+</html>

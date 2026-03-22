@@ -1,4 +1,4 @@
-# Lab 41: Gateway API - Next Generation Ingress
+# Lab 44: Gateway API - Next Generation Ingress
 
 ## Overview
 
@@ -10,7 +10,7 @@ In this lab, you will explore Kubernetes Gateway API, the next-generation soluti
 
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster) with version 1.26 or higher
 - `kubectl` CLI tool installed and configured
-- Completion of [Lab 24: Ingress Controllers and EndpointSlices](lab24-ingress-endpointslices.md) (recommended)
+- Completion of [Lab 35: Ingress Controllers and EndpointSlices](lab35-net-ingress-endpointslices.md) (recommended)
 - Basic understanding of HTTP, DNS, and load balancing
 - **Note**: You do NOT need a registered domain name - workarounds are provided!
 

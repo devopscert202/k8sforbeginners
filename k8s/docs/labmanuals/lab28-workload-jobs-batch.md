@@ -1,4 +1,4 @@
-# Lab 18: Jobs and Batch Processing in Kubernetes
+# Lab 28: Jobs and Batch Processing in Kubernetes
 
 ## Overview
 In this lab, you will learn how to run batch workloads and scheduled tasks in Kubernetes using Jobs and CronJobs. Unlike Deployments that run continuously, Jobs are designed for tasks that run to completion.
@@ -975,7 +975,7 @@ spec:
 ## Next Steps
 
 You've completed the Jobs and Batch Processing lab! Consider exploring:
-- [Lab 15: ConfigMaps](lab15-configmap.md) for configuration management
+- [Lab 25: ConfigMaps](lab25-workload-configmaps.md) for configuration management
 - StatefulSets for stateful applications
 - Init Containers for setup tasks
 - Pod presets and priorities

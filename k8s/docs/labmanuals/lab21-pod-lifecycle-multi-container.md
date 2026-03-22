@@ -1,4 +1,4 @@
-# Lab 22: Pod Lifecycle Hooks and Multi-Container Patterns
+# Lab 21: Pod Lifecycle Hooks and Multi-Container Patterns
 
 ## Overview
 In this lab, you will learn about Pod lifecycle hooks (postStart and preStop) and multi-container patterns including sidecar, ambassador, and adapter patterns. These advanced concepts enable sophisticated application architectures and operational workflows.
@@ -1499,9 +1499,9 @@ spec:
 ## Next Steps
 
 You've completed the Pod Lifecycle and Multi-Container Patterns lab! Consider exploring:
-- [Lab 21: Init Containers](lab21-init-containers.md) for more init container details
-- [Lab 30: Health Checks with Probes](lab30-probes.md) for liveness and readiness
-- [Lab 17: DaemonSets](lab17-daemonset.md) for node-level workloads
+- [Lab 10: Init Containers](lab10-pod-init-containers.md) for more init container details
+- [Lab 09: Health Checks with Probes](lab09-pod-health-probes.md) for liveness and readiness
+- [Lab 26: DaemonSets](lab26-workload-daemonsets.md) for node-level workloads
 - StatefulSets for stateful multi-container applications
 
 ## Additional Resources

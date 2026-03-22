@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDAP to Kubernetes RBAC POC</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
+      --navy: #0f172a; --blue: #1d4ed8; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(29,78,216,.1), transparent 24%),
+        radial-gradient(circle at top right, rgba(109,40,217,.08), transparent 22%),
+        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+      color: var(--ink); line-height: 1.55; padding: 24px;
+    }
+    .page { max-width: 1420px; margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
+      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+    }
+    .eyebrow {
+      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
+      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    h1 { font-size: 2.4rem; line-height: 1.12; margin-bottom: 12px; }
+    .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
+    .hero-grid, .stats, .stack-grid, .lane, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { display: grid; gap: 16px; }
+    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
+    .hero-card, .panel, .stack-card, .swimlane, .map-card, .step-card, .command-card, .namespace-card, .warning {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
+    }
+    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
+    .hero-card ul, .stack-card ul { padding-left: 18px; }
+    .hero-card li + li, .stack-card li + li { margin-top: 6px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 24px; }
+    .stat { border-radius: 20px; padding: 18px; color: white; min-height: 126px; }
+    .blue { background: linear-gradient(135deg, #1d4ed8 0%, #38bdf8 100%); }
+    .green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+    .amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .violet { background: linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%); }
+    .stat-label { text-transform: uppercase; letter-spacing: .06em; font-size: .76rem; opacity: .88; }
+    .stat-value { font-size: 1.9rem; font-weight: 800; margin: 8px 0; }
+    .panel { padding: 22px; margin-bottom: 22px; }
+    .section-title { font-size: 1.45rem; margin-bottom: 8px; }
+    .section-copy { color: var(--muted); margin-bottom: 18px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .controls button {
+      border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; background: #e9eef8; color: var(--ink); cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .controls button:hover { transform: translateY(-1px); background: #dde7fb; }
+    .controls button.active { background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%); color: white; }
+    .stack-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: stretch; }
+    .stack-card { padding: 18px; position: relative; }
+    .stack-card h3, .swimlane h3, .map-card h3, .step-card h3, .command-card h3, .namespace-card h3 { font-size: 1rem; margin-bottom: 8px; }
+    .stack-card p, .map-card p, .step-card p, .command-card p, .namespace-card p, .swimlane p { color: var(--muted); font-size: .92rem; margin-bottom: 10px; }
+    .stack-arrow {
+      position: absolute; right: -12px; top: calc(50% - 18px); width: 24px; height: 24px; border-radius: 50%;
+      background: #eff6ff; border: 1px solid #c7d9f7; color: #31558a; display: flex; align-items: center; justify-content: center; font-weight: 900;
+    }
+    .swimlane { padding: 18px; display: none; }
+    .swimlane.visible { display: block; animation: appear .35s ease; }
+    .lane-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .pill { display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; color: white; }
+    .authn { background: var(--blue); } .groups { background: var(--violet); } .authz { background: var(--green); } .ops { background: var(--amber); }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .node { background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%); border: 1px solid #ccdcf7; border-radius: 14px; padding: 10px 12px; font-weight: 700; color: #17365f; font-size: .9rem; }
+    .arrow { align-self: center; font-weight: 900; color: #647da5; }
+    .mapping-grid, .steps-grid, .command-grid, .namespace-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .map-card, .step-card, .command-card, .namespace-card, .warning { padding: 18px; }
+    .token { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .74rem; font-weight: 800; margin-right: 6px; margin-bottom: 8px; }
+    .user { background: #dbeafe; color: #1d4ed8; } .group { background: #ede9fe; color: #6d28d9; } .ns { background: #dcfce7; color: #166534; } .cluster { background: #ffedd5; color: #9a3412; }
+    pre { background: var(--navy); color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: auto; font-size: .85rem; line-height: 1.55; margin-top: 12px; }
+    .warning { background: linear-gradient(180deg, #fff9ee 0%, #fff3d9 100%); border-color: #f2cf84; }
+    .warning h3, .warning p { color: #8a4b08; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 1150px) { .hero-grid, .stats, .stack-grid, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { grid-template-columns: 1fr; } .stack-arrow { display: none; } }
+    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.85rem; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">Enterprise RBAC POC</div>
+      <h1>Corporate LDAP / Active Directory to Kubernetes RBAC Flow</h1>
+      <p>This architecture page shows a practical proof-of-concept for enterprise Kubernetes RBAC using corporate LDAP or Active Directory. The recommended pattern is LDAP-backed identity into an OIDC broker such as Keycloak or Dex, then group claims into the Kubernetes API server, then namespace-aware RBAC with `RoleBinding` and `ClusterRoleBinding`.</p>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <h2>Why this pattern works</h2>
+          <ul>
+            <li>Kubernetes API server does not directly use LDAP as a native human login method.</li>
+            <li>An identity bridge converts LDAP users and groups into OIDC token claims.</li>
+            <li>RBAC then stays clean and native inside Kubernetes.</li>
+          </ul>
+        </div>
+        <div class="hero-card">
+          <h2>POC outcome</h2>
+          <ul>
+            <li>Corporate users sign in with existing credentials.</li>
+            <li>Directory groups like `k8s-dev`, `k8s-qa`, and `k8s-admins` become Kubernetes RBAC subjects.</li>
+            <li>Namespace access is governed centrally without issuing separate user certs per developer.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat blue"><div class="stat-label">Identity Source</div><div class="stat-value">LDAP / AD</div><div>Corporate users and groups stay managed in the enterprise directory.</div></div>
+      <div class="stat violet"><div class="stat-label">Bridge</div><div class="stat-value">OIDC</div><div>Dex or Keycloak transforms directory data into ID tokens with group claims.</div></div>
+      <div class="stat green"><div class="stat-label">Authorization</div><div class="stat-value">Native RBAC</div><div>Kubernetes enforces access with RoleBinding and ClusterRoleBinding.</div></div>
+      <div class="stat amber"><div class="stat-label">Scope</div><div class="stat-value">Namespaces</div><div>Groups can be segmented cleanly across `dev`, `qa`, `prod`, and cluster admin scope.</div></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Reference Architecture Stack</h2>
+      <p class="section-copy">A realistic POC has five layers.</p>
+      <div class="stack-grid">
+        <div class="stack-card"><h3>1. Enterprise Directory</h3><p>Existing source of truth for people and groups.</p><ul><li>LDAP or Microsoft Active Directory</li><li>Users, groups, org units</li><li>Password policies and lifecycle</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>2. Identity Broker</h3><p>Looks up users and groups from LDAP.</p><ul><li>Dex or Keycloak</li><li>LDAP bind and search</li><li>Maps directory groups to token claims</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>3. Kubernetes API Server</h3><p>Trusts the OIDC issuer and validates tokens.</p><ul><li>`--oidc-issuer-url`</li><li>`--oidc-client-id`</li><li>`--oidc-username-claim`</li><li>`--oidc-groups-claim`</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>4. Kubernetes RBAC</h3><p>Maps users and groups to permissions.</p><ul><li>Role and RoleBinding per namespace</li><li>ClusterRole for cluster-level duties</li><li>ClusterRoleBinding for platform admins</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>5. Namespace Workloads</h3><p>Final access target for teams and administrators.</p><ul><li>`dev` namespace deployment access</li><li>`qa` namespace read or test access</li><li>`prod` namespace tightly controlled</li></ul></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Interactive Request Journey</h2>
+      <p class="section-copy">Choose a view to focus on authentication, group resolution, RBAC decisions, or day-2 operations.</p>
+      <div class="controls">
+        <button class="filter active" data-filter="all">Full Flow</button>
+        <button class="filter" data-filter="authn">Authentication</button>
+        <button class="filter" data-filter="groups">Group Mapping</button>
+        <button class="filter" data-filter="authz">Authorization</button>
+        <button class="filter" data-filter="ops">Operations</button>
+      </div>
+      <div class="lane">
+        <article class="swimlane visible" data-group="authn">
+          <div class="lane-title"><h3>User sign-in and token issuance</h3><span class="pill authn">Authentication</span></div>
+          <div class="flow"><div class="node">Developer runs kubectl or dashboard login</div><div class="arrow">></div><div class="node">OIDC broker login page</div><div class="arrow">></div><div class="node">Broker binds to LDAP / AD</div><div class="arrow">></div><div class="node">Successful authentication</div></div>
+          <p>The enterprise password stays in the directory layer. Kubernetes never stores or validates the LDAP password itself.</p>
+        </article>
+        <article class="swimlane visible" data-group="groups">
+          <div class="lane-title"><h3>Directory group lookup and claim generation</h3><span class="pill groups">Group Mapping</span></div>
+          <div class="flow"><div class="node">LDAP groups: k8s-dev / k8s-qa / k8s-admins</div><div class="arrow">></div><div class="node">OIDC broker maps memberships</div><div class="arrow">></div><div class="node">ID token groups claim</div><div class="arrow">></div><div class="node">kubectl receives token</div></div>
+          <p>This is the normalization step. Directory groups become portable claims that Kubernetes RBAC can match.</p>
+        </article>
+        <article class="swimlane visible" data-group="authz">
+          <div class="lane-title"><h3>API server validates token and checks RBAC</h3><span class="pill authz">Authorization</span></div>
+          <div class="flow"><div class="node">kubectl sends bearer token</div><div class="arrow">></div><div class="node">API server validates OIDC issuer + audience</div><div class="arrow">></div><div class="node">User + groups extracted</div><div class="arrow">></div><div class="node">RBAC checks RoleBinding / ClusterRoleBinding</div></div>
+          <p>Once the token is trusted, authorization is completely native Kubernetes behavior.</p>
+        </article>
+        <article class="swimlane visible" data-group="ops">
+          <div class="lane-title"><h3>Namespace administration outcomes</h3><span class="pill ops">Operations</span></div>
+          <div class="flow"><div class="node">k8s-dev group</div><div class="arrow">></div><div class="node">RoleBinding in dev</div><div class="arrow">></div><div class="node">Can deploy and read pods in dev</div><div class="arrow">></div><div class="node">Denied in prod without binding</div></div>
+          <p>This is what makes the model scalable for enterprises: add people to groups, not one-off Kubernetes users.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Directory to RBAC Mapping Design</h2>
+      <p class="section-copy">A clean POC uses group-based access instead of individual user bindings wherever possible.</p>
+      <div class="mapping-grid">
+        <div class="map-card"><span class="token group">LDAP Group</span><span class="token ns">Namespace</span><h3>`k8s-dev` -> developer role in `dev`</h3><p>Lets developers create and update Deployments, Services, Pods, and ConfigMaps in the development namespace only.</p></div>
+        <div class="map-card"><span class="token group">LDAP Group</span><span class="token ns">Namespace</span><h3>`k8s-qa` -> read or test role in `qa`</h3><p>Supports release validation, log access, and controlled rollout visibility for the QA namespace.</p></div>
+        <div class="map-card"><span class="token group">LDAP Group</span><span class="token ns">Namespace</span><h3>`k8s-prod-ops` -> limited prod operations</h3><p>Allows rollout inspection, pod restart, and incident triage while keeping broad admin actions tightly constrained.</p></div>
+        <div class="map-card"><span class="token group">LDAP Group</span><span class="token cluster">Cluster</span><h3>`k8s-admins` -> platform admin role</h3><p>Reserved for platform engineers who manage namespaces, nodes, storage, policy, and observability.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Namespace Access Model for the POC</h2>
+      <p class="section-copy">This split makes the group-to-namespace intent obvious during demos.</p>
+      <div class="namespace-grid">
+        <div class="namespace-card"><span class="token ns">dev</span><h3>Developer self-service zone</h3><p>`RoleBinding` subjects: `k8s-dev`, optionally named users for exceptions. Supports build, deploy, and debug workflows.</p></div>
+        <div class="namespace-card"><span class="token ns">qa</span><h3>Validation and release zone</h3><p>`RoleBinding` subjects: `k8s-qa`, release coordinators, and read-only observers.</p></div>
+        <div class="namespace-card"><span class="token ns">prod</span><h3>Restricted production zone</h3><p>`RoleBinding` subjects: `k8s-prod-ops`. Avoid broad write access for normal developer groups here.</p></div>
+        <div class="namespace-card"><span class="token cluster">cluster</span><h3>Platform administration zone</h3><p>`ClusterRoleBinding` subjects: `k8s-admins`. Use a custom ClusterRole if full `cluster-admin` is too wide.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">POC Build Sequence</h2>
+      <p class="section-copy">These steps are ordered to make the exercise demonstrable with minimal moving parts.</p>
+      <div class="steps-grid">
+        <div class="step-card"><h3>1. Prepare directory groups</h3><p>Create or identify LDAP groups such as `k8s-dev`, `k8s-qa`, and `k8s-admins`, then add test users.</p></div>
+        <div class="step-card"><h3>2. Configure the identity broker</h3><p>Point Dex or Keycloak at the LDAP server and define bind, search base, and group claim settings.</p></div>
+        <div class="step-card"><h3>3. Enable OIDC on the API server</h3><p>Set issuer URL, client ID, username claim, groups claim, and CA trust.</p></div>
+        <div class="step-card"><h3>4. Create Roles and RoleBindings</h3><p>Bind groups, not individual users, unless you are proving an exception path.</p></div>
+        <div class="step-card"><h3>5. Login and verify claims</h3><p>Use one user from each group, acquire a token, and confirm the identity and groups are visible to Kubernetes.</p></div>
+        <div class="step-card"><h3>6. Prove allow and deny paths</h3><p>Show that users can act only in their mapped namespaces, and that cross-namespace operations are rejected.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Example POC Snippets</h2>
+      <p class="section-copy">These samples are intentionally generic so you can adapt them to Dex, Keycloak, or a similar OIDC bridge.</p>
+      <div class="command-grid">
+        <div class="command-card"><h3>API server OIDC flags</h3><p>The API server must trust the issuer and know which claims represent the user and groups.</p><pre>--oidc-issuer-url=https://sso.example.com/realms/k8s
+--oidc-client-id=kubernetes
+--oidc-username-claim=email
+--oidc-groups-claim=groups
+--oidc-ca-file=/etc/kubernetes/pki/oidc-ca.crt</pre></div>
+        <div class="command-card"><h3>Group-based RoleBinding</h3><p>This is the core pattern for namespace delegation from enterprise groups.</p><pre>apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dev-team-binding
+  namespace: dev
+subjects:
+- kind: Group
+  name: k8s-dev
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: developer-role
+  apiGroup: rbac.authorization.k8s.io</pre></div>
+        <div class="command-card"><h3>Cluster admin binding</h3><p>Use sparingly in the POC, or replace with a narrower custom ClusterRole.</p><pre>apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: platform-admins
+subjects:
+- kind: Group
+  name: k8s-admins
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io</pre></div>
+        <div class="command-card"><h3>Validation ideas</h3><p>Use one user per group and test across namespaces to prove isolation.</p><pre>kubectl auth can-i create deployment -n dev
+kubectl auth can-i get pods -n qa
+kubectl auth can-i delete namespace prod
+kubectl get pods -n prod</pre></div>
+      </div>
+      <div class="warning" style="margin-top: 18px;">
+        <h3>Important architecture note</h3>
+        <p>If the exercise is for human enterprise users, an OIDC bridge is usually the cleanest pattern. Direct client certificates for every employee do not scale well for joiner-mover-leaver processes, group management, or self-service governance.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.filter');
+    const lanes = document.querySelectorAll('.swimlane');
+    function setFilter(group) {
+      buttons.forEach((button) => button.classList.toggle('active', button.dataset.filter === group));
+      lanes.forEach((lane) => lane.classList.toggle('visible', group === 'all' || lane.dataset.group === group));
+    }
+    buttons.forEach((button) => button.addEventListener('click', () => setFilter(button.dataset.filter)));
+  </script>
+</body>
+</html>

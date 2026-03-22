@@ -1,4 +1,4 @@
-# Lab 07: Role-Based Access Control (RBAC)
+# Lab 11: Role-Based Access Control (RBAC)
 
 ## Overview
 In this lab, you will learn how to implement Role-Based Access Control (RBAC) in Kubernetes. You'll create users with certificates, define roles with specific permissions, bind users to roles, and verify access controls work as expected.

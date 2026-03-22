@@ -1,4 +1,4 @@
-# Lab 24: Ingress Controllers and EndpointSlices
+# Lab 35: Ingress Controllers and EndpointSlices
 
 ## Overview
 In this lab, you will learn about Kubernetes Ingress resources for HTTP/HTTPS routing and EndpointSlices for efficient service endpoint management. You'll understand how to expose multiple services through a single entry point and how Kubernetes tracks and distributes traffic to Pod endpoints at scale.
@@ -6,7 +6,7 @@ In this lab, you will learn about Kubernetes Ingress resources for HTTP/HTTPS ro
 ## Prerequisites
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
-- Completion of [Lab 02: Creating Services](lab02-creating-services.md)
+- Completion of [Lab 02: Creating Services](lab02-basics-creating-services.md)
 - Basic understanding of HTTP, DNS, and load balancing
 
 ## Learning Objectives

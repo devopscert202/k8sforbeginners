@@ -1,4 +1,4 @@
-# Lab 44: Headlamp Kubernetes UI
+# Lab 32: Headlamp Kubernetes UI
 
 ## Overview
 

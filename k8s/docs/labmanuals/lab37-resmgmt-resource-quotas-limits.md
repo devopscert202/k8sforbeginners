@@ -1,4 +1,4 @@
-# Lab 32: Resource Quotas and Limits
+# Lab 37: Resource Quotas and Limits
 
 ## Overview
 In this lab, you will learn about Kubernetes Resource Quotas and Limits, essential tools for managing cluster resources and enforcing multi-tenancy. You'll create namespaces with resource quotas, deploy pods with resource requests and limits, and understand how Kubernetes enforces these constraints to prevent resource exhaustion.
@@ -965,7 +965,7 @@ spec:
 ## Next Steps
 
 Now that you understand Resource Quotas and Limits, proceed to:
-- [Lab 33: Deployment Strategies and Rollouts](lab33-deployment-rollouts.md) - Learn about rolling updates and rollbacks
+- [Lab 23: Deployment Strategies and Rollouts](lab23-deploy-deployment-rollouts.md) - Learn about rolling updates and rollbacks
 - Explore Vertical Pod Autoscaling (VPA) for automatic resource tuning
 - Learn about Cluster Resource Management and Node Resources
 

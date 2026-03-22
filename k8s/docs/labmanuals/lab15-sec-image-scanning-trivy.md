@@ -1,4 +1,4 @@
-# Lab 12: Container Image Scanning with Trivy
+# Lab 15: Container Image Scanning with Trivy
 
 ## Overview
 In this lab, you will learn how to use Trivy, an open-source vulnerability scanner, to scan container images and Kubernetes cluster resources for security vulnerabilities. You'll install Trivy, scan Docker images, generate various report formats, and scan running Kubernetes workloads.

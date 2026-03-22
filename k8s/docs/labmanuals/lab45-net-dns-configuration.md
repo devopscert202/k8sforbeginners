@@ -1,4 +1,4 @@
-# Lab 25: DNS Configuration in Kubernetes
+# Lab 45: DNS Configuration in Kubernetes
 
 ## Overview
 In this lab, you will learn how to configure DNS settings for Pods in Kubernetes. You'll explore different DNS policies, custom DNS configurations, and host aliases to understand how Kubernetes handles name resolution for your applications.
@@ -7,7 +7,7 @@ In this lab, you will learn how to configure DNS settings for Pods in Kubernetes
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
 - Basic understanding of DNS and networking concepts
-- Completion of [Lab 01: Creating Pods](lab01-creating-pods.md)
+- Completion of [Lab 01: Creating Pods](lab01-basics-creating-pods.md)
 
 ## Learning Objectives
 By the end of this lab, you will be able to:

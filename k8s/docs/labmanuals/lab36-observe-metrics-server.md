@@ -1,4 +1,4 @@
-# Lab 31: Kubernetes Metrics Server
+# Lab 36: Kubernetes Metrics Server
 
 ## Overview
 In this lab, you will learn about the Kubernetes Metrics Server, a cluster-wide aggregator of resource usage data. The Metrics Server collects resource metrics from Kubelets and exposes them through the Kubernetes API server for use by Horizontal Pod Autoscaler (HPA), Vertical Pod Autoscaler (VPA), and kubectl top commands. You'll install the Metrics Server, configure it for different environments, and use it to monitor cluster resource usage.
@@ -811,8 +811,8 @@ kubectl top pods
 ## Next Steps
 
 Now that you have Metrics Server installed and configured, proceed to:
-- [Lab 34: Kubernetes Dashboard](lab34-kubernetes-dashboard.md) - Install and use the Kubernetes Dashboard
-- [Lab 20: Horizontal Pod Autoscaling](lab20-hpa.md) - Use Metrics Server for autoscaling
+- [Lab 33: Kubernetes Dashboard (Legacy)](lab33-workload-kubernetes-dashboard-legacy.md) - Legacy Dashboard reference; use [Lab 32: Headlamp Kubernetes UI](lab32-workload-headlamp-kubernetes-ui.md) for the current UI path
+- [Lab 30: Horizontal Pod Autoscaling](lab30-workload-hpa.md) - Use Metrics Server for autoscaling
 - Explore Vertical Pod Autoscaler (VPA)
 - Learn about Prometheus for long-term metrics storage
 

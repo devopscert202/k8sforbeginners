@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReplicaSet vs DaemonSet</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
+      --navy: #0f172a; --blue: #1d4ed8; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(29,78,216,.1), transparent 24%),
+        radial-gradient(circle at top right, rgba(109,40,217,.08), transparent 22%),
+        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+      color: var(--ink); line-height: 1.55; padding: 24px;
+    }
+    .page { max-width: 1420px; margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
+      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+    }
+    .eyebrow {
+      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
+      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    h1 { font-size: 2.4rem; line-height: 1.12; margin-bottom: 12px; }
+    .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
+    .hero-grid, .stats, .compare-grid, .lane, .mapping-grid, .steps-grid, .command-grid, .qa-grid { display: grid; gap: 16px; }
+    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
+    .hero-card, .panel, .compare-card, .swimlane, .map-card, .step-card, .command-card, .qa-card, .warning {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
+    }
+    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
+    .hero-card ul, .compare-card ul { padding-left: 18px; }
+    .hero-card li + li, .compare-card li + li { margin-top: 6px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 24px; }
+    .stat { border-radius: 20px; padding: 18px; color: white; min-height: 126px; }
+    .blue { background: linear-gradient(135deg, #1d4ed8 0%, #38bdf8 100%); }
+    .green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+    .amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .violet { background: linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%); }
+    .stat-label { text-transform: uppercase; letter-spacing: .06em; font-size: .76rem; opacity: .88; }
+    .stat-value { font-size: 1.9rem; font-weight: 800; margin: 8px 0; }
+    .panel { padding: 22px; margin-bottom: 22px; }
+    .section-title { font-size: 1.45rem; margin-bottom: 8px; }
+    .section-copy { color: var(--muted); margin-bottom: 18px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .controls button {
+      border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; background: #e9eef8; color: var(--ink); cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .controls button:hover { transform: translateY(-1px); background: #dde7fb; }
+    .controls button.active { background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%); color: white; }
+    .compare-grid, .mapping-grid, .steps-grid, .command-grid, .qa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .compare-card, .map-card, .step-card, .command-card, .qa-card, .warning { padding: 18px; }
+    .compare-card h3, .swimlane h3, .map-card h3, .step-card h3, .command-card h3, .qa-card h3 { font-size: 1rem; margin-bottom: 8px; }
+    .compare-card p, .map-card p, .step-card p, .command-card p, .qa-card p, .swimlane p { color: var(--muted); font-size: .92rem; margin-bottom: 10px; }
+    .pill { display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; color: white; margin-bottom: 10px; }
+    .replica { background: var(--green); }
+    .daemon { background: var(--amber); }
+    .concept { background: var(--blue); }
+    .ops { background: var(--violet); }
+    .swimlane { padding: 18px; display: none; }
+    .swimlane.visible { display: block; animation: appear .35s ease; }
+    .lane-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .node { background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%); border: 1px solid #ccdcf7; border-radius: 14px; padding: 10px 12px; font-weight: 700; color: #17365f; font-size: .9rem; }
+    .arrow { align-self: center; font-weight: 900; color: #647da5; }
+    .cluster-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0 12px; }
+    .cluster-node {
+      background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+      border: 1px solid #ccdcf7; border-radius: 16px; padding: 12px;
+    }
+    .cluster-node h4 { font-size: .95rem; margin-bottom: 10px; }
+    .pod-stack { display: flex; flex-direction: column; gap: 8px; }
+    .pod {
+      border-radius: 12px; padding: 8px 10px; color: white; font-weight: 700; font-size: .82rem; text-align: center;
+    }
+    .pod.replica-pod { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+    .pod.daemon-pod { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .pod.empty { background: #dbe4f0; color: #516173; }
+    .token { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .74rem; font-weight: 800; margin-right: 6px; margin-bottom: 8px; }
+    .rs-token { background: #dcfce7; color: #166534; }
+    .ds-token { background: #ffedd5; color: #9a3412; }
+    .count-token { background: #dbeafe; color: #1d4ed8; }
+    .node-token { background: #ede9fe; color: #6d28d9; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: #f8fbff; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    tr:last-child td { border-bottom: none; }
+    pre { background: var(--navy); color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: auto; font-size: .85rem; line-height: 1.55; margin-top: 12px; }
+    .warning { background: linear-gradient(180deg, #fff9ee 0%, #fff3d9 100%); border-color: #f2cf84; }
+    .warning h3, .warning p { color: #8a4b08; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 1150px) {
+      .hero-grid, .stats, .compare-grid, .mapping-grid, .steps-grid, .command-grid, .qa-grid, .cluster-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      body { padding: 14px; }
+      .hero, .panel { padding: 18px; }
+      h1 { font-size: 1.85rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">Workload Controller Comparison</div>
+      <h1>ReplicaSet vs DaemonSet</h1>
+      <p>This page answers a very common classroom question: both controllers create Pods automatically, so what is the real difference? The clean answer is that ReplicaSet maintains a desired <strong>number of Pods</strong>, while DaemonSet maintains <strong>Pod presence on nodes</strong>.</p>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <h2>Best quick answer</h2>
+          <ul>
+            <li>ReplicaSet asks: how many copies of this app should be running?</li>
+            <li>DaemonSet asks: which nodes should each run a copy?</li>
+            <li>Count versus coverage is the key mental model.</li>
+          </ul>
+        </div>
+        <div class="hero-card">
+          <h2>Why learners mix them up</h2>
+          <ul>
+            <li>Both are controllers under `apps/v1`.</li>
+            <li>Both keep recreating Pods when reality drifts from desired state.</li>
+            <li>Both are often discussed near Deployments and other workload types.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat green"><div class="stat-label">ReplicaSet thinks in</div><div class="stat-value">Count</div><div>Maintain a target number of matching Pods anywhere in the cluster.</div></div>
+      <div class="stat amber"><div class="stat-label">DaemonSet thinks in</div><div class="stat-value">Coverage</div><div>Maintain one Pod on every eligible node, not a plain replica count.</div></div>
+      <div class="stat blue"><div class="stat-label">Usual Pairing</div><div class="stat-value">Deployment</div><div>ReplicaSets are commonly created and managed indirectly by a Deployment.</div></div>
+      <div class="stat violet"><div class="stat-label">Common Use</div><div class="stat-value">Node Agents</div><div>DaemonSets are ideal for logging, monitoring, networking, and security helpers.</div></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Two-Column Comparison</h2>
+      <p class="section-copy">This is the main side-by-side view you can use directly in class.</p>
+      <div class="compare-grid">
+        <div class="compare-card">
+          <span class="pill replica">ReplicaSet</span>
+          <h3>Maintain a desired number of Pods</h3>
+          <p>ReplicaSet focuses on app availability. If the desired count is 4 and one Pod disappears, it creates a replacement. It does not care which node gets that replacement, as long as the total count is restored.</p>
+          <div class="cluster-grid">
+            <div class="cluster-node">
+              <h4>Node A</h4>
+              <div class="pod-stack">
+                <div class="pod replica-pod">app-pod-1</div>
+                <div class="pod replica-pod">app-pod-2</div>
+              </div>
+            </div>
+            <div class="cluster-node">
+              <h4>Node B</h4>
+              <div class="pod-stack">
+                <div class="pod replica-pod">app-pod-3</div>
+              </div>
+            </div>
+            <div class="cluster-node">
+              <h4>Node C</h4>
+              <div class="pod-stack">
+                <div class="pod replica-pod">app-pod-4</div>
+                <div class="pod empty">No special rule</div>
+              </div>
+            </div>
+          </div>
+          <ul>
+            <li>Good for stateless applications like web frontends and APIs.</li>
+            <li>Pods can be distributed unevenly across nodes.</li>
+            <li>Usually managed through a Deployment rather than created directly in production.</li>
+          </ul>
+        </div>
+        <div class="compare-card">
+          <span class="pill daemon">DaemonSet</span>
+          <h3>Maintain one Pod on every eligible node</h3>
+          <p>DaemonSet focuses on node presence. If a new node joins, the controller schedules a Pod there automatically. If a node leaves, the corresponding Pod leaves with it.</p>
+          <div class="cluster-grid">
+            <div class="cluster-node">
+              <h4>Node A</h4>
+              <div class="pod-stack">
+                <div class="pod daemon-pod">log-agent</div>
+              </div>
+            </div>
+            <div class="cluster-node">
+              <h4>Node B</h4>
+              <div class="pod-stack">
+                <div class="pod daemon-pod">log-agent</div>
+              </div>
+            </div>
+            <div class="cluster-node">
+              <h4>Node C</h4>
+              <div class="pod-stack">
+                <div class="pod daemon-pod">log-agent</div>
+              </div>
+            </div>
+          </div>
+          <ul>
+            <li>Good for log shippers, monitoring agents, CNI helpers, and security agents.</li>
+            <li>The key rule is one Pod per matching node.</li>
+            <li>Can be limited to selected nodes using labels, affinity, and tolerations.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Interactive Request Journey</h2>
+      <p class="section-copy">Use the filter buttons to switch between the two controller thought processes and the shared concept summary.</p>
+      <div class="controls">
+        <button class="filter active" data-filter="all">Full View</button>
+        <button class="filter" data-filter="replicaset">ReplicaSet Flow</button>
+        <button class="filter" data-filter="daemonset">DaemonSet Flow</button>
+        <button class="filter" data-filter="concepts">Key Concept</button>
+        <button class="filter" data-filter="operations">Classroom Mistakes</button>
+      </div>
+      <div class="lane">
+        <article class="swimlane visible" data-group="replicaset">
+          <div class="lane-title"><h3>ReplicaSet control loop</h3><span class="pill replica">ReplicaSet Flow</span></div>
+          <div class="flow"><div class="node">Desired replicas = 4</div><div class="arrow">></div><div class="node">Only 3 Pods are healthy</div><div class="arrow">></div><div class="node">ReplicaSet notices the gap</div><div class="arrow">></div><div class="node">Creates a replacement Pod</div></div>
+          <p>ReplicaSet is always asking whether the current Pod count matches the desired Pod count.</p>
+        </article>
+        <article class="swimlane visible" data-group="daemonset">
+          <div class="lane-title"><h3>DaemonSet control loop</h3><span class="pill daemon">DaemonSet Flow</span></div>
+          <div class="flow"><div class="node">Target all worker nodes</div><div class="arrow">></div><div class="node">New node joins cluster</div><div class="arrow">></div><div class="node">DaemonSet detects uncovered node</div><div class="arrow">></div><div class="node">Creates Pod on that node</div></div>
+          <p>DaemonSet is always asking whether each matching node has its required Pod.</p>
+        </article>
+        <article class="swimlane visible" data-group="concepts">
+          <div class="lane-title"><h3>Core mental model</h3><span class="pill concept">Key Concept</span></div>
+          <div class="flow"><div class="node">ReplicaSet = count</div><div class="arrow">></div><div class="node">DaemonSet = node coverage</div><div class="arrow">></div><div class="node">Same controller idea</div><div class="arrow">></div><div class="node">Different scheduling intent</div></div>
+          <p>Both controllers reconcile desired state, but the desired state itself is different.</p>
+        </article>
+        <article class="swimlane visible" data-group="operations">
+          <div class="lane-title"><h3>Common classroom mistakes</h3><span class="pill ops">Classroom Mistakes</span></div>
+          <div class="flow"><div class="node">Need log agent on every node</div><div class="arrow">></div><div class="node">Do not choose ReplicaSet</div><div class="arrow">></div><div class="node">Need only 3 app copies</div><div class="arrow">></div><div class="node">Do not choose DaemonSet</div></div>
+          <p>The wrong choice usually happens when learners confuse app replicas with node-wide helpers.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Core Differences at a Glance</h2>
+      <p class="section-copy">This table is useful when you want a crisp verbal summary after the diagrams.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>ReplicaSet</th>
+              <th>DaemonSet</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>What does it maintain?</td>
+              <td>Total number of Pods.</td>
+              <td>Pod presence on each eligible node.</td>
+            </tr>
+            <tr>
+              <td>What happens when a node is added?</td>
+              <td>No extra Pod unless desired count is not met.</td>
+              <td>A Pod is created on the new node automatically.</td>
+            </tr>
+            <tr>
+              <td>Typical use case</td>
+              <td>Frontend app, API, stateless worker replicas.</td>
+              <td>Log collection, metrics, networking, security agents.</td>
+            </tr>
+            <tr>
+              <td>Scheduling concern</td>
+              <td>Any suitable node is fine.</td>
+              <td>Every matching node should run one.</td>
+            </tr>
+            <tr>
+              <td>Common production pattern</td>
+              <td>Usually behind a Deployment.</td>
+              <td>Directly used for node-level cluster services.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Use Cases and Example Mapping</h2>
+      <p class="section-copy">These cards connect the abstract controller behavior to practical workloads.</p>
+      <div class="mapping-grid">
+        <div class="map-card">
+          <span class="token rs-token">ReplicaSet</span><span class="token count-token">App Replicas</span>
+          <h3>Shopping site frontend</h3>
+          <p>You want 3 or 4 frontend Pods running behind a Service. Any node can host them, and if one crashes, a replacement is created.</p>
+        </div>
+        <div class="map-card">
+          <span class="token ds-token">DaemonSet</span><span class="token node-token">Node Agent</span>
+          <h3>Cluster log collector</h3>
+          <p>Every node should run a log shipping Pod locally so logs are collected from everywhere, including newly added nodes.</p>
+        </div>
+        <div class="map-card">
+          <span class="token rs-token">ReplicaSet</span><span class="token count-token">Stateless Scale</span>
+          <h3>API service replicas</h3>
+          <p>If traffic increases, you scale the number of Pods. The main concern is capacity and availability, not one-per-node presence.</p>
+        </div>
+        <div class="map-card">
+          <span class="token ds-token">DaemonSet</span><span class="token node-token">Per-Node Utility</span>
+          <h3>Monitoring or security agent</h3>
+          <p>Each node needs the same background helper because the data is local to the node itself.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Quick Comparison Sequence</h2>
+      <p class="section-copy">A short sequence that helps explain the difference clearly and concisely.</p>
+      <div class="steps-grid">
+        <div class="step-card"><h3>1. Start with the shared point</h3><p>Both are controllers that keep actual state aligned with desired state.</p></div>
+        <div class="step-card"><h3>2. Separate the intent</h3><p>ReplicaSet wants a number. DaemonSet wants node-by-node presence.</p></div>
+        <div class="step-card"><h3>3. Use the app example</h3><p>Three web Pods for a frontend is a ReplicaSet-style need.</p></div>
+        <div class="step-card"><h3>4. Use the node-agent example</h3><p>One logging Pod on every worker node is a DaemonSet-style need.</p></div>
+        <div class="step-card"><h3>5. Explain new node behavior</h3><p>DaemonSet expands to the new node automatically; ReplicaSet does not unless total count is low.</p></div>
+        <div class="step-card"><h3>6. End with the memory trick</h3><p>ReplicaSet equals replicas of an app. DaemonSet equals daemon on each node.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">YAML Examples</h2>
+      <p class="section-copy">These examples make the concept concrete and are simple enough for live explanation.</p>
+      <div class="command-grid">
+        <div class="command-card">
+          <h3>ReplicaSet example</h3>
+          <p>This is the direct controller form for keeping a fixed app replica count.</p>
+          <pre>apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: shop-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shop-frontend
+  template:
+    metadata:
+      labels:
+        app: shop-frontend
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.25</pre>
+        </div>
+        <div class="command-card">
+          <h3>DaemonSet example</h3>
+          <p>This mirrors the repo's DaemonSet lab idea for running a Pod on every node.</p>
+          <pre>apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-nginx-simple
+spec:
+  selector:
+    matchLabels:
+      app: node-nginx-simple
+  template:
+    metadata:
+      labels:
+        app: node-nginx-simple
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25</pre>
+        </div>
+      </div>
+      <div class="warning" style="margin-top: 18px;">
+        <h3>Important reminder</h3>
+        <p>In real production app delivery, teams usually create a Deployment rather than hand-managing a ReplicaSet. The ReplicaSet concept still matters because Deployment uses it internally.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Short Q and A</h2>
+      <p class="section-copy">Use these answers for common follow-up questions.</p>
+      <div class="qa-grid">
+        <div class="qa-card"><h3>Why not use ReplicaSet for a logging agent?</h3><p>Because ReplicaSet may place all requested Pods on only a few nodes, leaving some nodes without the agent.</p></div>
+        <div class="qa-card"><h3>Why not use DaemonSet for a web app?</h3><p>Because your app usually needs a chosen number of replicas, not one copy tied to every node in the cluster.</p></div>
+        <div class="qa-card"><h3>Can DaemonSet run on only some nodes?</h3><p>Yes. You can narrow it with node selectors, affinity, and tolerations.</p></div>
+        <div class="qa-card"><h3>What is the easiest memory trick?</h3><p>ReplicaSet equals replicas of an app. DaemonSet equals daemon on each node.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.filter');
+    const lanes = document.querySelectorAll('.swimlane');
+    function setFilter(group) {
+      buttons.forEach((button) => button.classList.toggle('active', button.dataset.filter === group));
+      lanes.forEach((lane) => lane.classList.toggle('visible', group === 'all' || lane.dataset.group === group));
+    }
+    buttons.forEach((button) => button.addEventListener('click', () => setFilter(button.dataset.filter)));
+  </script>
+</body>
+</html>

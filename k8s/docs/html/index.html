@@ -30,25 +30,48 @@
         }
         .container { max-width: 1380px; margin: 0 auto; }
         header {
-            text-align: center;
             margin-bottom: 30px;
-            padding: 36px 24px;
-            border-radius: 28px;
-            background: rgba(255,255,255,0.78);
-            border: 1px solid rgba(226, 232, 240, 0.9);
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-            backdrop-filter: blur(8px);
+            padding: 34px 28px;
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid rgba(37, 99, 235, 0.10);
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
         }
         h1 {
             font-size: 2.3rem;
             color: var(--blue);
             margin-bottom: 10px;
+            text-align: center;
         }
         .subtitle {
             max-width: 860px;
             margin: 0 auto 18px;
             color: var(--slate-500);
             font-size: 1.03rem;
+            text-align: center;
+        }
+        .header-note {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 16px 18px;
+            border: 1px solid #dbeafe;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            color: var(--slate-700);
         }
         .stats {
             display: grid;
@@ -133,7 +156,7 @@
         }
         .link-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 10px 14px;
         }
         .link-item {
@@ -141,6 +164,12 @@
             border: 1px solid var(--slate-200);
             border-radius: 12px;
             background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .link-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+            border-color: #bfdbfe;
         }
         .link-item a {
             text-decoration: none;
@@ -189,12 +218,14 @@
 <body>
     <div class="container">
         <header>
+            <div class="eyebrow">Interactive HTML Catalog</div>
             <h1>Kubernetes Interactive Diagrams</h1>
             <p class="subtitle">A navigable home page for the self-contained HTML explainers in this folder. Use these pages to teach concepts visually, demo key Kubernetes flows, and help learners connect YAML, commands, and cluster behavior.</p>
+            <div class="header-note">This page now includes the newly rebuilt explainer set as well, so you can open each topic directly during QA without hunting through the folder.</div>
         </header>
 
         <section class="stats">
-            <div class="stat blue"><div class="label">Interactive Pages</div><div class="value">28</div><div>Self-contained HTML explainers in this folder, including the new dashboard page and this home page.</div></div>
+            <div class="stat blue"><div class="label">Interactive Pages</div><div class="value">56</div><div>Self-contained HTML pages in this folder: 55 concept explainers plus this home page.</div></div>
             <div class="stat green"><div class="label">Best Use</div><div class="value">Learning</div><div>Great for demos, concept reinforcement, and visual walkthroughs.</div></div>
             <div class="stat amber"><div class="label">Works Offline</div><div class="value">Yes</div><div>No runtime CDN or external JavaScript dependency is required.</div></div>
             <div class="stat rose"><div class="label">Navigation</div><div class="value">Centralized</div><div>Use this page as the landing page for all diagram-based learning content.</div></div>
@@ -216,79 +247,108 @@
                         <tr>
                             <td>
                                 <span class="tag foundation">Foundation</span>
-                                <div class="category-name">Foundations</div>
-                                <div class="category-copy">Core concepts and first-stop visual explainers for architecture, workloads, networking, and startup behavior.</div>
+                                <div class="category-name">Foundations and Workloads</div>
+                                <div class="category-copy">Architecture, Pod basics, controller hierarchy, rollout thinking, and workload types that learners encounter first.</div>
                             </td>
                             <td>
                                 <div class="link-grid">
                                     <div class="link-item"><a href="./k8s-architecture-interactive.html">Architecture</a><p>Control plane and worker nodes</p></div>
-                                    <div class="link-item"><a href="./service-types-comparison.html">Service Types</a><p>ClusterIP, NodePort, LoadBalancer</p></div>
+                                    <div class="link-item"><a href="./k8s-objects-reference.html">Objects Reference</a><p>Quick object guide</p></div>
                                     <div class="link-item"><a href="./pod-lifecycle.html">Pod Lifecycle</a><p>Phases and restart behavior</p></div>
+                                    <div class="link-item"><a href="./pods-vs-deployments.html">Pods vs Deployments</a><p>Beginner transition model</p></div>
                                     <div class="link-item"><a href="./deployment-hierarchy.html">Deployment Hierarchy</a><p>Deployment to ReplicaSet to Pod</p></div>
+                                    <div class="link-item"><a href="./replicaset-scaling.html">ReplicaSet Scaling</a><p>Replica count changes</p></div>
+                                    <div class="link-item"><a href="./replicaset-vs-daemonset.html">ReplicaSet vs DaemonSet</a><p>Count versus node coverage</p></div>
                                     <div class="link-item"><a href="./rolling-update.html">Rolling Update</a><p>Safe rollout progression</p></div>
                                     <div class="link-item"><a href="./deployment-rollback.html">Deployment Rollback</a><p>Rollback flow</p></div>
-                                    <div class="link-item"><a href="./pod-communication.html">Pod Communication</a><p>Pod and Service networking</p></div>
-                                    <div class="link-item"><a href="./dns-resolution.html">DNS Resolution</a><p>Service discovery flow</p></div>
+                                    <div class="link-item"><a href="./deployment-strategies.html">Deployment Strategies</a><p>Rolling, blue-green, canary</p></div>
+                                    <div class="link-item"><a href="./workloads-pod-concepts.html">Workloads Concepts</a><p>Pod and workload landscape</p></div>
+                                    <div class="link-item"><a href="./multi-container-pod-patterns.html">Multi-Container Pods</a><p>Sidecar and helper patterns</p></div>
                                     <div class="link-item"><a href="./init-containers.html">Init Containers</a><p>Sequential startup preparation</p></div>
-                                    <div class="link-item"><a href="./k8s-dashboard.html">K8s Dashboard</a><p>Open-source dashboard explainer</p></div>
+                                    <div class="link-item"><a href="./daemonset-pattern.html">DaemonSet Pattern</a><p>One Pod per node</p></div>
+                                    <div class="link-item"><a href="./statefulset-vs-deployment.html">StatefulSet vs Deployment</a><p>Stateful and stateless contrast</p></div>
+                                    <div class="link-item"><a href="./jobs-batch-processing.html">Jobs</a><p>Run-to-completion workloads</p></div>
+                                    <div class="link-item"><a href="./cronjobs-scheduling.html">CronJobs</a><p>Scheduled batch execution</p></div>
+                                    <div class="link-item"><a href="./static-pods.html">Static Pods</a><p>Kubelet-managed manifests</p></div>
                                 </div>
                             </td>
-                            <td class="category-copy">Best for onboarding, classroom walkthroughs, and concept-first sessions before deeper operational topics.</td>
+                            <td class="category-copy">Best for onboarding, classroom walkthroughs, and helping learners build the controller mental model before production operations.</td>
                         </tr>
                         <tr>
                             <td>
                                 <span class="tag ops">Ops</span>
-                                <div class="category-name">Storage, Security, Scheduling</div>
-                                <div class="category-copy">How Kubernetes stores data, controls access, isolates traffic, and decides where Pods run.</div>
+                                <div class="category-name">Networking and Access</div>
+                                <div class="category-copy">Service exposure, routing, traffic paths, dashboard access, and the networking concepts that connect apps to users.</div>
                             </td>
                             <td>
                                 <div class="link-grid">
+                                    <div class="link-item"><a href="./service-types-comparison.html">Service Types</a><p>ClusterIP, NodePort, LoadBalancer</p></div>
+                                    <div class="link-item"><a href="./services-networking-deep-dive.html">Services Deep Dive</a><p>Selectors, endpoints, ports</p></div>
+                                    <div class="link-item"><a href="./multi-port-services.html">Multi-Port Services</a><p>Named ports and mappings</p></div>
+                                    <div class="link-item"><a href="./pod-communication.html">Pod Communication</a><p>Pod and Service networking</p></div>
+                                    <div class="link-item"><a href="./dns-resolution.html">DNS Resolution</a><p>Service discovery flow</p></div>
+                                    <div class="link-item"><a href="./service-lb-rollout.html">Service LB Rollout</a><p>Traffic during rollouts</p></div>
+                                    <div class="link-item"><a href="./ingress-endpointslices.html">Ingress and EndpointSlices</a><p>HTTP entry and backend tracking</p></div>
+                                    <div class="link-item"><a href="./gateway-api-routing.html">Gateway API</a><p>GatewayClass, Gateway, HTTPRoute</p></div>
+                                    <div class="link-item"><a href="./k8s-dashboard.html">K8s Dashboard</a><p>Legacy dashboard explainer with Headlamp pointer</p></div>
+                                    <div class="link-item"><a href="./k8s-ui-alternatives.html">UI Alternatives</a><p>Headlamp, FreeLens, Portainer, K9s</p></div>
+                                    <div class="link-item"><a href="./kind-local-kubernetes.html">Kind Local Cluster</a><p>Learning-focused local Kubernetes setup</p></div>
+                                </div>
+                            </td>
+                            <td class="category-copy">Useful for teaching exposure choices, HTTP entry models, and how client traffic actually reaches Pods inside the cluster.</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="tag ops">Ops</span>
+                                <div class="category-name">Configuration, Security, and Placement</div>
+                                <div class="category-copy">How configuration is injected, data is mounted, policies are enforced, and scheduling rules shape workload placement.</div>
+                            </td>
+                            <td>
+                                <div class="link-grid">
+                                    <div class="link-item"><a href="./configmaps-patterns.html">ConfigMaps</a><p>Config injection patterns</p></div>
+                                    <div class="link-item"><a href="./volume-types.html">Volume Types</a><p>Storage mount comparison</p></div>
                                     <div class="link-item"><a href="./pv-pvc-binding.html">PV / PVC Binding</a><p>Persistent storage binding</p></div>
-                                    <div class="link-item"><a href="./volume-types.html">Volume Types</a><p>Volume comparison</p></div>
                                     <div class="link-item"><a href="./rbac-flow.html">RBAC Flow</a><p>Authorization model</p></div>
+                                    <div class="link-item"><a href="./rbac-user-certificate-flow.html">RBAC User Cert Flow</a><p>Certificate to kubeconfig to testing</p></div>
+                                    <div class="link-item"><a href="./ldap-k8s-rbac-poc.html">LDAP RBAC POC</a><p>Enterprise identity to namespace access</p></div>
+                                    <div class="link-item"><a href="./k8s-ui-headlamp.html">Headlamp UI</a><p>In-cluster install and access flow</p></div>
                                     <div class="link-item"><a href="./security-context.html">Security Context</a><p>Container and Pod security</p></div>
+                                    <div class="link-item"><a href="./pod-security-standards.html">Pod Security Standards</a><p>Privileged, baseline, restricted</p></div>
                                     <div class="link-item"><a href="./network-policy.html">Network Policy</a><p>Traffic filtering</p></div>
+                                    <div class="link-item"><a href="./opa-gatekeeper-policy.html">OPA Gatekeeper</a><p>Admission policy flow</p></div>
                                     <div class="link-item"><a href="./node-selection.html">Node Selection</a><p>Scheduling constraints</p></div>
                                     <div class="link-item"><a href="./taints-tolerations.html">Taints / Tolerations</a><p>Node repulsion and acceptance</p></div>
                                     <div class="link-item"><a href="./affinity-antiaffinity.html">Affinity Rules</a><p>Placement attraction and avoidance</p></div>
+                                    <div class="link-item"><a href="./resource-quotas-limits.html">Quotas and Limits</a><p>Namespace guardrails</p></div>
+                                    <div class="link-item"><a href="./custom-resource-definitions.html">CRDs</a><p>Extending the Kubernetes API</p></div>
                                 </div>
                             </td>
-                            <td class="category-copy">Useful for platform operations, policy discussions, troubleshooting, and explaining why a workload runs where it does.</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span class="tag ops">Ops</span>
-                                <div class="category-name">Workload Operations</div>
-                                <div class="category-copy">Operational behavior for controllers, traffic handling, and node maintenance.</div>
-                            </td>
-                            <td>
-                                <div class="link-grid">
-                                    <div class="link-item"><a href="./replicaset-scaling.html">ReplicaSet Scaling</a><p>Replica count changes</p></div>
-                                    <div class="link-item"><a href="./statefulset-vs-deployment.html">StatefulSet vs Deployment</a><p>Stateful and stateless contrast</p></div>
-                                    <div class="link-item"><a href="./daemonset-pattern.html">DaemonSet Pattern</a><p>One Pod per node</p></div>
-                                    <div class="link-item"><a href="./service-lb-rollout.html">Service LB Rollout</a><p>Traffic during rollouts</p></div>
-                                    <div class="link-item"><a href="./cordon-drain.html">Cordon and Drain</a><p>Safe node maintenance</p></div>
-                                </div>
-                            </td>
-                            <td class="category-copy">Good for demonstrating controller behavior, production maintenance tasks, and how traffic and workloads shift over time.</td>
+                            <td class="category-copy">Helpful for policy labs, platform governance, multi-team clusters, and explaining why a Pod is allowed, denied, or scheduled a certain way.</td>
                         </tr>
                         <tr>
                             <td>
                                 <span class="tag prod">Production</span>
                                 <span class="tag ref">Reference</span>
-                                <div class="category-name">Upgrades, Recovery, Reference</div>
-                                <div class="category-copy">Compatibility, upgrades, disaster recovery, and quick object lookup.</div>
+                                <div class="category-name">Scaling, Health, and Cluster Operations</div>
+                                <div class="category-copy">Metrics, autoscaling, probe behavior, maintenance, upgrades, installation flow, and practical admin skills.</div>
                             </td>
                             <td>
                                 <div class="link-grid">
+                                    <div class="link-item"><a href="./metrics-server-architecture.html">Metrics Server</a><p>kubectl top and HPA pipeline</p></div>
+                                    <div class="link-item"><a href="./hpa-autoscaling.html">HPA</a><p>Horizontal Pod Autoscaling</p></div>
+                                    <div class="link-item"><a href="./health-probes.html">Health Probes</a><p>Liveness, readiness, startup</p></div>
+                                    <div class="link-item"><a href="./cordon-drain.html">Cordon and Drain</a><p>Safe node maintenance</p></div>
                                     <div class="link-item"><a href="./upgrade-sequence.html">Upgrade Sequence</a><p>Cluster upgrade path</p></div>
                                     <div class="link-item"><a href="./component-upgrade-order.html">Component Upgrade Order</a><p>Safe component order</p></div>
                                     <div class="link-item"><a href="./version-skew.html">Version Skew</a><p>Compatibility rules</p></div>
                                     <div class="link-item"><a href="./etcd-backup-restore.html">etcd Backup Restore</a><p>Disaster recovery flow</p></div>
-                                    <div class="link-item"><a href="./k8s-objects-reference.html">Objects Reference</a><p>Quick browseable object guide</p></div>
+                                    <div class="link-item"><a href="./linux-cheat-sheet.html">Linux Cheat Sheet</a><p>Ubuntu basics for K8s learners</p></div>
+                                    <div class="link-item"><a href="./kubectl-essentials.html">kubectl Essentials</a><p>Command-line mental model</p></div>
+                                    <div class="link-item"><a href="./cluster-administration.html">Cluster Administration</a><p>Admin responsibilities and tasks</p></div>
+                                    <div class="link-item"><a href="./kubernetes-installation.html">Kubernetes Installation</a><p>Bootstrap and dependency flow</p></div>
                                 </div>
                             </td>
-                            <td class="category-copy">Use these for reliability topics, admin training, upgrade planning, and review/reference sessions.</td>
+                            <td class="category-copy">Use these for SRE-style walkthroughs, admin training, autoscaling labs, and end-to-end cluster lifecycle sessions.</td>
                         </tr>
                     </tbody>
                 </table>

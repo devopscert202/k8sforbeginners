@@ -1,4 +1,4 @@
-# Lab 28: Pod Scheduling with PriorityClass
+# Lab 19: Pod Scheduling with PriorityClass
 
 ## Overview
 In this lab, you will learn how to use PriorityClass to control the relative importance of pods during scheduling. You'll create priority classes, assign them to pods, and observe how the scheduler handles resource contention and pod preemption.
@@ -943,7 +943,7 @@ spec:
 
 ## Next Steps
 
-Proceed to [Lab 29: Pod Scheduling with Taints and Tolerations](lab29-scheduling-tolerations.md) to learn how to repel pods from nodes unless they have specific tolerations.
+Proceed to [Lab 20: Pod Scheduling with Taints and Tolerations](lab20-sched-taints-tolerations.md) to learn how to repel pods from nodes unless they have specific tolerations.
 
 ---
 

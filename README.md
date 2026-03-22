@@ -49,7 +49,7 @@ cd k8sforbeginners
 
 # 2. Start with Lab 01
 cd k8s/docs/labmanuals
-cat lab01-creating-pods.md
+cat lab01-basics-creating-pods.md
 
 # 3. Follow the exercises and apply manifests
 kubectl apply -f ../../labs/basics/apache1.yaml
@@ -285,7 +285,7 @@ You need a **3-node Kubernetes cluster** (1 control plane + 2 workers).
 - Install Kubernetes using kubeadm
 - Gives you full control plane access
 - Best for understanding K8s internals and CKA preparation
-- **Follow**: [Lab 06: Kubernetes Installation](k8s/docs/labmanuals/lab06-kubernetes-installation.md)
+- **Follow**: [Lab 06: Kubernetes Installation](k8s/docs/labmanuals/lab06-install-kubernetes-kubeadm.md)
 
 **Why kubeadm?**
 - ✅ Learn cluster internals (etcd, certificates, control plane components)
@@ -304,7 +304,7 @@ See [Learning Paths](#-learning-paths) above.
 
 ### Step 3: Work Through Labs
 
-1. Open a lab manual: `k8s/docs/labmanuals/lab01-creating-pods.md`
+1. Open a lab manual: `k8s/docs/labmanuals/lab01-basics-creating-pods.md`
 2. Read the overview and learning objectives
 3. Follow the exercises step-by-step
 4. Apply the YAML manifests: `kubectl apply -f k8s/labs/basics/apache1.yaml`

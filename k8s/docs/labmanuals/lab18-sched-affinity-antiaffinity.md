@@ -1,4 +1,4 @@
-# Lab 27: Pod Scheduling with Node and Pod Affinity
+# Lab 18: Pod Scheduling with Node and Pod Affinity
 
 ## Overview
 In this lab, you will learn advanced pod scheduling techniques using Node Affinity and Pod Affinity/Anti-Affinity. These features provide more expressive ways to control where pods run compared to NodeSelector, supporting complex scheduling rules and pod-to-pod relationships.
@@ -915,7 +915,7 @@ podAntiAffinity:
 
 ## Next Steps
 
-Proceed to [Lab 28: Pod Scheduling with PriorityClass](lab28-scheduling-priorityclass.md) to learn how to prioritize pod scheduling during resource contention.
+Proceed to [Lab 19: Pod Scheduling with PriorityClass](lab19-sched-priorityclass.md) to learn how to prioritize pod scheduling during resource contention.
 
 ---
 

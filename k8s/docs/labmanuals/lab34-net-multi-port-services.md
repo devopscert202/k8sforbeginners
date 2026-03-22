@@ -1,4 +1,4 @@
-# Lab 23: Multi-Port Services in Kubernetes
+# Lab 34: Multi-Port Services in Kubernetes
 
 ## Overview
 In this lab, you will learn how to configure and expose applications that use multiple ports in Kubernetes. You'll work with multi-port Pods and Services, understand port naming conventions, and explore real-world use cases for multi-port configurations.
@@ -6,7 +6,7 @@ In this lab, you will learn how to configure and expose applications that use mu
 ## Prerequisites
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
-- Completion of [Lab 02: Creating Services](lab02-creating-services.md)
+- Completion of [Lab 02: Creating Services](lab02-basics-creating-services.md)
 - Basic understanding of Kubernetes Services
 
 ## Learning Objectives

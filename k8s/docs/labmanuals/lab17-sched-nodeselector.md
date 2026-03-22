@@ -1,4 +1,4 @@
-# Lab 26: Pod Scheduling with NodeSelector
+# Lab 17: Pod Scheduling with NodeSelector
 
 ## Overview
 In this lab, you will learn how to control pod scheduling using NodeSelector, the simplest way to constrain pods to run on specific nodes. You'll label nodes and use NodeSelector to direct pods to appropriate nodes based on their labels.
@@ -598,7 +598,7 @@ nodeSelector:
 
 ## Next Steps
 
-Proceed to [Lab 27: Pod Scheduling with Node and Pod Affinity](lab27-scheduling-affinity.md) to learn about more advanced scheduling constraints.
+Proceed to [Lab 18: Pod Scheduling with Node and Pod Affinity](lab18-sched-affinity-antiaffinity.md) to learn about more advanced scheduling constraints.
 
 ---
 

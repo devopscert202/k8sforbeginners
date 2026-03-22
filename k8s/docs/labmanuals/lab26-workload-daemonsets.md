@@ -1,4 +1,4 @@
-# Lab 17: Kubernetes DaemonSets
+# Lab 26: Kubernetes DaemonSets
 
 ## Overview
 In this lab, you will learn about DaemonSets, a powerful Kubernetes workload type that ensures a copy of a Pod runs on all (or selected) nodes in your cluster. You'll deploy and manage DaemonSets, understand their use cases, and learn when to use them in production environments.
@@ -686,9 +686,9 @@ spec:
 ## Next Steps
 
 Now that you understand DaemonSets, proceed to:
-- [Lab 19: CronJobs](lab19-cronjob.md) - Learn about scheduled jobs
-- [Lab 20: Horizontal Pod Autoscaling](lab20-hpa.md) - Auto-scale your workloads
-- [Lab 30: Health Checks and Probes](lab30-probes.md) - Implement liveness and readiness probes
+- [Lab 29: CronJobs](lab29-workload-cronjobs.md) - Learn about scheduled jobs
+- [Lab 30: Horizontal Pod Autoscaling](lab30-workload-hpa.md) - Auto-scale your workloads
+- [Lab 09: Health Checks and Probes](lab09-pod-health-probes.md) - Implement liveness and readiness probes
 
 ## Further Reading
 

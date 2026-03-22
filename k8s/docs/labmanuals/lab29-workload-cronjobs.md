@@ -1,4 +1,4 @@
-# Lab 19: Kubernetes CronJobs
+# Lab 29: Kubernetes CronJobs
 
 ## Overview
 In this lab, you will learn about CronJobs, a Kubernetes workload type for running scheduled tasks. You'll create and manage CronJobs, understand the cron schedule syntax, monitor job execution, and learn best practices for scheduled workloads in Kubernetes.
@@ -1335,8 +1335,8 @@ spec:
 ## Next Steps
 
 Now that you understand CronJobs, proceed to:
-- [Lab 20: Horizontal Pod Autoscaling](lab20-hpa.md) - Auto-scale workloads based on metrics
-- [Lab 30: Health Checks and Probes](lab30-probes.md) - Implement liveness and readiness probes
+- [Lab 30: Horizontal Pod Autoscaling](lab30-workload-hpa.md) - Auto-scale workloads based on metrics
+- [Lab 09: Health Checks and Probes](lab09-pod-health-probes.md) - Implement liveness and readiness probes
 
 ## Further Reading
 

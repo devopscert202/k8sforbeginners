@@ -1,4 +1,4 @@
-# Lab 16: Kubernetes Deployment Strategies
+# Lab 22: Kubernetes Deployment Strategies
 
 ## Overview
 In this lab, you will learn how to deploy applications using Kubernetes Deployments and Services. You'll understand deployment strategies, scaling, rolling updates, and how to expose your applications to network traffic.
@@ -6,7 +6,7 @@ In this lab, you will learn how to deploy applications using Kubernetes Deployme
 ## Prerequisites
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
-- Completion of [Lab 01: Creating Pods](lab01-creating-pods.md) and [Lab 02: Creating Services](lab02-creating-services.md)
+- Completion of [Lab 01: Creating Pods](lab01-basics-creating-pods.md) and [Lab 02: Creating Services](lab02-basics-creating-services.md)
 - Basic understanding of Pods and Services
 
 ## Learning Objectives

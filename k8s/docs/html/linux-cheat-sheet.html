@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Cheat Sheet for Kubernetes Learners</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #326CE5;
+            --blue-dark: #1d4ed8;
+            --sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --bg: #f5f6fa;
+            --panel: #ffffff;
+            --green: #16a34a;
+            --green-soft: #dcfce7;
+            --amber: #d97706;
+            --amber-soft: #fef3c7;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1420px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(50, 108, 229, 0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f1ff;
+            color: var(--blue-dark);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        h1 { font-size: 2.3rem; color: var(--blue); margin-bottom: 10px; }
+        .subtitle {
+            max-width: 980px;
+            margin: 0 auto 18px;
+            color: var(--muted);
+            font-size: 1.02rem;
+        }
+        .lead {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 16px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--sky);
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            color: #334155;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid var(--blue);
+            background: white;
+            color: var(--blue);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.92rem;
+            transition: all 0.25s ease;
+        }
+        .btn:hover, .btn.active {
+            background: var(--blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.28);
+        }
+        .panel {
+            display: none;
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 28px;
+        }
+        .panel.active { display: block; }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--line);
+        }
+        .section-head h2 { color: var(--ink); font-size: 1.45rem; }
+        .kicker {
+            color: var(--blue-dark);
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+        .grid-3, .grid-2 { display: grid; gap: 18px; }
+        .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .card {
+            border: 1px solid var(--line);
+            border-top: 4px solid var(--blue);
+            border-radius: 16px;
+            padding: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+        }
+        .card h3 { margin-bottom: 10px; color: #0f172a; font-size: 1.02rem; }
+        .card p, .card li { color: #475569; font-size: 0.95rem; }
+        .badge {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .badge.blue { background: var(--sky); color: var(--blue-dark); }
+        .badge.green { background: var(--green-soft); color: #166534; }
+        .badge.amber { background: var(--amber-soft); color: #92400e; }
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .step {
+            border: 1px solid rgba(50, 108, 229, 0.18);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+        }
+        .step-number {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--blue);
+            color: white;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        .step h3 { font-size: 0.98rem; margin-bottom: 8px; }
+        .step p { color: #475569; font-size: 0.93rem; }
+        .note {
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-left: 4px solid var(--blue);
+            background: #eff6ff;
+            border-radius: 12px;
+            color: #1e3a8a;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: white;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+        }
+        th {
+            background: linear-gradient(180deg, #326CE5 0%, #2557be 100%);
+            color: white;
+            font-size: 0.86rem;
+        }
+        tbody tr:nth-child(even) { background: #f8fbff; }
+        code {
+            font-family: Consolas, "Cascadia Code", monospace;
+            background: #eef2ff;
+            color: #1e3a8a;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #0f172a;
+            color: #dbeafe;
+            border-radius: 16px;
+            padding: 18px;
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+        ul.clean { list-style: none; display: grid; gap: 10px; }
+        .callout-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+        @media (max-width: 1100px) {
+            .grid-3, .grid-2, .flow, .callout-row { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            header, .panel { padding: 22px; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="eyebrow">Linux for Kubernetes Beginners</div>
+            <h1>Ubuntu Linux Cheat Sheet</h1>
+            <p class="subtitle">An interactive quick-grasp guide for file system work, users and permissions, services and logs, package management, shell history, and the Linux skills that show up constantly in Kubernetes labs.</p>
+            <div class="lead">
+                Kubernetes feels much easier once Linux stops feeling mysterious. This page focuses on practical command usage, common switches, safe beginner habits, and examples that connect directly to <code>kubelet</code>, <code>containerd</code>, manifests, logs, packages, and troubleshooting on Ubuntu hosts.
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" data-view="fundamentals">Fundamentals</button>
+            <button class="btn" data-view="filesystem">Filesystem</button>
+            <button class="btn" data-view="identity">Users and Permissions</button>
+            <button class="btn" data-view="services">Services and Logs</button>
+            <button class="btn" data-view="packages">Packages and System Tools</button>
+            <button class="btn" data-view="k8s">K8s Lens</button>
+        </div>
+
+        <section id="fundamentals" class="panel active">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">Core Mindset</div>
+                    <h2>What Linux Skills Matter Most for Kubernetes</h2>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <article class="card">
+                    <div class="badge blue">Why It Matters</div>
+                    <h3>Kubernetes nodes are Linux systems</h3>
+                    <p>You regularly inspect files under <code>/etc</code>, logs under <code>/var/log</code>, services managed by <code>systemd</code>, packages installed through <code>apt</code>, and permissions that decide what can run.</p>
+                </article>
+                <article class="card">
+                    <div class="badge green">Beginner Rule</div>
+                    <h3>Read first, change second</h3>
+                    <p>Prefer inspection commands like <code>pwd</code>, <code>ls -l</code>, <code>cat</code>, <code>less</code>, <code>systemctl status</code>, and <code>journalctl</code> before running edits or restarts.</p>
+                </article>
+                <article class="card">
+                    <div class="badge amber">Kubernetes Habit</div>
+                    <h3>Map the symptom to the layer</h3>
+                    <p>Pod issue? Check manifests and events. Node issue? Check <code>kubelet</code>, <code>containerd</code>, disk, network, and package state on the host.</p>
+                </article>
+            </div>
+
+            <div class="section-head" style="margin-top: 26px;">
+                <div>
+                    <div class="kicker">Learning Flow</div>
+                    <h2>Beginner Progression</h2>
+                </div>
+            </div>
+
+            <div class="flow">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Know where you are</h3>
+                    <p>Use <code>pwd</code>, <code>ls</code>, and <code>cd</code> confidently before anything else.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Read files safely</h3>
+                    <p>Use <code>cat</code>, <code>less</code>, <code>tail -f</code>, and <code>grep</code> to inspect config and logs.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Understand ownership</h3>
+                    <p>Learn <code>sudo</code>, <code>id</code>, <code>groups</code>, <code>chmod</code>, and <code>chown</code>.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Inspect services</h3>
+                    <p>Use <code>systemctl</code> and <code>journalctl</code> for kubelet and container runtime issues.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h3>Check packages and processes</h3>
+                    <p>Use <code>apt</code>, <code>ps</code>, <code>ss</code>, <code>df</code>, and <code>free</code> when the node itself behaves badly.</p>
+                </div>
+            </div>
+
+            <div class="callout-row">
+                <article class="card">
+                    <div class="badge blue">Must Know</div>
+                    <h3>Commands beginners should stop skipping</h3>
+                    <ul class="clean">
+                        <li><code>man command</code> or <code>command --help</code> to learn safely</li>
+                        <li><code>which</code> and <code>type</code> to see what command will actually run</li>
+                        <li><code>history</code> and <code>Ctrl+r</code> to reuse previous commands</li>
+                        <li><code>sudo -l</code> to see what you are allowed to do</li>
+                        <li><code>hostnamectl</code>, <code>ip a</code>, and <code>ss -tulpn</code> for host identity and network basics</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <div class="badge green">K8s Paths</div>
+                    <h3>Common Linux paths from a Kubernetes perspective</h3>
+                    <ul class="clean">
+                        <li><code>/etc/kubernetes/</code> for kubeadm-generated configuration</li>
+                        <li><code>/etc/kubernetes/manifests/</code> for static control plane Pod manifests</li>
+                        <li><code>/var/lib/kubelet/</code> for kubelet-managed state</li>
+                        <li><code>/etc/containerd/</code> for container runtime config</li>
+                        <li><code>/var/log/</code> for host logs and troubleshooting clues</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section id="filesystem" class="panel">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">Files and Folders</div>
+                    <h2>Navigate, Inspect, Find, and Edit Safely</h2>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>What It Does</th>
+                            <th>Common Switches</th>
+                            <th>Kubernetes-Flavored Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>pwd</code></td>
+                            <td>Print the current working directory.</td>
+                            <td>No common switch needed for basics.</td>
+                            <td><code>pwd</code> before editing manifests so you know which folder you are in.</td>
+                        </tr>
+                        <tr>
+                            <td><code>ls</code></td>
+                            <td>List files and directories.</td>
+                            <td><code>-l</code> detailed, <code>-a</code> hidden, <code>-h</code> human readable</td>
+                            <td><code>ls -lh /etc/kubernetes/manifests</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cd</code></td>
+                            <td>Change directory.</td>
+                            <td><code>cd -</code> previous directory, <code>cd ~</code> home</td>
+                            <td><code>cd /etc/kubernetes</code> when inspecting kubeadm-generated files.</td>
+                        </tr>
+                        <tr>
+                            <td><code>mkdir</code></td>
+                            <td>Create directories.</td>
+                            <td><code>-p</code> create parents too</td>
+                            <td><code>mkdir -p ~/k8s-labs/yaml</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cp</code></td>
+                            <td>Copy files or folders.</td>
+                            <td><code>-r</code> recursive, <code>-p</code> preserve metadata</td>
+                            <td><code>sudo cp /etc/kubernetes/admin.conf ~/.kube/config</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>mv</code></td>
+                            <td>Move or rename files.</td>
+                            <td>No major switch for basics</td>
+                            <td><code>mv old.yaml deployment.yaml</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cat</code>, <code>less</code></td>
+                            <td>Read file contents. <code>less</code> is better for long files.</td>
+                            <td><code>less +G</code> go to end</td>
+                            <td><code>less /etc/containerd/config.toml</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>tail</code></td>
+                            <td>Show the end of a file, useful for logs.</td>
+                            <td><code>-n 50</code> last 50 lines, <code>-f</code> follow live changes</td>
+                            <td><code>sudo tail -f /var/log/syslog</code> during cluster setup.</td>
+                        </tr>
+                        <tr>
+                            <td><code>find</code></td>
+                            <td>Search for files by name, path, or type.</td>
+                            <td><code>-name</code>, <code>-type f</code>, <code>-type d</code></td>
+                            <td><code>find /etc -name '*kubelet*'</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>grep</code></td>
+                            <td>Search inside files for matching text.</td>
+                            <td><code>-i</code> ignore case, <code>-n</code> line numbers, <code>-r</code> recursive</td>
+                            <td><code>grep -n 'SystemdCgroup' /etc/containerd/config.toml</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>du</code> and <code>df</code></td>
+                            <td>Inspect disk usage.</td>
+                            <td><code>du -sh</code>, <code>df -h</code></td>
+                            <td>Check if image pulls fail because the node is full: <code>df -h</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>tar</code></td>
+                            <td>Archive or extract file collections.</td>
+                            <td><code>-czf</code> create gzip archive, <code>-xzf</code> extract gzip archive</td>
+                            <td>Useful for packaging logs or manifests before sharing for support.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid-2" style="margin-top: 18px;">
+                <article class="card">
+                    <div class="badge blue">Example Session</div>
+                    <h3>Inspect the control plane manifest directory</h3>
+<pre><code>cd /etc/kubernetes/manifests
+pwd
+ls -lh
+less kube-apiserver.yaml
+grep -n "advertise-address" kube-apiserver.yaml</code></pre>
+                </article>
+                <article class="card">
+                    <div class="badge amber">Good Habit</div>
+                    <h3>Prefer safe readers before editors</h3>
+                    <p>When you are new, start with <code>cat</code>, <code>less</code>, <code>tail</code>, <code>grep</code>, and <code>find</code>. That habit prevents accidental damage when you are only trying to understand the system.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="identity" class="panel">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">Access and Ownership</div>
+                    <h2>Users, Groups, sudo, and File Permissions</h2>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <article class="card">
+                    <div class="badge blue">Who Am I</div>
+                    <h3>Identity commands</h3>
+                    <ul class="clean">
+                        <li><code>whoami</code> shows current username</li>
+                        <li><code>id</code> shows UID, GID, and groups</li>
+                        <li><code>groups</code> shows supplementary groups</li>
+                        <li><code>getent passwd username</code> looks up user record</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <div class="badge green">Ownership</div>
+                    <h3>Why permissions matter in K8s labs</h3>
+                    <p>Many Kubernetes setup steps need root because they touch system packages, services, kernel settings, or protected directories like <code>/etc/kubernetes</code> and <code>/var/lib/kubelet</code>.</p>
+                </article>
+                <article class="card">
+                    <div class="badge amber">Remember</div>
+                    <h3><code>sudo</code> elevates one command</h3>
+                    <p>Use <code>sudo command</code> when you need privilege for a specific action. Avoid staying in a root shell unless you truly need it.</p>
+                </article>
+            </div>
+
+            <div class="table-wrap" style="margin-top: 18px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>What It Does</th>
+                            <th>Common Switches</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>sudo</code></td>
+                            <td>Run one command with elevated privilege.</td>
+                            <td><code>-l</code> list allowed commands, <code>-k</code> forget cached credentials, <code>-i</code> login shell</td>
+                            <td><code>sudo systemctl restart kubelet</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>chmod</code></td>
+                            <td>Change file mode bits.</td>
+                            <td>Numeric modes like <code>644</code>, <code>600</code>, <code>755</code></td>
+                            <td><code>chmod 600 ~/.kube/config</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>chown</code></td>
+                            <td>Change file owner and group.</td>
+                            <td><code>-R</code> recursive</td>
+                            <td><code>sudo chown -R $USER:$USER ~/.kube</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>useradd</code> / <code>adduser</code></td>
+                            <td>Create users. On Ubuntu, <code>adduser</code> is friendlier.</td>
+                            <td><code>--disabled-password</code>, interactive prompts</td>
+                            <td>Create a demo user for shell practice.</td>
+                        </tr>
+                        <tr>
+                            <td><code>usermod</code></td>
+                            <td>Change user settings like group membership.</td>
+                            <td><code>-aG</code> append supplementary groups</td>
+                            <td><code>sudo usermod -aG sudo student</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout-row">
+                <article class="card">
+                    <div class="badge blue">sudo and History</div>
+                    <h3>How to look up what you ran</h3>
+                    <ul class="clean">
+                        <li><code>history</code> shows shell command history</li>
+                        <li><code>history | grep sudo</code> finds previous sudo commands</li>
+                        <li><code>Ctrl+r</code> interactively searches command history</li>
+                        <li><code>journalctl _COMM=sudo</code> or <code>journalctl SYSLOG_IDENTIFIER=sudo</code> can show sudo events when logged by the system</li>
+                        <li><code>sudo -l</code> shows what you are permitted to run</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <div class="badge green">Permissions Decoder</div>
+                    <h3>Read common modes quickly</h3>
+                    <ul class="clean">
+                        <li><code>644</code>: owner can read/write, others read</li>
+                        <li><code>600</code>: owner only, ideal for sensitive config</li>
+                        <li><code>755</code>: executable directories and scripts</li>
+                        <li><code>777</code>: almost never a good idea</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section id="services" class="panel">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">systemd and Logs</div>
+                    <h2>systemctl, journalctl, Processes, and Runtime Troubleshooting</h2>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Purpose</th>
+                            <th>Common Switches</th>
+                            <th>Kubernetes Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>systemctl status</code></td>
+                            <td>Check whether a service is active and recent log lines.</td>
+                            <td><code>--no-pager</code> easier output in scripts</td>
+                            <td><code>sudo systemctl status kubelet</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>systemctl start|stop|restart</code></td>
+                            <td>Control service lifecycle.</td>
+                            <td>No major switch for basics</td>
+                            <td><code>sudo systemctl restart containerd</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>systemctl enable</code></td>
+                            <td>Start service automatically at boot.</td>
+                            <td><code>--now</code> enable and start immediately</td>
+                            <td><code>sudo systemctl enable --now kubelet</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>journalctl</code></td>
+                            <td>Read systemd journal logs.</td>
+                            <td><code>-u</code> unit, <code>-xeu</code> detailed errors, <code>-f</code> follow, <code>-n 100</code> last lines</td>
+                            <td><code>sudo journalctl -u kubelet -n 100 --no-pager</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>ps</code></td>
+                            <td>List running processes.</td>
+                            <td><code>aux</code> broad listing, <code>-ef</code> full format</td>
+                            <td><code>ps -ef | grep kubelet</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>top</code></td>
+                            <td>Interactive process and CPU/memory view.</td>
+                            <td>No major beginner switch</td>
+                            <td>Check whether the node is under memory pressure during labs.</td>
+                        </tr>
+                        <tr>
+                            <td><code>ss</code></td>
+                            <td>Inspect listening sockets and connections.</td>
+                            <td><code>-tulpn</code> TCP/UDP listening with process names</td>
+                            <td><code>sudo ss -tulpn | grep 6443</code> for the API server port.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid-2" style="margin-top: 18px;">
+                <article class="card">
+                    <div class="badge blue">Common K8s Flow</div>
+                    <h3>When <code>kubectl</code> is failing, think host-side too</h3>
+<pre><code>sudo systemctl status kubelet
+sudo journalctl -u kubelet -xe --no-pager
+sudo systemctl status containerd
+sudo journalctl -u containerd -n 100 --no-pager
+sudo ss -tulpn | grep 6443</code></pre>
+                </article>
+                <article class="card">
+                    <div class="badge amber">What Beginners Miss</div>
+                    <h3><code>journalctl</code> is often more useful than log files</h3>
+                    <p>On Ubuntu systems using <code>systemd</code>, many service logs live in the journal rather than a plain file. If you keep searching only under <code>/var/log</code>, you may miss the real error.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="packages" class="panel">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">System Administration Basics</div>
+                    <h2>apt, updates, networking, memory, disk, and quick diagnostics</h2>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Use</th>
+                            <th>Common Switches</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>apt update</code></td>
+                            <td>Refresh package index metadata.</td>
+                            <td>No common switch needed here</td>
+                            <td>Run before installing <code>kubeadm</code>, <code>kubelet</code>, or <code>kubectl</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>apt install</code></td>
+                            <td>Install packages.</td>
+                            <td><code>-y</code> answer yes automatically</td>
+                            <td><code>sudo apt install -y curl apt-transport-https ca-certificates</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>apt remove</code></td>
+                            <td>Remove package but often keep config.</td>
+                            <td><code>-y</code> automatic yes</td>
+                            <td>Useful when rebuilding a training node cleanly.</td>
+                        </tr>
+                        <tr>
+                            <td><code>apt purge</code></td>
+                            <td>Remove package and config where applicable.</td>
+                            <td><code>-y</code> automatic yes</td>
+                            <td>Use carefully during reinstall or reset workflows.</td>
+                        </tr>
+                        <tr>
+                            <td><code>apt-cache policy</code></td>
+                            <td>See candidate version and source repositories.</td>
+                            <td>No major switch for basics</td>
+                            <td><code>apt-cache policy kubeadm</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>hostnamectl</code></td>
+                            <td>Show or change host identity.</td>
+                            <td><code>set-hostname</code></td>
+                            <td><code>hostnamectl</code> before joining nodes to a cluster.</td>
+                        </tr>
+                        <tr>
+                            <td><code>ip a</code></td>
+                            <td>Show network interfaces and addresses.</td>
+                            <td>No major switch for basics</td>
+                            <td>Check the node IP used by kubelet.</td>
+                        </tr>
+                        <tr>
+                            <td><code>free -h</code></td>
+                            <td>Show memory usage.</td>
+                            <td><code>-h</code> human readable</td>
+                            <td>Helpful when Pods fail because the VM is too small.</td>
+                        </tr>
+                        <tr>
+                            <td><code>uname -a</code></td>
+                            <td>Show kernel and system identity.</td>
+                            <td>No major switch for basics</td>
+                            <td>Useful while checking compatibility and environment details.</td>
+                        </tr>
+                        <tr>
+                            <td><code>curl</code></td>
+                            <td>Make HTTP requests from the CLI.</td>
+                            <td><code>-I</code> headers, <code>-k</code> ignore TLS verification, <code>-L</code> follow redirects</td>
+                            <td><code>curl -k https://127.0.0.1:6443/version</code> for API checks on a control plane node.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid-2" style="margin-top: 18px;">
+                <article class="card">
+                    <div class="badge green">Package Sequence</div>
+                    <h3>Typical Ubuntu install rhythm</h3>
+<pre><code>sudo apt update
+sudo apt install -y curl ca-certificates gnupg
+apt-cache policy kubeadm
+sudo apt install -y kubelet kubeadm kubectl
+sudo systemctl enable --now kubelet</code></pre>
+                </article>
+                <article class="card">
+                    <div class="badge blue">Useful Extras</div>
+                    <h3>Small commands that save time</h3>
+                    <ul class="clean">
+                        <li><code>watch -n 2 command</code> reruns a command every 2 seconds</li>
+                        <li><code>tee</code> writes output to screen and file at the same time</li>
+                        <li><code>xargs</code> helps feed output into another command in bulk</li>
+                        <li><code>env</code> and <code>printenv</code> show environment variables</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section id="k8s" class="panel">
+            <div class="section-head">
+                <div>
+                    <div class="kicker">Kubernetes Lens</div>
+                    <h2>Translate Linux Commands into Kubernetes Learning Tasks</h2>
+                </div>
+            </div>
+
+            <div class="grid-3">
+                <article class="card">
+                    <div class="badge blue">Static Pods</div>
+                    <h3>Control plane manifests</h3>
+                    <p>Use <code>ls</code>, <code>less</code>, and <code>grep</code> under <code>/etc/kubernetes/manifests</code> to understand how the API server, scheduler, and controller manager are launched.</p>
+<pre><code>sudo ls -lh /etc/kubernetes/manifests
+sudo less /etc/kubernetes/manifests/kube-apiserver.yaml</code></pre>
+                </article>
+                <article class="card">
+                    <div class="badge green">Node Troubleshooting</div>
+                    <h3>kubelet and runtime logs</h3>
+                    <p>When Pods are not coming up, host services are often the real place to inspect.</p>
+<pre><code>sudo systemctl status kubelet
+sudo journalctl -u kubelet -n 100 --no-pager
+sudo journalctl -u containerd -n 100 --no-pager</code></pre>
+                </article>
+                <article class="card">
+                    <div class="badge amber">Storage and Capacity</div>
+                    <h3>Check disk and memory before blaming Kubernetes</h3>
+                    <p>Image pull errors, eviction, and scheduling pain can all come from host resource pressure.</p>
+<pre><code>df -h
+du -sh /var/lib/containerd
+free -h</code></pre>
+                </article>
+            </div>
+
+            <div class="table-wrap" style="margin-top: 18px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Linux Need</th>
+                            <th>Typical Command</th>
+                            <th>Why It Helps in K8s</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Find config files</td>
+                            <td><code>find /etc -name '*kube*'</code></td>
+                            <td>Locate kubelet, container runtime, or kubeadm-generated config.</td>
+                        </tr>
+                        <tr>
+                            <td>Inspect service health</td>
+                            <td><code>sudo systemctl status kubelet</code></td>
+                            <td>Quickly see whether kubelet is active, failed, or flapping.</td>
+                        </tr>
+                        <tr>
+                            <td>Read recent error logs</td>
+                            <td><code>sudo journalctl -u kubelet -xe</code></td>
+                            <td>Surface certificate, cgroup, swap, CRI, or bootstrap errors.</td>
+                        </tr>
+                        <tr>
+                            <td>Verify listening ports</td>
+                            <td><code>sudo ss -tulpn</code></td>
+                            <td>Check whether expected control plane ports are actually open.</td>
+                        </tr>
+                        <tr>
+                            <td>Confirm user access</td>
+                            <td><code>ls -l ~/.kube/config</code></td>
+                            <td>Permission mistakes on kubeconfig files break local admin access.</td>
+                        </tr>
+                        <tr>
+                            <td>Check package versions</td>
+                            <td><code>apt-cache policy kubeadm kubelet kubectl</code></td>
+                            <td>Helpful during upgrades, skew checks, and installation issues.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note">
+                Linux skills do not replace Kubernetes concepts, but they remove a lot of friction. If you can comfortably inspect files, services, logs, permissions, packages, and host resources, most Kubernetes labs become far easier to debug and explain.
+            </div>
+        </section>
+
+        <p class="footer-note">Designed as a practical Linux companion for Ubuntu-based Kubernetes learning and lab work.</p>
+    </div>
+
+    <script>
+        const buttons = document.querySelectorAll('.btn');
+        const panels = document.querySelectorAll('.panel');
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const target = button.dataset.view;
+                buttons.forEach((item) => item.classList.remove('active'));
+                panels.forEach((panel) => panel.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

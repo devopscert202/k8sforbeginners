@@ -1,4 +1,4 @@
-# Lab 15: ConfigMaps in Kubernetes
+# Lab 25: ConfigMaps in Kubernetes
 
 ## Overview
 In this lab, you will learn how to use ConfigMaps to manage configuration data in Kubernetes. ConfigMaps allow you to decouple configuration artifacts from container images, making your applications more portable and easier to manage.
@@ -695,7 +695,7 @@ data:
 
 ## Next Steps
 
-Proceed to [Lab 18: Jobs and Batch Processing](lab18-jobs-batch.md) to learn about running batch workloads and scheduled tasks in Kubernetes.
+Proceed to [Lab 28: Jobs and Batch Processing](lab28-workload-jobs-batch.md) to learn about running batch workloads and scheduled tasks in Kubernetes.
 
 ## Additional Resources
 

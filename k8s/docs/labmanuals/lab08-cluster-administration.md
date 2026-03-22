@@ -1,4 +1,4 @@
-# Lab 05: Cluster Administration with kubeadm
+# Lab 08: Cluster Administration with kubeadm
 
 ## Overview
 In this lab, you will learn essential cluster administration tasks using kubeadm and kubectl. You'll manage cluster certificates, tokens, nodes, and perform administrative operations to maintain a healthy Kubernetes cluster.
@@ -689,7 +689,7 @@ This command:
 
 ## Next Steps
 
-Proceed to [Lab 06: Kubernetes Installation](lab06-kubernetes-installation.md) to learn how to set up a cluster from scratch.
+Proceed to [Lab 06: Kubernetes Installation](lab06-install-kubernetes-kubeadm.md) to learn how to set up a cluster from scratch.
 
 ## Additional Reading
 

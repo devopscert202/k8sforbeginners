@@ -1,4 +1,4 @@
-# Lab 35: Static Pods in Kubernetes
+# Lab 27: Static Pods in Kubernetes
 
 ## Overview
 In this lab, you will learn about Static Pods - a special type of Pod managed directly by the kubelet daemon on a specific node, rather than by the Kubernetes API server. You'll understand how static pods work, their use cases, and how they differ from regular pods managed by controllers like Deployments or ReplicaSets.
@@ -646,8 +646,8 @@ kubectl get pods -A | grep -E "(staticapache|node-exporter|debug-pod|regular-apa
 
 ### Related Labs
 - Lab 01: Basic Pod Operations
-- Lab 06: DaemonSets (alternative to static pods for all-node deployment)
-- Lab 12: Health Probes (applicable to static pods)
+- Lab 26: DaemonSets (alternative to static pods for all-node deployment)
+- Lab 09: Health Probes (applicable to static pods)
 
 ### Troubleshooting Resources
 - [Debugging Kubernetes Nodes](https://kubernetes.io/docs/tasks/debug/debug-cluster/)

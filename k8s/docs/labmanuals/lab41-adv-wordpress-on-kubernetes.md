@@ -1,4 +1,4 @@
-# Lab 36: Deploying WordPress on Kubernetes - Multi-Tier Application
+# Lab 41: Deploying WordPress on Kubernetes - Multi-Tier Application
 
 ## Overview
 In this comprehensive lab, you will deploy a production-like multi-tier WordPress application on Kubernetes. You'll learn how to configure a MySQL database backend, deploy WordPress frontend, secure sensitive data with Secrets, manage configuration with ConfigMaps, and enable service discovery between application tiers.
@@ -1733,4 +1733,4 @@ Now that you've deployed a multi-tier application, you can:
 
 ---
 
-**Congratulations!** You have successfully completed Lab 33: Deploying WordPress on Kubernetes. You've learned how to deploy a complete multi-tier application, manage configuration with ConfigMaps and Secrets, enable service discovery, and troubleshoot common issues. These skills are fundamental for deploying production applications on Kubernetes.
+**Congratulations!** You have successfully completed Lab 41: Deploying WordPress on Kubernetes. You've learned how to deploy a complete multi-tier application, manage configuration with ConfigMaps and Secrets, enable service discovery, and troubleshoot common issues. These skills are fundamental for deploying production applications on Kubernetes.

@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **43 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **45 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -50,105 +50,109 @@ Every lab follows a consistent format:
 
 ## Complete Lab Index
 
+Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–45)**.
+
 | S. No | Category | Lab Name | Description | Link |
 |-------|----------|----------|-------------|------|
-| 1 | Foundation | Creating Pods and Deployments | Learn to create Kubernetes Pods and Deployments using YAML manifests with Apache HTTP Server containers. | [lab01-creating-pods.md](lab01-creating-pods.md) |
-| 2 | Foundation | Creating Services | Expose Pods and Deployments using NodePort and LoadBalancer Services with service discovery. | [lab02-creating-services.md](lab02-creating-services.md) |
-| 3 | Foundation | ETCD Backup and Restore | Backup and restore etcd, the distributed key-value store that serves as Kubernetes' brain. | [lab03-etcd-backup-restore.md](lab03-etcd-backup-restore.md) |
-| 4 | Foundation | Essential kubectl Commands | Master essential kubectl commands for day-to-day Kubernetes operations. | [lab04-kubectl-essentials.md](lab04-kubectl-essentials.md) |
-| 5 | Foundation | Cluster Administration | Essential cluster administration tasks using kubeadm and kubectl including certificate management. | [lab05-cluster-administration.md](lab05-cluster-administration.md) |
-| 6 | Foundation | Kubernetes Installation | Install a complete Kubernetes cluster from scratch on Ubuntu using kubeadm. | [lab06-kubernetes-installation.md](lab06-kubernetes-installation.md) |
-| 7 | Foundation | RBAC Security | Implement Role-Based Access Control with user certificates, roles, and permissions. | [lab07-rbac-security.md](lab07-rbac-security.md) |
-| 8 | Foundation | Docker Build and Run | Build Docker images, tag versions, run containers, and manage multi-version applications. | [lab08-docker-build-run.md](lab08-docker-build-run.md) |
-| 9 | Security | Pod Security Context | Configure security contexts for Pods including user IDs, file permissions, and privilege escalation controls. | [lab09-security-context.md](lab09-security-context.md) |
-| 10 | Security | Advanced Network Policies | Implement namespace isolation with NetworkPolicies to restrict cross-namespace traffic. | [lab10-advanced-network-policies.md](lab10-advanced-network-policies.md) |
-| 11 | Security | OPA Gatekeeper | Use Open Policy Agent Gatekeeper to enforce security and compliance policies with admission control. | [lab11-opa-gatekeeper.md](lab11-opa-gatekeeper.md) |
-| 12 | Security | Image Scanning with Trivy | Scan container images and Kubernetes resources for security vulnerabilities using Trivy. | [lab12-image-scanning.md](lab12-image-scanning.md) |
-| 13 | Storage | Basic Storage Volumes | Work with emptyDir and hostPath volumes, sharing data between containers. | [lab13-basic-storage-volumes.md](lab13-basic-storage-volumes.md) |
-| 14 | Storage | Persistent Storage | Learn PersistentVolumes (PV), PersistentVolumeClaims (PVC), NFS storage, and Secrets as volumes. | [lab14-persistent-storage.md](lab14-persistent-storage.md) |
-| 15 | Workloads | ConfigMaps | Use ConfigMaps to manage configuration data as environment variables and mounted files. | [lab15-configmap.md](lab15-configmap.md) |
-| 16 | Workloads | Deployment Strategies | Deploy applications with rolling updates, rollbacks, and scaling strategies. | [lab16-deployment-strategies.md](lab16-deployment-strategies.md) |
-| 17 | Workloads | DaemonSets | Run a copy of a Pod on every node using DaemonSets for cluster-wide services. | [lab17-daemonset.md](lab17-daemonset.md) |
-| 18 | Workloads | Jobs and Batch Processing | Run one-time tasks and batch workloads with Kubernetes Jobs. | [lab18-jobs-batch.md](lab18-jobs-batch.md) |
-| 19 | Workloads | CronJobs | Schedule recurring tasks with CronJobs for automated operations. | [lab19-cronjob.md](lab19-cronjob.md) |
-| 20 | Workloads | Horizontal Pod Autoscaler | Automatically scale Pods based on CPU utilization and custom metrics. | [lab20-hpa.md](lab20-hpa.md) |
-| 21 | Workloads | Init Containers | Use init containers for setup tasks before main application containers start. | [lab21-init-containers.md](lab21-init-containers.md) |
-| 22 | Workloads | Pod Lifecycle and Multi-Container | Understand Pod lifecycle hooks and multi-container patterns (sidecar, ambassador, adapter). | [lab22-pod-lifecycle-multi-container.md](lab22-pod-lifecycle-multi-container.md) |
-| 23 | Networking | Multi-Port Services | Create Services that expose multiple ports for applications with different endpoints. | [lab23-multi-port-services.md](lab23-multi-port-services.md) |
-| 24 | Networking | Ingress and EndpointSlices | Configure Ingress controllers for HTTP/HTTPS routing and understand EndpointSlices. | [lab24-ingress-endpointslices.md](lab24-ingress-endpointslices.md) |
-| 25 | Networking | DNS Configuration | Configure and customize DNS resolution in Kubernetes clusters. | [lab25-dns-configuration.md](lab25-dns-configuration.md) |
-| 26 | Scheduling | NodeSelector Scheduling | Control Pod placement using nodeSelector for node selection based on labels. | [lab26-scheduling-nodeselector.md](lab26-scheduling-nodeselector.md) |
-| 27 | Scheduling | Affinity and Anti-Affinity | Use node and pod affinity rules for advanced scheduling requirements. | [lab27-scheduling-affinity.md](lab27-scheduling-affinity.md) |
-| 28 | Scheduling | Priority Classes | Define priority levels for Pods to influence scheduling decisions. | [lab28-scheduling-priorityclass.md](lab28-scheduling-priorityclass.md) |
-| 29 | Scheduling | Taints and Tolerations | Use taints and tolerations to control which Pods can run on which nodes. | [lab29-scheduling-tolerations.md](lab29-scheduling-tolerations.md) |
-| 30 | Observability | Health Probes | Configure liveness, readiness, and startup probes for application health monitoring. | [lab30-probes.md](lab30-probes.md) |
-| 31 | Observability | Metrics Server | Install and use Metrics Server for resource usage monitoring and metrics collection. | [lab31-metrics-server.md](lab31-metrics-server.md) |
-| 32 | Resource Management | Resource Quotas and Limits | Set resource quotas and limits at namespace and Pod levels for resource governance. | [lab32-resource-quotas-limits.md](lab32-resource-quotas-limits.md) |
-| 33 | Resource Management | Deployment Rollouts | Manage deployment rollouts with progressive delivery and canary deployments. | [lab33-deployment-rollouts.md](lab33-deployment-rollouts.md) |
-| 34 | Resource Management | Kubernetes Dashboard | Install and use the Kubernetes Dashboard for cluster visualization and management. | [lab34-kubernetes-dashboard.md](lab34-kubernetes-dashboard.md) |
-| 35 | Advanced Topics | Static Pods | Understand and configure static Pods that are managed directly by kubelet. | [lab35-static-pods.md](lab35-static-pods.md) |
-| 36 | Advanced Topics | WordPress on Kubernetes | Deploy a complete WordPress application with MySQL database on Kubernetes. | [lab36-wordpress-on-k8s.md](lab36-wordpress-on-k8s.md) |
-| 37 | Advanced Topics | Frontend Deployment | Deploy multi-tier frontend applications with proper service architecture. | [lab37-frontend-deployment.md](lab37-frontend-deployment.md) |
-| 38 | Security | Pod Security Standards | Implement Pod Security Standards (PSS) and Pod Security Admission (PSA) for cluster-wide security policies (K8s 1.25+). | [lab38-pod-security-standards.md](lab38-pod-security-standards.md) |
-| 39 | Workloads | StatefulSets & Stateful Applications | Deploy and manage stateful applications like databases using StatefulSets with volumeClaimTemplates for persistent data. | [lab39-statefulsets.md](lab39-statefulsets.md) |
-| 40 | Advanced Topics | Cluster Upgrades with kubeadm | Upgrade a Kubernetes cluster from one version to another using kubeadm with zero-downtime strategies. | [lab40-cluster-upgrades.md](lab40-cluster-upgrades.md) |
-| 41 | Networking | Gateway API (Next-Gen Ingress) | Configure Gateway API for advanced HTTP/HTTPS routing with domain workarounds for local development (K8s 1.26+). | [lab41-gateway-api.md](lab41-gateway-api.md) |
-| 42 | Advanced Topics | High Availability Cluster (Optional) | Deploy a production-grade multi-master HA cluster with stacked etcd, load balancers, and failover capabilities. | [lab42-ha-cluster-optional.md](lab42-ha-cluster-optional.md) |
-| 43 | Advanced Topics | Custom Resource Definitions (Optional) | Extend the Kubernetes API with Custom Resource Definitions (CRDs), create custom resources, and understand the operator pattern. | [lab43-custom-resource-definitions.md](lab43-custom-resource-definitions.md) |
+| 1 | Basics | Creating Pods and Deployments | Learn to create Kubernetes Pods and Deployments using YAML manifests with Apache HTTP Server containers. | [lab01-basics-creating-pods.md](lab01-basics-creating-pods.md) |
+| 2 | Basics | Creating Services | Expose Pods and Deployments using NodePort and LoadBalancer Services with service discovery. | [lab02-basics-creating-services.md](lab02-basics-creating-services.md) |
+| 3 | Basics | Essential kubectl Commands | Master essential kubectl commands for day-to-day Kubernetes operations. | [lab03-basics-kubectl-essentials.md](lab03-basics-kubectl-essentials.md) |
+| 4 | Basics | Docker Build and Run | Build Docker images, tag versions, run containers, and manage multi-version applications. | [lab04-basics-docker-build-run.md](lab04-basics-docker-build-run.md) |
+| 5 | Install | Kind Local Kubernetes Cluster | Set up Kind for learning, create local single-node and multi-node clusters, and validate local development workflows. | [lab05-install-kind-local-kubernetes.md](lab05-install-kind-local-kubernetes.md) |
+| 6 | Install | Kubernetes Installation (kubeadm) | Install a complete Kubernetes cluster from scratch on Ubuntu using kubeadm. | [lab06-install-kubernetes-kubeadm.md](lab06-install-kubernetes-kubeadm.md) |
+| 7 | Cluster | etcd Backup and Restore | Backup and restore etcd, the distributed key-value store that serves as Kubernetes' brain. | [lab07-cluster-etcd-backup-restore.md](lab07-cluster-etcd-backup-restore.md) |
+| 8 | Cluster | Cluster Administration | Essential cluster administration tasks using kubeadm and kubectl including certificate management. | [lab08-cluster-administration.md](lab08-cluster-administration.md) |
+| 9 | Pod | Health Probes | Configure liveness, readiness, and startup probes for application health monitoring. | [lab09-pod-health-probes.md](lab09-pod-health-probes.md) |
+| 10 | Pod | Init Containers | Use init containers for setup tasks before main application containers start. | [lab10-pod-init-containers.md](lab10-pod-init-containers.md) |
+| 11 | Security | RBAC Security | Implement Role-Based Access Control with user certificates, roles, and permissions. | [lab11-sec-rbac-security.md](lab11-sec-rbac-security.md) |
+| 12 | Security | Pod Security Context | Configure security contexts for Pods including user IDs, file permissions, and privilege escalation controls. | [lab12-sec-security-context.md](lab12-sec-security-context.md) |
+| 13 | Security | Network Policies | Implement namespace isolation with NetworkPolicies to restrict cross-namespace traffic. | [lab13-sec-network-policies.md](lab13-sec-network-policies.md) |
+| 14 | Security | OPA Gatekeeper | Use Open Policy Agent Gatekeeper to enforce security and compliance policies with admission control. | [lab14-sec-opa-gatekeeper.md](lab14-sec-opa-gatekeeper.md) |
+| 15 | Security | Image Scanning with Trivy | Scan container images and Kubernetes resources for security vulnerabilities using Trivy. | [lab15-sec-image-scanning-trivy.md](lab15-sec-image-scanning-trivy.md) |
+| 16 | Security | Pod Security Standards | Implement Pod Security Standards (PSS) and Pod Security Admission (PSA) for cluster-wide security policies (K8s 1.25+). | [lab16-sec-pod-security-standards.md](lab16-sec-pod-security-standards.md) |
+| 17 | Scheduling | NodeSelector Scheduling | Control Pod placement using nodeSelector for node selection based on labels. | [lab17-sched-nodeselector.md](lab17-sched-nodeselector.md) |
+| 18 | Scheduling | Affinity and Anti-Affinity | Use node and pod affinity rules for advanced scheduling requirements. | [lab18-sched-affinity-antiaffinity.md](lab18-sched-affinity-antiaffinity.md) |
+| 19 | Scheduling | Priority Classes | Define priority levels for Pods to influence scheduling decisions. | [lab19-sched-priorityclass.md](lab19-sched-priorityclass.md) |
+| 20 | Scheduling | Taints and Tolerations | Use taints and tolerations to control which Pods can run on which nodes. | [lab20-sched-taints-tolerations.md](lab20-sched-taints-tolerations.md) |
+| 21 | Pod | Pod Lifecycle and Multi-Container | Understand Pod lifecycle hooks and multi-container patterns (sidecar, ambassador, adapter). | [lab21-pod-lifecycle-multi-container.md](lab21-pod-lifecycle-multi-container.md) |
+| 22 | Deploy | Deployment Strategies | Deploy applications with rolling updates, rollbacks, and scaling strategies. | [lab22-deploy-deployment-strategies.md](lab22-deploy-deployment-strategies.md) |
+| 23 | Deploy | Deployment Rollouts | Manage deployment rollouts with progressive delivery and canary deployments. | [lab23-deploy-deployment-rollouts.md](lab23-deploy-deployment-rollouts.md) |
+| 24 | Deploy | Frontend Deployment | Deploy multi-tier frontend applications with proper service architecture. | [lab24-deploy-frontend-deployment.md](lab24-deploy-frontend-deployment.md) |
+| 25 | Workloads | ConfigMaps | Use ConfigMaps to manage configuration data as environment variables and mounted files. | [lab25-workload-configmaps.md](lab25-workload-configmaps.md) |
+| 26 | Workloads | DaemonSets | Run a copy of a Pod on every node using DaemonSets for cluster-wide services. | [lab26-workload-daemonsets.md](lab26-workload-daemonsets.md) |
+| 27 | Workloads | Static Pods | Understand and configure static Pods that are managed directly by kubelet. | [lab27-workload-static-pods.md](lab27-workload-static-pods.md) |
+| 28 | Workloads | Jobs and Batch Processing | Run one-time tasks and batch workloads with Kubernetes Jobs. | [lab28-workload-jobs-batch.md](lab28-workload-jobs-batch.md) |
+| 29 | Workloads | CronJobs | Schedule recurring tasks with CronJobs for automated operations. | [lab29-workload-cronjobs.md](lab29-workload-cronjobs.md) |
+| 30 | Workloads | Horizontal Pod Autoscaler | Automatically scale Pods based on CPU utilization and custom metrics. | [lab30-workload-hpa.md](lab30-workload-hpa.md) |
+| 31 | Workloads | StatefulSets & Stateful Applications | Deploy and manage stateful applications using StatefulSets with volumeClaimTemplates for persistent data. | [lab31-workload-statefulsets.md](lab31-workload-statefulsets.md) |
+| 32 | Workloads | Headlamp Kubernetes UI | Install Headlamp in-cluster with Helm, access it through port-forward, and validate Kubernetes UI workflows. | [lab32-workload-headlamp-kubernetes-ui.md](lab32-workload-headlamp-kubernetes-ui.md) |
+| 33 | Workloads | Kubernetes Dashboard (Legacy) | Legacy reference for the deprecated Dashboard UI. Prefer Lab 32 (Headlamp) for a current in-cluster UI path. | [lab33-workload-kubernetes-dashboard-legacy.md](lab33-workload-kubernetes-dashboard-legacy.md) |
+| 34 | Networking | Multi-Port Services | Create Services that expose multiple ports for applications with different endpoints. | [lab34-net-multi-port-services.md](lab34-net-multi-port-services.md) |
+| 35 | Networking | Ingress and EndpointSlices | Configure Ingress controllers for HTTP/HTTPS routing and understand EndpointSlices. | [lab35-net-ingress-endpointslices.md](lab35-net-ingress-endpointslices.md) |
+| 36 | Observability | Metrics Server | Install and use Metrics Server for resource usage monitoring and metrics collection. | [lab36-observe-metrics-server.md](lab36-observe-metrics-server.md) |
+| 37 | Resource Management | Resource Quotas and Limits | Set resource quotas and limits at namespace and Pod levels for resource governance. | [lab37-resmgmt-resource-quotas-limits.md](lab37-resmgmt-resource-quotas-limits.md) |
+| 38 | Storage | Basic Storage Volumes | Work with emptyDir and hostPath volumes, sharing data between containers. | [lab38-storage-basic-volumes.md](lab38-storage-basic-volumes.md) |
+| 39 | Storage | Persistent Storage | Learn PersistentVolumes (PV), PersistentVolumeClaims (PVC), NFS storage, and Secrets as volumes. | [lab39-storage-persistent-storage.md](lab39-storage-persistent-storage.md) |
+| 40 | Upgrade | Cluster Upgrades with kubeadm | Upgrade a Kubernetes cluster from one version to another using kubeadm with zero-downtime strategies. | [lab40-upgrade-cluster-upgrades.md](lab40-upgrade-cluster-upgrades.md) |
+| 41 | Advanced | WordPress on Kubernetes | Deploy a complete WordPress application with MySQL database on Kubernetes. | [lab41-adv-wordpress-on-kubernetes.md](lab41-adv-wordpress-on-kubernetes.md) |
+| 42 | Advanced | High Availability Cluster (Optional) | Deploy a production-grade multi-master HA cluster with stacked etcd, load balancers, and failover capabilities. | [lab42-adv-ha-cluster-optional.md](lab42-adv-ha-cluster-optional.md) |
+| 43 | Advanced | Custom Resource Definitions (Optional) | Extend the Kubernetes API with CRDs, create custom resources, and understand the operator pattern. | [lab43-adv-custom-resource-definitions.md](lab43-adv-custom-resource-definitions.md) |
+| 44 | Networking | Gateway API (Next-Gen Ingress) | Configure Gateway API for advanced HTTP/HTTPS routing with domain workarounds for local development (K8s 1.26+). | [lab44-net-gateway-api.md](lab44-net-gateway-api.md) |
+| 45 | Networking | DNS Configuration | Configure and customize DNS resolution in Kubernetes clusters. | [lab45-net-dns-configuration.md](lab45-net-dns-configuration.md) |
 
 ---
 
 ## Learning Paths
 
-Choose a learning path based on your goals and experience:
+Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–45**):
 
 ### Path 1: Complete Beginner
 Start here if you're new to Kubernetes:
 ```
-Lab 08 (Docker) → Lab 01 (Pods) → Lab 02 (Services) → Lab 04 (kubectl) →
-Lab 15 (ConfigMaps) → Lab 16 (Deployments)
+Lab 04 (Docker) → Lab 01 (Pods) → Lab 02 (Services) → Lab 03 (kubectl) →
+Lab 25 (ConfigMaps) → Lab 22 (Deployment Strategies)
 ```
 
 ### Path 2: Security Focus
 Master Kubernetes security:
 ```
-Lab 01 (basics) → Lab 07 (RBAC) → Lab 09 (Security Context) →
-Lab 10 (Network Policies) → Lab 11 (OPA) → Lab 12 (Image Scanning)
+Lab 01 (basics) → Lab 11 (RBAC) → Lab 12 (Security Context) →
+Lab 13 (Network Policies) → Lab 14 (OPA) → Lab 15 (Image Scanning) → Lab 16 (PSS)
 ```
 
 ### Path 3: Storage Mastery
 Deep dive into storage:
 ```
-Lab 01 (basics) → Lab 13 (Basic Volumes) → Lab 14 (Persistent Storage) →
-Lab 15 (ConfigMaps) → Lab 36 (WordPress practical)
+Lab 01 (basics) → Lab 38 (Basic Volumes) → Lab 39 (Persistent Storage) →
+Lab 25 (ConfigMaps) → Lab 41 (WordPress practical)
 ```
 
 ### Path 4: Workload Patterns
-Learn all workload controllers:
+Learn workload controllers:
 ```
-Lab 01 (basics) → Lab 16 (Deployments) → Lab 17 (DaemonSets) →
-Lab 18 (Jobs) → Lab 19 (CronJobs) → Lab 20 (HPA) → Lab 21-22 (Advanced Patterns)
+Lab 01 (basics) → Lab 22 (Deployments) → Lab 26 (DaemonSets) → Lab 27 (Static Pods) →
+Lab 28 (Jobs) → Lab 29 (CronJobs) → Lab 30 (HPA) → Lab 31 (StatefulSets)
 ```
 
 ### Path 5: Pod Scheduling
 Master pod placement:
 ```
-Lab 01 (basics) → Lab 26 (NodeSelector) → Lab 27 (Affinity) →
-Lab 28 (Priority) → Lab 29 (Taints/Tolerations)
+Lab 01 (basics) → Lab 17 (NodeSelector) → Lab 18 (Affinity) →
+Lab 19 (PriorityClass) → Lab 20 (Taints/Tolerations)
 ```
 
 ### Path 6: Networking Deep Dive
 Understand Kubernetes networking:
 ```
-Lab 02 (Services) → Lab 23 (Multi-Port) → Lab 25 (DNS) →
-Lab 10 (Network Policies) → Lab 24 (Ingress)
+Lab 02 (Services) → Lab 34 (Multi-Port) → Lab 13 (Network Policies) →
+Lab 35 (Ingress) → Lab 45 (DNS) → Lab 44 (Gateway API)
 ```
 
 ### Path 7: Production Readiness
 Build production-grade deployments:
 ```
-Labs 01-08 (Foundation) → Lab 30 (Probes) → Lab 31 (Metrics) →
-Lab 20 (HPA) → Lab 32 (Quotas) → Lab 33 (Rollouts) → Lab 36 (Real App)
+Labs 01–08 (Basics → Kind → Cluster admin) → Lab 09 (Probes) → Lab 36 (Metrics) →
+Lab 30 (HPA) → Lab 37 (Quotas) → Lab 23 (Rollouts) → Lab 41 (WordPress)
 ```
 
 ---
@@ -190,18 +194,18 @@ All YAML files referenced in the labs are organized in subdirectories:
 
 ```
 k8s/labs/
-├── basics/              # Labs 01-02
-├── administration/      # Labs 03-05
-├── security/            # Labs 07, 09-12
-├── storage/             # Labs 13-14
-├── config/              # Lab 15
-├── workloads/           # Labs 17-22, 30, 36
-├── scheduling/          # Labs 26-29
+├── basics/              # Labs 01-02 (see also docs for 03-04)
+├── administration/      # Cluster/etcd assets aligned with Labs 07-08
+├── security/            # Labs 11-16
+├── storage/             # Labs 38-39
+├── config/              # Lab 25 (ConfigMaps)
+├── workloads/           # Labs 22-31, 33
+├── scheduling/          # Labs 17-20
 │   ├── nodeselector/
 │   ├── affinity/
 │   ├── priorityclass/
 │   └── tolerations/
-└── networking/          # Labs 23-25
+└── networking/          # Labs 34-35, 44-45
 ```
 
 ---
@@ -325,8 +329,8 @@ kubectl delete namespace <namespace-name>
 
 ## Summary
 
-- **43 comprehensive labs** covering Kubernetes from basics to advanced topics
-- **9 logical categories**: Foundation, Security, Storage, Workloads, Networking, Scheduling, Observability, Resource Management, Advanced
+- **45 comprehensive labs** covering Kubernetes from basics to advanced topics
+- **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced
 - **7 curated learning paths** for different goals and experience levels
 - **Complete cross-references** between related labs
 - **Production-ready skills** with real-world examples
@@ -336,10 +340,10 @@ kubectl delete namespace <namespace-name>
 
 ---
 
-**Happy Learning! 🚀**
+**Happy Learning!**
 
-*Last Updated: March 16, 2026*
-*Total Labs: 43*
+*Last Updated: March 21, 2026*
+*Total Labs: 45*
 *Kubernetes Compatibility: 1.24+ (with K8s 1.25-1.28+ advanced features)*
 
 For questions, issues, or contributions, please submit a Pull Request or open an issue in the repository.

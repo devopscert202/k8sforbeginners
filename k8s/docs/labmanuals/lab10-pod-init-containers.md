@@ -1,4 +1,4 @@
-# Lab 21: Init Containers in Kubernetes
+# Lab 10: Init Containers in Kubernetes
 
 ## Overview
 In this lab, you will learn how to use Init Containers to perform initialization tasks before your main application containers start. Init Containers are specialized containers that run and complete before the main application containers in a Pod start.
@@ -1013,9 +1013,9 @@ spec:
 ## Next Steps
 
 You've completed the Init Containers lab! Consider exploring:
-- [Lab 22: Pod Lifecycle and Multi-Container Patterns](lab22-pod-lifecycle-multi-container.md)
-- [Lab 18: Jobs and Batch Processing](lab18-jobs-batch.md)
-- [Lab 30: Health Checks with Probes](lab30-probes.md)
+- [Lab 21: Pod Lifecycle and Multi-Container Patterns](lab21-pod-lifecycle-multi-container.md)
+- [Lab 28: Jobs and Batch Processing](lab28-workload-jobs-batch.md)
+- [Lab 09: Health Checks with Probes](lab09-pod-health-probes.md)
 - StatefulSets for stateful applications
 
 ## Additional Resources

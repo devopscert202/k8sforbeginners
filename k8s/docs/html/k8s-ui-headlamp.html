@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Headlamp In-Cluster Installation Guide</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
+      --navy: #0f172a; --blue: #1d4ed8; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(29,78,216,.1), transparent 24%),
+        radial-gradient(circle at top right, rgba(109,40,217,.08), transparent 22%),
+        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+      color: var(--ink); line-height: 1.55; padding: 24px;
+    }
+    .page { max-width: 1420px; margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
+      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+    }
+    .eyebrow {
+      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
+      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    h1 { font-size: 2.4rem; line-height: 1.12; margin-bottom: 12px; }
+    .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
+    .hero-grid, .stats, .stack-grid, .lane, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { display: grid; gap: 16px; }
+    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
+    .hero-card, .panel, .stack-card, .swimlane, .map-card, .step-card, .command-card, .namespace-card, .warning {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
+    }
+    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
+    .hero-card ul, .stack-card ul { padding-left: 18px; }
+    .hero-card li + li, .stack-card li + li { margin-top: 6px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 24px; }
+    .stat { border-radius: 20px; padding: 18px; color: white; min-height: 126px; }
+    .blue { background: linear-gradient(135deg, #1d4ed8 0%, #38bdf8 100%); }
+    .green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+    .amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .violet { background: linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%); }
+    .stat-label { text-transform: uppercase; letter-spacing: .06em; font-size: .76rem; opacity: .88; }
+    .stat-value { font-size: 1.9rem; font-weight: 800; margin: 8px 0; }
+    .panel { padding: 22px; margin-bottom: 22px; }
+    .section-title { font-size: 1.45rem; margin-bottom: 8px; }
+    .section-copy { color: var(--muted); margin-bottom: 18px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .controls button {
+      border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; background: #e9eef8; color: var(--ink); cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .controls button:hover { transform: translateY(-1px); background: #dde7fb; }
+    .controls button.active { background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%); color: white; }
+    .stack-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: stretch; }
+    .stack-card { padding: 18px; position: relative; }
+    .stack-card h3, .swimlane h3, .map-card h3, .step-card h3, .command-card h3, .namespace-card h3 { font-size: 1rem; margin-bottom: 8px; }
+    .stack-card p, .map-card p, .step-card p, .command-card p, .namespace-card p, .swimlane p { color: var(--muted); font-size: .92rem; margin-bottom: 10px; }
+    .stack-arrow {
+      position: absolute; right: -12px; top: calc(50% - 18px); width: 24px; height: 24px; border-radius: 50%;
+      background: #eff6ff; border: 1px solid #c7d9f7; color: #31558a; display: flex; align-items: center; justify-content: center; font-weight: 900;
+    }
+    .swimlane { padding: 18px; display: none; }
+    .swimlane.visible { display: block; animation: appear .35s ease; }
+    .lane-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .pill { display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; color: white; }
+    .prepare { background: var(--amber); } .install { background: var(--blue); } .access { background: var(--violet); } .verify { background: var(--green); } .secure { background: var(--rose); }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .node { background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%); border: 1px solid #ccdcf7; border-radius: 14px; padding: 10px 12px; font-weight: 700; color: #17365f; font-size: .9rem; }
+    .arrow { align-self: center; font-weight: 900; color: #647da5; }
+    .mapping-grid, .steps-grid, .command-grid, .namespace-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .map-card, .step-card, .command-card, .namespace-card, .warning { padding: 18px; }
+    .token { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .74rem; font-weight: 800; margin-right: 6px; margin-bottom: 8px; }
+    .user { background: #dbeafe; color: #1d4ed8; } .group { background: #ede9fe; color: #6d28d9; } .ns { background: #dcfce7; color: #166534; } .cluster { background: #ffedd5; color: #9a3412; }
+    pre { background: var(--navy); color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: auto; font-size: .85rem; line-height: 1.55; margin-top: 12px; }
+    .warning { background: linear-gradient(180deg, #fff9ee 0%, #fff3d9 100%); border-color: #f2cf84; }
+    .warning h3, .warning p { color: #8a4b08; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 1150px) { .hero-grid, .stats, .stack-grid, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { grid-template-columns: 1fr; } .stack-arrow { display: none; } }
+    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.85rem; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">Headlamp In-Cluster Guide</div>
+      <h1>Headlamp UI on a 3-Node Kubernetes VM Cluster</h1>
+      <p>Headlamp provides a current web UI path for Kubernetes clusters. This document covers the official in-cluster installation path from the archived Dashboard background through Helm install, service exposure, token-based access, UI validation, and the next production-ready access model.</p>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <h2>Why Headlamp now</h2>
+          <ul>
+            <li>The archived Kubernetes Dashboard repository says the project is no longer maintained and asks users to consider Headlamp instead.</li>
+            <li>Headlamp has active official documentation for in-cluster deployment, plugins, ingress, OIDC, and desktop use.</li>
+            <li>That makes it the better UI direction for new Kubernetes documentation and cluster setup guidance.</li>
+          </ul>
+        </div>
+        <div class="hero-card">
+          <h2>Scope</h2>
+          <ul>
+            <li>Helm-based in-cluster installation into `kube-system`</li>
+            <li>Port-forward access for VM-based labs</li>
+            <li>ServiceAccount token login for controlled lab access</li>
+            <li>UI testing from cluster overview through workloads and logs</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat blue"><div class="stat-label">Cluster Shape</div><div class="stat-value">3 Nodes</div><div>One control plane VM and two worker VMs provide the lab target for the in-cluster install.</div></div>
+      <div class="stat violet"><div class="stat-label">Install Method</div><div class="stat-value">Helm</div><div>The official Headlamp docs recommend Helm as the easiest in-cluster installation path.</div></div>
+      <div class="stat green"><div class="stat-label">Namespace</div><div class="stat-value">kube-system</div><div>The example install is done in `kube-system`, keeping the UI close to core cluster services.</div></div>
+      <div class="stat amber"><div class="stat-label">Access Path</div><div class="stat-value">8080</div><div>For the lab, `kubectl port-forward -n kube-system service/headlamp 8080:80` is the fastest route to the browser.</div></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Why Dashboard Was Retired and Why Headlamp Fits Better</h2>
+      <p class="section-copy">The Kubernetes Dashboard project was archived because it no longer had enough active maintainers and contributors. For a cluster-access UI, that directly affects confidence in maintenance, updates, and long-term direction.</p>
+      <div class="mapping-grid">
+        <div class="map-card"><span class="token group">Dashboard</span><h3>What changed upstream</h3><p>The project lost active maintenance momentum and was archived, which makes it a poor default choice for new Kubernetes UI standards.</p></div>
+        <div class="map-card"><span class="token ns">Headlamp</span><h3>What improves with Headlamp</h3><p>Headlamp provides a more current path with active documentation, plugin extensibility, in-cluster and desktop options, and RBAC-aware access patterns.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Reference Architecture Stack</h2>
+      <p class="section-copy">The install path is simple, but it still helps to show the layers clearly so the relationship between Headlamp, Kubernetes authentication, and RBAC is easy to follow.</p>
+      <div class="stack-grid">
+        <div class="stack-card"><h3>1. Admin Workstation</h3><p>The operator uses `kubectl` and `helm` from the control plane VM or a separate admin machine.</p><ul><li>kubectl configured</li><li>helm available</li><li>cluster-admin for setup</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>2. Helm Repository</h3><p>The Headlamp chart is pulled from the official chart repository.</p><ul><li>`helm repo add headlamp`</li><li>`helm repo update`</li><li>versioned chart install</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>3. In-Cluster Workload</h3><p>Headlamp runs as a Kubernetes Deployment with a ClusterIP Service.</p><ul><li>Deployment</li><li>Pod</li><li>Service `headlamp`</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>4. Access Authentication</h3><p>A ServiceAccount token is used so the browser can log in with a Kubernetes identity.</p><ul><li>ServiceAccount</li><li>ClusterRoleBinding</li><li>short-lived token</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>5. Browser Session</h3><p>Users reach Headlamp through port-forward and validate what the UI can see.</p><ul><li>localhost access</li><li>cluster overview</li><li>workload inspection</li></ul></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Installation Journey</h2>
+      <p class="section-copy">Choose a view to focus on preparation, installation, access, validation, or the production follow-up story.</p>
+      <div class="controls">
+        <button class="filter active" data-filter="all">Full Flow</button>
+        <button class="filter" data-filter="prepare">Prepare</button>
+        <button class="filter" data-filter="install">Install</button>
+        <button class="filter" data-filter="access">Access</button>
+        <button class="filter" data-filter="verify">Validation</button>
+        <button class="filter" data-filter="secure">Production Next</button>
+      </div>
+      <div class="lane">
+        <article class="swimlane visible" data-group="prepare">
+          <div class="lane-title"><h3>Confirm the 3-node lab cluster is ready</h3><span class="pill prepare">Prepare</span></div>
+          <div class="flow"><div class="node">kubectl get nodes</div><div class="arrow">></div><div class="node">3 nodes Ready</div><div class="arrow">></div><div class="node">kubectl cluster-info</div><div class="arrow">></div><div class="node">helm version</div></div>
+          <p>Everything starts from a cluster-admin workstation that can already talk to the VM-based Kubernetes control plane.</p>
+          <pre>kubectl get nodes -o wide
+kubectl cluster-info
+helm version</pre>
+        </article>
+
+        <article class="swimlane visible" data-group="install">
+          <div class="lane-title"><h3>Add the Headlamp repo and install the chart</h3><span class="pill install">Install</span></div>
+          <div class="flow"><div class="node">helm repo add headlamp</div><div class="arrow">></div><div class="node">helm repo update</div><div class="arrow">></div><div class="node">helm install my-headlamp</div><div class="arrow">></div><div class="node">Deployment + Service in kube-system</div></div>
+          <p>This follows the official in-cluster installation path from the Headlamp docs.</p>
+          <pre>helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+helm repo update
+helm install my-headlamp headlamp/headlamp --namespace kube-system
+helm status my-headlamp -n kube-system</pre>
+        </article>
+
+        <article class="swimlane visible" data-group="access">
+          <div class="lane-title"><h3>Create a lab login identity and expose the service</h3><span class="pill access">Access</span></div>
+          <div class="flow"><div class="node">ServiceAccount headlamp-admin</div><div class="arrow">></div><div class="node">ClusterRoleBinding</div><div class="arrow">></div><div class="node">kubectl create token</div><div class="arrow">></div><div class="node">kubectl port-forward service/headlamp</div></div>
+          <p>This is the simplest way to reach the UI first, without adding ingress and OIDC.</p>
+          <pre>kubectl apply -f headlamp-admin.yaml
+kubectl create token headlamp-admin -n kube-system
+kubectl port-forward -n kube-system service/headlamp 8080:80</pre>
+        </article>
+
+        <article class="swimlane visible" data-group="verify">
+          <div class="lane-title"><h3>Validate what the UI can actually see</h3><span class="pill verify">Validation</span></div>
+          <div class="flow"><div class="node">Open localhost:8080</div><div class="arrow">></div><div class="node">Log in with token</div><div class="arrow">></div><div class="node">Open nodes and namespaces</div><div class="arrow">></div><div class="node">Inspect workloads and logs</div></div>
+          <p>The goal is not just to open the page. It is to prove that Headlamp can read the cluster resources the lab expects.</p>
+          <pre>Check in the UI:
+- nodes
+- namespaces
+- Pods in kube-system
+- Deployments
+- Services
+- YAML or details view
+- events or logs</pre>
+        </article>
+
+        <article class="swimlane visible" data-group="secure">
+          <div class="lane-title"><h3>Move from lab mode to shared team mode</h3><span class="pill secure">Production Next</span></div>
+          <div class="flow"><div class="node">Ingress</div><div class="arrow">></div><div class="node">TLS</div><div class="arrow">></div><div class="node">OIDC</div><div class="arrow">></div><div class="node">namespace-scoped RBAC</div></div>
+          <p>Port-forward plus admin token is excellent for a lab. For shared use, the cleaner model is ingress and enterprise authentication.</p>
+          <pre>Recommended next stage:
+- expose Headlamp with ingress
+- enable TLS
+- integrate OIDC
+- avoid broad long-lived admin tokens
+- use namespace-scoped RBAC for teams</pre>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Lab Build Sequence</h2>
+      <p class="section-copy">This order keeps the setup practical for a 3-node VM cluster and mirrors the official installation flow while covering access and testing clearly.</p>
+      <div class="steps-grid">
+        <div class="step-card"><h3>1. Check nodes and admin tools</h3><p>Verify the control plane and two workers are healthy, and confirm `kubectl` and `helm` are available before starting the install.</p></div>
+        <div class="step-card"><h3>2. Add the Headlamp Helm repo</h3><p>Register the official chart source and refresh local metadata so the install can pull the current chart cleanly.</p></div>
+        <div class="step-card"><h3>3. Install Headlamp into kube-system</h3><p>Deploy the chart using the official in-cluster example and confirm the release is visible in Helm.</p></div>
+        <div class="step-card"><h3>4. Verify Deployment, Pod, and Service</h3><p>Check that Headlamp is actually running and the `headlamp` Service exists in `kube-system`.</p></div>
+        <div class="step-card"><h3>5. Create the lab access identity</h3><p>Apply a `headlamp-admin` ServiceAccount and bind it so the browser has a Kubernetes identity to log in with.</p></div>
+        <div class="step-card"><h3>6. Port-forward and test the UI</h3><p>Open the page locally, log in, and confirm that nodes, namespaces, workloads, and resource details are visible.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Commands and Manifests</h2>
+      <p class="section-copy">These are the core building blocks for the install, access, and verification path.</p>
+      <div class="command-grid">
+        <div class="command-card"><h3>Official Helm install</h3><p>This stays close to the Headlamp docs and is the recommended starting point.</p><pre>helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+helm repo update
+helm install my-headlamp headlamp/headlamp --namespace kube-system</pre></div>
+        <div class="command-card"><h3>ServiceAccount manifest</h3><p>This creates a browser-login identity for Headlamp access.</p><pre>apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: headlamp-admin
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: headlamp-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: headlamp-admin
+  namespace: kube-system</pre></div>
+        <div class="command-card"><h3>Access and token commands</h3><p>These are the minimum commands needed to get the browser session working on a VM-based setup.</p><pre>kubectl apply -f headlamp-admin.yaml
+kubectl create token headlamp-admin -n kube-system
+kubectl port-forward -n kube-system service/headlamp 8080:80</pre></div>
+        <div class="command-card"><h3>Verification commands</h3><p>Use these when the UI does not load or when resources look incomplete.</p><pre>helm status my-headlamp -n kube-system
+kubectl get deploy,po,svc -n kube-system | grep headlamp
+kubectl describe deployment headlamp -n kube-system
+kubectl logs deployment/headlamp -n kube-system</pre></div>
+      </div>
+      <div class="warning" style="margin-top: 18px;">
+        <h3>Important lab note</h3>
+        <p>Using `cluster-admin` through a ServiceAccount token is acceptable for a controlled setup, but it is not the right long-term access pattern for shared environments. The cleaner production direction is ingress plus OIDC plus narrower RBAC.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Testing and Expected Outcomes</h2>
+      <p class="section-copy">If these checks pass, the Headlamp in-cluster deployment is working correctly for the lab.</p>
+      <div class="namespace-grid">
+        <div class="namespace-card"><span class="token user">Install</span><h3>Release is healthy</h3><p>The Helm release exists and the Headlamp Deployment is available in `kube-system`.</p></div>
+        <div class="namespace-card"><span class="token group">Access</span><h3>Port-forward works</h3><p>`http://localhost:8080` opens while `kubectl port-forward -n kube-system service/headlamp 8080:80` is running.</p></div>
+        <div class="namespace-card"><span class="token ns">Visibility</span><h3>Cluster resources load</h3><p>The UI can show nodes, namespaces, Pods, Deployments, Services, and resource details without empty or error states.</p></div>
+        <div class="namespace-card"><span class="token cluster">Direction</span><h3>Production next step is clear</h3><p>The temporary access model is understood, and ingress plus OIDC is identified as the better production architecture.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.filter');
+    const lanes = document.querySelectorAll('.swimlane');
+    function setFilter(group) {
+      buttons.forEach((button) => button.classList.toggle('active', button.dataset.filter === group));
+      lanes.forEach((lane) => lane.classList.toggle('visible', group === 'all' || lane.dataset.group === group));
+    }
+    buttons.forEach((button) => button.addEventListener('click', () => setFilter(button.dataset.filter)));
+  </script>
+</body>
+</html>

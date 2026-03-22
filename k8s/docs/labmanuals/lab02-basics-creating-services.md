@@ -4,7 +4,7 @@
 In this lab, you will learn how to expose your Pods and Deployments using Kubernetes Services. You'll create both NodePort and LoadBalancer type Services to understand different ways to make your applications accessible.
 
 ## Prerequisites
-- Completion of [Lab 01: Creating Pods and Deployments](lab01-creating-pods.md)
+- Completion of [Lab 01: Creating Pods and Deployments](lab01-basics-creating-pods.md)
 - A running Kubernetes cluster
 - `kubectl` CLI tool installed and configured
 - Pods from Lab 01 running (apache1, apache2) or ability to recreate them

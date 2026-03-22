@@ -1,4 +1,4 @@
-# Lab 29: Pod Scheduling with Taints and Tolerations
+# Lab 20: Pod Scheduling with Taints and Tolerations
 
 ## Overview
 In this lab, you will learn how to use Taints and Tolerations to control which pods can be scheduled on specific nodes. Taints repel pods from nodes, while tolerations allow pods to overcome those taints. This is the opposite of Node Affinity, which attracts pods to nodes.
@@ -1112,10 +1112,10 @@ spec:
 ## Next Steps
 
 You have completed all scheduling labs! Review the scheduling concepts:
-- [Lab 26: NodeSelector](lab26-scheduling-nodeselector.md) - Simple node selection
-- [Lab 27: Node and Pod Affinity](lab27-scheduling-affinity.md) - Advanced attraction rules
-- [Lab 28: PriorityClass](lab28-scheduling-priorityclass.md) - Scheduling priority and preemption
-- [Lab 29: Taints and Tolerations](lab29-scheduling-tolerations.md) - Node repulsion and dedicated resources
+- [Lab 17: NodeSelector](lab17-sched-nodeselector.md) - Simple node selection
+- [Lab 18: Node and Pod Affinity](lab18-sched-affinity-antiaffinity.md) - Advanced attraction rules
+- [Lab 19: PriorityClass](lab19-sched-priorityclass.md) - Scheduling priority and preemption
+- [Lab 20: Taints and Tolerations](lab20-sched-taints-tolerations.md) - Node repulsion and dedicated resources
 
 Explore other Kubernetes topics in the lab manual collection.
 

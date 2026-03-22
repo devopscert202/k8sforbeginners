@@ -1,4 +1,4 @@
-# Lab 13: Basic Storage Volumes in Kubernetes
+# Lab 38: Basic Storage Volumes in Kubernetes
 
 ## Overview
 In this lab, you will learn about Kubernetes storage fundamentals by working with basic volume types. You'll explore emptyDir and hostPath volumes, and understand how containers within a Pod can share data.
@@ -592,7 +592,7 @@ kubectl exec <pod-name> -- du -sh /data
 
 ## Next Steps
 
-Proceed to [Lab 14: Persistent Volumes and Advanced Storage](lab14-persistent-storage.md) to learn about:
+Proceed to [Lab 39: Persistent Volumes and Advanced Storage](lab39-storage-persistent-storage.md) to learn about:
 - PersistentVolumes (PV) and PersistentVolumeClaims (PVC)
 - Network storage with NFS
 - Secret volumes

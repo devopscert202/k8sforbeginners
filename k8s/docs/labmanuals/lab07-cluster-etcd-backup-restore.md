@@ -1,4 +1,4 @@
-# Lab 03: ETCD Backup and Restore
+# Lab 07: ETCD Backup and Restore
 
 ## Overview
 In this lab, you will learn how to backup and restore etcd, the distributed key-value store that serves as Kubernetes' brain. You'll understand why backups are critical, how to automate them, and practice disaster recovery procedures.
@@ -589,7 +589,7 @@ tail -50 /var/log/etcd-backup.log
 
 ## Next Steps
 
-Proceed to [Lab 04: Essential kubectl Commands](lab04-kubectl-commands.md) to master Kubernetes command-line operations.
+Proceed to [Lab 03: Essential kubectl Commands](lab03-basics-kubectl-essentials.md) to master Kubernetes command-line operations.
 
 ## Additional Reading
 

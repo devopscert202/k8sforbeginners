@@ -1,4 +1,4 @@
-# Lab 08: Docker Build and Run - Multi-Version Application
+# Lab 04: Docker Build and Run - Multi-Version Application
 
 ## Overview
 In this lab, you will learn how to build Docker images from Dockerfiles, tag them with versions, run containers, and manage multiple versions of the same application. You'll build and deploy two versions of an Apache web server to understand Docker's containerization workflow.
@@ -999,7 +999,7 @@ After mastering Docker basics:
 5. Learn **Docker Registry** for private image storage
 6. Progress to **Kubernetes** for container orchestration
 
-Proceed to [Lab 01: Creating Pods and Deployments](lab01-creating-pods.md) to deploy these Docker images on Kubernetes!
+Proceed to [Lab 01: Creating Pods and Deployments](lab01-basics-creating-pods.md) to deploy these Docker images on Kubernetes!
 
 ---
 

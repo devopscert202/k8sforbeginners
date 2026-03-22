@@ -1,4 +1,4 @@
-# Lab 04: Essential kubectl Commands
+# Lab 03: Essential kubectl Commands
 
 ## Overview
 In this lab, you will master the essential kubectl commands used for day-to-day Kubernetes operations. You'll learn to create, inspect, modify, and delete Kubernetes resources using the command line.
@@ -677,7 +677,7 @@ kubectl auth can-i create pods
 
 ## Next Steps
 
-Proceed to [Lab 05: Cluster Administration](lab05-cluster-administration.md) to learn advanced kubeadm and cluster management commands.
+Proceed to [Lab 08: Cluster Administration](lab08-cluster-administration.md) to learn advanced kubeadm and cluster management commands.
 
 ## Additional Reading
 

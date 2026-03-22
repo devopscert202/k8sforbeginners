@@ -1,4 +1,4 @@
-# Lab 38: Pod Security Standards & Admission Control
+# Lab 16: Pod Security Standards & Admission Control
 
 ## Overview
 In this lab, you will learn how to implement Pod Security Standards (PSS) and Pod Security Admission (PSA) in Kubernetes. PSS is the modern replacement for the deprecated PodSecurityPolicy (PSP) and provides a simplified approach to enforcing security best practices at the namespace level. You'll explore the three security profiles - Privileged, Baseline, and Restricted - and learn how to apply them using different enforcement modes.
@@ -1248,10 +1248,10 @@ EOF
 - [OWASP Kubernetes Top 10](https://owasp.org/www-project-kubernetes-top-ten/)
 
 ### Related Labs
-- Lab 09: Pod Security Context (Foundation for PSS)
-- Lab 07: RBAC Security (Complementary access control)
-- Lab 11: OPA Gatekeeper (Advanced policy enforcement)
-- Lab 12: Image Scanning (Container security)
+- Lab 12: Pod Security Context (Foundation for PSS)
+- Lab 11: RBAC Security (Complementary access control)
+- Lab 14: OPA Gatekeeper (Advanced policy enforcement)
+- Lab 15: Image Scanning (Container security)
 
 ### Tools and Utilities
 - [kubectl-pss](https://github.com/kubernetes-sigs/kubectl-pss) - CLI tool for PSS management

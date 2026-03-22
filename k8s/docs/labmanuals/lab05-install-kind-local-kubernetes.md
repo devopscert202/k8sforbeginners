@@ -1,4 +1,4 @@
-# Lab 45: Kind Local Kubernetes Cluster
+# Lab 05: Kind Local Kubernetes Cluster
 
 ## Overview
 

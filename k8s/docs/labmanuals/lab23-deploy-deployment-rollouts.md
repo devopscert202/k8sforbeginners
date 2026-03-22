@@ -1,4 +1,4 @@
-# Lab 33: Deployment Strategies and Rollouts
+# Lab 23: Deployment Strategies and Rollouts
 
 ## Overview
 In this lab, you will master Kubernetes deployment strategies, rolling updates, and rollback mechanisms. You'll learn how to perform zero-downtime deployments, manage deployment history, control rollout speed, and recover from failed deployments using real-world scenarios and best practices.
@@ -1198,8 +1198,8 @@ spec:
 ## Next Steps
 
 Now that you master deployment rollouts, proceed to:
-- [Lab 20: Horizontal Pod Autoscaling](lab20-hpa.md) - Automatically scale based on load
-- [Lab 30: Health Checks and Probes](lab30-probes.md) - Implement comprehensive health monitoring
+- [Lab 30: Horizontal Pod Autoscaling](lab30-workload-hpa.md) - Automatically scale based on load
+- [Lab 09: Health Checks and Probes](lab09-pod-health-probes.md) - Implement comprehensive health monitoring
 - Explore Blue/Green and Canary deployment patterns
 - Learn about GitOps and continuous deployment
 

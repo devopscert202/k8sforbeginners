@@ -40,6 +40,28 @@ npm-debug.log*
 *.tmp
 *.temp
 .cache/
+tmp/
+temp/
 
 # Node modules
 node_modules/
+
+# Python caches and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Common build and coverage output
+dist/
+build/
+coverage/
+htmlcov/
+
+# Local tool state
+.cursor/

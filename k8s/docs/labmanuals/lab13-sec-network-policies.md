@@ -1,4 +1,4 @@
-# Lab 10: Advanced Network Policies - Namespace Isolation
+# Lab 13: Advanced Network Policies - Namespace Isolation
 
 ## Overview
 In this lab, you will learn how to implement advanced network policies for namespace isolation in Kubernetes. You'll configure policies that restrict network traffic between namespaces, creating secure multi-tenant environments.

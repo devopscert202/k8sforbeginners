@@ -365,7 +365,7 @@ kubectl get events --sort-by=.metadata.creationTimestamp
 
 ## Next Steps
 
-Proceed to [Lab 02: Creating Services](lab02-creating-services.md) to learn how to expose your Pods and Deployments to network traffic.
+Proceed to [Lab 02: Creating Services](lab02-basics-creating-services.md) to learn how to expose your Pods and Deployments to network traffic.
 
 ## Troubleshooting
 

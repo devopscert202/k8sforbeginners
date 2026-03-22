@@ -1,4 +1,4 @@
-# Lab 37: Frontend Application Deployment in Kubernetes
+# Lab 24: Frontend Application Deployment in Kubernetes
 
 ## Overview
 In this lab, you will learn best practices for deploying frontend applications in Kubernetes. You'll explore real-world deployment patterns, configuration management, scaling strategies, zero-downtime updates, and production-ready practices for serving web applications. This lab focuses on practical patterns used in modern cloud-native architectures.
@@ -962,9 +962,9 @@ rm -f tls.key tls.crt
 ### Related Labs
 - Lab 01: Basic Deployments
 - Lab 02: Services and Networking
-- Lab 04: ConfigMaps and Secrets
-- Lab 11: Horizontal Pod Autoscaling
-- Lab 12: Health Probes
+- Lab 25: ConfigMaps and Secrets
+- Lab 30: Horizontal Pod Autoscaling
+- Lab 09: Health Probes
 
 ---
 

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kubernetes UI Alternatives</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
+      --navy: #0f172a; --blue: #1d4ed8; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(29,78,216,.1), transparent 24%),
+        radial-gradient(circle at top right, rgba(109,40,217,.08), transparent 22%),
+        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
+      color: var(--ink); line-height: 1.55; padding: 24px;
+    }
+    .page { max-width: 1420px; margin: 0 auto; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
+      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+    }
+    .eyebrow {
+      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
+      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    h1 { font-size: 2.4rem; line-height: 1.12; margin-bottom: 12px; }
+    .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
+    .hero-grid, .stats, .stack-grid, .lane, .mapping-grid, .steps-grid, .namespace-grid { display: grid; gap: 16px; }
+    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
+    .hero-card, .panel, .stack-card, .swimlane, .map-card, .step-card, .namespace-card, .warning {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
+    }
+    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
+    .hero-card ul, .stack-card ul { padding-left: 18px; }
+    .hero-card li + li, .stack-card li + li { margin-top: 6px; }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 24px; }
+    .stat { border-radius: 20px; padding: 18px; color: white; min-height: 126px; }
+    .blue { background: linear-gradient(135deg, #1d4ed8 0%, #38bdf8 100%); }
+    .green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+    .amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+    .violet { background: linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%); }
+    .stat-label { text-transform: uppercase; letter-spacing: .06em; font-size: .76rem; opacity: .88; }
+    .stat-value { font-size: 1.9rem; font-weight: 800; margin: 8px 0; }
+    .panel { padding: 22px; margin-bottom: 22px; }
+    .section-title { font-size: 1.45rem; margin-bottom: 8px; }
+    .section-copy { color: var(--muted); margin-bottom: 18px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .controls button {
+      border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; background: #e9eef8; color: var(--ink); cursor: pointer;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+    .controls button:hover { transform: translateY(-1px); background: #dde7fb; }
+    .controls button.active { background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%); color: white; }
+    .stack-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: stretch; }
+    .stack-card { padding: 18px; position: relative; }
+    .stack-card h3, .swimlane h3, .map-card h3, .step-card h3, .namespace-card h3 { font-size: 1rem; margin-bottom: 8px; }
+    .stack-card p, .map-card p, .step-card p, .namespace-card p, .swimlane p { color: var(--muted); font-size: .92rem; margin-bottom: 10px; }
+    .stack-arrow {
+      position: absolute; right: -12px; top: calc(50% - 18px); width: 24px; height: 24px; border-radius: 50%;
+      background: #eff6ff; border: 1px solid #c7d9f7; color: #31558a; display: flex; align-items: center; justify-content: center; font-weight: 900;
+    }
+    .swimlane { padding: 18px; display: none; }
+    .swimlane.visible { display: block; animation: appear .35s ease; }
+    .lane-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .pill { display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; color: white; }
+    .web { background: var(--blue); } .desktop { background: var(--violet); } .ops { background: var(--green); } .platform { background: var(--amber); }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .node { background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%); border: 1px solid #ccdcf7; border-radius: 14px; padding: 10px 12px; font-weight: 700; color: #17365f; font-size: .9rem; }
+    .arrow { align-self: center; font-weight: 900; color: #647da5; }
+    .mapping-grid, .steps-grid, .namespace-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .map-card, .step-card, .namespace-card, .warning { padding: 18px; }
+    .token { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .74rem; font-weight: 800; margin-right: 6px; margin-bottom: 8px; }
+    .user { background: #dbeafe; color: #1d4ed8; } .group { background: #ede9fe; color: #6d28d9; } .ns { background: #dcfce7; color: #166534; } .cluster { background: #ffedd5; color: #9a3412; }
+    .warning { background: linear-gradient(180deg, #fff9ee 0%, #fff3d9 100%); border-color: #f2cf84; }
+    .warning h3, .warning p { color: #8a4b08; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 1150px) { .hero-grid, .stats, .stack-grid, .mapping-grid, .steps-grid, .namespace-grid { grid-template-columns: 1fr; } .stack-arrow { display: none; } }
+    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.85rem; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">Kubernetes UI Options</div>
+      <h1>Kubernetes Dashboard Alternatives</h1>
+      <p>Kubernetes teams do not all need the same kind of interface. Some need a shared browser-based UI, some need a local desktop application, and some prefer a terminal-first workflow. This document compares Headlamp Web, Headlamp Desktop, FreeLens, Portainer, and K9s.</p>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <h2>Selection drivers</h2>
+          <ul>
+            <li>shared browser access</li>
+            <li>desktop-based local cluster access</li>
+            <li>terminal speed and shell-first operations</li>
+            <li>broader platform governance across environments</li>
+          </ul>
+        </div>
+        <div class="hero-card">
+          <h2>Current default direction</h2>
+          <ul>
+            <li>Headlamp Web for shared browser access</li>
+            <li>Headlamp Desktop or FreeLens for local workstation access</li>
+            <li>K9s for terminal-first operations</li>
+            <li>Portainer where the scope is broader than Kubernetes alone</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat blue"><div class="stat-label">Web UI</div><div class="stat-value">Headlamp</div><div>A current Kubernetes-focused web path with in-cluster deployment and RBAC-aware access.</div></div>
+      <div class="stat violet"><div class="stat-label">Desktop UI</div><div class="stat-value">2 Main Paths</div><div>Headlamp Desktop and FreeLens both support local workstation-driven access.</div></div>
+      <div class="stat green"><div class="stat-label">Terminal UI</div><div class="stat-value">K9s</div><div>A fast shell-native interface for operators who prefer terminal workflows.</div></div>
+      <div class="stat amber"><div class="stat-label">Platform Scope</div><div class="stat-value">Portainer</div><div>A broader container management platform across Kubernetes, Docker, and Podman.</div></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Selection Model</h2>
+      <p class="section-copy">The fastest comparison starts by grouping tools by operating model.</p>
+      <div class="stack-grid">
+        <div class="stack-card"><h3>1. Shared Web UI</h3><p>Runs centrally and is accessed through a browser.</p><ul><li>Headlamp Web</li><li>in-cluster deployment</li><li>RBAC-aware access</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>2. Desktop UI</h3><p>Runs on a workstation and reads local kubeconfigs.</p><ul><li>Headlamp Desktop</li><li>FreeLens</li><li>local multi-cluster access</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>3. Terminal UI</h3><p>Stays close to shell-based operations.</p><ul><li>K9s</li><li>real-time watch</li><li>fast navigation</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>4. Broader Platform Control</h3><p>Extends beyond Kubernetes-only usage.</p><ul><li>Portainer</li><li>governance focus</li><li>multi-platform scope</li></ul><div class="stack-arrow">></div></div>
+        <div class="stack-card"><h3>5. Final Choice</h3><p>Choose based on access model, scale, and operational style.</p><ul><li>browser</li><li>desktop</li><li>terminal</li></ul></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Comparison Views</h2>
+      <p class="section-copy">Choose a view to focus on browser-based, desktop-based, terminal-first, or broader platform-oriented options.</p>
+      <div class="controls">
+        <button class="filter active" data-filter="all">All Options</button>
+        <button class="filter" data-filter="web">Web UI</button>
+        <button class="filter" data-filter="desktop">Desktop UI</button>
+        <button class="filter" data-filter="ops">Terminal UI</button>
+        <button class="filter" data-filter="platform">Platform Control</button>
+      </div>
+      <div class="lane">
+        <article class="swimlane visible" data-group="web">
+          <div class="lane-title"><h3>Headlamp Web</h3><span class="pill web">Web UI</span></div>
+          <div class="flow"><div class="node">Deploy in cluster</div><div class="arrow">></div><div class="node">Access by browser</div><div class="arrow">></div><div class="node">RBAC-aware visibility</div><div class="arrow">></div><div class="node">Plugin extensibility</div></div>
+          <p>Best when a shared Kubernetes-focused browser UI is required.</p>
+        </article>
+        <article class="swimlane visible" data-group="desktop">
+          <div class="lane-title"><h3>Headlamp Desktop and FreeLens</h3><span class="pill desktop">Desktop UI</span></div>
+          <div class="flow"><div class="node">Install locally</div><div class="arrow">></div><div class="node">Read kubeconfig</div><div class="arrow">></div><div class="node">Manage multiple clusters</div><div class="arrow">></div><div class="node">No in-cluster deployment required</div></div>
+          <p>Best when cluster access is primarily workstation-driven.</p>
+        </article>
+        <article class="swimlane visible" data-group="ops">
+          <div class="lane-title"><h3>K9s</h3><span class="pill ops">Terminal UI</span></div>
+          <div class="flow"><div class="node">Terminal first</div><div class="arrow">></div><div class="node">Real-time watch</div><div class="arrow">></div><div class="node">Fast navigation</div><div class="arrow">></div><div class="node">Operational speed</div></div>
+          <p>Best when shell-native speed matters more than a browser dashboard.</p>
+        </article>
+        <article class="swimlane visible" data-group="platform">
+          <div class="lane-title"><h3>Portainer</h3><span class="pill platform">Platform Control</span></div>
+          <div class="flow"><div class="node">Kubernetes</div><div class="arrow">+</div><div class="node">Docker</div><div class="arrow">+</div><div class="node">Podman</div><div class="arrow">></div><div class="node">Governance and fleet operations</div></div>
+          <p>Best when the operating model is broader than Kubernetes alone.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Tool Profiles</h2>
+      <p class="section-copy">Each option solves a different operational problem.</p>
+      <div class="mapping-grid">
+        <div class="map-card"><span class="token group">Headlamp Web</span><h3>Shared Kubernetes web path</h3><p>Strong fit for in-cluster browser access, internal portals, RBAC-based visibility, and plugin-driven Kubernetes workflows.</p></div>
+        <div class="map-card"><span class="token ns">Headlamp Desktop</span><h3>Local desktop path</h3><p>Strong fit for engineers who want local cluster access without deploying a shared web application into the cluster.</p></div>
+        <div class="map-card"><span class="token user">FreeLens</span><h3>Desktop IDE path</h3><p>Strong fit for GUI-first workstation users who want local multi-cluster access and extension-driven desktop workflows.</p></div>
+        <div class="map-card"><span class="token cluster">Portainer</span><h3>Broader platform operations path</h3><p>Strong fit for centralized management across Kubernetes and other container platforms, especially where governance and operational control matter.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Decision Sequence</h2>
+      <p class="section-copy">These questions narrow the choice quickly.</p>
+      <div class="steps-grid">
+        <div class="step-card"><h3>1. Is a shared browser UI required?</h3><p>If yes, start with Headlamp Web. If no, continue to the workstation-first options.</p></div>
+        <div class="step-card"><h3>2. Is local desktop access enough?</h3><p>If yes, Headlamp Desktop or FreeLens are natural candidates.</p></div>
+        <div class="step-card"><h3>3. Is the team terminal-first?</h3><p>If yes, K9s is usually the fastest operational companion.</p></div>
+        <div class="step-card"><h3>4. Is the problem larger than Kubernetes only?</h3><p>If yes, Portainer is worth considering because its scope goes beyond Kubernetes-only usage.</p></div>
+        <div class="step-card"><h3>5. Is plugin extensibility important?</h3><p>Headlamp and FreeLens both support extension-oriented workflows, while K9s stays closer to shell-centric usage.</p></div>
+        <div class="step-card"><h3>6. Is governance the main concern?</h3><p>If yes, Portainer’s broader governance story may matter more than a Kubernetes-only UI.</p></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">Recommended Direction</h2>
+      <p class="section-copy">For this repository, the most useful default split is straightforward.</p>
+      <div class="namespace-grid">
+        <div class="namespace-card"><span class="token group">Default Web UI</span><h3>Headlamp Web</h3><p>Use for shared browser-based Kubernetes access and current UI-based cluster documentation.</p></div>
+        <div class="namespace-card"><span class="token ns">Default Desktop UI</span><h3>Headlamp Desktop or FreeLens</h3><p>Use for local workstation-driven multi-cluster access without deploying a shared in-cluster UI first.</p></div>
+        <div class="namespace-card"><span class="token user">Default Terminal UI</span><h3>K9s</h3><p>Use when operational speed and shell-first workflows matter more than browser-based dashboards.</p></div>
+        <div class="namespace-card"><span class="token cluster">Broader Platform Path</span><h3>Portainer</h3><p>Use when the operating model spans Kubernetes plus other container platforms and governance-heavy fleet control.</p></div>
+      </div>
+      <div class="warning" style="margin-top: 18px;">
+        <h3>Summary</h3>
+        <p>Kubernetes Dashboard is now legacy context. For current Kubernetes-focused UI access, Headlamp is the strongest default path here. For desktop-first usage, Headlamp Desktop and FreeLens are strong options. For terminal-first workflows, K9s remains a strong companion. For broader container platform control, Portainer is the wider operational choice.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.filter');
+    const lanes = document.querySelectorAll('.swimlane');
+    function setFilter(group) {
+      buttons.forEach((button) => button.classList.toggle('active', button.dataset.filter === group));
+      lanes.forEach((lane) => lane.classList.toggle('visible', group === 'all' || lane.dataset.group === group));
+    }
+    buttons.forEach((button) => button.addEventListener('click', () => setFilter(button.dataset.filter)));
+  </script>
+</body>
+</html>

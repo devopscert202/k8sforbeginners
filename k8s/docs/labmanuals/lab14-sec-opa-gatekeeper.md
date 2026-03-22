@@ -1,4 +1,4 @@
-# Lab 11: OPA Gatekeeper - Policy Enforcement
+# Lab 14: OPA Gatekeeper - Policy Enforcement
 
 ## Overview
 In this lab, you will learn how to use Open Policy Agent (OPA) Gatekeeper to enforce security and compliance policies in Kubernetes. You'll install Gatekeeper, create constraint templates, define constraints, and test policy enforcement with compliant and non-compliant resources.

@@ -1,4 +1,4 @@
-# Lab 20: Horizontal Pod Autoscaling (HPA)
+# Lab 30: Horizontal Pod Autoscaling (HPA)
 
 ## Overview
 In this lab, you will learn about Horizontal Pod Autoscaling (HPA), a powerful Kubernetes feature that automatically scales your application based on observed metrics. You'll deploy applications with resource requests, configure HPAs, generate load to trigger scaling, and understand best practices for auto-scaling in production.
@@ -908,7 +908,7 @@ spec:
 ## Next Steps
 
 Now that you understand Horizontal Pod Autoscaling, proceed to:
-- [Lab 30: Health Checks and Probes](lab30-probes.md) - Implement liveness and readiness probes
+- [Lab 09: Health Checks and Probes](lab09-pod-health-probes.md) - Implement liveness and readiness probes
 - Explore Vertical Pod Autoscaling (VPA)
 - Learn about Cluster Autoscaler for node-level scaling
 

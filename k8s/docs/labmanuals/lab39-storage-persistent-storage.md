@@ -1,4 +1,4 @@
-# Lab 14: Persistent Volumes and Advanced Storage
+# Lab 39: Persistent Volumes and Advanced Storage
 
 ## Overview
 In this lab, you will learn about Kubernetes persistent storage concepts including PersistentVolumes (PV), PersistentVolumeClaims (PVC), network storage with NFS, and using Secrets as volumes. You'll work with real-world storage patterns used in production environments.

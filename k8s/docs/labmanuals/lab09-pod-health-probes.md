@@ -1,4 +1,4 @@
-# Lab 30: Health Checks with Liveness and Readiness Probes
+# Lab 09: Health Checks with Liveness and Readiness Probes
 
 ## Overview
 In this lab, you will learn about Kubernetes health probes - liveness, readiness, and startup probes. You'll implement different probe types (exec, HTTP, and TCP), understand their use cases, configure probe parameters, and learn best practices for ensuring application health and reliability in production.
