@@ -65,3 +65,5 @@ htmlcov/
 
 # Local tool state
 .cursor/
+*ps1
+*py
