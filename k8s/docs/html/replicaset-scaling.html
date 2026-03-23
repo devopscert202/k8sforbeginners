@@ -461,6 +461,89 @@ kubectl scale replicaset frontend-rs --replicas=3
 # View ReplicaSet status:
 kubectl get replicaset frontend-rs</pre></div>
         </div>
+
+        <!-- SVG: Scheduler decision process and pod placement -->
+        <svg viewBox="0 0 1200 600" style="max-width: 100%; height: auto; margin: 25px 0;">
+            <defs>
+                <marker id="schedArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#326CE5" />
+                </marker>
+            </defs>
+
+            <!-- Title -->
+            <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#326CE5">Scheduler Decision Process and Pod Placement</text>
+
+            <!-- ReplicaSet controller -->
+            <rect x="50" y="70" width="220" height="100" rx="8" fill="#3b82f6" opacity="0.9"/>
+            <text x="160" y="100" text-anchor="middle" font-size="16" font-weight="bold" fill="white">ReplicaSet Controller</text>
+            <text x="160" y="120" text-anchor="middle" font-size="11" fill="white">Detects: Current=3, Desired=5</text>
+            <text x="160" y="135" text-anchor="middle" font-size="11" fill="white">Action: Create 2 new pods</text>
+            <text x="160" y="155" text-anchor="middle" font-size="10" fill="white">(unscheduled, node=none)</text>
+            <line x1="270" y1="120" x2="340" y2="120" stroke="#326CE5" stroke-width="3" marker-end="url(#schedArrow)"/>
+
+            <!-- Scheduler watch -->
+            <rect x="350" y="70" width="220" height="100" rx="8" fill="#8b5cf6" opacity="0.9"/>
+            <text x="460" y="100" text-anchor="middle" font-size="16" font-weight="bold" fill="white">kube-scheduler</text>
+            <text x="460" y="120" text-anchor="middle" font-size="11" fill="white">Watches for unscheduled pods</text>
+            <text x="460" y="135" text-anchor="middle" font-size="11" fill="white">Filters and scores nodes</text>
+            <text x="460" y="155" text-anchor="middle" font-size="10" fill="white">Assigns pod → node binding</text>
+            <line x1="460" y1="170" x2="460" y2="230" stroke="#326CE5" stroke-width="3" marker-end="url(#schedArrow)"/>
+
+            <!-- Filtering stage -->
+            <rect x="50" y="240" width="300" height="120" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+            <text x="200" y="265" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">1. Filtering (Feasibility)</text>
+            <text x="70" y="290" font-size="11" fill="#78350f">Check each node for:</text>
+            <text x="90" y="310" font-size="10" fill="#78350f">✓ Sufficient CPU and memory</text>
+            <text x="90" y="325" font-size="10" fill="#78350f">✓ Volume requirements met</text>
+            <text x="90" y="340" font-size="10" fill="#78350f">✓ Node selectors match</text>
+            <text x="90" y="355" font-size="10" fill="#78350f">✓ Taints tolerated</text>
+            <line x1="350" y1="300" x2="430" y2="300" stroke="#326CE5" stroke-width="2" marker-end="url(#schedArrow)"/>
+
+            <!-- Scoring stage -->
+            <rect x="440" y="240" width="300" height="120" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+            <text x="590" y="265" text-anchor="middle" font-size="15" font-weight="bold" fill="#166534">2. Scoring (Priority)</text>
+            <text x="460" y="290" font-size="11" fill="#166534">Rank feasible nodes by:</text>
+            <text x="480" y="310" font-size="10" fill="#166534">★ Resource balance (spread pods)</text>
+            <text x="480" y="325" font-size="10" fill="#166534">★ Affinity/anti-affinity rules</text>
+            <text x="480" y="340" font-size="10" fill="#166534">★ Image locality</text>
+            <text x="480" y="355" font-size="10" fill="#166534">★ Pod topology spread</text>
+            <line x1="740" y1="300" x2="820" y2="300" stroke="#326CE5" stroke-width="2" marker-end="url(#schedArrow)"/>
+
+            <!-- Binding -->
+            <rect x="830" y="240" width="300" height="120" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+            <text x="980" y="265" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">3. Binding</text>
+            <text x="850" y="290" font-size="11" fill="#1e40af">Scheduler binds pod to best node:</text>
+            <text x="870" y="310" font-size="10" fill="#1e40af">• Writes pod.spec.nodeName</text>
+            <text x="870" y="325" font-size="10" fill="#1e40af">• Pod status: Scheduled</text>
+            <text x="870" y="340" font-size="10" fill="#1e40af">• kubelet on that node starts pod</text>
+
+            <!-- Node resource check -->
+            <text x="600" y="420" text-anchor="middle" font-size="20" font-weight="bold" fill="#326CE5">Node Resource Check Example</text>
+
+            <!-- Node 1 -->
+            <rect x="100" y="450" width="250" height="120" rx="8" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+            <text x="225" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#155724">worker-node-1 ✓</text>
+            <text x="120" y="500" font-size="11" fill="#155724">CPU: 2 cores available / 4 total</text>
+            <text x="120" y="520" font-size="11" fill="#155724">Memory: 4 GB available / 8 GB</text>
+            <text x="120" y="540" font-size="11" fill="#155724">Pods: 15 / 110 max</text>
+            <text x="120" y="560" font-size="10" font-weight="bold" fill="#166534">→ Selected for pod placement</text>
+
+            <!-- Node 2 -->
+            <rect x="400" y="450" width="250" height="120" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+            <text x="525" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#856404">worker-node-2 ⚠</text>
+            <text x="420" y="500" font-size="11" fill="#856404">CPU: 0.5 cores available / 4 total</text>
+            <text x="420" y="520" font-size="11" fill="#856404">Memory: 1 GB available / 8 GB</text>
+            <text x="420" y="540" font-size="11" fill="#856404">Pods: 45 / 110 max</text>
+            <text x="420" y="560" font-size="10" font-weight="bold" fill="#d97706">→ Low resources, lower priority</text>
+
+            <!-- Node 3 -->
+            <rect x="700" y="450" width="250" height="120" rx="8" fill="#f8d7da" stroke="#dc3545" stroke-width="2"/>
+            <text x="825" y="475" text-anchor="middle" font-size="14" font-weight="bold" fill="#721c24">worker-node-3 ✗</text>
+            <text x="720" y="500" font-size="11" fill="#721c24">CPU: 0.2 cores available / 2 total</text>
+            <text x="720" y="520" font-size="11" fill="#721c24">Memory: 256 MB available / 4 GB</text>
+            <text x="720" y="540" font-size="11" fill="#721c24">Taint: disk=full:NoSchedule</text>
+            <text x="720" y="560" font-size="10" font-weight="bold" fill="#dc2626">→ Filtered out (insufficient resources)</text>
+        </svg>
     </div>
 
     <div class="tooltip" id="tooltip"></div>

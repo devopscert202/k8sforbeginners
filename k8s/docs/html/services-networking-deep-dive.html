@@ -271,6 +271,80 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        /* SVG Diagram Styles */
+        .diagram-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid var(--line);
+        }
+        .diagram-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .diagram-btn {
+            padding: 8px 16px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: var(--kube-blue-deep);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .diagram-btn:hover,
+        .diagram-btn.active {
+            background: var(--kube-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+        .svg-diagram {
+            display: none;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .svg-diagram.active {
+            display: block;
+        }
+        .diagram-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .diagram-node:hover rect,
+        .diagram-node:hover ellipse,
+        .diagram-node:hover circle {
+            filter: brightness(1.1);
+            stroke-width: 3;
+        }
+        .diagram-arrow {
+            transition: all 0.3s ease;
+        }
+        .diagram-node:hover ~ .diagram-arrow {
+            stroke-width: 3;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .tooltip.show {
+            opacity: 1;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
@@ -291,6 +365,7 @@
 
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
+            <button class="btn" data-view="diagram">Diagrams</button>
             <button class="btn" data-view="flow">Flow</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
@@ -319,6 +394,322 @@
             </article>
 </div>
 
+        </section>
+
+        <section id="diagram" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Architecture</div>
+                    <h2>Interactive Service Networking Diagrams</h2>
+                </div>
+            </div>
+
+            <div class="diagram-controls">
+                <button class="diagram-btn active" data-diagram="service-discovery">Service Discovery</button>
+                <button class="diagram-btn" data-diagram="endpoint-mapping">Endpoint Mapping</button>
+                <button class="diagram-btn" data-diagram="traffic-flow">Traffic Flow</button>
+            </div>
+
+            <div class="diagram-container">
+                <!-- Service Discovery Diagram -->
+                <svg class="svg-diagram active" id="service-discovery" viewBox="0 0 1000 550" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+
+                    <!-- Title -->
+                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Service Discovery Flow via DNS</text>
+
+                    <!-- Step 1: Pod initiates request -->
+                    <g class="diagram-node" data-tooltip="Application Pod needs to connect to backend service">
+                        <ellipse cx="150" cy="120" rx="70" ry="45" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="150" y="110" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Client Pod</text>
+                        <text x="150" y="128" text-anchor="middle" fill="#ede9fe" font-size="11">frontend-app</text>
+                        <text x="150" y="143" text-anchor="middle" fill="#ede9fe" font-size="10">10.244.1.5</text>
+                    </g>
+
+                    <rect x="80" y="180" width="140" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="150" y="200" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="11">DNS Query</text>
+                    <text x="150" y="217" text-anchor="middle" fill="#92400e" font-size="10">backend-service</text>
+
+                    <!-- Arrow to CoreDNS -->
+                    <line x1="220" y1="205" x2="330" y2="205" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="275" y="195" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="600">1. Query</text>
+
+                    <!-- Step 2: CoreDNS resolves -->
+                    <g class="diagram-node" data-tooltip="CoreDNS resolves service name to ClusterIP">
+                        <rect x="330" y="160" width="180" height="90" rx="8" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <text x="420" y="185" text-anchor="middle" fill="white" font-weight="bold" font-size="14">CoreDNS</text>
+                        <text x="420" y="205" text-anchor="middle" fill="#d1fae5" font-size="11">DNS Server</text>
+                        <text x="420" y="225" text-anchor="middle" fill="#d1fae5" font-size="10">kube-system</text>
+                        <text x="420" y="240" text-anchor="middle" fill="#d1fae5" font-size="9">Resolves service names</text>
+                    </g>
+
+                    <!-- Arrow to Service IP -->
+                    <line x1="510" y1="205" x2="620" y2="205" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="565" y="195" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="600">2. Returns</text>
+
+                    <!-- Step 3: Service ClusterIP -->
+                    <g class="diagram-node" data-tooltip="Service provides stable ClusterIP for backend">
+                        <rect x="620" y="160" width="200" height="90" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                        <text x="720" y="185" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Service</text>
+                        <text x="720" y="203" text-anchor="middle" fill="#dbeafe" font-size="12">backend-service</text>
+                        <text x="720" y="223" text-anchor="middle" fill="#dbeafe" font-size="11">ClusterIP:</text>
+                        <text x="720" y="240" text-anchor="middle" fill="#fef3c7" font-size="12" font-weight="bold">10.96.0.50</text>
+                    </g>
+
+                    <!-- Arrow down to Endpoints -->
+                    <line x1="720" y1="250" x2="720" y2="320" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="745" y="285" text-anchor="start" fill="#1d4ed8" font-size="10" font-weight="600">3. Lookup</text>
+
+                    <!-- Step 4: Endpoints -->
+                    <g class="diagram-node" data-tooltip="Endpoints object tracks Pod IPs matching service selector">
+                        <rect x="600" y="320" width="240" height="100" rx="8" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
+                        <text x="720" y="345" text-anchor="middle" fill="#be185d" font-weight="bold" font-size="14">Endpoints</text>
+                        <text x="720" y="363" text-anchor="middle" fill="#9f1239" font-size="11">backend-service</text>
+
+                        <rect x="620" y="375" width="200" height="35" rx="4" fill="white" stroke="#ec4899" stroke-width="1"/>
+                        <text x="720" y="390" text-anchor="middle" fill="#334155" font-size="10">10.244.1.10:8080</text>
+                        <text x="720" y="405" text-anchor="middle" fill="#334155" font-size="10">10.244.2.15:8080</text>
+                    </g>
+
+                    <!-- Arrow to Pods -->
+                    <line x1="660" y1="420" x2="580" y2="480" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <line x1="780" y1="420" x2="860" y2="480" stroke="#ec4899" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="720" y="455" text-anchor="middle" fill="#be185d" font-size="10" font-weight="600">4. Route to Pods</text>
+
+                    <!-- Backend Pods -->
+                    <g class="diagram-node" data-tooltip="Backend Pod 1">
+                        <ellipse cx="560" cy="505" rx="65" ry="40" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                        <text x="560" y="500" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Backend</text>
+                        <text x="560" y="515" text-anchor="middle" fill="#dcfce7" font-size="11">Pod 1</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Backend Pod 2">
+                        <ellipse cx="880" cy="505" rx="65" ry="40" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                        <text x="880" y="500" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Backend</text>
+                        <text x="880" y="515" text-anchor="middle" fill="#dcfce7" font-size="11">Pod 2</text>
+                    </g>
+
+                    <!-- DNS Resolution Info -->
+                    <rect x="50" y="300" width="480" height="220" rx="8" fill="#f0f9ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="290" y="330" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">DNS Resolution Details</text>
+
+                    <text x="70" y="360" fill="#334155" font-size="11" font-weight="bold">FQDN Format:</text>
+                    <text x="70" y="378" fill="#334155" font-size="10">&lt;service-name&gt;.&lt;namespace&gt;.svc.cluster.local</text>
+
+                    <text x="70" y="403" fill="#334155" font-size="11" font-weight="bold">Examples:</text>
+                    <rect x="70" y="410" width="440" height="25" rx="4" fill="white" stroke="#326CE5" stroke-width="1"/>
+                    <text x="290" y="427" text-anchor="middle" fill="#334155" font-family="monospace" font-size="10">backend-service (same namespace)</text>
+
+                    <rect x="70" y="440" width="440" height="25" rx="4" fill="white" stroke="#326CE5" stroke-width="1"/>
+                    <text x="290" y="457" text-anchor="middle" fill="#334155" font-family="monospace" font-size="10">backend-service.production (cross-namespace)</text>
+
+                    <rect x="70" y="470" width="440" height="25" rx="4" fill="white" stroke="#326CE5" stroke-width="1"/>
+                    <text x="290" y="487" text-anchor="middle" fill="#334155" font-family="monospace" font-size="10">backend-service.production.svc.cluster.local (full FQDN)</text>
+                </svg>
+
+                <!-- Endpoint Mapping Diagram -->
+                <svg class="svg-diagram" id="endpoint-mapping" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Title -->
+                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Selector → Endpoint → Pod Relationship</text>
+
+                    <!-- Service with Selector -->
+                    <g class="diagram-node" data-tooltip="Service defines selector to find matching Pods">
+                        <rect x="50" y="80" width="280" height="180" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                        <text x="190" y="110" text-anchor="middle" fill="white" font-weight="bold" font-size="16">Service</text>
+                        <text x="190" y="130" text-anchor="middle" fill="#dbeafe" font-size="13">my-backend-service</text>
+
+                        <rect x="70" y="145" width="240" height="100" rx="6" fill="white" stroke="#1d4ed8" stroke-width="1"/>
+                        <text x="190" y="165" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="12">Selector</text>
+                        <rect x="85" y="175" width="210" height="30" rx="4" fill="#dbeafe" stroke="#326CE5" stroke-width="1"/>
+                        <text x="190" y="195" text-anchor="middle" fill="#334155" font-size="11">app: backend</text>
+                        <rect x="85" y="210" width="210" height="30" rx="4" fill="#dbeafe" stroke="#326CE5" stroke-width="1"/>
+                        <text x="190" y="230" text-anchor="middle" fill="#334155" font-size="11">version: v1</text>
+                    </g>
+
+                    <!-- Arrow to Endpoint Controller -->
+                    <line x1="330" y1="170" x2="420" y2="170" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="375" y="160" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="600">watches</text>
+
+                    <!-- Endpoint Controller -->
+                    <g class="diagram-node" data-tooltip="Endpoint Controller automatically maintains endpoint list">
+                        <rect x="420" y="120" width="160" height="100" rx="8" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <text x="500" y="145" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Endpoint</text>
+                        <text x="500" y="162" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Controller</text>
+                        <text x="500" y="185" text-anchor="middle" fill="#d1fae5" font-size="10">Automatically</text>
+                        <text x="500" y="200" text-anchor="middle" fill="#d1fae5" font-size="10">maintains</text>
+                        <text x="500" y="215" text-anchor="middle" fill="#d1fae5" font-size="10">Endpoints</text>
+                    </g>
+
+                    <!-- Arrow to Endpoints Object -->
+                    <line x1="580" y1="170" x2="670" y2="170" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="625" y="160" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="600">creates</text>
+
+                    <!-- Endpoints Object -->
+                    <g class="diagram-node" data-tooltip="Endpoints object lists Pod IPs and ports">
+                        <rect x="670" y="80" width="280" height="180" rx="8" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
+                        <text x="810" y="110" text-anchor="middle" fill="#be185d" font-weight="bold" font-size="16">Endpoints</text>
+                        <text x="810" y="130" text-anchor="middle" fill="#9f1239" font-size="13">my-backend-service</text>
+
+                        <rect x="690" y="145" width="240" height="100" rx="6" fill="white" stroke="#ec4899" stroke-width="1"/>
+                        <text x="810" y="165" text-anchor="middle" fill="#be185d" font-weight="bold" font-size="12">Ready Addresses</text>
+                        <rect x="705" y="175" width="210" height="30" rx="4" fill="#fce7f3" stroke="#ec4899" stroke-width="1"/>
+                        <text x="810" y="195" text-anchor="middle" fill="#334155" font-size="10">10.244.1.10:8080 (Pod 1)</text>
+                        <rect x="705" y="210" width="210" height="30" rx="4" fill="#fce7f3" stroke="#ec4899" stroke-width="1"/>
+                        <text x="810" y="230" text-anchor="middle" fill="#334155" font-size="10">10.244.2.15:8080 (Pod 2)</text>
+                    </g>
+
+                    <!-- Arrow down to Pods -->
+                    <line x1="500" y1="220" x2="500" y2="310" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="520" y="265" text-anchor="start" fill="#1d4ed8" font-size="10" font-weight="600">selects</text>
+
+                    <!-- Pods Section -->
+                    <rect x="50" y="310" width="900" height="260" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="500" y="340" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="14">All Pods in Namespace</text>
+
+                    <!-- Matching Pods (in Endpoints) -->
+                    <rect x="80" y="365" width="400" height="180" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                    <text x="280" y="390" text-anchor="middle" fill="#166534" font-weight="bold" font-size="13">Matching Pods (In Service)</text>
+
+                    <g class="diagram-node" data-tooltip="Pod matches selector: included in Endpoints">
+                        <rect x="100" y="405" width="160" height="110" rx="6" fill="white" stroke="#22c55e" stroke-width="2"/>
+                        <text x="180" y="425" text-anchor="middle" fill="#166534" font-weight="bold" font-size="12">Pod 1</text>
+                        <text x="180" y="443" text-anchor="middle" fill="#334155" font-size="10">IP: 10.244.1.10</text>
+                        <text x="180" y="463" text-anchor="middle" fill="#334155" font-weight="bold" font-size="10">Labels:</text>
+                        <text x="180" y="479" text-anchor="middle" fill="#22c55e" font-size="10">app: backend</text>
+                        <text x="180" y="495" text-anchor="middle" fill="#22c55e" font-size="10">version: v1</text>
+                        <text x="180" y="510" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">✓ MATCHES</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Pod matches selector: included in Endpoints">
+                        <rect x="290" y="405" width="160" height="110" rx="6" fill="white" stroke="#22c55e" stroke-width="2"/>
+                        <text x="370" y="425" text-anchor="middle" fill="#166534" font-weight="bold" font-size="12">Pod 2</text>
+                        <text x="370" y="443" text-anchor="middle" fill="#334155" font-size="10">IP: 10.244.2.15</text>
+                        <text x="370" y="463" text-anchor="middle" fill="#334155" font-weight="bold" font-size="10">Labels:</text>
+                        <text x="370" y="479" text-anchor="middle" fill="#22c55e" font-size="10">app: backend</text>
+                        <text x="370" y="495" text-anchor="middle" fill="#22c55e" font-size="10">version: v1</text>
+                        <text x="370" y="510" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">✓ MATCHES</text>
+                    </g>
+
+                    <!-- Non-Matching Pods (excluded) -->
+                    <rect x="520" y="365" width="400" height="180" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+                    <text x="720" y="390" text-anchor="middle" fill="#991b1b" font-weight="bold" font-size="13">Non-Matching Pods (Excluded)</text>
+
+                    <g class="diagram-node" data-tooltip="Pod does not match selector: excluded from Endpoints">
+                        <rect x="540" y="405" width="160" height="110" rx="6" fill="white" stroke="#ef4444" stroke-width="2"/>
+                        <text x="620" y="425" text-anchor="middle" fill="#991b1b" font-weight="bold" font-size="12">Pod 3</text>
+                        <text x="620" y="443" text-anchor="middle" fill="#334155" font-size="10">IP: 10.244.1.20</text>
+                        <text x="620" y="463" text-anchor="middle" fill="#334155" font-weight="bold" font-size="10">Labels:</text>
+                        <text x="620" y="479" text-anchor="middle" fill="#ef4444" font-size="10">app: frontend</text>
+                        <text x="620" y="495" text-anchor="middle" fill="#64748b" font-size="10">version: v1</text>
+                        <text x="620" y="510" text-anchor="middle" fill="#dc2626" font-size="9" font-weight="bold">✗ NO MATCH</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Pod does not match selector: excluded from Endpoints">
+                        <rect x="730" y="405" width="160" height="110" rx="6" fill="white" stroke="#ef4444" stroke-width="2"/>
+                        <text x="810" y="425" text-anchor="middle" fill="#991b1b" font-weight="bold" font-size="12">Pod 4</text>
+                        <text x="810" y="443" text-anchor="middle" fill="#334155" font-size="10">IP: 10.244.2.22</text>
+                        <text x="810" y="463" text-anchor="middle" fill="#334155" font-weight="bold" font-size="10">Labels:</text>
+                        <text x="810" y="479" text-anchor="middle" fill="#22c55e" font-size="10">app: backend</text>
+                        <text x="810" y="495" text-anchor="middle" fill="#ef4444" font-size="10">version: v2</text>
+                        <text x="810" y="510" text-anchor="middle" fill="#dc2626" font-size="9" font-weight="bold">✗ NO MATCH</text>
+                    </g>
+                </svg>
+
+                <!-- Traffic Flow Diagram -->
+                <svg class="svg-diagram" id="traffic-flow" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Title -->
+                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">iptables Rules Generation and Traffic Flow</text>
+
+                    <!-- kube-proxy -->
+                    <g class="diagram-node" data-tooltip="kube-proxy watches API server and programs iptables rules">
+                        <rect x="380" y="70" width="240" height="90" rx="8" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                        <text x="500" y="100" text-anchor="middle" fill="white" font-weight="bold" font-size="16">kube-proxy</text>
+                        <text x="500" y="120" text-anchor="middle" fill="#e0e7ff" font-size="11">Watches Services and</text>
+                        <text x="500" y="138" text-anchor="middle" fill="#e0e7ff" font-size="11">Endpoints</text>
+                        <text x="500" y="153" text-anchor="middle" fill="#c7d2fe" font-size="9">(on each node)</text>
+                    </g>
+
+                    <!-- Arrow down -->
+                    <line x1="500" y1="160" x2="500" y2="210" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="520" y="185" text-anchor="start" fill="#1d4ed8" font-size="10" font-weight="600">Programs</text>
+
+                    <!-- iptables Rules -->
+                    <g class="diagram-node" data-tooltip="iptables rules handle NAT and load balancing for Services">
+                        <rect x="300" y="210" width="400" height="140" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="500" y="235" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="14">iptables Rules</text>
+                        <text x="500" y="253" text-anchor="middle" fill="#78350f" font-size="11">(NAT and load balancing)</text>
+
+                        <rect x="320" y="265" width="360" height="70" rx="6" fill="white" stroke="#f59e0b" stroke-width="1"/>
+                        <text x="500" y="283" text-anchor="middle" fill="#334155" font-family="monospace" font-size="9">KUBE-SERVICES → KUBE-SVC-XXX</text>
+                        <text x="500" y="298" text-anchor="middle" fill="#334155" font-family="monospace" font-size="9">DNAT 10.96.0.50:8080 →</text>
+                        <text x="500" y="313" text-anchor="middle" fill="#334155" font-family="monospace" font-size="9">  50% 10.244.1.10:8080</text>
+                        <text x="500" y="328" text-anchor="middle" fill="#334155" font-family="monospace" font-size="9">  50% 10.244.2.15:8080</text>
+                    </g>
+
+                    <!-- Traffic Flow -->
+                    <text x="500" y="380" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Traffic Flow Example</text>
+
+                    <!-- Client Pod -->
+                    <g class="diagram-node" data-tooltip="Client Pod sends request to Service ClusterIP">
+                        <ellipse cx="150" cy="470" rx="70" ry="45" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="150" y="460" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Client Pod</text>
+                        <text x="150" y="478" text-anchor="middle" fill="#ede9fe" font-size="11">frontend</text>
+                    </g>
+
+                    <!-- Request -->
+                    <rect x="80" y="520" width="140" height="50" rx="6" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
+                    <text x="150" y="540" text-anchor="middle" fill="#be185d" font-weight="bold" font-size="11">Request</text>
+                    <text x="150" y="558" text-anchor="middle" fill="#9f1239" font-size="10">10.96.0.50:8080</text>
+
+                    <!-- Arrow to iptables processing -->
+                    <line x1="220" y1="545" x2="330" y2="480" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="260" y="505" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="600">1. Intercept</text>
+
+                    <!-- iptables Processing -->
+                    <g class="diagram-node" data-tooltip="iptables rewrites destination to Pod IP">
+                        <rect x="330" y="420" width="180" height="120" rx="8" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                        <text x="420" y="445" text-anchor="middle" fill="white" font-weight="bold" font-size="13">iptables NAT</text>
+                        <text x="420" y="465" text-anchor="middle" fill="#fef3c7" font-size="10">Rewrites destination</text>
+                        <text x="420" y="485" text-anchor="middle" fill="white" font-size="10">FROM:</text>
+                        <text x="420" y="500" text-anchor="middle" fill="#fef3c7" font-size="9">10.96.0.50:8080</text>
+                        <text x="420" y="515" text-anchor="middle" fill="white" font-size="10">TO (random):</text>
+                        <text x="420" y="530" text-anchor="middle" fill="#dcfce7" font-size="9">10.244.1.10:8080</text>
+                    </g>
+
+                    <!-- Arrows to Pods -->
+                    <line x1="510" y1="480" x2="600" y2="480" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="555" y="470" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="600">2. Forward</text>
+
+                    <line x1="510" y1="520" x2="790" y2="520" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="650" y="510" text-anchor="middle" fill="#64748b" font-size="9" font-style="italic">or alternate Pod</text>
+
+                    <!-- Backend Pods -->
+                    <g class="diagram-node" data-tooltip="Backend Pod 1 receives traffic">
+                        <ellipse cx="650" cy="480" rx="70" ry="45" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                        <text x="650" y="470" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Backend</text>
+                        <text x="650" y="488" text-anchor="middle" fill="#dcfce7" font-size="11">Pod 1</text>
+                        <text x="650" y="503" text-anchor="middle" fill="#dcfce7" font-size="9">10.244.1.10</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Backend Pod 2 (alternate destination)">
+                        <ellipse cx="850" cy="520" rx="70" ry="45" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                        <text x="850" y="510" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Backend</text>
+                        <text x="850" y="528" text-anchor="middle" fill="#dcfce7" font-size="11">Pod 2</text>
+                        <text x="850" y="543" text-anchor="middle" fill="#dcfce7" font-size="9">10.244.2.15</text>
+                    </g>
+
+                    <!-- Info Box -->
+                    <rect x="300" y="365" width="400" height="45" rx="6" fill="#f0f9ff" stroke="#326CE5" stroke-width="1"/>
+                    <text x="500" y="383" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="bold">Key Point:</text>
+                    <text x="500" y="400" text-anchor="middle" fill="#334155" font-size="9">Service ClusterIP is virtual - iptables rewrites packets to actual Pod IPs</text>
+                </svg>
+            </div>
+
+            <div class="section-note">Hover over components for detailed information. These diagrams show how Kubernetes services enable discovery, endpoint tracking, and traffic routing.</div>
         </section>
 
         <section id="flow" class="view">
@@ -442,7 +833,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>
@@ -456,6 +846,45 @@
                 views.forEach((view) => view.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Diagram switching
+        const diagramButtons = document.querySelectorAll('.diagram-btn');
+        const diagrams = document.querySelectorAll('.svg-diagram');
+
+        diagramButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const diagramId = button.dataset.diagram;
+                diagramButtons.forEach((item) => item.classList.remove('active'));
+                diagrams.forEach((diagram) => diagram.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(diagramId).classList.add('active');
+            });
+        });
+
+        // Tooltip functionality
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        document.body.appendChild(tooltip);
+
+        const diagramNodes = document.querySelectorAll('.diagram-node');
+        diagramNodes.forEach((node) => {
+            node.addEventListener('mouseenter', (e) => {
+                const tooltipText = node.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    tooltip.textContent = tooltipText;
+                    tooltip.classList.add('show');
+                }
+            });
+
+            node.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.pageX + 15) + 'px';
+                tooltip.style.top = (e.pageY + 15) + 'px';
+            });
+
+            node.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
             });
         });
     </script>

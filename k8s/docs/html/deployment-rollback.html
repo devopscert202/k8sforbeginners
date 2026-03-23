@@ -469,6 +469,215 @@
             color: #326ce5;
         }
 
+        /* SVG Styles */
+        .svg-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .svg-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .rollback-step {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .rollback-step:hover {
+            opacity: 0.85;
+        }
+
+        .flow-arrow-animated {
+            stroke-dasharray: 8, 4;
+            animation: dash-flow 1.5s linear infinite;
+        }
+
+        @keyframes dash-flow {
+            to {
+                stroke-dashoffset: -12;
+            }
+        }
+
+        .pod-transition {
+            transition: all 0.5s ease;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .toggle-btn {
+            padding: 12px 28px;
+            border: 2px solid #326ce5;
+            background: white;
+            color: #326ce5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #f0f4ff;
+        }
+
+        .toggle-btn.active {
+            background: #326ce5;
+            color: white;
+        }
+
+        .view-content {
+            display: none;
+        }
+
+        .view-content.active {
+            display: block;
+        }
+
+        .revision-timeline {
+            position: relative;
+            padding: 40px 20px;
+            margin: 30px 0;
+        }
+
+        .revision-timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 60px;
+            bottom: 60px;
+            width: 4px;
+            background: linear-gradient(180deg, #326ce5 0%, #1a4d99 100%);
+            transform: translateX(-50%);
+        }
+
+        .revision-item {
+            display: flex;
+            align-items: center;
+            margin: 50px 0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .revision-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+
+        .revision-content {
+            width: 42%;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            border: 2px solid #dee2e6;
+        }
+
+        .revision-item:hover .revision-content {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(50, 108, 229, 0.3);
+            border-color: #326ce5;
+        }
+
+        .revision-marker {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #326ce5;
+            border: 5px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            z-index: 10;
+        }
+
+        .revision-marker.current {
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(40, 167, 69, 0); }
+        }
+
+        .revision-date {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .revision-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #326ce5;
+            margin-bottom: 10px;
+        }
+
+        .revision-details {
+            color: #495057;
+            margin: 8px 0;
+        }
+
+        .revision-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .revision-badge.initial {
+            background: #e7f3ff;
+            color: #326ce5;
+        }
+
+        .revision-badge.update {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .revision-badge.rollback {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(30, 41, 59, 0.95);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 1000;
+            max-width: 350px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            line-height: 1.4;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .comparison-container {
                 grid-template-columns: 1fr;
@@ -491,6 +700,24 @@
             .header h1 {
                 font-size: 1.8em;
             }
+
+            .revision-timeline::before {
+                left: 30px;
+            }
+
+            .revision-item {
+                flex-direction: column !important;
+                align-items: flex-start;
+                padding-left: 70px;
+            }
+
+            .revision-content {
+                width: 100%;
+            }
+
+            .revision-marker {
+                left: 30px;
+            }
         }
     </style>
 </head>
@@ -502,15 +729,160 @@
         </div>
 
         <div class="tabs">
-            <button class="tab active" data-tab="rollback-process">Rollback Process</button>
-            <button class="tab" data-tab="revision-history">Revision History</button>
+            <button class="tab active" data-tab="rollback-flow">Rollback Flow</button>
+            <button class="tab" data-tab="rollback-process">Rollback Process</button>
+            <button class="tab" data-tab="revision-timeline">Revision Timeline</button>
+            <button class="tab" data-tab="pod-replacement">Pod Replacement</button>
+            <button class="tab" data-tab="comparison">Rollout vs Rollback</button>
             <button class="tab" data-tab="before-after">Before/After</button>
             <button class="tab" data-tab="commands">Commands</button>
             <button class="tab" data-tab="how-it-works">How It Works</button>
         </div>
 
-        <!-- Tab 1: Rollback Process -->
-        <div class="tab-content active" id="rollback-process">
+        <!-- Tab 1: Rollback Flow Diagram -->
+        <div class="tab-content active" id="rollback-flow">
+            <div class="section">
+                <h2>Interactive Rollback Flow Diagram</h2>
+                <p>Hover over each step to see the kubectl command and detailed explanation.</p>
+
+                <div class="svg-container">
+                    <svg viewBox="0 0 900 700" width="900" height="700">
+                        <defs>
+                            <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#326ce5"/>
+                            </marker>
+                            <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#dc3545"/>
+                            </marker>
+                            <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#28a745"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Step 1: Detect Issue -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Step 1: Detect Issue<br><br>Command: kubectl get pods<br>kubectl logs &lt;pod-name&gt;<br><br>Your application is running version 2, but users are reporting errors. You need to rollback to the previous stable version.')" onmouseleave="hideTooltip()">
+                            <rect x="50" y="20" width="180" height="80" rx="10" fill="#dc3545" stroke="#c82333" stroke-width="3"/>
+                            <text x="140" y="50" text-anchor="middle" font-size="18" font-weight="bold" fill="white">1. Detect Issue</text>
+                            <text x="140" y="75" text-anchor="middle" font-size="14" fill="white">Version 2 Broken</text>
+                        </g>
+
+                        <!-- Arrow 1 to 2 -->
+                        <path d="M 240 60 L 320 60" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" class="flow-arrow-animated"/>
+                        <text x="280" y="50" text-anchor="middle" font-size="12" fill="#326ce5" font-weight="600">Problem Found</text>
+
+                        <!-- Step 2: Execute Rollback -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Step 2: Execute Rollback Command<br><br>Command: kubectl rollout undo deployment/apache-deployment<br><br>or<br><br>kubectl rollout undo deployment/apache-deployment --to-revision=1<br><br>This tells Kubernetes to rollback to the previous revision.')" onmouseleave="hideTooltip()">
+                            <rect x="330" y="20" width="240" height="80" rx="10" fill="#ffc107" stroke="#e0a800" stroke-width="3"/>
+                            <text x="450" y="50" text-anchor="middle" font-size="18" font-weight="bold" fill="white">2. Execute Rollback</text>
+                            <text x="450" y="75" text-anchor="middle" font-size="13" fill="white">kubectl rollout undo</text>
+                        </g>
+
+                        <!-- Arrow 2 to 3 -->
+                        <path d="M 450 100 L 450 140" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" class="flow-arrow-animated"/>
+                        <text x="480" y="125" text-anchor="middle" font-size="12" fill="#326ce5" font-weight="600">API Call</text>
+
+                        <!-- Step 3: Create New Revision -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Step 3: Kubernetes Creates New Revision<br><br>Command: kubectl rollout history deployment/apache-deployment<br><br>Kubernetes doesn\\'t go back to revision 1. Instead, it creates revision 3 using the pod template from revision 1. This maintains audit trail.')" onmouseleave="hideTooltip()">
+                            <rect x="330" y="160" width="240" height="80" rx="10" fill="#17a2b8" stroke="#138496" stroke-width="3"/>
+                            <text x="450" y="190" text-anchor="middle" font-size="18" font-weight="bold" fill="white">3. Create Revision 3</text>
+                            <text x="450" y="215" text-anchor="middle" font-size="13" fill="white">(Using v1 Template)</text>
+                        </g>
+
+                        <!-- Arrow 3 to 4 -->
+                        <path d="M 450 240 L 450 280" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" class="flow-arrow-animated"/>
+                        <text x="490" y="265" text-anchor="middle" font-size="12" fill="#326ce5" font-weight="600">Switch RS</text>
+
+                        <!-- Step 4: ReplicaSet Switching -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Step 4: ReplicaSet Version Switching<br><br>Command: kubectl get rs<br><br>v2 ReplicaSet (apache-deployment-5d4f6b7c8d) scales down<br>v1 ReplicaSet (apache-deployment-6c5d7f8a9b) scales up<br><br>Kubernetes reuses the existing v1 ReplicaSet instead of creating a new one.')" onmouseleave="hideTooltip()">
+                            <rect x="250" y="300" width="400" height="100" rx="10" fill="#6f42c1" stroke="#5a32a3" stroke-width="3"/>
+                            <text x="450" y="330" text-anchor="middle" font-size="18" font-weight="bold" fill="white">4. ReplicaSet Switching</text>
+
+                            <!-- V2 ReplicaSet -->
+                            <rect x="270" y="345" width="160" height="40" rx="5" fill="#dc3545" stroke="#c82333" stroke-width="2"/>
+                            <text x="350" y="370" text-anchor="middle" font-size="12" fill="white" font-weight="600">v2 RS → Scale Down</text>
+
+                            <!-- V1 ReplicaSet -->
+                            <rect x="470" y="345" width="160" height="40" rx="5" fill="#28a745" stroke="#218838" stroke-width="2"/>
+                            <text x="550" y="370" text-anchor="middle" font-size="12" fill="white" font-weight="600">v1 RS → Scale Up</text>
+                        </g>
+
+                        <!-- Arrow 4 to 5 -->
+                        <path d="M 450 400 L 450 440" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" class="flow-arrow-animated"/>
+                        <text x="490" y="425" text-anchor="middle" font-size="12" fill="#326ce5" font-weight="600">Replace Pods</text>
+
+                        <!-- Step 5: Pod Replacement -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Step 5: Pod Replacement Sequence<br><br>Command: kubectl rollout status deployment/apache-deployment<br><br>New v1 pods are created first<br>Once ready, old v2 pods are terminated<br>Follows maxSurge and maxUnavailable strategy<br>Zero downtime rollback')" onmouseleave="hideTooltip()">
+                            <rect x="250" y="460" width="400" height="120" rx="10" fill="#fd7e14" stroke="#e66a00" stroke-width="3"/>
+                            <text x="450" y="490" text-anchor="middle" font-size="18" font-weight="bold" fill="white">5. Pod Replacement</text>
+
+                            <!-- Old Pods -->
+                            <g>
+                                <rect x="280" y="505" width="50" height="50" rx="5" fill="#dc3545" stroke="#c82333" stroke-width="2" opacity="0.7"/>
+                                <text x="305" y="535" text-anchor="middle" font-size="16" fill="white" font-weight="bold">v2</text>
+                                <text x="305" y="520" text-anchor="middle" font-size="10" fill="white">Terminating</text>
+
+                                <rect x="340" y="505" width="50" height="50" rx="5" fill="#dc3545" stroke="#c82333" stroke-width="2" opacity="0.7"/>
+                                <text x="365" y="535" text-anchor="middle" font-size="16" fill="white" font-weight="bold">v2</text>
+                                <text x="365" y="520" text-anchor="middle" font-size="10" fill="white">Terminating</text>
+                            </g>
+
+                            <!-- Arrow -->
+                            <path d="M 400 530 L 510 530" stroke="white" stroke-width="3" fill="none" marker-end="url(#arrow-green)"/>
+
+                            <!-- New Pods -->
+                            <g>
+                                <rect x="520" y="505" width="50" height="50" rx="5" fill="#28a745" stroke="#218838" stroke-width="2"/>
+                                <text x="545" y="535" text-anchor="middle" font-size="16" fill="white" font-weight="bold">v1</text>
+                                <text x="545" y="520" text-anchor="middle" font-size="10" fill="white">Running</text>
+
+                                <rect x="580" y="505" width="50" height="50" rx="5" fill="#28a745" stroke="#218838" stroke-width="2"/>
+                                <text x="605" y="535" text-anchor="middle" font-size="16" fill="white" font-weight="bold">v1</text>
+                                <text x="605" y="520" text-anchor="middle" font-size="10" fill="white">Running</text>
+                            </g>
+                        </g>
+
+                        <!-- Arrow 5 to 6 -->
+                        <path d="M 450 580 L 450 620" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-blue)" class="flow-arrow-animated"/>
+                        <text x="490" y="605" text-anchor="middle" font-size="12" fill="#326ce5" font-weight="600">Verify</text>
+
+                        <!-- Step 6: Verify Success -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Step 6: Verify Rollback Success<br><br>Commands:<br>kubectl get deployment apache-deployment<br>kubectl describe deployment apache-deployment<br>kubectl get pods<br><br>Check that all pods are running v1<br>Verify application is working correctly<br>Monitor for any issues')" onmouseleave="hideTooltip()">
+                            <rect x="330" y="640" width="240" height="80" rx="10" fill="#28a745" stroke="#218838" stroke-width="3"/>
+                            <text x="450" y="670" text-anchor="middle" font-size="18" font-weight="bold" fill="white">6. Verify Success</text>
+                            <text x="450" y="695" text-anchor="middle" font-size="13" fill="white">Version 1 Restored</text>
+                        </g>
+
+                        <!-- Side Note: Revision Flow -->
+                        <rect x="680" y="150" width="200" height="180" rx="10" fill="#f8f9fa" stroke="#326ce5" stroke-width="2"/>
+                        <text x="780" y="175" text-anchor="middle" font-size="14" font-weight="bold" fill="#326ce5">Revision History</text>
+
+                        <text x="780" y="205" text-anchor="middle" font-size="12" fill="#495057">Before Rollback:</text>
+                        <text x="780" y="225" text-anchor="middle" font-size="11" fill="#6c757d">Rev 1: v1 (inactive)</text>
+                        <text x="780" y="242" text-anchor="middle" font-size="11" fill="#28a745" font-weight="bold">Rev 2: v2 (active)</text>
+
+                        <line x1="700" y1="260" x2="860" y2="260" stroke="#dee2e6" stroke-width="1"/>
+
+                        <text x="780" y="280" text-anchor="middle" font-size="12" fill="#495057">After Rollback:</text>
+                        <text x="780" y="300" text-anchor="middle" font-size="11" fill="#6c757d">Rev 2: v2 (inactive)</text>
+                        <text x="780" y="317" text-anchor="middle" font-size="11" fill="#28a745" font-weight="bold">Rev 3: v1 (active)</text>
+                    </svg>
+                </div>
+
+                <div class="info-box success">
+                    <h4>Key Takeaways</h4>
+                    <ul>
+                        <li><strong>Revision Numbers Always Increment:</strong> Rollback creates revision 3, not revert to revision 1</li>
+                        <li><strong>Zero Downtime:</strong> Rolling update strategy ensures continuous availability</li>
+                        <li><strong>ReplicaSet Reuse:</strong> Kubernetes reuses existing ReplicaSets instead of creating duplicates</li>
+                        <li><strong>Complete Audit Trail:</strong> All changes are tracked chronologically</li>
+                        <li><strong>Fast Recovery:</strong> Rollback is much faster than a full redeployment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Rollback Process -->
+        <div class="tab-content" id="rollback-process">
             <div class="section">
                 <h2>Rollback Process Flow</h2>
                 <p>When you perform a rollback, Kubernetes creates a <strong>new revision</strong> using the pod template from a previous revision. The revision numbers always increment forward - they never go backwards.</p>
@@ -572,7 +944,161 @@
             </div>
         </div>
 
-        <!-- Tab 2: Revision History -->
+        <!-- Tab 3: Revision Timeline -->
+        <div class="tab-content" id="revision-timeline">
+            <div class="section">
+                <h2>Interactive Revision History Timeline</h2>
+                <p>Click on any revision to see detailed information about that version.</p>
+
+                <div class="revision-timeline">
+                    <div class="revision-item" onclick="showRevisionDetails(1)">
+                        <div class="revision-content">
+                            <div class="revision-date">March 23, 2026 - 09:00 AM</div>
+                            <div class="revision-title">Revision 1</div>
+                            <div class="revision-details">
+                                <strong>Image:</strong> karthickponcloud/k8slabs:apache_v1<br>
+                                <strong>Replicas:</strong> 2<br>
+                                <strong>Status:</strong> Initial deployment
+                            </div>
+                            <span class="revision-badge initial">Initial Deployment</span>
+                        </div>
+                        <div class="revision-marker">1</div>
+                    </div>
+
+                    <div class="revision-item" onclick="showRevisionDetails(2)">
+                        <div class="revision-content">
+                            <div class="revision-date">March 23, 2026 - 10:30 AM</div>
+                            <div class="revision-title">Revision 2</div>
+                            <div class="revision-details">
+                                <strong>Image:</strong> karthickponcloud/k8slabs:apache_v2<br>
+                                <strong>Replicas:</strong> 2<br>
+                                <strong>Status:</strong> Updated to version 2<br>
+                                <strong>Change:</strong> New features added
+                            </div>
+                            <span class="revision-badge update">Feature Update</span>
+                        </div>
+                        <div class="revision-marker">2</div>
+                    </div>
+
+                    <div class="revision-item" onclick="showRevisionDetails(3)">
+                        <div class="revision-content">
+                            <div class="revision-date">March 23, 2026 - 11:15 AM</div>
+                            <div class="revision-title">Revision 3 (Current)</div>
+                            <div class="revision-details">
+                                <strong>Image:</strong> karthickponcloud/k8slabs:apache_v1<br>
+                                <strong>Replicas:</strong> 2<br>
+                                <strong>Status:</strong> Active and running<br>
+                                <strong>Change:</strong> Rolled back from v2 to v1<br>
+                                <strong>Reason:</strong> Issues detected in v2
+                            </div>
+                            <span class="revision-badge rollback">Rollback to v1</span>
+                        </div>
+                        <div class="revision-marker current">3</div>
+                    </div>
+                </div>
+
+                <div class="svg-container" style="margin-top: 50px;">
+                    <h3 style="text-align: center; color: #326ce5; margin-bottom: 20px;">Revision History Visualization</h3>
+                    <svg viewBox="0 0 1000 300" width="1000" height="300">
+                        <defs>
+                            <marker id="timeline-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                <polygon points="0 0, 8 4, 0 8" fill="#326ce5"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Timeline Base -->
+                        <line x1="50" y1="150" x2="950" y2="150" stroke="#326ce5" stroke-width="4" marker-end="url(#timeline-arrow)"/>
+
+                        <!-- Revision 1 -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Revision 1: Initial Deployment<br><br>kubectl apply -f deployment.yaml<br><br>Image: apache_v1<br>Status: Created successfully<br>ReplicaSet: apache-deployment-6c5d7f8a9b')" onmouseleave="hideTooltip()">
+                            <circle cx="150" cy="150" r="35" fill="#3b82f6" stroke="#1e40af" stroke-width="3"/>
+                            <text x="150" y="160" text-anchor="middle" font-size="24" font-weight="bold" fill="white">1</text>
+                            <text x="150" y="100" text-anchor="middle" font-size="14" font-weight="600" fill="#1e293b">Revision 1</text>
+                            <text x="150" y="120" text-anchor="middle" font-size="11" fill="#64748b">apache_v1</text>
+                            <text x="150" y="220" text-anchor="middle" font-size="10" fill="#64748b">09:00 AM</text>
+                            <rect x="120" y="230" width="60" height="20" rx="10" fill="#e7f3ff" stroke="#3b82f6" stroke-width="1"/>
+                            <text x="150" y="244" text-anchor="middle" font-size="9" fill="#1e40af" font-weight="600">INITIAL</text>
+                        </g>
+
+                        <!-- Arrow 1 to 2 -->
+                        <path d="M 185 150 L 365 150" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+                        <text x="275" y="140" text-anchor="middle" font-size="10" fill="#64748b">Update</text>
+
+                        <!-- Revision 2 -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Revision 2: Feature Update<br><br>kubectl set image deployment/apache-deployment apache-container=apache_v2<br><br>Image: apache_v2<br>Status: Deployed with issues<br>ReplicaSet: apache-deployment-5d4f6b7c8d')" onmouseleave="hideTooltip()">
+                            <circle cx="450" cy="150" r="35" fill="#f59e0b" stroke="#d97706" stroke-width="3"/>
+                            <text x="450" y="160" text-anchor="middle" font-size="24" font-weight="bold" fill="white">2</text>
+                            <text x="450" y="100" text-anchor="middle" font-size="14" font-weight="600" fill="#1e293b">Revision 2</text>
+                            <text x="450" y="120" text-anchor="middle" font-size="11" fill="#64748b">apache_v2</text>
+                            <text x="450" y="220" text-anchor="middle" font-size="10" fill="#64748b">10:30 AM</text>
+                            <rect x="420" y="230" width="60" height="20" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+                            <text x="450" y="244" text-anchor="middle" font-size="9" fill="#92400e" font-weight="600">UPDATE</text>
+                        </g>
+
+                        <!-- Arrow 2 to 3 with Rollback curve -->
+                        <path d="M 485 150 Q 600 80 715 150" stroke="#28a745" stroke-width="3" fill="none" marker-end="url(#timeline-arrow)"/>
+                        <text x="600" y="70" text-anchor="middle" font-size="11" fill="#28a745" font-weight="600">Rollback</text>
+
+                        <!-- Revision 3 -->
+                        <g class="rollback-step" onmouseenter="showTooltip(event, 'Revision 3: Rollback to v1 (CURRENT)<br><br>kubectl rollout undo deployment/apache-deployment<br><br>Image: apache_v1 (same as Rev 1)<br>Status: Active and healthy<br>ReplicaSet: apache-deployment-6c5d7f8a9b (reused)')" onmouseleave="hideTooltip()">
+                            <circle cx="750" cy="150" r="40" fill="#28a745" stroke="#218838" stroke-width="4"/>
+                            <text x="750" y="162" text-anchor="middle" font-size="24" font-weight="bold" fill="white">3</text>
+                            <text x="750" y="100" text-anchor="middle" font-size="14" font-weight="600" fill="#1e293b">Revision 3</text>
+                            <text x="750" y="120" text-anchor="middle" font-size="11" fill="#64748b">apache_v1</text>
+                            <text x="750" y="220" text-anchor="middle" font-size="10" fill="#64748b">11:15 AM</text>
+                            <rect x="715" y="230" width="70" height="20" rx="10" fill="#d4edda" stroke="#28a745" stroke-width="1"/>
+                            <text x="750" y="244" text-anchor="middle" font-size="9" fill="#155724" font-weight="600">ROLLBACK</text>
+
+                            <!-- Current indicator -->
+                            <circle cx="750" cy="150" r="50" fill="none" stroke="#28a745" stroke-width="2" opacity="0.5">
+                                <animate attributeName="r" from="40" to="55" dur="1.5s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" from="0.5" to="0" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+
+                        <!-- Legend -->
+                        <g transform="translate(820, 100)">
+                            <text x="0" y="0" font-size="12" font-weight="600" fill="#1e293b">Legend:</text>
+                            <circle cx="10" cy="20" r="8" fill="#3b82f6"/>
+                            <text x="25" y="25" font-size="10" fill="#64748b">Initial</text>
+                            <circle cx="10" cy="45" r="8" fill="#f59e0b"/>
+                            <text x="25" y="50" font-size="10" fill="#64748b">Update</text>
+                            <circle cx="10" cy="70" r="8" fill="#28a745"/>
+                            <text x="25" y="75" font-size="10" fill="#64748b">Rollback</text>
+                            <circle cx="10" cy="95" r="10" fill="none" stroke="#28a745" stroke-width="2"/>
+                            <text x="25" y="100" font-size="10" fill="#64748b">Current</text>
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="info-box">
+                    <h4>Understanding Revision History</h4>
+                    <ul>
+                        <li><strong>Sequential Numbering:</strong> Revisions always increment (1, 2, 3, ...) - never go backwards</li>
+                        <li><strong>Same Image, Different Revision:</strong> Revision 3 uses the same image as Revision 1, but it's a new revision</li>
+                        <li><strong>ReplicaSet Reuse:</strong> Revision 3 reuses the ReplicaSet created in Revision 1</li>
+                        <li><strong>History Limit:</strong> Default limit is 10 revisions (configurable via <code>revisionHistoryLimit</code>)</li>
+                        <li><strong>Audit Trail:</strong> Complete chronological record of all deployment changes</li>
+                    </ul>
+                </div>
+
+                <div class="info-box warning">
+                    <h4>Viewing Revision History</h4>
+                    <div class="code-block" style="margin-top: 15px;">
+<span class="comment"># View all revisions</span>
+<span class="command">kubectl rollout history deployment/apache-deployment</span>
+
+<span class="comment"># View specific revision details</span>
+<span class="command">kubectl rollout history deployment/apache-deployment --revision=3</span>
+
+<span class="comment"># Compare two revisions</span>
+<span class="command">kubectl get rs -l app=apache -o wide</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Revision History (Old) -->
         <div class="tab-content" id="revision-history">
             <div class="section">
                 <h2>Understanding Revision History</h2>
@@ -660,7 +1186,348 @@
             </div>
         </div>
 
-        <!-- Tab 3: Before/After Comparison -->
+        <!-- Tab 5: Pod Replacement Visualization -->
+        <div class="tab-content" id="pod-replacement">
+            <div class="section">
+                <h2>Pod Replacement Visualization</h2>
+                <p>Watch how pods transition from version 2 (broken) to version 1 (stable) during rollback.</p>
+
+                <div class="svg-container">
+                    <svg viewBox="0 0 1000 500" width="1000" height="500">
+                        <defs>
+                            <marker id="pod-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                <polygon points="0 0, 8 4, 0 8" fill="#326ce5"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Title -->
+                        <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#326ce5">Rolling Update During Rollback</text>
+
+                        <!-- Phase 1: Before Rollback -->
+                        <g>
+                            <text x="150" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">Phase 1: Before Rollback</text>
+                            <rect x="50" y="95" width="200" height="120" rx="8" fill="#fee2e2" stroke="#dc3545" stroke-width="2"/>
+                            <text x="150" y="115" text-anchor="middle" font-size="12" fill="#721c24" font-weight="600">v2 ReplicaSet (ACTIVE)</text>
+
+                            <!-- v2 Pods -->
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'Version 2 Pod<br>Status: Running<br>Health: Failing<br>Image: apache_v2<br><br>These pods are running but experiencing issues')" onmouseleave="hideTooltip()">
+                                <rect x="70" y="130" width="70" height="70" rx="5" fill="#dc3545" stroke="#c82333" stroke-width="2"/>
+                                <text x="105" y="160" text-anchor="middle" font-size="20" fill="white" font-weight="bold">v2</text>
+                                <text x="105" y="180" text-anchor="middle" font-size="10" fill="white">Pod 1</text>
+                                <text x="105" y="193" text-anchor="middle" font-size="9" fill="white">RUNNING</text>
+                            </g>
+
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'Version 2 Pod<br>Status: Running<br>Health: Failing<br>Image: apache_v2<br><br>These pods are running but experiencing issues')" onmouseleave="hideTooltip()">
+                                <rect x="160" y="130" width="70" height="70" rx="5" fill="#dc3545" stroke="#c82333" stroke-width="2"/>
+                                <text x="195" y="160" text-anchor="middle" font-size="20" fill="white" font-weight="bold">v2</text>
+                                <text x="195" y="180" text-anchor="middle" font-size="10" fill="white">Pod 2</text>
+                                <text x="195" y="193" text-anchor="middle" font-size="9" fill="white">RUNNING</text>
+                            </g>
+                        </g>
+
+                        <!-- Arrow Phase 1 to 2 -->
+                        <path d="M 150 230 L 150 270" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#pod-arrow)"/>
+                        <text x="180" y="255" text-anchor="start" font-size="11" fill="#326ce5" font-weight="600">kubectl rollout undo</text>
+
+                        <!-- Phase 2: Rollback Initiated -->
+                        <g>
+                            <text x="150" y="295" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">Phase 2: Rollback Initiated</text>
+                            <rect x="50" y="310" width="200" height="150" rx="8" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+                            <text x="150" y="330" text-anchor="middle" font-size="11" fill="#856404" font-weight="600">v2 ReplicaSet (Scaling Down)</text>
+
+                            <!-- v2 Pods (1 terminating, 1 running) -->
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'Version 2 Pod<br>Status: Terminating<br>SIGTERM sent<br>Grace period: 30s<br><br>Pod is shutting down gracefully')" onmouseleave="hideTooltip()">
+                                <rect x="70" y="345" width="70" height="70" rx="5" fill="#ffc107" stroke="#e0a800" stroke-width="2"/>
+                                <text x="105" y="375" text-anchor="middle" font-size="18" fill="white" font-weight="bold">v2</text>
+                                <text x="105" y="393" text-anchor="middle" font-size="10" fill="white">Pod 1</text>
+                                <text x="105" y="407" text-anchor="middle" font-size="8" fill="white">TERMINATING</text>
+                            </g>
+
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'Version 2 Pod<br>Status: Running<br>Still serving traffic<br><br>Will be terminated once new pods are ready')" onmouseleave="hideTooltip()">
+                                <rect x="160" y="345" width="70" height="70" rx="5" fill="#dc3545" stroke="#c82333" stroke-width="2"/>
+                                <text x="195" y="375" text-anchor="middle" font-size="18" fill="white" font-weight="bold">v2</text>
+                                <text x="195" y="393" text-anchor="middle" font-size="10" fill="white">Pod 2</text>
+                                <text x="195" y="407" text-anchor="middle" font-size="8" fill="white">RUNNING</text>
+                            </g>
+
+                            <text x="150" y="440" text-anchor="middle" font-size="10" fill="#856404">Desired: 0 | Current: 2→1</text>
+                        </g>
+
+                        <!-- Arrow to Phase 3 -->
+                        <path d="M 250 380 L 320 380" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#pod-arrow)"/>
+                        <text x="285" y="370" text-anchor="middle" font-size="10" fill="#326ce5" font-weight="600">Scaling</text>
+
+                        <!-- Phase 3: Transition -->
+                        <g>
+                            <text x="500" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">Phase 3: Pod Transition</text>
+
+                            <!-- v2 ReplicaSet -->
+                            <rect x="360" y="95" width="130" height="150" rx="8" fill="#fee2e2" stroke="#dc3545" stroke-width="2"/>
+                            <text x="425" y="115" text-anchor="middle" font-size="11" fill="#721c24" font-weight="600">v2 RS (Scaling Down)</text>
+
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'Last v2 Pod<br>Status: Terminating<br>Will be removed once v1 pods are ready')" onmouseleave="hideTooltip()">
+                                <rect x="380" y="130" width="90" height="90" rx="5" fill="#ffc107" stroke="#e0a800" stroke-width="2"/>
+                                <text x="425" y="170" text-anchor="middle" font-size="20" fill="white" font-weight="bold">v2</text>
+                                <text x="425" y="193" text-anchor="middle" font-size="10" fill="white">Pod 2</text>
+                                <text x="425" y="210" text-anchor="middle" font-size="9" fill="white">TERMINATING</text>
+                            </g>
+
+                            <!-- v1 ReplicaSet -->
+                            <rect x="510" y="95" width="130" height="150" rx="8" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+                            <text x="575" y="115" text-anchor="middle" font-size="11" fill="#155724" font-weight="600">v1 RS (Scaling Up)</text>
+
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'New v1 Pod<br>Status: Running<br>Health: Healthy<br>Image: apache_v1<br><br>Ready to accept traffic')" onmouseleave="hideTooltip()">
+                                <rect x="530" y="130" width="90" height="90" rx="5" fill="#28a745" stroke="#218838" stroke-width="2"/>
+                                <text x="575" y="170" text-anchor="middle" font-size="20" fill="white" font-weight="bold">v1</text>
+                                <text x="575" y="193" text-anchor="middle" font-size="10" fill="white">Pod 1</text>
+                                <text x="575" y="210" text-anchor="middle" font-size="9" fill="white">RUNNING</text>
+                            </g>
+                        </g>
+
+                        <!-- Arrow Phase 3 to 4 -->
+                        <path d="M 500 260 L 500 300" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#pod-arrow)"/>
+                        <text x="530" y="285" text-anchor="start" font-size="10" fill="#326ce5" font-weight="600">Finalizing</text>
+
+                        <!-- Phase 4: Rollback Complete -->
+                        <g>
+                            <text x="500" y="325" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">Phase 4: Rollback Complete</text>
+                            <rect x="400" y="340" width="200" height="120" rx="8" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+                            <text x="500" y="360" text-anchor="middle" font-size="12" fill="#155724" font-weight="600">v1 ReplicaSet (ACTIVE)</text>
+
+                            <!-- v1 Pods -->
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'Version 1 Pod<br>Status: Running<br>Health: Healthy<br>Image: apache_v1<br><br>Stable version restored')" onmouseleave="hideTooltip()">
+                                <rect x="420" y="375" width="70" height="70" rx="5" fill="#28a745" stroke="#218838" stroke-width="2"/>
+                                <text x="455" y="405" text-anchor="middle" font-size="20" fill="white" font-weight="bold">v1</text>
+                                <text x="455" y="425" text-anchor="middle" font-size="10" fill="white">Pod 1</text>
+                                <text x="455" y="438" text-anchor="middle" font-size="9" fill="white">RUNNING</text>
+                            </g>
+
+                            <g class="rollback-step" onmouseenter="showTooltip(event, 'Version 1 Pod<br>Status: Running<br>Health: Healthy<br>Image: apache_v1<br><br>Stable version restored')" onmouseleave="hideTooltip()">
+                                <rect x="510" y="375" width="70" height="70" rx="5" fill="#28a745" stroke="#218838" stroke-width="2"/>
+                                <text x="545" y="405" text-anchor="middle" font-size="20" fill="white" font-weight="bold">v1</text>
+                                <text x="545" y="425" text-anchor="middle" font-size="10" fill="white">Pod 2</text>
+                                <text x="545" y="438" text-anchor="middle" font-size="9" fill="white">RUNNING</text>
+                            </g>
+                        </g>
+
+                        <!-- Strategy Info -->
+                        <rect x="730" y="80" width="240" height="200" rx="8" fill="#f8f9fa" stroke="#326ce5" stroke-width="2"/>
+                        <text x="850" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#326ce5">Rolling Update Strategy</text>
+
+                        <text x="750" y="135" font-size="11" fill="#495057" font-weight="600">maxSurge: 1</text>
+                        <text x="750" y="155" font-size="10" fill="#6c757d">Can create 1 extra pod</text>
+                        <text x="750" y="170" font-size="10" fill="#6c757d">during update (3 total)</text>
+
+                        <line x1="750" y1="185" x2="950" y2="185" stroke="#dee2e6" stroke-width="1"/>
+
+                        <text x="750" y="205" font-size="11" fill="#495057" font-weight="600">maxUnavailable: 0</text>
+                        <text x="750" y="225" font-size="10" fill="#6c757d">All pods must be available</text>
+                        <text x="750" y="240" font-size="10" fill="#6c757d">Zero downtime rollback</text>
+
+                        <line x1="750" y1="255" x2="950" y2="255" stroke="#dee2e6" stroke-width="1"/>
+
+                        <text x="750" y="275" font-size="10" fill="#28a745" font-weight="600">✓ Zero Downtime</text>
+                    </rect>
+
+                    <!-- Color Legend -->
+                    <g transform="translate(730, 310)">
+                        <text x="0" y="0" font-size="12" font-weight="600" fill="#1e293b">Pod Status Legend:</text>
+                        <rect x="0" y="10" width="30" height="20" rx="3" fill="#dc3545"/>
+                        <text x="40" y="25" font-size="10" fill="#64748b">v2 Running (Failing)</text>
+                        <rect x="0" y="40" width="30" height="20" rx="3" fill="#ffc107"/>
+                        <text x="40" y="55" font-size="10" fill="#64748b">Terminating</text>
+                        <rect x="0" y="70" width="30" height="20" rx="3" fill="#28a745"/>
+                        <text x="40" y="85" font-size="10" fill="#64748b">v1 Running (Healthy)</text>
+                    </g>
+                    </svg>
+                </div>
+
+                <div class="info-box">
+                    <h4>Pod Replacement Strategy</h4>
+                    <ul>
+                        <li><strong>Gradual Transition:</strong> Pods are replaced one or a few at a time, not all at once</li>
+                        <li><strong>Readiness Checks:</strong> New pods must pass readiness probes before old pods are terminated</li>
+                        <li><strong>Graceful Shutdown:</strong> Old pods receive SIGTERM and have 30 seconds (default) to finish requests</li>
+                        <li><strong>Zero Downtime:</strong> With <code>maxUnavailable: 0</code>, at least 2 pods are always available</li>
+                        <li><strong>Automatic Rollback:</strong> If new pods fail to start, the process automatically stops</li>
+                    </ul>
+                </div>
+
+                <div class="info-box warning">
+                    <h4>Monitoring Pod Replacement</h4>
+                    <div class="code-block" style="margin-top: 15px;">
+<span class="comment"># Watch rollback progress in real-time</span>
+<span class="command">kubectl rollout status deployment/apache-deployment -w</span>
+
+<span class="comment"># Watch pod changes</span>
+<span class="command">kubectl get pods -l app=apache -w</span>
+
+<span class="comment"># View ReplicaSet scaling</span>
+<span class="command">kubectl get rs -l app=apache -w</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 6: Rollout vs Rollback Comparison -->
+        <div class="tab-content" id="comparison">
+            <div class="section">
+                <h2>Normal Rollout vs Rollback Flow</h2>
+                <p>Compare how forward rollouts and rollbacks work in Kubernetes deployments.</p>
+
+                <div class="toggle-container">
+                    <button class="toggle-btn active" onclick="showComparison('rollout')">Normal Rollout (v1 → v2)</button>
+                    <button class="toggle-btn" onclick="showComparison('rollback')">Rollback Flow (v2 → v1)</button>
+                </div>
+
+                <!-- Normal Rollout View -->
+                <div id="rollout-view" class="view-content active">
+                    <h3 style="text-align: center; color: #326ce5; margin-bottom: 20px;">Forward Rollout: Updating from v1 to v2</h3>
+                    <div class="svg-container">
+                        <svg viewBox="0 0 800 600" width="800" height="600">
+                            <defs>
+                                <marker id="arrow-rollout" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                    <polygon points="0 0, 8 4, 0 8" fill="#326ce5"/>
+                                </marker>
+                            </defs>
+
+                            <!-- Step 1 -->
+                            <rect x="250" y="20" width="300" height="80" rx="10" fill="#3b82f6" stroke="#1e40af" stroke-width="3"/>
+                            <text x="400" y="50" text-anchor="middle" font-size="16" font-weight="bold" fill="white">1. Deployment Running v1</text>
+                            <text x="400" y="75" text-anchor="middle" font-size="13" fill="white">Revision 1 | 2 pods | Stable</text>
+
+                            <path d="M 400 100 L 400 140" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-rollout)" stroke-dasharray="4,4"/>
+
+                            <!-- Step 2 -->
+                            <rect x="250" y="160" width="300" height="80" rx="10" fill="#8b5cf6" stroke="#6d28d9" stroke-width="3"/>
+                            <text x="400" y="190" text-anchor="middle" font-size="16" font-weight="bold" fill="white">2. Update Command Issued</text>
+                            <text x="400" y="215" text-anchor="middle" font-size="12" fill="white">kubectl set image ... apache_v2</text>
+
+                            <path d="M 400 240 L 400 280" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-rollout)" stroke-dasharray="4,4"/>
+
+                            <!-- Step 3 -->
+                            <rect x="250" y="300" width="300" height="80" rx="10" fill="#f59e0b" stroke="#d97706" stroke-width="3"/>
+                            <text x="400" y="330" text-anchor="middle" font-size="16" font-weight="bold" fill="white">3. Create New Revision 2</text>
+                            <text x="400" y="355" text-anchor="middle" font-size="13" fill="white">New ReplicaSet for v2 created</text>
+
+                            <path d="M 400 380 L 400 420" stroke="#326ce5" stroke-width="3" fill="none" marker-end="url(#arrow-rollout)" stroke-dasharray="4,4"/>
+
+                            <!-- Step 4 -->
+                            <rect x="250" y="440" width="300" height="100" rx="10" fill="#06b6d4" stroke="#0891b2" stroke-width="3"/>
+                            <text x="400" y="470" text-anchor="middle" font-size="16" font-weight="bold" fill="white">4. Rolling Update</text>
+                            <text x="280" y="495" font-size="12" fill="white">v1 RS: 2 → 1 → 0</text>
+                            <text x="520" y="495" font-size="12" fill="white">v2 RS: 0 → 1 → 2</text>
+                            <text x="400" y="520" text-anchor="middle" font-size="11" fill="white">Gradual pod replacement</text>
+
+                            <!-- Final State -->
+                            <text x="400" y="570" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">Result: Revision 2 (v2) Active</text>
+                        </svg>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>Forward Rollout Characteristics</h4>
+                        <ul>
+                            <li><strong>Purpose:</strong> Deploy new features or updates</li>
+                            <li><strong>Direction:</strong> Moving forward to newer version</li>
+                            <li><strong>Revision:</strong> Creates sequential new revision (1 → 2)</li>
+                            <li><strong>ReplicaSet:</strong> Creates new ReplicaSet for v2</li>
+                            <li><strong>Risk:</strong> New code might have bugs</li>
+                            <li><strong>Testing:</strong> Should be tested before production</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Rollback View -->
+                <div id="rollback-view" class="view-content">
+                    <h3 style="text-align: center; color: #28a745; margin-bottom: 20px;">Rollback Flow: Reverting from v2 to v1</h3>
+                    <div class="svg-container">
+                        <svg viewBox="0 0 800 600" width="800" height="600">
+                            <defs>
+                                <marker id="arrow-rollback" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                    <polygon points="0 0, 8 4, 0 8" fill="#28a745"/>
+                                </marker>
+                            </defs>
+
+                            <!-- Step 1 -->
+                            <rect x="250" y="20" width="300" height="80" rx="10" fill="#dc3545" stroke="#c82333" stroke-width="3"/>
+                            <text x="400" y="50" text-anchor="middle" font-size="16" font-weight="bold" fill="white">1. Issue Detected in v2</text>
+                            <text x="400" y="75" text-anchor="middle" font-size="13" fill="white">Revision 2 | 2 pods | Failing</text>
+
+                            <path d="M 400 100 L 400 140" stroke="#28a745" stroke-width="3" fill="none" marker-end="url(#arrow-rollback)" stroke-dasharray="4,4"/>
+
+                            <!-- Step 2 -->
+                            <rect x="250" y="160" width="300" height="80" rx="10" fill="#fd7e14" stroke="#e66a00" stroke-width="3"/>
+                            <text x="400" y="190" text-anchor="middle" font-size="16" font-weight="bold" fill="white">2. Rollback Command</text>
+                            <text x="400" y="215" text-anchor="middle" font-size="12" fill="white">kubectl rollout undo deployment</text>
+
+                            <path d="M 400 240 L 400 280" stroke="#28a745" stroke-width="3" fill="none" marker-end="url(#arrow-rollback)" stroke-dasharray="4,4"/>
+
+                            <!-- Step 3 -->
+                            <rect x="250" y="300" width="300" height="80" rx="10" fill="#17a2b8" stroke="#138496" stroke-width="3"/>
+                            <text x="400" y="330" text-anchor="middle" font-size="16" font-weight="bold" fill="white">3. Create New Revision 3</text>
+                            <text x="400" y="355" text-anchor="middle" font-size="13" fill="white">Reuses v1 ReplicaSet template</text>
+
+                            <path d="M 400 380 L 400 420" stroke="#28a745" stroke-width="3" fill="none" marker-end="url(#arrow-rollback)" stroke-dasharray="4,4"/>
+
+                            <!-- Step 4 -->
+                            <rect x="250" y="440" width="300" height="100" rx="10" fill="#6f42c1" stroke="#5a32a3" stroke-width="3"/>
+                            <text x="400" y="470" text-anchor="middle" font-size="16" font-weight="bold" fill="white">4. Rolling Rollback</text>
+                            <text x="280" y="495" font-size="12" fill="white">v2 RS: 2 → 1 → 0</text>
+                            <text x="520" y="495" font-size="12" fill="white">v1 RS: 0 → 1 → 2</text>
+                            <text x="400" y="520" text-anchor="middle" font-size="11" fill="white">Return to stable version</text>
+
+                            <!-- Final State -->
+                            <text x="400" y="570" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e293b">Result: Revision 3 (v1 template) Active</text>
+                        </svg>
+                    </div>
+
+                    <div class="info-box success">
+                        <h4>Rollback Flow Characteristics</h4>
+                        <ul>
+                            <li><strong>Purpose:</strong> Recover from problematic deployment</li>
+                            <li><strong>Direction:</strong> Reverting to previous stable version</li>
+                            <li><strong>Revision:</strong> Creates new revision (3) with old template</li>
+                            <li><strong>ReplicaSet:</strong> Reuses existing v1 ReplicaSet</li>
+                            <li><strong>Risk:</strong> Very low - returning to known-good state</li>
+                            <li><strong>Speed:</strong> Fast - no image pull needed (cached)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-container" style="margin-top: 40px;">
+                    <div class="comparison-box" style="border-color: #326ce5;">
+                        <h3 style="color: #326ce5; border-color: #326ce5;">Forward Rollout</h3>
+                        <ul style="text-align: left; padding-left: 20px; line-height: 2;">
+                            <li><strong>Trigger:</strong> Manual update command</li>
+                            <li><strong>Image:</strong> Pulls new image from registry</li>
+                            <li><strong>ReplicaSet:</strong> Creates new RS</li>
+                            <li><strong>Revision:</strong> Increments by 1</li>
+                            <li><strong>Time:</strong> Depends on image size</li>
+                            <li><strong>Risk Level:</strong> Medium-High</li>
+                        </ul>
+                    </div>
+
+                    <div class="comparison-box" style="border-color: #28a745;">
+                        <h3 style="color: #28a745; border-color: #28a745;">Rollback</h3>
+                        <ul style="text-align: left; padding-left: 20px; line-height: 2;">
+                            <li><strong>Trigger:</strong> Issue detection</li>
+                            <li><strong>Image:</strong> Uses cached image</li>
+                            <li><strong>ReplicaSet:</strong> Reuses existing RS</li>
+                            <li><strong>Revision:</strong> Increments by 1</li>
+                            <li><strong>Time:</strong> Very fast</li>
+                            <li><strong>Risk Level:</strong> Low</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <h4>Key Similarity</h4>
+                    <p>Both forward rollouts and rollbacks follow the <strong>same rolling update strategy</strong>. The only difference is the direction: rollout moves to a newer template, rollback moves to an older template. Both create new revisions and ensure zero downtime.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 7: Before/After Comparison -->
         <div class="tab-content" id="before-after">
             <div class="section">
                 <h2>Before and After Rollback Comparison</h2>
@@ -1077,6 +1944,9 @@ apache-deployment-5d4f6b7c8d    0         0         0       10m   # v2 (inactive
         </div>
     </div>
 
+    <!-- Tooltip Element -->
+    <div class="tooltip" id="tooltip"></div>
+
     <script>
         // Tab switching functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -1108,6 +1978,120 @@ apache-deployment-5d4f6b7c8d    0         0         0       10m   # v2 (inactive
             if (tabContents.length > 0) {
                 tabContents[0].classList.add('active');
             }
+        });
+
+        // Tooltip functions
+        let tooltip = document.getElementById('tooltip');
+
+        function showTooltip(event, text) {
+            tooltip.innerHTML = text;
+            tooltip.classList.add('show');
+            updateTooltipPosition(event);
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('show');
+        }
+
+        function updateTooltipPosition(event) {
+            const x = event.clientX;
+            const y = event.clientY;
+
+            tooltip.style.left = (x + 15) + 'px';
+            tooltip.style.top = (y + 15) + 'px';
+        }
+
+        // Update tooltip position on mouse move
+        document.addEventListener('mousemove', (event) => {
+            if (tooltip.classList.contains('show')) {
+                updateTooltipPosition(event);
+            }
+        });
+
+        // Revision details function
+        function showRevisionDetails(revisionNum) {
+            const revisions = {
+                1: {
+                    title: 'Revision 1 - Initial Deployment',
+                    details: `
+                        <strong>Deployment Configuration:</strong><br>
+                        Image: karthickponcloud/k8slabs:apache_v1<br>
+                        Replicas: 2<br>
+                        Strategy: RollingUpdate<br>
+                        Created: March 23, 2026 09:00 AM<br><br>
+                        <strong>Change Cause:</strong> Initial deployment<br>
+                        <strong>ReplicaSet:</strong> apache-deployment-6c5d7f8a9b<br>
+                        <strong>Status:</strong> Successfully deployed
+                    `
+                },
+                2: {
+                    title: 'Revision 2 - Feature Update',
+                    details: `
+                        <strong>Deployment Configuration:</strong><br>
+                        Image: karthickponcloud/k8slabs:apache_v2<br>
+                        Replicas: 2<br>
+                        Strategy: RollingUpdate<br>
+                        Updated: March 23, 2026 10:30 AM<br><br>
+                        <strong>Change Cause:</strong> Updated to version 2<br>
+                        <strong>ReplicaSet:</strong> apache-deployment-5d4f6b7c8d<br>
+                        <strong>Status:</strong> Deployed but experiencing issues<br>
+                        <strong>Reason for Rollback:</strong> Application errors detected
+                    `
+                },
+                3: {
+                    title: 'Revision 3 - Rollback (Current)',
+                    details: `
+                        <strong>Deployment Configuration:</strong><br>
+                        Image: karthickponcloud/k8slabs:apache_v1<br>
+                        Replicas: 2<br>
+                        Strategy: RollingUpdate<br>
+                        Rolled back: March 23, 2026 11:15 AM<br><br>
+                        <strong>Change Cause:</strong> Rolled back from version 2<br>
+                        <strong>ReplicaSet:</strong> apache-deployment-6c5d7f8a9b (reused from Rev 1)<br>
+                        <strong>Status:</strong> Active and healthy<br>
+                        <strong>Note:</strong> Uses same pod template as Revision 1
+                    `
+                }
+            };
+
+            const revision = revisions[revisionNum];
+            if (revision) {
+                alert(revision.title + '\n\n' + revision.details.replace(/<br>/g, '\n').replace(/<strong>/g, '').replace(/<\/strong>/g, ''));
+            }
+        }
+
+        // Comparison view toggle
+        function showComparison(viewType) {
+            // Hide all views
+            document.getElementById('rollout-view').classList.remove('active');
+            document.getElementById('rollback-view').classList.remove('active');
+
+            // Remove active from all buttons
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected view
+            if (viewType === 'rollout') {
+                document.getElementById('rollout-view').classList.add('active');
+                event.target.classList.add('active');
+            } else if (viewType === 'rollback') {
+                document.getElementById('rollback-view').classList.add('active');
+                event.target.classList.add('active');
+            }
+        }
+
+        // Add hover effects to revision items
+        document.addEventListener('DOMContentLoaded', function() {
+            const revisionItems = document.querySelectorAll('.revision-item');
+            revisionItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.querySelector('.revision-content').style.borderColor = '#326ce5';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.querySelector('.revision-content').style.borderColor = '#dee2e6';
+                });
+            });
         });
     </script>
 </body>

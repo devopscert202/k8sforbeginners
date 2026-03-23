@@ -1,112 +1,240 @@
-# YAML Primer for Beginners (For Ansible and Kubernetes)
+# YAML 101 for Kubernetes Labs
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [What is YAML?](#what-is-yaml)
-3. [Key Characteristics](#key-characteristics)
-4. [Data Types in YAML](#data-types-in-yaml)
-   - [Scalars](#scalars)
-   - [Lists](#lists)
-   - [Dictionaries (Mappings)](#dictionaries-mappings)
-   - [Nested Structures](#nested-structures)
-5. [Indentation and Placement of Objects](#indentation-and-placement-of-objects)
-6. [Example Kubernetes YAML File (20 lines)](#example-kubernetes-yaml-file-20-lines)
-7. [Line-by-Line Breakdown](#line-by-line-breakdown)
-8. [Additional Important YAML Concepts](#additional-important-yaml-concepts)
-9. [More K8s YAML Examples](#more-k8s-yaml-examples)
-10. [Common YAML Mistakes](#common-yaml-mistakes)
-11. [Cheat Sheet Summary](#cheat-sheet-summary)
-12. [Troubleshooting YAML Files](#troubleshooting-yaml-files)
-13. [Conclusion](#conclusion)
-14. [Additional Resources](#additional-resources)
+A practical introduction to YAML for learners who are new to the format and need to read, write, and fix manifests used in this repository’s labs.
+
+**Hands-on lab:** [Lab 46: YAML Manifests Deep Dive](../labmanuals/lab46-basics-yaml-manifests.md) (uses `k8s/labs/yaml-lab/` manifests and break-and-fix exercises).
+
+**Interactive HTML (same content, visual layout):**
+
+- [Part 1 — Syntax and structure](../html/yaml-k8s-part1-syntax.html)
+- [Part 2 — Kubernetes objects, editing, and workflows](../html/yaml-k8s-part2-objects-editing.html)
+- [Part 3 — Editors, validation, and troubleshooting](../html/yaml-k8s-part3-tools-troubleshooting.html)
+- [Catalog home (all HTML guides)](../html/index.html)
 
 ---
 
-## Introduction
+## Table of contents
 
-YAML (YAML Ain't Markup Language) is a human-readable data serialization format. It is widely used in configuration management and orchestration tools such as **Ansible** and **Kubernetes**. This guide is designed for beginners who want to quickly grasp YAML fundamentals.
-
----
-
-## What is YAML?
-
-YAML is:
-
-- Indentation-sensitive (uses spaces, not tabs).
-- A structured format similar to JSON but more readable.
-- Composed of key-value pairs, lists, and nested structures.
-
----
-
-## Key Characteristics
-
-- Case-sensitive
-- No tabs allowed — **use spaces only**
-- Indentation defines hierarchy
-- Commonly 2 spaces per level (can also use 4, but be consistent)
+1. [Why YAML in Kubernetes](#why-yaml-in-kubernetes)
+2. [What you should be able to do after this guide](#what-you-should-be-able-to-do-after-this-guide)
+3. [Core rules (memorize these)](#core-rules-memorize-these)
+4. [Scalars, mappings, and lists](#scalars-mappings-and-lists)
+5. [Comments and multiline strings](#comments-and-multiline-strings)
+6. [Multiple documents in one file](#multiple-documents-in-one-file)
+7. [The Kubernetes object shape](#the-kubernetes-object-shape)
+8. [Labels and selectors (YAML view)](#labels-and-selectors-yaml-view)
+9. [Lab-aligned examples](#lab-aligned-examples)
+10. [Editing manifests in real labs](#editing-manifests-in-real-labs)
+11. [Tools that make YAML easier](#tools-that-make-yaml-easier)
+12. [Troubleshooting checklist](#troubleshooting-checklist)
+13. [Cheat sheet](#cheat-sheet)
+14. [Further reading](#further-reading)
 
 ---
 
-## Data Types in YAML
+## Why YAML in Kubernetes
 
-### Scalars
-Simple data types like strings, integers, floats, booleans.
+Kubernetes stores desired state as **declarative API objects**. You usually express those objects as **YAML** files (JSON works too, but YAML is the default in docs and labs because it is readable and diff-friendly).
+
+Every `kubectl apply -f ...` in the labs sends YAML to the API server. Understanding indentation and structure prevents most beginner errors.
+
+---
+
+## What you should be able to do after this guide
+
+- Read a manifest and identify `apiVersion`, `kind`, `metadata`, and `spec`.
+- Spot invalid indentation and mixed tabs/spaces before you apply.
+- Add or change fields (image, replicas, ports, labels) safely.
+- Use `kubectl explain` and dry-run to validate ideas before changing the cluster.
+- Use an editor or online linter when the API returns cryptic parse errors.
+
+---
+
+## Core rules (memorize these)
+
+| Rule | Detail |
+|------|--------|
+| **Spaces only** | Do not use the Tab key. Many parsers reject tabs; others behave inconsistently. |
+| **Indentation = nesting** | Child keys are indented more than their parent. |
+| **Be consistent** | Pick **2 spaces** per level (Kubernetes examples almost always use 2). |
+| **`-` starts a list item** | List items are a `-` at the same indent as siblings. |
+| **Case matters** | `kind: Pod` is not the same as `kind: pod`. |
+
+---
+
+## Scalars, mappings, and lists
+
+### Scalars (single values)
 
 ```yaml
-name: Kubernetes
-version: 1.26
+name: nginx
+replicas: 3
 enabled: true
-timeout: 30.5
-````
-
----
-
-### Lists
-
-```yaml
-items:
-  - Ansible
-  - Kubernetes
-  - Docker
+ratio: 0.5
 ```
 
----
-
-### Dictionaries (Mappings)
+Strings do not need quotes unless they contain special characters or look like numbers/booleans:
 
 ```yaml
-service:
-  name: web-service
-  port: 80
-  protocol: HTTP
+message: "8080"          # force string
+danger: yes              # avoid; some parsers treat yes/no oddly — prefer true/false
 ```
 
----
-
-### Nested Structures
+### Mappings (key/value objects)
 
 ```yaml
-deployment:
+metadata:
   name: my-app
-  replicas: 3
+  namespace: default
+```
+
+### Lists (sequences)
+
+```yaml
+ports:
+  - containerPort: 80
+  - containerPort: 443
+```
+
+### Nesting (how labs are structured)
+
+```yaml
+spec:
   containers:
-    - name: app-container
-      image: nginx:latest
+    - name: web
+      image: nginx:1.25
       ports:
         - containerPort: 80
 ```
 
 ---
 
-## Indentation and Placement of Objects
+## Comments and multiline strings
 
-* Use consistent spacing (commonly 2 spaces)
-* Indentation represents parent-child relationships
-* No tabs — use **spaces only**
+### Comments
+
+```yaml
+# whole-line comment
+image: nginx:1.25   # inline comment (keep the line readable)
+```
+
+### Multiline (ConfigMaps and long command args)
+
+**Literal block** (`|`) keeps line breaks:
+
+```yaml
+script.sh: |
+  #!/bin/sh
+  echo hello
+  echo world
+```
+
+**Folded block** (`>`) folds soft line breaks into spaces:
+
+```yaml
+description: >
+  This appears as one paragraph when parsed,
+  even though it spans lines in the file.
+```
 
 ---
 
-## Example Kubernetes YAML File (20 lines)
+## Multiple documents in one file
+
+Separate objects with `---` on its own line. The API server accepts multi-document streams; `kubectl apply -f` applies each document.
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-pod
+  namespace: demo
+spec:
+  containers:
+    - name: app
+      image: nginx:1.25
+```
+
+---
+
+## The Kubernetes object shape
+
+Almost every object follows this pattern:
+
+```yaml
+apiVersion: ...   # which API group/version
+kind: ...         # resource type (Pod, Service, Deployment, ...)
+metadata:         # name, namespace, labels, annotations, ...
+spec:             # desired state (shape depends on kind)
+# status: ...     # written by the cluster; omit in manifests you apply
+```
+
+- **`metadata`**: identity and indexing (name, namespace, labels).
+- **`spec`**: what you want; controllers reconcile the cluster toward this.
+
+---
+
+## Labels and selectors (YAML view)
+
+Labels are arbitrary key/value pairs on metadata. Selectors connect objects (e.g. a Service to Pods).
+
+```yaml
+metadata:
+  labels:
+    app: nginx
+    tier: frontend
+```
+
+```yaml
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+```
+
+---
+
+## Lab-aligned examples
+
+### Pod (similar to `k8s/labs/basics/apache1.yaml`)
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: apache1
+  labels:
+    mycka: k8slearning
+spec:
+  containers:
+    - name: mycontainer
+      image: docker.io/httpd
+      ports:
+        - containerPort: 80
+```
+
+### Service (ClusterIP pattern)
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: myapp
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+```
+
+### Deployment (apps/v1)
 
 ```yaml
 apiVersion: apps/v1
@@ -127,110 +255,12 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:1.14.2
+          image: nginx:1.25.3
           ports:
             - containerPort: 80
 ```
 
----
-
-## Line-by-Line Breakdown
-
-1. `apiVersion:` Kubernetes API version
-2. `kind:` Resource type (Deployment)
-3. `metadata:` Contains resource name and labels
-4. `spec:` Describes desired state
-5. `replicas:` Number of pod replicas
-6. `selector:` Matches pods to manage
-7. `matchLabels:` Defines label selector
-8. `template:` Describes pod template
-9. `metadata:` Labels inside template
-10. `spec:` Container specs
-11. `containers:` List of containers
-12. `name:` Container name
-13. `image:` Docker image
-14. `ports:` List of ports
-15. `containerPort:` Port exposed by container
-
----
-
-## Additional Important YAML Concepts
-
-### Comments
-
-```yaml
-# This is a comment
-name: app-name  # Inline comment
-```
-
----
-
-### Multiline Strings
-
-**Literal Block (`|`)** — preserves line breaks:
-
-```yaml
-description: |
-  This is a line.
-  This is another line.
-```
-
-**Folded Block (`>`)** — folded into a single line:
-
-```yaml
-description: >
-  This will become a single
-  line when parsed.
-```
-
----
-
-### Anchors and Aliases
-
-```yaml
-defaults: &app_defaults
-  image: nginx
-  pullPolicy: IfNotPresent
-
-container:
-  <<: *app_defaults
-  name: web-app
-```
-
----
-
-### Booleans and Nulls
-
-```yaml
-enabled: true
-debug: FALSE
-value: null
-unset: ~
-```
-
----
-
-### File Separation (Multiple Resources)
-
-```yaml
-# First object
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-service
----
-# Second object
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-```
-
----
-
-## More K8s YAML Examples
-
-### ConfigMap
+### ConfigMap `data` (string values)
 
 ```yaml
 apiVersion: v1
@@ -238,109 +268,138 @@ kind: ConfigMap
 metadata:
   name: app-config
 data:
-  LOG_LEVEL: debug
-  MAX_RETRIES: "5"
+  LOG_LEVEL: "info"
+  feature.conf: |
+    enabled=true
 ```
 
----
-
-### Secret (Base64 Encoded)
+### Secret (`data` is base64; prefer `stringData` when authoring by hand)
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: db-secret
+  name: app-secret
 type: Opaque
-data:
-  username: YWRtaW4=
-  password: cGFzc3dvcmQ=
+stringData:
+  api_key: "replace-me-in-real-life"
 ```
 
 ---
 
-### Service
+## Editing manifests in real labs
 
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-service
-spec:
-  selector:
-    app: nginx
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
+### Apply from the repo
+
+```bash
+kubectl apply -f k8s/labs/basics/apache1.yaml
+```
+
+### Edit live objects (quick experiments)
+
+```bash
+kubectl edit deployment/my-deploy
+```
+
+Your editor opens the **current** YAML. Save to apply. For learning, prefer changing a file under version control and re-applying.
+
+### See what the API has
+
+```bash
+kubectl get pod apache1 -o yaml
+```
+
+### Validate without applying
+
+```bash
+kubectl apply --dry-run=client -f your-file.yaml
+kubectl apply --dry-run=server -f your-file.yaml   # needs cluster; catches more policy/admission issues
+```
+
+### Inspect allowed fields
+
+```bash
+kubectl explain pod
+kubectl explain pod.spec
+kubectl explain pod.spec.containers
+```
+
+### Compare file to cluster
+
+```bash
+kubectl diff -f your-file.yaml
 ```
 
 ---
 
-### Environment Variables
+## Tools that make YAML easier
 
-```yaml
-env:
-  - name: APP_ENV
-    value: production
-  - name: LOG_LEVEL
-    value: debug
-```
+### VS Code (recommended)
 
----
+Install extensions:
 
-## Common YAML Mistakes
+- **YAML** (Red Hat) — schema validation, hover docs for Kubernetes YAML when configured, basic linting.
+- **Kubernetes** (Microsoft) — snippets, navigation, context-aware help for manifests.
 
-| Mistake                         | What Happens               |
-| ------------------------------- | -------------------------- |
-| Using tabs instead of spaces    | YAML parse error           |
-| Inconsistent indentation        | Hierarchy broken           |
-| Trailing colon with no value    | Key with `null` value      |
-| Mixing list & dictionary levels | Unexpected structure error |
-| Forgetting dashes in lists      | Becomes invalid format     |
+**Tips:**
 
----
+- Set **Files: Insert Final Newline** and show whitespace rendering to catch accidental tabs.
+- Use the integrated terminal next to the manifest for `kubectl apply` / `kubectl explain`.
 
-## Cheat Sheet Summary
+### Online validators (paste YAML)
 
-| Concept          | Syntax Example                    |                      |
-| ---------------- | --------------------------------- | -------------------- |
-| Key-Value Pair   | `key: value`                      |                      |
-| List             | `- item1`                         |                      |
-| Dictionary       | `key:\n  subkey: value`           |                      |
-| Nested Structure | Combine lists + dictionaries      |                      |
-| Multiline String | \`                                | \n  line1\n  line2\` |
-| Anchor/Alias     | `&anchor`, `*alias`, `<<: *alias` |                      |
-| File Separator   | `---`                             |                      |
-| Comment          | `# This is a comment`             |                      |
+Useful when you see `error converting YAML to JSON` or `did not find expected key`:
+
+- [YAML Lint](https://www.yamllint.com/)
+- [YAML Validator (Code Beautify)](https://codebeautify.org/yaml-validator)
+
+Paste **sanitized** manifests only (no real Secret contents).
+
+### Command-line checks
+
+- `kubectl apply --dry-run=client -o yaml -f file.yaml` — ensures kubectl can parse the file.
+- If you use Python: `python -c "import yaml,sys; yaml.safe_load_all(open(sys.argv[1]))" file.yaml` (requires PyYAML).
 
 ---
 
-## Troubleshooting YAML Files
+## Troubleshooting checklist
 
-### Online Tools
+| Symptom | Likely cause | What to do |
+|--------|----------------|------------|
+| `found character that cannot start any token` | Tabs or wrong character | Replace tabs with spaces; re-indent. |
+| `did not find expected key` | Indentation broke parent/child relationship | Align `- list` items with sibling keys; check spaces under `spec:`. |
+| `error validating data: ValidationError(...)` | Wrong field names or types for that `apiVersion`/`kind` | Run `kubectl explain <kind>.spec` and match the schema. |
+| `unknown field` in Pod spec | Field belongs under `template` in a Deployment, not top-level | Compare to a working Deployment example. |
+| List item “swallowed” as string | Missing newline or `-` | Each list entry needs `-` at the correct indent. |
 
-* [YAML Lint](https://www.yamllint.com/)
-* [Code Beautify YAML Validator](https://codebeautify.org/yaml-validator)
+**Safe recovery in labs**
 
-### VS Code Setup
-
-* Install "YAML Language Support by Red Hat"
-* Features: syntax highlight, validation, autocompletion, linting
+1. Fix YAML in the file (or revert from git).
+2. `kubectl apply --dry-run=client -f ...`
+3. `kubectl apply -f ...`
+4. `kubectl describe` the resource if still not running.
 
 ---
 
-## Conclusion
+## Cheat sheet
 
-YAML is essential for working with Kubernetes and Ansible. Understanding its syntax, indentation rules, and formatting can prevent frustrating configuration issues. Use online validators and good editors like **VS Code** to catch mistakes early.
+| Concept | YAML pattern |
+|---------|----------------|
+| Key / value | `key: value` |
+| Nested map | indent child keys |
+| List | `- item` (repeat per item) |
+| Multi-doc file | `---` between objects |
+| Comment | `#` to end of line |
+| Multiline text | `|` or `>` |
 
 ---
 
-## Additional Resources
+## Further reading
 
-* [Official Kubernetes YAML Docs](https://kubernetes.io/docs/concepts/configuration/overview/)
-* [Ansible YAML Guide](https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html)
+- [Kubernetes configuration overview](https://kubernetes.io/docs/concepts/configuration/overview/)
+- [Official YAML spec (reference)](https://yaml.org/spec/)
+- [Kubernetes object management](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/)
 
-```
+---
 
-
+*Last updated: March 2026 — aligned with this repo’s lab manifests and HTML guides in `k8s/docs/html/`.*

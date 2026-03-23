@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **45 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **46 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -50,7 +50,7 @@ Every lab follows a consistent format:
 
 ## Complete Lab Index
 
-Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–45)**.
+Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–46)**.
 
 | S. No | Category | Lab Name | Description | Link |
 |-------|----------|----------|-------------|------|
@@ -99,17 +99,18 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 43 | Advanced | Custom Resource Definitions (Optional) | Extend the Kubernetes API with CRDs, create custom resources, and understand the operator pattern. | [lab43-adv-custom-resource-definitions.md](lab43-adv-custom-resource-definitions.md) |
 | 44 | Networking | Gateway API (Next-Gen Ingress) | Configure Gateway API for advanced HTTP/HTTPS routing with domain workarounds for local development (K8s 1.26+). | [lab44-net-gateway-api.md](lab44-net-gateway-api.md) |
 | 45 | Networking | DNS Configuration | Configure and customize DNS resolution in Kubernetes clusters. | [lab45-net-dns-configuration.md](lab45-net-dns-configuration.md) |
+| 46 | Basics | YAML Manifests Deep Dive | Read, write, validate, and troubleshoot Kubernetes YAML (Pod, Deployment, Service, ConfigMap, Secrets); intentional break-and-fix exercises. | [lab46-basics-yaml-manifests.md](lab46-basics-yaml-manifests.md) |
 
 ---
 
 ## Learning Paths
 
-Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–45**):
+Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–46**):
 
 ### Path 1: Complete Beginner
 Start here if you're new to Kubernetes:
 ```
-Lab 04 (Docker) → Lab 01 (Pods) → Lab 02 (Services) → Lab 03 (kubectl) →
+Lab 04 (Docker) → Lab 01 (Pods) → Lab 46 (YAML deep dive, optional but recommended) → Lab 02 (Services) → Lab 03 (kubectl) →
 Lab 25 (ConfigMaps) → Lab 22 (Deployment Strategies)
 ```
 
@@ -145,7 +146,7 @@ Lab 19 (PriorityClass) → Lab 20 (Taints/Tolerations)
 Understand Kubernetes networking:
 ```
 Lab 02 (Services) → Lab 34 (Multi-Port) → Lab 13 (Network Policies) →
-Lab 35 (Ingress) → Lab 45 (DNS) → Lab 44 (Gateway API)
+Lab 35 (Ingress) → Lab 45 (DNS) → Lab 44 (Gateway API) → Lab 46 (YAML recap, optional)
 ```
 
 ### Path 7: Production Readiness
@@ -195,6 +196,7 @@ All YAML files referenced in the labs are organized in subdirectories:
 ```
 k8s/labs/
 ├── basics/              # Labs 01-02 (see also docs for 03-04)
+├── yaml-lab/            # Lab 46 (YAML manifests practice)
 ├── administration/      # Cluster/etcd assets aligned with Labs 07-08
 ├── security/            # Labs 11-16
 ├── storage/             # Labs 38-39
@@ -272,7 +274,8 @@ To contribute directly:
 
 - [Kubernetes Official Documentation](https://kubernetes.io/docs/)
 - [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-- [YAML Syntax Guide](https://yaml.org/)
+- **[YAML 101 for Kubernetes Labs](../basics/yaml-basics.md)** (repo) — start here before editing lab manifests; interactive HTML: [Part 1](../html/yaml-k8s-part1-syntax.html), [Part 2](../html/yaml-k8s-part2-objects-editing.html), [Part 3](../html/yaml-k8s-part3-tools-troubleshooting.html); hands-on: [Lab 46: YAML Manifests](lab46-basics-yaml-manifests.md)
+- [YAML language spec](https://yaml.org/) (reference)
 - [Docker Documentation](https://docs.docker.com/)
 - [Kubernetes Patterns Book](https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/)
 
@@ -329,7 +332,7 @@ kubectl delete namespace <namespace-name>
 
 ## Summary
 
-- **45 comprehensive labs** covering Kubernetes from basics to advanced topics
+- **46 comprehensive labs** covering Kubernetes from basics to advanced topics
 - **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced
 - **7 curated learning paths** for different goals and experience levels
 - **Complete cross-references** between related labs
@@ -343,7 +346,7 @@ kubectl delete namespace <namespace-name>
 **Happy Learning!**
 
 *Last Updated: March 21, 2026*
-*Total Labs: 45*
+*Total Labs: 46*
 *Kubernetes Compatibility: 1.24+ (with K8s 1.25-1.28+ advanced features)*
 
 For questions, issues, or contributions, please submit a Pull Request or open an issue in the repository.

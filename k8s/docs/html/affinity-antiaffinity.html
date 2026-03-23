@@ -299,6 +299,65 @@
             </div>
         </div>
 
+        <!-- Interactive Scenario Selector -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button class="scenario-btn active" data-scenario="node-affinity" style="padding: 10px 20px; margin: 5px; border: 2px solid #3498db; background: #3498db; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">Node Affinity</button>
+            <button class="scenario-btn" data-scenario="pod-antiaffinity" style="padding: 10px 20px; margin: 5px; border: 2px solid #e74c3c; background: white; color: #e74c3c; border-radius: 8px; cursor: pointer; font-weight: 600;">Pod Anti-Affinity</button>
+            <button class="scenario-btn" data-scenario="combined" style="padding: 10px 20px; margin: 5px; border: 2px solid #9b59b6; background: white; color: #9b59b6; border-radius: 8px; cursor: pointer; font-weight: 600;">Combined Scenario</button>
+        </div>
+
+        <!-- SVG Visualization -->
+        <svg id="affinity-diagram" viewBox="0 0 1200 500" style="width: 100%; height: auto; border: 2px solid #e0e0e0; border-radius: 12px; background: #f8f9fa; margin-bottom: 20px;">
+            <!-- Node 1 -->
+            <g id="node1">
+                <rect x="50" y="100" width="200" height="300" rx="12" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+                <text x="150" y="130" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Worker Node 1</text>
+                <rect x="70" y="145" width="160" height="25" rx="4" fill="#3498db"/>
+                <text x="150" y="162" text-anchor="middle" font-size="12" fill="white" font-weight="bold">env=production</text>
+            </g>
+
+            <!-- Node 2 -->
+            <g id="node2">
+                <rect x="300" y="100" width="200" height="300" rx="12" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+                <text x="400" y="130" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Worker Node 2</text>
+                <rect x="320" y="145" width="160" height="25" rx="4" fill="#f39c12"/>
+                <text x="400" y="162" text-anchor="middle" font-size="12" fill="white" font-weight="bold">env=staging</text>
+            </g>
+
+            <!-- Node 3 -->
+            <g id="node3">
+                <rect x="550" y="100" width="200" height="300" rx="12" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+                <text x="650" y="130" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Worker Node 3</text>
+                <rect x="570" y="145" width="160" height="25" rx="4" fill="#27ae60"/>
+                <text x="650" y="162" text-anchor="middle" font-size="12" fill="white" font-weight="bold">env=dev</text>
+            </g>
+
+            <!-- Node 4 (for anti-affinity) -->
+            <g id="node4">
+                <rect x="800" y="100" width="200" height="300" rx="12" fill="#ecf0f1" stroke="#34495e" stroke-width="3"/>
+                <text x="900" y="130" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Worker Node 4</text>
+                <rect x="820" y="145" width="160" height="25" rx="4" fill="#8e44ad"/>
+                <text x="900" y="162" text-anchor="middle" font-size="12" fill="white" font-weight="bold">zone=us-east-1b</text>
+            </g>
+
+            <!-- Pods will be dynamically placed here -->
+            <g id="pods-container"></g>
+
+            <!-- Arrows and Labels -->
+            <g id="arrows-container"></g>
+
+            <!-- Legend -->
+            <g transform="translate(50, 20)">
+                <text x="0" y="0" font-size="14" font-weight="bold" fill="#2c3e50">Scheduling Behavior:</text>
+                <circle cx="200" cy="-4" r="8" fill="#f39c12"/>
+                <text x="215" y="0" font-size="12" fill="#2c3e50">Attracted Pod</text>
+                <circle cx="330" cy="-4" r="8" fill="#e74c3c"/>
+                <text x="345" y="0" font-size="12" fill="#2c3e50">Repelled Pod</text>
+                <circle cx="460" cy="-4" r="8" fill="#3498db"/>
+                <text x="475" y="0" font-size="12" fill="#2c3e50">Normal Pod</text>
+            </g>
+        </svg>
+
         <!-- Main Comparison Grid -->
         <div class="comparison-grid">
             <!-- Node Affinity -->
@@ -464,5 +523,141 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Interactive scenario switching
+        const scenarios = {
+            'node-affinity': {
+                title: 'Node Affinity: Attract pods to specific nodes',
+                pods: [
+                    { node: 1, label: 'prod-pod', color: '#f39c12', y: 200 }
+                ],
+                arrows: [
+                    { from: { x: 150, y: 80 }, to: { x: 150, y: 190 }, label: 'Attracted to env=production' }
+                ]
+            },
+            'pod-antiaffinity': {
+                title: 'Pod Anti-Affinity: Spread pods across nodes',
+                pods: [
+                    { node: 1, label: 'web-1', color: '#e74c3c', y: 200 },
+                    { node: 2, label: 'web-2', color: '#e74c3c', y: 200 },
+                    { node: 3, label: 'web-3', color: '#e74c3c', y: 200 }
+                ],
+                arrows: [
+                    { from: { x: 250, y: 220 }, to: { x: 300, y: 220 }, label: 'Repel' },
+                    { from: { x: 500, y: 220 }, to: { x: 550, y: 220 }, label: 'Repel' }
+                ]
+            },
+            'combined': {
+                title: 'Combined: Node affinity + Pod anti-affinity for HA',
+                pods: [
+                    { node: 1, label: 'db-1', color: '#9b59b6', y: 200 },
+                    { node: 2, label: 'db-2', color: '#9b59b6', y: 200 }
+                ],
+                arrows: [
+                    { from: { x: 150, y: 80 }, to: { x: 150, y: 190 }, label: 'Affinity to SSD nodes' },
+                    { from: { x: 250, y: 220 }, to: { x: 300, y: 220 }, label: 'Anti-affinity spreads' }
+                ]
+            }
+        };
+
+        function renderScenario(scenarioKey) {
+            const scenario = scenarios[scenarioKey];
+            const podsContainer = document.getElementById('pods-container');
+            const arrowsContainer = document.getElementById('arrows-container');
+
+            // Clear previous pods and arrows
+            podsContainer.innerHTML = '';
+            arrowsContainer.innerHTML = '';
+
+            // Render pods
+            scenario.pods.forEach(pod => {
+                const nodeX = 50 + (pod.node - 1) * 250;
+                const podGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', nodeX + 50);
+                rect.setAttribute('y', pod.y);
+                rect.setAttribute('width', 100);
+                rect.setAttribute('height', 50);
+                rect.setAttribute('rx', 8);
+                rect.setAttribute('fill', pod.color);
+                rect.setAttribute('stroke', '#2c3e50');
+                rect.setAttribute('stroke-width', 2);
+
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', nodeX + 100);
+                text.setAttribute('y', pod.y + 30);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', 12);
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = pod.label;
+
+                podGroup.appendChild(rect);
+                podGroup.appendChild(text);
+                podsContainer.appendChild(podGroup);
+            });
+
+            // Render arrows
+            scenario.arrows.forEach(arrow => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', arrow.from.x);
+                line.setAttribute('y1', arrow.from.y);
+                line.setAttribute('x2', arrow.to.x);
+                line.setAttribute('y2', arrow.to.y);
+                line.setAttribute('stroke', '#2c3e50');
+                line.setAttribute('stroke-width', 2);
+                line.setAttribute('stroke-dasharray', '5,5');
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+
+                const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                labelText.setAttribute('x', (arrow.from.x + arrow.to.x) / 2);
+                labelText.setAttribute('y', (arrow.from.y + arrow.to.y) / 2 - 5);
+                labelText.setAttribute('text-anchor', 'middle');
+                labelText.setAttribute('font-size', 11);
+                labelText.setAttribute('fill', '#2c3e50');
+                labelText.setAttribute('font-weight', 'bold');
+                labelText.textContent = arrow.label;
+
+                arrowsContainer.appendChild(line);
+                arrowsContainer.appendChild(labelText);
+            });
+        }
+
+        // Add arrow marker definition
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        marker.setAttribute('id', 'arrowhead');
+        marker.setAttribute('markerWidth', 10);
+        marker.setAttribute('markerHeight', 10);
+        marker.setAttribute('refX', 9);
+        marker.setAttribute('refY', 3);
+        marker.setAttribute('orient', 'auto');
+        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polygon.setAttribute('points', '0 0, 10 3, 0 6');
+        polygon.setAttribute('fill', '#2c3e50');
+        marker.appendChild(polygon);
+        defs.appendChild(marker);
+        document.getElementById('affinity-diagram').insertBefore(defs, document.getElementById('node1'));
+
+        // Button event listeners
+        document.querySelectorAll('.scenario-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.scenario-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = 'white';
+                    b.style.color = b.style.borderColor;
+                });
+                this.classList.add('active');
+                this.style.background = this.style.borderColor;
+                this.style.color = 'white';
+                renderScenario(this.dataset.scenario);
+            });
+        });
+
+        // Initial render
+        renderScenario('node-affinity');
+    </script>
 </body>
 </html>

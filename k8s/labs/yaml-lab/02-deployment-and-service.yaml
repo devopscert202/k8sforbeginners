@@ -1,0 +1,36 @@
+# Lab 46 — two objects in one file (--- separator). Apply after namespace exists.
+apiVersion: v1
+kind: Service
+metadata:
+  name: yaml-lab-svc
+  namespace: yaml-lab
+spec:
+  selector:
+    app: yaml-lab-learn
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yaml-lab-deploy
+  namespace: yaml-lab
+  labels:
+    app: yaml-lab-learn
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: yaml-lab-learn
+  template:
+    metadata:
+      labels:
+        app: yaml-lab-learn
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80

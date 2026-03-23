@@ -285,6 +285,383 @@
             </ul>
         </div>
 
+        <!-- Interactive View Switcher -->
+        <div style="display: flex; gap: 12px; justify-content: center; margin: 20px 0; flex-wrap: wrap;">
+            <button class="view-btn active" onclick="showUpgradeView('full')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">Full Sequence</button>
+            <button class="view-btn" onclick="showUpgradeView('control')" style="background: white; color: #667eea; border: 2px solid #667eea; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">Control Plane Only</button>
+            <button class="view-btn" onclick="showUpgradeView('worker')" style="background: white; color: #667eea; border: 2px solid #667eea; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">Worker Node Only</button>
+            <button class="view-btn" onclick="showUpgradeView('components')" style="background: white; color: #667eea; border: 2px solid #667eea; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s;">Component Order</button>
+        </div>
+
+        <!-- SVG Flow Diagram Container -->
+        <div style="background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <svg id="upgrade-flow-diagram" width="100%" height="500" viewBox="0 0 1200 500" style="max-width: 100%;">
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#667eea" />
+                    </marker>
+                    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#48bb78" />
+                    </marker>
+                    <marker id="arrow-amber" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#ed8936" />
+                    </marker>
+                    <marker id="arrow-gray" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#a0aec0" />
+                    </marker>
+                    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#48bb78;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#38a169;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#ed8936;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#dd6b20;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Full Sequence View -->
+                <g id="full-view" style="display: block;">
+                    <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2d3748">Complete Upgrade Sequence</text>
+
+                    <!-- Backup -->
+                    <g class="upgrade-step" data-step="not-started" onclick="cycleStepState(this)">
+                        <rect x="50" y="70" width="150" height="70" rx="10" fill="#a0aec0" stroke="#718096" stroke-width="2"/>
+                        <text x="125" y="100" text-anchor="middle" fill="white" font-size="14" font-weight="bold">0. Backup etcd</text>
+                        <text x="125" y="120" text-anchor="middle" fill="white" font-size="11">Pre-flight</text>
+                    </g>
+
+                    <path d="M 200 105 L 270 105" stroke="#a0aec0" stroke-width="3" marker-end="url(#arrow-gray)"/>
+
+                    <!-- Control Plane -->
+                    <g class="upgrade-step" data-step="not-started" onclick="cycleStepState(this)">
+                        <rect x="270" y="70" width="180" height="70" rx="10" fill="#a0aec0" stroke="#718096" stroke-width="2"/>
+                        <text x="360" y="100" text-anchor="middle" fill="white" font-size="14" font-weight="bold">1. Control Plane</text>
+                        <text x="360" y="120" text-anchor="middle" fill="white" font-size="11">kubeadm, kubelet, kubectl</text>
+                    </g>
+
+                    <path d="M 450 105 L 520 105" stroke="#a0aec0" stroke-width="3" marker-end="url(#arrow-gray)"/>
+
+                    <!-- Worker 1 -->
+                    <g class="upgrade-step" data-step="not-started" onclick="cycleStepState(this)">
+                        <rect x="520" y="70" width="150" height="70" rx="10" fill="#a0aec0" stroke="#718096" stroke-width="2"/>
+                        <text x="595" y="100" text-anchor="middle" fill="white" font-size="14" font-weight="bold">2. Worker-1</text>
+                        <text x="595" y="120" text-anchor="middle" fill="white" font-size="11">Drain & Upgrade</text>
+                    </g>
+
+                    <path d="M 670 105 L 740 105" stroke="#a0aec0" stroke-width="3" marker-end="url(#arrow-gray)"/>
+
+                    <!-- Worker 2 -->
+                    <g class="upgrade-step" data-step="not-started" onclick="cycleStepState(this)">
+                        <rect x="740" y="70" width="150" height="70" rx="10" fill="#a0aec0" stroke="#718096" stroke-width="2"/>
+                        <text x="815" y="100" text-anchor="middle" fill="white" font-size="14" font-weight="bold">3. Worker-2</text>
+                        <text x="815" y="120" text-anchor="middle" fill="white" font-size="11">Drain & Upgrade</text>
+                    </g>
+
+                    <path d="M 890 105 L 960 105" stroke="#a0aec0" stroke-width="3" marker-end="url(#arrow-gray)"/>
+
+                    <!-- Validation -->
+                    <g class="upgrade-step" data-step="not-started" onclick="cycleStepState(this)">
+                        <rect x="960" y="70" width="150" height="70" rx="10" fill="#a0aec0" stroke="#718096" stroke-width="2"/>
+                        <text x="1035" y="100" text-anchor="middle" fill="white" font-size="14" font-weight="bold">4. Validate</text>
+                        <text x="1035" y="120" text-anchor="middle" fill="white" font-size="11">Verify cluster</text>
+                    </g>
+
+                    <!-- Legend -->
+                    <g transform="translate(300, 180)">
+                        <text x="0" y="0" font-size="14" font-weight="bold" fill="#2d3748">Click boxes to cycle states:</text>
+                        <rect x="0" y="10" width="80" height="30" rx="5" fill="#a0aec0"/>
+                        <text x="40" y="30" text-anchor="middle" fill="white" font-size="11" font-weight="600">Not Started</text>
+
+                        <rect x="100" y="10" width="80" height="30" rx="5" fill="url(#amberGrad)"/>
+                        <text x="140" y="30" text-anchor="middle" fill="white" font-size="11" font-weight="600">In Progress</text>
+
+                        <rect x="200" y="10" width="80" height="30" rx="5" fill="url(#greenGrad)"/>
+                        <text x="240" y="30" text-anchor="middle" fill="white" font-size="11" font-weight="600">Completed</text>
+                    </g>
+
+                    <!-- Timeline -->
+                    <g transform="translate(50, 260)">
+                        <text x="0" y="0" font-size="16" font-weight="bold" fill="#2d3748">Typical Timeline</text>
+                        <line x1="0" y1="30" x2="1000" y2="30" stroke="#e2e8f0" stroke-width="3"/>
+
+                        <circle cx="0" cy="30" r="8" fill="#667eea"/>
+                        <text x="0" y="55" text-anchor="middle" font-size="10">Start</text>
+
+                        <circle cx="150" cy="30" r="8" fill="#667eea"/>
+                        <text x="150" y="55" text-anchor="middle" font-size="10">~5 min</text>
+                        <text x="150" y="70" text-anchor="middle" font-size="9" fill="#718096">Control Plane</text>
+
+                        <circle cx="400" cy="30" r="8" fill="#667eea"/>
+                        <text x="400" y="55" text-anchor="middle" font-size="10">~10 min</text>
+                        <text x="400" y="70" text-anchor="middle" font-size="9" fill="#718096">Worker-1 Done</text>
+
+                        <circle cx="650" cy="30" r="8" fill="#667eea"/>
+                        <text x="650" y="55" text-anchor="middle" font-size="10">~15 min</text>
+                        <text x="650" y="70" text-anchor="middle" font-size="9" fill="#718096">Worker-2 Done</text>
+
+                        <circle cx="800" cy="30" r="8" fill="#48bb78"/>
+                        <text x="800" y="55" text-anchor="middle" font-size="10">~17 min</text>
+                        <text x="800" y="70" text-anchor="middle" font-size="9" fill="#48bb78">Complete ✓</text>
+                    </g>
+
+                    <!-- Important Note -->
+                    <g transform="translate(100, 380)">
+                        <rect x="0" y="0" width="1000" height="80" rx="10" fill="#fff5f5" stroke="#fc8181" stroke-width="2"/>
+                        <text x="20" y="25" font-size="14" font-weight="bold" fill="#c53030">⚠️ Critical Sequence Rules</text>
+                        <text x="20" y="45" font-size="12" fill="#2d3748">• Control plane MUST be upgraded before any worker nodes</text>
+                        <text x="20" y="63" font-size="12" fill="#2d3748">• Worker nodes MUST be upgraded one at a time to maintain workload availability</text>
+                    </g>
+                </g>
+
+                <!-- Control Plane View -->
+                <g id="control-view" style="display: none;">
+                    <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2d3748">Control Plane Upgrade Sequence</text>
+
+                    <!-- Step 1: Drain -->
+                    <g transform="translate(150, 80)">
+                        <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="90" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">1. Drain Node</text>
+                        <text x="90" y="50" text-anchor="middle" fill="white" font-size="11">kubectl drain</text>
+                        <text x="90" y="65" text-anchor="middle" fill="white" font-size="11">--ignore-daemonsets</text>
+                    </g>
+
+                    <path d="M 420 120 L 500 120" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 2: Upgrade kubeadm -->
+                    <g transform="translate(500, 80)">
+                        <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="90" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">2. Upgrade kubeadm</text>
+                        <text x="90" y="50" text-anchor="middle" fill="white" font-size="11">apt/yum install</text>
+                        <text x="90" y="65" text-anchor="middle" fill="white" font-size="11">kubeadm=1.32.0</text>
+                    </g>
+
+                    <path d="M 590 160 L 590 220" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 3: kubeadm upgrade apply -->
+                    <g transform="translate(500, 220)">
+                        <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="90" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">3. Apply Upgrade</text>
+                        <text x="90" y="50" text-anchor="middle" fill="white" font-size="11">kubeadm upgrade</text>
+                        <text x="90" y="65" text-anchor="middle" fill="white" font-size="11">apply v1.32.0</text>
+                    </g>
+
+                    <path d="M 500 260 L 420 260" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 4: Upgrade kubelet/kubectl -->
+                    <g transform="translate(150, 220)">
+                        <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="90" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">4. Upgrade kubelet</text>
+                        <text x="90" y="50" text-anchor="middle" fill="white" font-size="11">apt/yum install</text>
+                        <text x="90" y="65" text-anchor="middle" fill="white" font-size="11">kubelet kubectl</text>
+                    </g>
+
+                    <path d="M 240 220 L 240 180" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 5: Restart & Uncordon -->
+                    <g transform="translate(850, 80)">
+                        <rect x="0" y="0" width="180" height="80" rx="10" fill="url(#greenGrad)" stroke="#48bb78" stroke-width="2"/>
+                        <text x="90" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">5. Restart & Uncordon</text>
+                        <text x="90" y="50" text-anchor="middle" fill="white" font-size="11">systemctl restart kubelet</text>
+                        <text x="90" y="65" text-anchor="middle" fill="white" font-size="11">kubectl uncordon</text>
+                    </g>
+
+                    <path d="M 680 120 L 850 120" stroke="#48bb78" stroke-width="3" marker-end="url(#arrow-green)"/>
+
+                    <!-- Component upgrade order -->
+                    <g transform="translate(200, 360)">
+                        <text x="0" y="0" font-size="14" font-weight="bold" fill="#2d3748">Components Upgraded (in order):</text>
+                        <g transform="translate(0, 15)">
+                            <circle cx="5" cy="0" r="4" fill="#667eea"/>
+                            <text x="15" y="5" font-size="12">etcd (via kubeadm upgrade apply)</text>
+                        </g>
+                        <g transform="translate(0, 35)">
+                            <circle cx="5" cy="0" r="4" fill="#667eea"/>
+                            <text x="15" y="5" font-size="12">kube-apiserver</text>
+                        </g>
+                        <g transform="translate(0, 55)">
+                            <circle cx="5" cy="0" r="4" fill="#667eea"/>
+                            <text x="15" y="5" font-size="12">kube-controller-manager</text>
+                        </g>
+                        <g transform="translate(350, 15)">
+                            <circle cx="5" cy="0" r="4" fill="#667eea"/>
+                            <text x="15" y="5" font-size="12">kube-scheduler</text>
+                        </g>
+                        <g transform="translate(350, 35)">
+                            <circle cx="5" cy="0" r="4" fill="#667eea"/>
+                            <text x="15" y="5" font-size="12">kubelet (manual upgrade)</text>
+                        </g>
+                        <g transform="translate(350, 55)">
+                            <circle cx="5" cy="0" r="4" fill="#667eea"/>
+                            <text x="15" y="5" font-size="12">kubectl (manual upgrade)</text>
+                        </g>
+                    </g>
+                </g>
+
+                <!-- Worker Node View -->
+                <g id="worker-view" style="display: none;">
+                    <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2d3748">Worker Node Upgrade Sequence</text>
+
+                    <!-- Step 1: Cordon & Drain -->
+                    <g transform="translate(100, 80)">
+                        <rect x="0" y="0" width="200" height="90" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="100" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">1. Cordon & Drain</text>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-size="11">(from control plane)</text>
+                        <text x="100" y="68" text-anchor="middle" fill="white" font-size="11">kubectl drain worker-1</text>
+                    </g>
+
+                    <path d="M 300 125 L 380 125" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 2: SSH to worker -->
+                    <g transform="translate(380, 80)">
+                        <rect x="0" y="0" width="200" height="90" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="100" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">2. SSH to Worker</text>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-size="11">Connect to node</text>
+                        <text x="100" y="68" text-anchor="middle" fill="white" font-size="11">ssh worker-1</text>
+                    </g>
+
+                    <path d="M 580 125 L 660 125" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 3: Upgrade kubeadm -->
+                    <g transform="translate(660, 80)">
+                        <rect x="0" y="0" width="200" height="90" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="100" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">3. Upgrade kubeadm</text>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-size="11">apt/yum install</text>
+                        <text x="100" y="68" text-anchor="middle" fill="white" font-size="11">kubeadm=1.32.0</text>
+                    </g>
+
+                    <path d="M 760 170 L 760 230" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 4: kubeadm upgrade node -->
+                    <g transform="translate(660, 230)">
+                        <rect x="0" y="0" width="200" height="90" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="100" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">4. Upgrade Node</text>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-size="11">kubeadm upgrade</text>
+                        <text x="100" y="68" text-anchor="middle" fill="white" font-size="11">node</text>
+                    </g>
+
+                    <path d="M 660 275 L 580 275" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 5: Upgrade kubelet -->
+                    <g transform="translate(380, 230)">
+                        <rect x="0" y="0" width="200" height="90" rx="10" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="100" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">5. Upgrade kubelet</text>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-size="11">apt/yum install</text>
+                        <text x="100" y="68" text-anchor="middle" fill="white" font-size="11">kubelet kubectl</text>
+                    </g>
+
+                    <path d="M 380 275 L 300 275" stroke="#667eea" stroke-width="3" marker-end="url(#arrow)"/>
+
+                    <!-- Step 6: Restart kubelet -->
+                    <g transform="translate(100, 230)">
+                        <rect x="0" y="0" width="200" height="90" rx="10" fill="url(#amberGrad)" stroke="#ed8936" stroke-width="2"/>
+                        <text x="100" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">6. Restart kubelet</text>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-size="11">systemctl daemon-reload</text>
+                        <text x="100" y="68" text-anchor="middle" fill="white" font-size="11">systemctl restart kubelet</text>
+                    </g>
+
+                    <path d="M 200 230 L 200 190" stroke="#48bb78" stroke-width="3" marker-end="url(#arrow-green)"/>
+
+                    <!-- Step 7: Uncordon -->
+                    <g transform="translate(900, 150)">
+                        <rect x="0" y="0" width="200" height="90" rx="10" fill="url(#greenGrad)" stroke="#48bb78" stroke-width="2"/>
+                        <text x="100" y="30" text-anchor="middle" fill="white" font-size="15" font-weight="bold">7. Uncordon Node</text>
+                        <text x="100" y="50" text-anchor="middle" fill="white" font-size="11">(from control plane)</text>
+                        <text x="100" y="68" text-anchor="middle" fill="white" font-size="11">kubectl uncordon worker-1</text>
+                    </g>
+
+                    <path d="M 860 125 L 900 150" stroke="#48bb78" stroke-width="3" marker-end="url(#arrow-green)"/>
+
+                    <!-- Note -->
+                    <g transform="translate(300, 370)">
+                        <rect x="0" y="0" width="600" height="60" rx="10" fill="#ebf8ff" stroke="#4299e1" stroke-width="2"/>
+                        <text x="300" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c5282">Repeat for Each Worker Node</text>
+                        <text x="300" y="45" text-anchor="middle" font-size="11" fill="#2c5282">Upgrade one worker at a time to maintain workload availability</text>
+                    </g>
+                </g>
+
+                <!-- Component Order View -->
+                <g id="components-view" style="display: none;">
+                    <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2d3748">Control Plane Component Upgrade Order</text>
+
+                    <!-- Center timeline -->
+                    <line x1="600" y1="80" x2="600" y2="420" stroke="#667eea" stroke-width="4"/>
+
+                    <!-- etcd -->
+                    <g transform="translate(200, 80)">
+                        <rect x="0" y="0" width="280" height="50" rx="8" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="20" y="25" fill="white" font-size="14" font-weight="bold">1. etcd</text>
+                        <text x="20" y="40" fill="white" font-size="11">Cluster state database</text>
+                        <circle cx="400" cy="25" r="12" fill="#667eea" stroke="white" stroke-width="3"/>
+                    </g>
+
+                    <!-- API Server -->
+                    <g transform="translate(620, 140)">
+                        <rect x="0" y="0" width="380" height="50" rx="8" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="20" y="25" fill="white" font-size="14" font-weight="bold">2. kube-apiserver</text>
+                        <text x="20" y="40" fill="white" font-size="11">API gateway - must be upgraded before other components</text>
+                        <circle cx="-20" cy="25" r="12" fill="#667eea" stroke="white" stroke-width="3"/>
+                    </g>
+
+                    <!-- Controller Manager -->
+                    <g transform="translate(200, 200)">
+                        <rect x="0" y="0" width="280" height="50" rx="8" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="20" y="25" fill="white" font-size="14" font-weight="bold">3. kube-controller-manager</text>
+                        <text x="20" y="40" fill="white" font-size="11">Cluster control loops</text>
+                        <circle cx="400" cy="25" r="12" fill="#667eea" stroke="white" stroke-width="3"/>
+                    </g>
+
+                    <!-- Scheduler -->
+                    <g transform="translate(620, 260)">
+                        <rect x="0" y="0" width="280" height="50" rx="8" fill="url(#purpleGrad)" stroke="#667eea" stroke-width="2"/>
+                        <text x="20" y="25" fill="white" font-size="14" font-weight="bold">4. kube-scheduler</text>
+                        <text x="20" y="40" fill="white" font-size="11">Pod placement decisions</text>
+                        <circle cx="-20" cy="25" r="12" fill="#667eea" stroke="white" stroke-width="3"/>
+                    </g>
+
+                    <!-- kubelet -->
+                    <g transform="translate(200, 320)">
+                        <rect x="0" y="0" width="280" height="50" rx="8" fill="url(#amberGrad)" stroke="#ed8936" stroke-width="2"/>
+                        <text x="20" y="25" fill="white" font-size="14" font-weight="bold">5. kubelet</text>
+                        <text x="20" y="40" fill="white" font-size="11">Node agent (manual upgrade)</text>
+                        <circle cx="400" cy="25" r="12" fill="#ed8936" stroke="white" stroke-width="3"/>
+                    </g>
+
+                    <!-- Gates between stages -->
+                    <g transform="translate(150, 120)">
+                        <rect x="0" y="0" width="500" height="5" rx="2" fill="#48bb78"/>
+                        <text x="250" y="-5" text-anchor="middle" font-size="10" fill="#48bb78" font-weight="600">✓ Gate: etcd healthy</text>
+                    </g>
+
+                    <g transform="translate(150, 180)">
+                        <rect x="0" y="0" width="500" height="5" rx="2" fill="#48bb78"/>
+                        <text x="250" y="-5" text-anchor="middle" font-size="10" fill="#48bb78" font-weight="600">✓ Gate: API server responding</text>
+                    </g>
+
+                    <g transform="translate(150, 240)">
+                        <rect x="0" y="0" width="500" height="5" rx="2" fill="#48bb78"/>
+                        <text x="250" y="-5" text-anchor="middle" font-size="10" fill="#48bb78" font-weight="600">✓ Gate: Controller manager running</text>
+                    </g>
+
+                    <g transform="translate(150, 300)">
+                        <rect x="0" y="0" width="500" height="5" rx="2" fill="#48bb78"/>
+                        <text x="250" y="-5" text-anchor="middle" font-size="10" fill="#48bb78" font-weight="600">✓ Gate: Scheduler active</text>
+                    </g>
+
+                    <!-- Note -->
+                    <g transform="translate(150, 400)">
+                        <rect x="0" y="0" width="900" height="70" rx="10" fill="#fff5f5" stroke="#fc8181" stroke-width="2"/>
+                        <text x="450" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#c53030">Why This Order Matters</text>
+                        <text x="450" y="45" text-anchor="middle" font-size="11" fill="#2d3748">• API Server must be upgraded before controller-manager and scheduler (version skew)</text>
+                        <text x="450" y="60" text-anchor="middle" font-size="11" fill="#2d3748">• kubelet can be 1 minor version behind API server</text>
+                    </g>
+                </g>
+            </svg>
+        </div>
+
         <div class="timeline">
             <!-- Pre-Flight Phase -->
             <div class="phase">
@@ -590,6 +967,56 @@ kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</pre>
                 }
             });
         });
+
+        // View switching for upgrade diagrams
+        function showUpgradeView(view) {
+            const views = ['full-view', 'control-view', 'worker-view', 'components-view'];
+            views.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            document.getElementById(view + '-view').style.display = 'block';
+
+            // Update button styles
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.style.background = 'white';
+                btn.style.color = '#667eea';
+                btn.style.border = '2px solid #667eea';
+                btn.style.boxShadow = 'none';
+            });
+            event.target.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+            event.target.style.color = 'white';
+            event.target.style.border = 'none';
+            event.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+        }
+
+        // Cycle through step states (not started -> in progress -> completed)
+        function cycleStepState(element) {
+            const currentState = element.getAttribute('data-step');
+            const rect = element.querySelector('rect');
+
+            const states = {
+                'not-started': {
+                    next: 'in-progress',
+                    fill: '#ed8936',
+                    stroke: '#dd6b20'
+                },
+                'in-progress': {
+                    next: 'completed',
+                    fill: '#48bb78',
+                    stroke: '#38a169'
+                },
+                'completed': {
+                    next: 'not-started',
+                    fill: '#a0aec0',
+                    stroke: '#718096'
+                }
+            };
+
+            const nextState = states[currentState].next;
+            element.setAttribute('data-step', nextState);
+            rect.setAttribute('fill', states[currentState].fill);
+            rect.setAttribute('stroke', states[currentState].stroke);
+        }
     </script>
 </body>
 </html>

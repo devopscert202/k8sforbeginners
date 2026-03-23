@@ -328,33 +328,104 @@
                     <h2>Admission Control Flow</h2>
                 </div>
             </div>
-            <div class="flow-track">
-            <article class="flow-step">
-                <div class="step-number">1</div>
-                <h3>Submit resource</h3>
-                <p>A user or controller sends a request to the API server.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">2</div>
-                <h3>Validating webhook runs</h3>
-                <p>Gatekeeper intercepts the admission request.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">3</div>
-                <h3>Policy evaluates</h3>
-                <p>ConstraintTemplates and Constraints are used to check compliance.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">4</div>
-                <h3>Allow or deny</h3>
-                <p>The resource is accepted or rejected based on policy outcome.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">5</div>
-                <h3>Audit existing resources</h3>
-                <p>Gatekeeper also scans resources already in the cluster for violations.</p>
-            </article>
-</div>
+
+            <!-- SVG Flow Diagram -->
+            <svg viewBox="0 0 900 600" style="width: 100%; max-width: 900px; margin: 20px auto; display: block;">
+                <!-- Title -->
+                <text x="450" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">Gatekeeper Policy Enforcement Flow</text>
+
+                <!-- Step 1: API Request -->
+                <rect x="50" y="60" width="180" height="80" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="140" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">API Request</text>
+                <text x="140" y="110" text-anchor="middle" font-size="11" fill="#1e3a8a">kubectl apply -f pod.yaml</text>
+                <text x="140" y="128" text-anchor="middle" font-size="10" fill="#475569">User/Controller</text>
+
+                <!-- Arrow 1 -->
+                <line x1="230" y1="100" x2="290" y2="100" stroke="#6366f1" stroke-width="3" marker-end="url(#arrow-gk)"/>
+                <text x="260" y="90" text-anchor="middle" font-size="10" fill="#6366f1" font-weight="bold">POST</text>
+
+                <!-- Step 2: API Server -->
+                <rect x="300" y="60" width="180" height="80" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+                <text x="390" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#0c4a6e">API Server</text>
+                <text x="390" y="110" text-anchor="middle" font-size="11" fill="#075985">Admission Chain</text>
+                <text x="390" y="128" text-anchor="middle" font-size="10" fill="#475569">ValidatingWebhook</text>
+
+                <!-- Arrow 2 -->
+                <line x1="390" y1="140" x2="390" y2="190" stroke="#6366f1" stroke-width="3" marker-end="url(#arrow-gk)"/>
+                <text x="420" y="170" font-size="10" fill="#6366f1" font-weight="bold">Webhook Call</text>
+
+                <!-- Step 3: Gatekeeper -->
+                <rect x="270" y="200" width="240" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+                <text x="390" y="225" text-anchor="middle" font-size="16" font-weight="bold" fill="#92400e">Gatekeeper</text>
+                <text x="390" y="245" text-anchor="middle" font-size="11" fill="#78350f">Policy Engine</text>
+                <rect x="290" y="255" width="200" height="35" rx="4" fill="white" opacity="0.9"/>
+                <text x="390" y="278" text-anchor="middle" font-size="11" fill="#78350f">Evaluate Constraints</text>
+
+                <!-- Arrow 3 to Templates -->
+                <line x1="270" y1="250" x2="180" y2="250" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow-gk)"/>
+                <text x="220" y="242" text-anchor="middle" font-size="10" fill="#6366f1" font-weight="bold">Load</text>
+
+                <!-- ConstraintTemplate -->
+                <rect x="20" y="210" width="150" height="90" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                <text x="95" y="230" text-anchor="middle" font-size="12" font-weight="bold" fill="#3730a3">ConstraintTemplate</text>
+                <text x="95" y="248" text-anchor="middle" font-size="10" fill="#4338ca">K8sRequiredLabels</text>
+                <rect x="30" y="260" width="130" height="30" rx="3" fill="white"/>
+                <text x="95" y="280" text-anchor="middle" font-size="9" fill="#4338ca" font-family="monospace">rego: validation logic</text>
+
+                <!-- Arrow 4 to Constraints -->
+                <line x1="510" y1="250" x2="600" y2="250" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow-gk)"/>
+                <text x="555" y="242" text-anchor="middle" font-size="10" fill="#6366f1" font-weight="bold">Check</text>
+
+                <!-- Constraint -->
+                <rect x="610" y="210" width="170" height="90" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="695" y="230" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">Constraint</text>
+                <text x="695" y="248" text-anchor="middle" font-size="10" fill="#14532d">all-must-have-owner</text>
+                <rect x="625" y="260" width="140" height="30" rx="3" fill="white"/>
+                <text x="695" y="280" text-anchor="middle" font-size="9" fill="#14532d" font-family="monospace">labels: ["owner"]</text>
+
+                <!-- Decision Point -->
+                <path d="M 390 310 L 450 360 L 390 410 L 330 360 Z" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="390" y="365" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Policy</text>
+                <text x="390" y="380" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Match?</text>
+
+                <!-- Arrow to ALLOW -->
+                <line x1="330" y1="360" x2="180" y2="440" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-allow)"/>
+                <text x="250" y="390" font-size="11" fill="#22c55e" font-weight="bold">✓ PASS</text>
+
+                <!-- ALLOW Box -->
+                <rect x="50" y="430" width="180" height="80" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="3"/>
+                <text x="140" y="460" text-anchor="middle" font-size="16" font-weight="bold" fill="#166534">✓ ALLOWED</text>
+                <text x="140" y="482" text-anchor="middle" font-size="11" fill="#14532d">Resource Created</text>
+                <text x="140" y="500" text-anchor="middle" font-size="10" fill="#475569">Pod scheduled</text>
+
+                <!-- Arrow to DENY -->
+                <line x1="450" y1="360" x2="600" y2="440" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-deny)"/>
+                <text x="530" y="390" font-size="11" fill="#ef4444" font-weight="bold">✗ FAIL</text>
+
+                <!-- DENY Box -->
+                <rect x="560" y="430" width="180" height="80" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/>
+                <text x="650" y="460" text-anchor="middle" font-size="16" font-weight="bold" fill="#991b1b">✗ DENIED</text>
+                <text x="650" y="482" text-anchor="middle" font-size="11" fill="#7f1d1d">Admission Rejected</text>
+                <text x="650" y="500" text-anchor="middle" font-size="10" fill="#475569">Error: Missing label</text>
+
+                <!-- Audit Mode Box -->
+                <rect x="50" y="530" width="800" height="50" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+                <text x="450" y="553" text-anchor="middle" font-size="13" font-weight="bold" fill="#0c4a6e">Audit Mode: Gatekeeper periodically scans existing resources for violations</text>
+                <text x="450" y="571" text-anchor="middle" font-size="11" fill="#075985">Does not block creation, but records non-compliant resources in Constraint status</text>
+
+                <!-- Markers -->
+                <defs>
+                    <marker id="arrow-gk" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#6366f1"/>
+                    </marker>
+                    <marker id="arrow-allow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#22c55e"/>
+                    </marker>
+                    <marker id="arrow-deny" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#ef4444"/>
+                    </marker>
+                </defs>
+            </svg>
 
             <div class="section-note">Gatekeeper is strongest when used both proactively at admission time and retrospectively through audit.</div>
         </section>
@@ -366,14 +437,84 @@
                     <h2>Examples You Can Recognize Quickly</h2>
                 </div>
             </div>
+
+            <!-- Relationship Diagram -->
+            <svg viewBox="0 0 850 400" style="width: 100%; max-width: 850px; margin: 20px auto; display: block;">
+                <!-- Title -->
+                <text x="425" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">ConstraintTemplate → Constraint Relationship</text>
+
+                <!-- ConstraintTemplate (Blueprint) -->
+                <rect x="50" y="60" width="350" height="300" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="3"/>
+                <text x="225" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#3730a3">ConstraintTemplate (Blueprint)</text>
+                <text x="225" y="110" text-anchor="middle" font-size="12" fill="#4338ca">K8sRequiredLabels</text>
+
+                <!-- Schema Section -->
+                <rect x="70" y="125" width="310" height="100" rx="6" fill="white" stroke="#6366f1" stroke-width="1"/>
+                <text x="225" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#3730a3">Schema (Parameters)</text>
+                <text x="100" y="168" font-size="11" fill="#4338ca" font-family="monospace">labels: {</text>
+                <text x="110" y="185" font-size="11" fill="#4338ca" font-family="monospace">  type: array</text>
+                <text x="110" y="202" font-size="11" fill="#4338ca" font-family="monospace">  items: string</text>
+                <text x="100" y="219" font-size="11" fill="#4338ca" font-family="monospace">}</text>
+
+                <!-- Rego Logic Section -->
+                <rect x="70" y="235" width="310" height="110" rx="6" fill="white" stroke="#6366f1" stroke-width="1"/>
+                <text x="225" y="255" text-anchor="middle" font-size="13" font-weight="bold" fill="#3730a3">Rego Validation Logic</text>
+                <text x="100" y="278" font-size="10" fill="#4338ca" font-family="monospace">violation[{"msg": msg}] {</text>
+                <text x="110" y="295" font-size="10" fill="#4338ca" font-family="monospace">  provided := input.review.object.metadata.labels</text>
+                <text x="110" y="312" font-size="10" fill="#4338ca" font-family="monospace">  required := input.parameters.labels[_]</text>
+                <text x="110" y1="329" font-size="10" fill="#4338ca" font-family="monospace">  not provided[required]</text>
+                <text x="100" y="339" font-size="10" fill="#4338ca" font-family="monospace">}</text>
+
+                <!-- Arrow with "instantiate" -->
+                <line x1="400" y1="210" x2="450" y2="210" stroke="#22c55e" stroke-width="4" marker-end="url(#arrow-inst)"/>
+                <text x="425" y="200" text-anchor="middle" font-size="12" fill="#22c55e" font-weight="bold">Instantiate</text>
+
+                <!-- Constraint (Instance) -->
+                <rect x="460" y="60" width="350" height="300" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="3"/>
+                <text x="635" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#166534">Constraint (Instance)</text>
+                <text x="635" y="110" text-anchor="middle" font-size="12" fill="#14532d">all-must-have-owner</text>
+
+                <!-- Concrete Parameters -->
+                <rect x="480" y="125" width="310" height="90" rx="6" fill="white" stroke="#22c55e" stroke-width="1"/>
+                <text x="635" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Concrete Parameters</text>
+                <text x="510" y="168" font-size="11" fill="#14532d" font-family="monospace">labels:</text>
+                <text x="520" y="185" font-size="11" fill="#14532d" font-family="monospace">  - "owner"</text>
+                <text x="520" y="202" font-size="11" fill="#14532d" font-family="monospace">  - "environment"</text>
+
+                <!-- Match Scope -->
+                <rect x="480" y="225" width="310" height="70" rx="6" fill="white" stroke="#22c55e" stroke-width="1"/>
+                <text x="635" y="245" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Scope</text>
+                <text x="510" y="268" font-size="11" fill="#14532d" font-family="monospace">kinds:</text>
+                <text x="520" y="285" font-size="11" fill="#14532d" font-family="monospace">  - apiGroups: [""]</text>
+                <text x="530" y="302" font-size="11" fill="#14532d" font-family="monospace">kinds: ["Pod"]</text>
+
+                <!-- Enforcement Action -->
+                <rect x="480" y="305" width="310" height="40" rx="6" fill="white" stroke="#22c55e" stroke-width="1"/>
+                <text x="635" y="328" text-anchor="middle" font-size="12" fill="#166534" font-family="monospace">enforcementAction: deny</text>
+
+                <defs>
+                    <marker id="arrow-inst" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#22c55e"/>
+                    </marker>
+                </defs>
+            </svg>
+
             <div class="example-stack">
             <section class="example-card">
-                <div class="section-kicker">Policy Building Blocks</div>
-                <pre><code>ConstraintTemplate + Constraint + Admission Webhook</code></pre>
+                <div class="section-kicker">ConstraintTemplate Example (Reusable)</div>
+                <pre><code>apiVersion: templates.gatekeeper.sh/v1<br>kind: ConstraintTemplate<br>metadata:<br>  name: k8srequiredlabels<br>spec:<br>  crd:<br>    spec:<br>      names:<br>        kind: K8sRequiredLabels<br>      validation:<br>        openAPIV3Schema:<br>          properties:<br>            labels:<br>              type: array<br>              items:<br>                type: string<br>  targets:<br>    - target: admission.k8s.gatekeeper.sh<br>      rego: |<br>        package k8srequiredlabels<br>        violation[{"msg": msg}] {<br>          provided := {label | input.review.object.metadata.labels[label]}<br>          required := {label | label := input.parameters.labels[_]}<br>          missing := required - provided<br>          count(missing) > 0<br>          msg := sprintf("Missing required labels: %v", [missing])<br>        }</code></pre>
+            </section>
+            <section class="example-card">
+                <div class="section-kicker">Constraint Example (Applied Policy)</div>
+                <pre><code>apiVersion: constraints.gatekeeper.sh/v1beta1<br>kind: K8sRequiredLabels<br>metadata:<br>  name: all-must-have-owner<br>spec:<br>  match:<br>    kinds:<br>      - apiGroups: [""]<br>        kinds: ["Pod"]<br>  parameters:<br>    labels:<br>      - "owner"<br>      - "environment"</code></pre>
+            </section>
+            <section class="example-card">
+                <div class="section-kicker">Policy Violation Example</div>
+                <pre><code># This Pod will be REJECTED:<br>apiVersion: v1<br>kind: Pod<br>metadata:<br>  name: bad-pod<br>  labels:<br>    app: myapp  # Missing "owner" and "environment"<br>spec:<br>  containers:<br>  - name: nginx<br>    image: nginx<br><br># Error: admission webhook denied the request:<br># [all-must-have-owner] Missing required labels: {"environment", "owner"}</code></pre>
             </section>
             <section class="example-card">
                 <div class="section-kicker">Useful Commands</div>
-                <pre><code>kubectl get constrainttemplates<br>kubectl get constraints<br>kubectl describe &lt;constraint&gt;</code></pre>
+                <pre><code># List all ConstraintTemplates<br>kubectl get constrainttemplates<br><br># List all Constraints<br>kubectl get constraints<br><br># Check violations in a Constraint<br>kubectl describe k8srequiredlabels all-must-have-owner<br><br># Check Gatekeeper audit results<br>kubectl get constraint -o yaml | grep violations -A 10</code></pre>
             </section>
 </div>
 
@@ -432,7 +573,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>

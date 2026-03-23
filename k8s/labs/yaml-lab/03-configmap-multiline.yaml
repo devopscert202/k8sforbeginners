@@ -1,0 +1,11 @@
+# Lab 46 — ConfigMap with literal block (|). Apply after namespace exists.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yaml-lab-config
+  namespace: yaml-lab
+data:
+  app.properties: |
+    env=lab
+    feature.yaml.practice=true
+  LOG_LEVEL: "info"

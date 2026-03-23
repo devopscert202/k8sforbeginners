@@ -271,10 +271,209 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        /* SVG Diagram Styles */
+        .diagram-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(15,23,42,0.08);
+        }
+        .svg-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .level-column {
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        .level-column:hover {
+            opacity: 0.85;
+        }
+        .level-column.active rect {
+            stroke-width: 3;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+        .restriction-item {
+            opacity: 0.95;
+            transition: opacity 0.2s ease;
+        }
+        .restriction-item:hover {
+            opacity: 1;
+        }
+        .tooltip-box {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 320px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            display: none;
+        }
+        .tooltip-box.show {
+            display: block;
+        }
+        .detail-panel {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            border: 1px solid rgba(50,108,229,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .detail-panel h3 {
+            color: var(--kube-blue-deep);
+            margin-bottom: 14px;
+            font-size: 1.15rem;
+        }
+        .detail-panel ul {
+            list-style: none;
+            padding: 0;
+        }
+        .detail-panel li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(50,108,229,0.1);
+            color: #334155;
+        }
+        .detail-panel li:last-child {
+            border-bottom: none;
+        }
+        .detail-panel li::before {
+            content: "✓";
+            color: var(--kube-blue);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+        .mode-btn:hover {
+            border-color: var(--kube-blue);
+            color: var(--kube-blue);
+        }
+        .mode-btn.active {
+            background: var(--kube-blue);
+            color: white;
+            border-color: var(--kube-blue);
+        }
+        .namespace-selector {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .ns-btn {
+            padding: 10px 18px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .ns-btn::after {
+            content: attr(data-level);
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: #64748b;
+        }
+        .ns-btn[data-level="restricted"]::after {
+            background: #22c55e;
+            color: white;
+        }
+        .ns-btn[data-level="baseline"]::after {
+            background: #f59e0b;
+            color: white;
+        }
+        .ns-btn[data-level="privileged"]::after {
+            background: #ef4444;
+            color: white;
+        }
+        .ns-btn:hover {
+            border-color: var(--kube-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50,108,229,0.2);
+        }
+        .ns-btn.active {
+            border-color: var(--kube-blue);
+            background: #eff6ff;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+            margin-top: 24px;
+        }
+        .comparison-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .comparison-card h3 {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .comparison-card .level-badge {
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .comparison-card .level-badge.privileged {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .comparison-card .level-badge.baseline {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .comparison-card .level-badge.restricted {
+            background: #dcfce7;
+            color: #166534;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
             .controls { justify-content: flex-start; }
+            .diagram-container { padding: 20px; }
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -291,6 +490,9 @@
 
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
+            <button class="btn" data-view="levels">PSS Levels</button>
+            <button class="btn" data-view="admission">Admission Flow</button>
+            <button class="btn" data-view="namespaces">Namespace Policies</button>
             <button class="btn" data-view="flow">Flow</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
@@ -319,6 +521,453 @@
             </article>
 </div>
 
+        </section>
+
+        <section id="levels" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Security Profiles</div>
+                    <h2>Pod Security Standards Levels Comparison</h2>
+                </div>
+            </div>
+            <div class="section-note">Click on any security level to see detailed restrictions and allowed capabilities.</div>
+
+            <div class="diagram-container">
+                <div class="svg-wrapper">
+                    <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Privileged Level (Red) -->
+                        <g class="level-column" data-level="privileged" style="cursor: pointer;">
+                            <rect x="20" y="40" width="360" height="600" fill="#fee2e2" stroke="#ef4444" stroke-width="2" rx="12"/>
+                            <text x="200" y="80" text-anchor="middle" font-size="24" font-weight="bold" fill="#991b1b">Privileged</text>
+                            <text x="200" y="110" text-anchor="middle" font-size="14" fill="#7f1d1d">No Restrictions</text>
+
+                            <!-- Icon -->
+                            <circle cx="200" cy="150" r="30" fill="#ef4444" opacity="0.2"/>
+                            <text x="200" y="160" text-anchor="middle" font-size="32" fill="#ef4444">🔓</text>
+
+                            <!-- Features allowed -->
+                            <g class="restriction-item">
+                                <rect x="40" y="210" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="60" y="238" font-size="14" font-weight="600" fill="#991b1b">✓ Host namespaces allowed</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="40" y="270" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="60" y="298" font-size="14" font-weight="600" fill="#991b1b">✓ Privileged containers</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="40" y="330" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="60" y="358" font-size="14" font-weight="600" fill="#991b1b">✓ Host path volumes</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="40" y="390" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="60" y="418" font-size="14" font-weight="600" fill="#991b1b">✓ All capabilities</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="40" y="450" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="60" y="478" font-size="14" font-weight="600" fill="#991b1b">✓ Run as root</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="40" y="510" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="60" y="538" font-size="14" font-weight="600" fill="#991b1b">✓ Any user/group ID</text>
+                            </g>
+
+                            <text x="200" y="600" text-anchor="middle" font-size="12" fill="#7f1d1d" font-style="italic">Use: System workloads</text>
+                        </g>
+
+                        <!-- Baseline Level (Amber) -->
+                        <g class="level-column" data-level="baseline" style="cursor: pointer;">
+                            <rect x="420" y="40" width="360" height="600" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" rx="12"/>
+                            <text x="600" y="80" text-anchor="middle" font-size="24" font-weight="bold" fill="#92400e">Baseline</text>
+                            <text x="600" y="110" text-anchor="middle" font-size="14" fill="#78350f">Minimally Restrictive</text>
+
+                            <!-- Icon -->
+                            <circle cx="600" cy="150" r="30" fill="#f59e0b" opacity="0.2"/>
+                            <text x="600" y="160" text-anchor="middle" font-size="32" fill="#f59e0b">⚠️</text>
+
+                            <!-- Restrictions -->
+                            <g class="restriction-item">
+                                <rect x="440" y="210" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="460" y="238" font-size="14" font-weight="600" fill="#92400e">✗ No privileged containers</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="440" y="270" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="460" y="298" font-size="14" font-weight="600" fill="#92400e">✗ Limited host namespaces</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="440" y="330" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="460" y="358" font-size="14" font-weight="600" fill="#92400e">✗ Limited capabilities</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="440" y="390" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="460" y="418" font-size="14" font-weight="600" fill="#92400e">✗ No host path volumes</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="440" y="450" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="460" y="478" font-size="14" font-weight="600" fill="#92400e">✓ Can run as root</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="440" y="510" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="460" y="538" font-size="14" font-weight="600" fill="#92400e">✓ Any user/group ID</text>
+                            </g>
+
+                            <text x="600" y="600" text-anchor="middle" font-size="12" fill="#78350f" font-style="italic">Use: General applications</text>
+                        </g>
+
+                        <!-- Restricted Level (Green) -->
+                        <g class="level-column" data-level="restricted" style="cursor: pointer;">
+                            <rect x="820" y="40" width="360" height="600" fill="#dcfce7" stroke="#22c55e" stroke-width="2" rx="12"/>
+                            <text x="1000" y="80" text-anchor="middle" font-size="24" font-weight="bold" fill="#166534">Restricted</text>
+                            <text x="1000" y="110" text-anchor="middle" font-size="14" fill="#14532d">Hardened Security</text>
+
+                            <!-- Icon -->
+                            <circle cx="1000" cy="150" r="30" fill="#22c55e" opacity="0.2"/>
+                            <text x="1000" y="160" text-anchor="middle" font-size="32" fill="#22c55e">🔒</text>
+
+                            <!-- Strict restrictions -->
+                            <g class="restriction-item">
+                                <rect x="840" y="210" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="860" y="238" font-size="14" font-weight="600" fill="#166534">✗ No privileged containers</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="840" y="270" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="860" y="298" font-size="14" font-weight="600" fill="#166534">✗ No host access</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="840" y="330" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="860" y="358" font-size="14" font-weight="600" fill="#166534">✗ All capabilities dropped</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="840" y="390" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="860" y="418" font-size="14" font-weight="600" fill="#166534">✗ Must run as non-root</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="840" y="450" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="860" y="478" font-size="14" font-weight="600" fill="#166534">✗ Drop ALL capabilities</text>
+                            </g>
+                            <g class="restriction-item">
+                                <rect x="840" y="510" width="320" height="50" fill="white" rx="8" opacity="0.9"/>
+                                <text x="860" y="538" font-size="14" font-weight="600" fill="#166534">✗ seccompProfile required</text>
+                            </g>
+
+                            <text x="1000" y="600" text-anchor="middle" font-size="12" fill="#14532d" font-style="italic">Use: Security-sensitive apps</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div id="level-details" class="detail-panel" style="display: none;">
+                <h3 id="detail-title">Select a level to see details</h3>
+                <ul id="detail-list"></ul>
+            </div>
+
+            <div class="section-note" style="margin-top: 24px;">
+                <strong>Security Progression:</strong> Privileged allows everything → Baseline blocks common escalations → Restricted enforces defense-in-depth hardening
+            </div>
+        </section>
+
+        <section id="admission" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Policy Enforcement</div>
+                    <h2>Pod Security Admission Flow</h2>
+                </div>
+            </div>
+            <div class="section-note">See how different enforcement modes affect pod admission outcomes.</div>
+
+            <div class="mode-toggle">
+                <button class="mode-btn active" data-mode="enforce">Enforce Mode</button>
+                <button class="mode-btn" data-mode="audit">Audit Mode</button>
+                <button class="mode-btn" data-mode="warn">Warn Mode</button>
+            </div>
+
+            <div class="diagram-container">
+                <div class="svg-wrapper">
+                    <svg id="admission-svg" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Pod Request -->
+                        <g id="pod-request">
+                            <rect x="50" y="250" width="150" height="100" fill="#eff6ff" stroke="#326CE5" stroke-width="2" rx="10"/>
+                            <text x="125" y="285" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">Pod Request</text>
+                            <text x="125" y="310" text-anchor="middle" font-size="12" fill="#64748b">User submits</text>
+                            <text x="125" y="330" text-anchor="middle" font-size="12" fill="#64748b">Pod manifest</text>
+                        </g>
+
+                        <!-- Arrow 1 -->
+                        <path d="M 200 300 L 280 300" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                        <!-- API Server -->
+                        <g id="api-server">
+                            <rect x="280" y="250" width="150" height="100" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" rx="10"/>
+                            <text x="355" y="285" text-anchor="middle" font-size="16" font-weight="bold" fill="#92400e">API Server</text>
+                            <text x="355" y="310" text-anchor="middle" font-size="12" fill="#78350f">Receives</text>
+                            <text x="355" y="330" text-anchor="middle" font-size="12" fill="#78350f">request</text>
+                        </g>
+
+                        <!-- Arrow 2 -->
+                        <path d="M 430 300 L 510 300" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                        <!-- PSA Controller -->
+                        <g id="psa-controller">
+                            <rect x="510" y="220" width="180" height="160" fill="#dbeafe" stroke="#326CE5" stroke-width="3" rx="10"/>
+                            <text x="600" y="255" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">PSA Controller</text>
+                            <text x="600" y="280" text-anchor="middle" font-size="12" fill="#1e40af">Checks namespace</text>
+                            <text x="600" y="300" text-anchor="middle" font-size="12" fill="#1e40af">labels for policy</text>
+
+                            <!-- Policy check box -->
+                            <rect x="530" y="315" width="140" height="50" fill="white" stroke="#326CE5" stroke-width="1" rx="6"/>
+                            <text x="600" y="335" text-anchor="middle" font-size="11" fill="#334155">Evaluate against:</text>
+                            <text x="600" y="352" text-anchor="middle" font-size="11" font-weight="bold" fill="#326CE5">Security Profile</text>
+                        </g>
+
+                        <!-- Arrow 3 (to allow) -->
+                        <path id="arrow-allow" d="M 690 280 L 800 180" stroke="#22c55e" stroke-width="3" marker-end="url(#arrowhead-green)"/>
+
+                        <!-- Arrow 3 (to deny) -->
+                        <path id="arrow-deny" d="M 690 320 L 800 420" stroke="#ef4444" stroke-width="3" marker-end="url(#arrowhead-red)"/>
+
+                        <!-- Allow outcome -->
+                        <g id="outcome-allow">
+                            <rect x="800" y="130" width="180" height="100" fill="#dcfce7" stroke="#22c55e" stroke-width="2" rx="10"/>
+                            <text x="890" y="165" text-anchor="middle" font-size="18" font-weight="bold" fill="#166534">✓ Allowed</text>
+                            <text x="890" y="190" text-anchor="middle" font-size="12" fill="#14532d">Pod meets</text>
+                            <text x="890" y="210" text-anchor="middle" font-size="12" fill="#14532d">security standards</text>
+                        </g>
+
+                        <!-- Deny outcome (default for enforce) -->
+                        <g id="outcome-deny">
+                            <rect x="800" y="370" width="180" height="100" fill="#fee2e2" stroke="#ef4444" stroke-width="2" rx="10"/>
+                            <text x="890" y="405" text-anchor="middle" font-size="18" font-weight="bold" fill="#991b1b">✗ Denied</text>
+                            <text x="890" y="430" text-anchor="middle" font-size="12" fill="#7f1d1d">Pod violates</text>
+                            <text x="890" y="450" text-anchor="middle" font-size="12" fill="#7f1d1d">security policy</text>
+                        </g>
+
+                        <!-- Audit outcome (hidden by default) -->
+                        <g id="outcome-audit" style="display: none;">
+                            <rect x="800" y="370" width="180" height="100" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" rx="10"/>
+                            <text x="890" y="405" text-anchor="middle" font-size="18" font-weight="bold" fill="#92400e">📝 Logged</text>
+                            <text x="890" y="430" text-anchor="middle" font-size="12" fill="#78350f">Violation recorded</text>
+                            <text x="890" y="450" text-anchor="middle" font-size="12" fill="#78350f">Pod still created</text>
+                        </g>
+
+                        <!-- Warn outcome (hidden by default) -->
+                        <g id="outcome-warn" style="display: none;">
+                            <rect x="800" y="370" width="180" height="100" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" rx="10"/>
+                            <text x="890" y="405" text-anchor="middle" font-size="18" font-weight="bold" fill="#92400e">⚠️ Warning</text>
+                            <text x="890" y="430" text-anchor="middle" font-size="12" fill="#78350f">User notified</text>
+                            <text x="890" y="450" text-anchor="middle" font-size="12" fill="#78350f">Pod still created</text>
+                        </g>
+
+                        <!-- Mode description -->
+                        <g id="mode-description">
+                            <rect x="50" y="450" width="700" height="80" fill="#f8fbff" stroke="#326CE5" stroke-width="1" rx="8"/>
+                            <text x="400" y="480" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8" id="mode-desc-title">Enforce Mode</text>
+                            <text x="400" y="505" text-anchor="middle" font-size="12" fill="#334155" id="mode-desc-text">Pods that violate the policy are rejected and not created.</text>
+                        </g>
+
+                        <!-- Arrow markers -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#326CE5"/>
+                            </marker>
+                            <marker id="arrowhead-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#22c55e"/>
+                            </marker>
+                            <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#ef4444"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="section-note" style="margin-top: 24px;">
+                <strong>Migration Strategy:</strong> Start with <em>warn</em> to see violations → Add <em>audit</em> to log them → Finally enable <em>enforce</em> when ready
+            </div>
+        </section>
+
+        <section id="namespaces" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Multi-Namespace Policies</div>
+                    <h2>Namespace Policy Visualization</h2>
+                </div>
+            </div>
+            <div class="section-note">Different namespaces can have different security policies. Click each namespace to see its configuration.</div>
+
+            <div class="namespace-selector">
+                <button class="ns-btn active" data-namespace="production" data-level="restricted">production</button>
+                <button class="ns-btn" data-namespace="staging" data-level="baseline">staging</button>
+                <button class="ns-btn" data-namespace="development" data-level="baseline">development</button>
+                <button class="ns-btn" data-namespace="kube-system" data-level="privileged">kube-system</button>
+            </div>
+
+            <div class="diagram-container">
+                <div class="svg-wrapper">
+                    <svg id="namespace-svg" viewBox="0 0 1200 650" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Cluster border -->
+                        <rect x="20" y="20" width="1160" height="610" fill="none" stroke="#64748b" stroke-width="3" stroke-dasharray="10,5" rx="16"/>
+                        <text x="600" y="50" text-anchor="middle" font-size="20" font-weight="bold" fill="#334155">Kubernetes Cluster</text>
+
+                        <!-- Production namespace -->
+                        <g id="ns-production" class="namespace-visual">
+                            <rect x="60" y="100" width="520" height="220" fill="#dcfce7" stroke="#22c55e" stroke-width="3" rx="12"/>
+                            <text x="320" y="135" text-anchor="middle" font-size="18" font-weight="bold" fill="#166534">production (Restricted) 🔒</text>
+
+                            <g transform="translate(80, 160)">
+                                <rect width="220" height="120" fill="white" stroke="#22c55e" stroke-width="2" rx="8"/>
+                                <text x="110" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Labels:</text>
+                                <text x="10" y="50" font-size="11" fill="#14532d" font-family="monospace">enforce: restricted</text>
+                                <text x="10" y="70" font-size="11" fill="#14532d" font-family="monospace">audit: restricted</text>
+                                <text x="10" y="90" font-size="11" fill="#14532d" font-family="monospace">warn: restricted</text>
+                            </g>
+
+                            <g transform="translate(320, 160)">
+                                <rect width="240" height="120" fill="white" stroke="#22c55e" stroke-width="2" rx="8"/>
+                                <text x="120" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Security Requirements:</text>
+                                <text x="10" y="50" font-size="11" fill="#14532d">✗ No privileged containers</text>
+                                <text x="10" y="70" font-size="11" fill="#14532d">✗ Must run as non-root</text>
+                                <text x="10" y="90" font-size="11" fill="#14532d">✗ Drop all capabilities</text>
+                            </g>
+                        </g>
+
+                        <!-- Staging namespace -->
+                        <g id="ns-staging" class="namespace-visual" style="display: none;">
+                            <rect x="60" y="100" width="520" height="220" fill="#fef3c7" stroke="#f59e0b" stroke-width="3" rx="12"/>
+                            <text x="320" y="135" text-anchor="middle" font-size="18" font-weight="bold" fill="#92400e">staging (Baseline) ⚠️</text>
+
+                            <g transform="translate(80, 160)">
+                                <rect width="220" height="120" fill="white" stroke="#f59e0b" stroke-width="2" rx="8"/>
+                                <text x="110" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Labels:</text>
+                                <text x="10" y="50" font-size="11" fill="#78350f" font-family="monospace">enforce: baseline</text>
+                                <text x="10" y="70" font-size="11" fill="#78350f" font-family="monospace">audit: baseline</text>
+                                <text x="10" y="90" font-size="11" fill="#78350f" font-family="monospace">warn: restricted</text>
+                            </g>
+
+                            <g transform="translate(320, 160)">
+                                <rect width="240" height="120" fill="white" stroke="#f59e0b" stroke-width="2" rx="8"/>
+                                <text x="120" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Security Requirements:</text>
+                                <text x="10" y="50" font-size="11" fill="#78350f">✗ No privileged containers</text>
+                                <text x="10" y="70" font-size="11" fill="#78350f">✗ Limited host access</text>
+                                <text x="10" y="90" font-size="11" fill="#78350f">✓ Can run as root</text>
+                            </g>
+                        </g>
+
+                        <!-- Development namespace -->
+                        <g id="ns-development" class="namespace-visual" style="display: none;">
+                            <rect x="60" y="100" width="520" height="220" fill="#fef3c7" stroke="#f59e0b" stroke-width="3" rx="12"/>
+                            <text x="320" y="135" text-anchor="middle" font-size="18" font-weight="bold" fill="#92400e">development (Baseline) ⚠️</text>
+
+                            <g transform="translate(80, 160)">
+                                <rect width="220" height="120" fill="white" stroke="#f59e0b" stroke-width="2" rx="8"/>
+                                <text x="110" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Labels:</text>
+                                <text x="10" y="50" font-size="11" fill="#78350f" font-family="monospace">enforce: baseline</text>
+                                <text x="10" y="70" font-size="11" fill="#78350f" font-family="monospace">audit: baseline</text>
+                                <text x="10" y="90" font-size="11" fill="#78350f" font-family="monospace">warn: baseline</text>
+                            </g>
+
+                            <g transform="translate(320, 160)">
+                                <rect width="240" height="120" fill="white" stroke="#f59e0b" stroke-width="2" rx="8"/>
+                                <text x="120" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Security Requirements:</text>
+                                <text x="10" y="50" font-size="11" fill="#78350f">✗ No privileged containers</text>
+                                <text x="10" y="70" font-size="11" fill="#78350f">✗ Limited capabilities</text>
+                                <text x="10" y="90" font-size="11" fill="#78350f">✓ More permissive</text>
+                            </g>
+                        </g>
+
+                        <!-- Kube-system namespace -->
+                        <g id="ns-kube-system" class="namespace-visual" style="display: none;">
+                            <rect x="60" y="100" width="520" height="220" fill="#fee2e2" stroke="#ef4444" stroke-width="3" rx="12"/>
+                            <text x="320" y="135" text-anchor="middle" font-size="18" font-weight="bold" fill="#991b1b">kube-system (Privileged) 🔓</text>
+
+                            <g transform="translate(80, 160)">
+                                <rect width="220" height="120" fill="white" stroke="#ef4444" stroke-width="2" rx="8"/>
+                                <text x="110" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">Labels:</text>
+                                <text x="10" y="50" font-size="11" fill="#7f1d1d" font-family="monospace">enforce: privileged</text>
+                                <text x="10" y="70" font-size="11" fill="#7f1d1d" font-family="monospace">audit: privileged</text>
+                                <text x="10" y="90" font-size="11" fill="#7f1d1d" font-family="monospace">warn: privileged</text>
+                            </g>
+
+                            <g transform="translate(320, 160)">
+                                <rect width="240" height="120" fill="white" stroke="#ef4444" stroke-width="2" rx="8"/>
+                                <text x="120" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">Security Requirements:</text>
+                                <text x="10" y="50" font-size="11" fill="#7f1d1d">✓ All capabilities allowed</text>
+                                <text x="10" y="70" font-size="11" fill="#7f1d1d">✓ Host access permitted</text>
+                                <text x="10" y="90" font-size="11" fill="#7f1d1d">✓ System components</text>
+                            </g>
+                        </g>
+
+                        <!-- Pods visualization (right side) -->
+                        <g id="pods-viz">
+                            <text x="840" y="120" text-anchor="middle" font-size="16" font-weight="bold" fill="#334155">Running Pods</text>
+
+                            <!-- Pod 1 -->
+                            <g>
+                                <rect x="650" y="150" width="130" height="60" fill="#eff6ff" stroke="#326CE5" stroke-width="2" rx="8"/>
+                                <text x="715" y="175" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4ed8">web-app</text>
+                                <text x="715" y="195" text-anchor="middle" font-size="10" fill="#64748b">non-root user</text>
+                            </g>
+
+                            <!-- Pod 2 -->
+                            <g>
+                                <rect x="800" y="150" width="130" height="60" fill="#eff6ff" stroke="#326CE5" stroke-width="2" rx="8"/>
+                                <text x="865" y="175" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4ed8">api-server</text>
+                                <text x="865" y="195" text-anchor="middle" font-size="10" fill="#64748b">seccomp enabled</text>
+                            </g>
+
+                            <!-- Pod 3 -->
+                            <g>
+                                <rect x="950" y="150" width="130" height="60" fill="#eff6ff" stroke="#326CE5" stroke-width="2" rx="8"/>
+                                <text x="1015" y="175" text-anchor="middle" font-size="12" font-weight="600" fill="#1d4ed8">database</text>
+                                <text x="1015" y="195" text-anchor="middle" font-size="10" fill="#64748b">read-only root</text>
+                            </g>
+                        </g>
+
+                        <!-- Best practices box -->
+                        <g>
+                            <rect x="650" y="380" width="480" height="220" fill="#f8fbff" stroke="#326CE5" stroke-width="2" rx="12"/>
+                            <text x="890" y="410" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">Best Practices</text>
+
+                            <text x="670" y="445" font-size="13" fill="#334155">• Use <tspan font-weight="bold" fill="#22c55e">restricted</tspan> for production workloads</text>
+                            <text x="670" y="475" font-size="13" fill="#334155">• Use <tspan font-weight="bold" fill="#f59e0b">baseline</tspan> for development/staging</text>
+                            <text x="670" y="505" font-size="13" fill="#334155">• Reserve <tspan font-weight="bold" fill="#ef4444">privileged</tspan> for system namespaces</text>
+                            <text x="670" y="535" font-size="13" fill="#334155">• Test with warn/audit before enforce</text>
+                            <text x="670" y="565" font-size="13" fill="#334155">• Document exceptions explicitly</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="comparison-grid" style="margin-top: 30px;">
+                <div class="comparison-card">
+                    <h3><span class="level-badge privileged">Privileged</span> vs <span class="level-badge restricted">Restricted</span></h3>
+                    <table style="width: 100%; font-size: 0.9rem; margin-top: 12px;">
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">Feature</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">Privileged</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">Restricted</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">Root user</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #22c55e;">✓</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #ef4444;">✗</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">Host access</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #22c55e;">✓</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #ef4444;">✗</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">Capabilities</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #22c55e;">All</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #ef4444;">None</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;">Seccomp</td>
+                            <td style="padding: 8px; text-align: center;">Optional</td>
+                            <td style="padding: 8px; text-align: center; color: #22c55e; font-weight: 600;">Required</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <section id="flow" class="view">
@@ -432,7 +1081,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>
@@ -447,6 +1095,187 @@
                 button.classList.add('active');
                 document.getElementById(viewId).classList.add('active');
             });
+        });
+
+        // PSS Levels interaction
+        const levelColumns = document.querySelectorAll('.level-column');
+        const levelDetails = document.getElementById('level-details');
+        const detailTitle = document.getElementById('detail-title');
+        const detailList = document.getElementById('detail-list');
+
+        const levelData = {
+            privileged: {
+                title: 'Privileged Level - No Restrictions',
+                color: '#ef4444',
+                details: [
+                    'Unrestricted policy - allows everything',
+                    'Host namespaces (PID, IPC, Network) can be used',
+                    'Privileged containers are permitted',
+                    'All Linux capabilities are allowed',
+                    'Can run as root user',
+                    'Host path volumes can be mounted',
+                    'Any host ports can be bound',
+                    'AppArmor/SELinux/Seccomp profiles are optional',
+                    'Suitable for trusted system components only'
+                ]
+            },
+            baseline: {
+                title: 'Baseline Level - Minimally Restrictive',
+                color: '#f59e0b',
+                details: [
+                    'Prevents known privilege escalations',
+                    'Blocks privileged containers',
+                    'Restricts host namespaces (limited hostNetwork)',
+                    'Prevents mounting host paths',
+                    'Blocks dangerous capabilities (ALL, SYS_ADMIN, etc.)',
+                    'Restricts host port bindings',
+                    'Blocks hostPath volume types',
+                    'Can still run as root (less strict than restricted)',
+                    'Suitable for most general application workloads'
+                ]
+            },
+            restricted: {
+                title: 'Restricted Level - Hardened Security',
+                color: '#22c55e',
+                details: [
+                    'Heavily restricted policy - defense-in-depth',
+                    'Must run as non-root user (runAsNonRoot: true)',
+                    'All capabilities must be dropped',
+                    'No privileged containers allowed',
+                    'No host access whatsoever',
+                    'Seccomp profile must be RuntimeDefault or Localhost',
+                    'Volumes limited to specific safe types',
+                    'Must not allow privilege escalation',
+                    'Required for security-sensitive workloads'
+                ]
+            }
+        };
+
+        levelColumns.forEach(col => {
+            col.addEventListener('click', () => {
+                const level = col.dataset.level;
+                const data = levelData[level];
+
+                // Remove active from all
+                levelColumns.forEach(c => c.classList.remove('active'));
+                col.classList.add('active');
+
+                // Update detail panel
+                detailTitle.textContent = data.title;
+                detailTitle.style.color = data.color;
+                detailList.innerHTML = data.details.map(detail => `<li>${detail}</li>`).join('');
+                levelDetails.style.display = 'block';
+            });
+        });
+
+        // Admission flow mode switching
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const outcomeDeny = document.getElementById('outcome-deny');
+        const outcomeAudit = document.getElementById('outcome-audit');
+        const outcomeWarn = document.getElementById('outcome-warn');
+        const modeDescTitle = document.getElementById('mode-desc-title');
+        const modeDescText = document.getElementById('mode-desc-text');
+
+        const modeDescriptions = {
+            enforce: {
+                title: 'Enforce Mode',
+                text: 'Pods that violate the policy are rejected and not created. This is the strictest mode for production security.'
+            },
+            audit: {
+                title: 'Audit Mode',
+                text: 'Policy violations are recorded in audit logs but pods are still created. Use this to monitor compliance without blocking workloads.'
+            },
+            warn: {
+                title: 'Warn Mode',
+                text: 'Users receive a warning about policy violations but pods are still created. Useful for education and gradual migration.'
+            }
+        };
+
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const mode = btn.dataset.mode;
+
+                // Update button states
+                modeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update description
+                modeDescTitle.textContent = modeDescriptions[mode].title;
+                modeDescText.textContent = modeDescriptions[mode].text;
+
+                // Show appropriate outcome
+                outcomeDeny.style.display = mode === 'enforce' ? 'block' : 'none';
+                outcomeAudit.style.display = mode === 'audit' ? 'block' : 'none';
+                outcomeWarn.style.display = mode === 'warn' ? 'block' : 'none';
+            });
+        });
+
+        // Namespace selector
+        const nsButtons = document.querySelectorAll('.ns-btn');
+        const namespaceVisuals = document.querySelectorAll('.namespace-visual');
+
+        nsButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const namespace = btn.dataset.namespace;
+
+                // Update button states
+                nsButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Show appropriate namespace visualization
+                namespaceVisuals.forEach(ns => {
+                    ns.style.display = ns.id === `ns-${namespace}` ? 'block' : 'none';
+                });
+            });
+        });
+
+        // Hover tooltips for restriction items
+        const restrictionItems = document.querySelectorAll('.restriction-item');
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip-box';
+        document.body.appendChild(tooltip);
+
+        const restrictionTooltips = {
+            'Host namespaces allowed': 'Containers can use host PID, IPC, and Network namespaces for full host visibility',
+            'Privileged containers': 'Containers can run with elevated privileges, gaining nearly all capabilities',
+            'Host path volumes': 'Containers can mount directories from the host filesystem',
+            'All capabilities': 'All Linux capabilities (CAP_SYS_ADMIN, CAP_NET_ADMIN, etc.) are permitted',
+            'Run as root': 'Containers can run as the root user (UID 0)',
+            'Any user/group ID': 'No restrictions on user or group IDs that containers can run as',
+            'No privileged containers': 'Containers cannot run with privileged: true flag',
+            'Limited host namespaces': 'Host network can be used but with restrictions; host PID/IPC blocked',
+            'Limited capabilities': 'Dangerous capabilities like SYS_ADMIN, NET_ADMIN are blocked',
+            'No host path volumes': 'hostPath volume type is not permitted',
+            'Can run as root': 'Containers are still allowed to run as root user',
+            'No host access': 'All host namespace access is completely blocked',
+            'All capabilities dropped': 'All Linux capabilities must be explicitly dropped',
+            'Must run as non-root': 'runAsNonRoot: true must be set in securityContext',
+            'Drop ALL capabilities': 'capabilities.drop: [ALL] must be specified',
+            'seccompProfile required': 'Seccomp profile must be RuntimeDefault or Localhost type'
+        };
+
+        restrictionItems.forEach(item => {
+            const text = item.querySelector('text');
+            if (text) {
+                const itemText = text.textContent.replace(/^[✓✗]\s*/, '').trim();
+
+                item.addEventListener('mouseenter', (e) => {
+                    const tooltipText = restrictionTooltips[itemText];
+                    if (tooltipText) {
+                        tooltip.textContent = tooltipText;
+                        tooltip.classList.add('show');
+                    }
+                });
+
+                item.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = (e.pageX + 15) + 'px';
+                    tooltip.style.top = (e.pageY + 15) + 'px';
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('show');
+                });
+            }
         });
     </script>
 </body>

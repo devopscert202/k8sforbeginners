@@ -409,6 +409,220 @@
             border-bottom: 2px solid #e2e8f0;
         }
 
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .view-btn {
+            padding: 10px 20px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: #326CE5;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .view-btn:hover {
+            background: #ebf4ff;
+            transform: translateY(-2px);
+        }
+
+        .view-btn.active {
+            background: #326CE5;
+            color: white;
+        }
+
+        .view-content {
+            display: none;
+        }
+
+        .view-content.active {
+            display: block;
+        }
+
+        .svg-diagram {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .svg-diagram svg {
+            width: 100%;
+            height: auto;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .health-probe {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .probe-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .probe-failure {
+            background: #f56565;
+            color: white;
+        }
+
+        .probe-pending {
+            background: #fbbf24;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        .scenario-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .scenario-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .scenario-card:hover {
+            border-color: #326CE5;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(50, 108, 229, 0.2);
+        }
+
+        .scenario-card.selected {
+            border-color: #326CE5;
+            background: #ebf4ff;
+        }
+
+        .scenario-card h3 {
+            color: #326CE5;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .scenario-card .param {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2d3748;
+            margin: 10px 0;
+        }
+
+        .scenario-card .description {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .traffic-animation {
+            position: relative;
+            height: 200px;
+            margin: 30px 0;
+        }
+
+        .traffic-source {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            transform: translateX(-50%);
+            background: #4299e1;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        }
+
+        .traffic-arrows {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .arrow-path {
+            stroke: #4299e1;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 10;
+            animation: dash 2s linear infinite;
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -20;
+            }
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .comparison-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .comparison-card h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .comparison-card .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px;
+            background: #f7fafc;
+            border-radius: 4px;
+        }
+
+        .comparison-card .metric-label {
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .comparison-card .metric-value {
+            color: #326CE5;
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -425,6 +639,15 @@
 
             .traffic-bar {
                 width: 150px;
+            }
+
+            .view-btn {
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+
+            .scenario-card {
+                min-width: 200px;
             }
         }
     </style>
@@ -443,6 +666,21 @@
             </button>
             <button class="btn btn-danger" id="resetBtn">
                 <span>🔄</span> Reset
+            </button>
+        </div>
+
+        <div class="view-switcher">
+            <button class="view-btn active" data-view="step-by-step">
+                Step-by-Step Flow
+            </button>
+            <button class="view-btn" data-view="maxsurge-demo">
+                MaxSurge Demo
+            </button>
+            <button class="view-btn" data-view="traffic-shift">
+                Traffic Shift
+            </button>
+            <button class="view-btn" data-view="health-check">
+                Health Check View
             </button>
         </div>
 
@@ -495,47 +733,206 @@
             </div>
         </div>
 
-        <div class="visualization-area">
-            <div class="service-section">
-                <div class="service-header">
-                    <span>🌐</span> Service Load Balancing
+        <!-- Step-by-Step Flow View -->
+        <div class="view-content active" id="view-step-by-step">
+            <div class="visualization-area">
+                <div class="service-section">
+                    <div class="service-header">
+                        <span>🌐</span> Service Load Balancing
+                    </div>
+                    <div class="traffic-flow">
+                        <div class="traffic-indicator">
+                            <div class="traffic-label">Version 1 Traffic</div>
+                            <div class="traffic-bar">
+                                <div class="traffic-fill-v1" id="trafficV1" style="width: 100%;"></div>
+                            </div>
+                            <span id="trafficV1Percent">100%</span>
+                        </div>
+                        <div class="traffic-indicator">
+                            <div class="traffic-label">Version 2 Traffic</div>
+                            <div class="traffic-bar">
+                                <div class="traffic-fill-v2" id="trafficV2" style="width: 0%;"></div>
+                            </div>
+                            <span id="trafficV2Percent">0%</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="traffic-flow">
-                    <div class="traffic-indicator">
-                        <div class="traffic-label">Version 1 Traffic</div>
-                        <div class="traffic-bar">
-                            <div class="traffic-fill-v1" id="trafficV1" style="width: 100%;"></div>
+
+                <div class="replicaset-section">
+                    <div class="replicaset-header">
+                        <div class="replicaset-title">
+                            <span>📦</span> ReplicaSet v1 (Old)
                         </div>
-                        <span id="trafficV1Percent">100%</span>
+                        <div class="replicaset-count" id="rsV1Count">3 pods</div>
                     </div>
-                    <div class="traffic-indicator">
-                        <div class="traffic-label">Version 2 Traffic</div>
-                        <div class="traffic-bar">
-                            <div class="traffic-fill-v2" id="trafficV2" style="width: 0%;"></div>
+                    <div class="pods-container" id="podsV1Container"></div>
+                </div>
+
+                <div class="replicaset-section">
+                    <div class="replicaset-header">
+                        <div class="replicaset-title">
+                            <span>📦</span> ReplicaSet v2 (New)
                         </div>
-                        <span id="trafficV2Percent">0%</span>
+                        <div class="replicaset-count" id="rsV2Count">0 pods</div>
                     </div>
+                    <div class="pods-container" id="podsV2Container"></div>
                 </div>
             </div>
 
-            <div class="replicaset-section">
-                <div class="replicaset-header">
-                    <div class="replicaset-title">
-                        <span>📦</span> ReplicaSet v1 (Old)
-                    </div>
-                    <div class="replicaset-count" id="rsV1Count">3 pods</div>
+            <div class="section-title">Rolling Update Flow Diagram</div>
+            <div class="svg-diagram" id="flowDiagram"></div>
+        </div>
+
+        <!-- MaxSurge Demo View -->
+        <div class="view-content" id="view-maxsurge-demo">
+            <div class="section-title">MaxSurge and MaxUnavailable Scenarios</div>
+
+            <div class="scenario-selector">
+                <div class="scenario-card selected" data-scenario="balanced" onclick="selectScenario('balanced')">
+                    <h3>Balanced Strategy</h3>
+                    <div class="param">maxSurge: 1<br>maxUnavailable: 1</div>
+                    <div class="description">Default balanced approach. Allows 1 extra pod and 1 unavailable pod.</div>
                 </div>
-                <div class="pods-container" id="podsV1Container"></div>
+                <div class="scenario-card" data-scenario="conservative" onclick="selectScenario('conservative')">
+                    <h3>Conservative Strategy</h3>
+                    <div class="param">maxSurge: 1<br>maxUnavailable: 0</div>
+                    <div class="description">Zero downtime guarantee. Always maintains full capacity.</div>
+                </div>
+                <div class="scenario-card" data-scenario="aggressive" onclick="selectScenario('aggressive')">
+                    <h3>Aggressive Strategy</h3>
+                    <div class="param">maxSurge: 2<br>maxUnavailable: 2</div>
+                    <div class="description">Fast rollout. Higher resource usage during update.</div>
+                </div>
             </div>
 
-            <div class="replicaset-section">
-                <div class="replicaset-header">
-                    <div class="replicaset-title">
-                        <span>📦</span> ReplicaSet v2 (New)
+            <div class="svg-diagram" id="maxsurgeDiagram"></div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>Resource Impact</h3>
+                    <div class="metric">
+                        <span class="metric-label">Peak Pods:</span>
+                        <span class="metric-value" id="peakPods">4</span>
                     </div>
-                    <div class="replicaset-count" id="rsV2Count">0 pods</div>
+                    <div class="metric">
+                        <span class="metric-label">Min Available:</span>
+                        <span class="metric-value" id="minAvailable">2</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Resource Overhead:</span>
+                        <span class="metric-value" id="resourceOverhead">33%</span>
+                    </div>
                 </div>
-                <div class="pods-container" id="podsV2Container"></div>
+                <div class="comparison-card">
+                    <h3>Rollout Characteristics</h3>
+                    <div class="metric">
+                        <span class="metric-label">Update Speed:</span>
+                        <span class="metric-value" id="updateSpeed">Moderate</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Risk Level:</span>
+                        <span class="metric-value" id="riskLevel">Low</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Downtime Risk:</span>
+                        <span class="metric-value" id="downtimeRisk">None</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Traffic Shift View -->
+        <div class="view-content" id="view-traffic-shift">
+            <div class="section-title">Traffic Flow During Rolling Update</div>
+
+            <div class="traffic-animation" id="trafficAnimationContainer">
+                <svg id="trafficFlowSvg" width="100%" height="300" style="background: white; border-radius: 8px;">
+                    <!-- Will be populated by JavaScript -->
+                </svg>
+            </div>
+
+            <div class="strategy-info">
+                <div class="info-card">
+                    <h3>Traffic Distribution Pattern</h3>
+                    <p>As new pods become ready, the Service automatically adds them to its endpoint pool. Traffic is distributed evenly across all healthy pods.</p>
+                    <div class="info-highlight">Automatic Load Balancing</div>
+                </div>
+                <div class="info-card">
+                    <h3>Gradual Shift</h3>
+                    <p>Old pods continue serving traffic until they are terminated. No connection drops occur during the transition.</p>
+                    <div class="info-highlight">Zero Connection Loss</div>
+                </div>
+                <div class="info-card">
+                    <h3>Service Discovery</h3>
+                    <p>The Service selector matches pods based on labels, not version. Both old and new pods are seamlessly integrated.</p>
+                    <div class="info-highlight">Label-Based Routing</div>
+                </div>
+            </div>
+
+            <div class="svg-diagram" id="trafficShiftDiagram"></div>
+        </div>
+
+        <!-- Health Check View -->
+        <div class="view-content" id="view-health-check">
+            <div class="section-title">Health Check Integration During Rollout</div>
+
+            <div class="strategy-info">
+                <div class="info-card">
+                    <h3>Readiness Probe</h3>
+                    <p><strong>Purpose:</strong> Determines when a pod is ready to receive traffic</p>
+                    <p><strong>Impact:</strong> New pods only receive traffic after passing readiness checks</p>
+                    <div class="info-highlight">Gates Traffic Flow</div>
+                </div>
+                <div class="info-card">
+                    <h3>Liveness Probe</h3>
+                    <p><strong>Purpose:</strong> Detects unhealthy pods and triggers restarts</p>
+                    <p><strong>Impact:</strong> Ensures only healthy pods remain in rotation</p>
+                    <div class="info-highlight">Automatic Recovery</div>
+                </div>
+                <div class="info-card">
+                    <h3>Rollout Safety</h3>
+                    <p><strong>Behavior:</strong> Controller waits for new pods to pass readiness before terminating old pods</p>
+                    <p><strong>Result:</strong> Prevents premature pod termination</p>
+                    <div class="info-highlight">Protected Rollout</div>
+                </div>
+            </div>
+
+            <div class="svg-diagram" id="healthCheckDiagram"></div>
+
+            <div class="section-title">Pod Lifecycle with Health Checks</div>
+            <div class="visualization-area">
+                <div class="replicaset-section">
+                    <div class="replicaset-header">
+                        <div class="replicaset-title">
+                            <span>🏥</span> Health-Monitored Pods
+                        </div>
+                        <div class="replicaset-count" id="healthPodCount">3 pods</div>
+                    </div>
+                    <div class="pods-container" id="healthPodsContainer"></div>
+                </div>
+            </div>
+
+            <div class="yaml-example">
+<span class="yaml-key">apiVersion:</span> <span class="yaml-value">apps/v1</span>
+<span class="yaml-key">kind:</span> <span class="yaml-value">Deployment</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">template:</span>
+    <span class="yaml-key">spec:</span>
+      <span class="yaml-key">containers:</span>
+      - <span class="yaml-key">name:</span> <span class="yaml-value">app</span>
+        <span class="yaml-key">image:</span> <span class="yaml-value">myapp:v2</span>
+        <span class="yaml-key">readinessProbe:</span>
+          <span class="yaml-key">httpGet:</span>
+            <span class="yaml-key">path:</span> <span class="yaml-value">/ready</span>
+            <span class="yaml-key">port:</span> <span class="yaml-value">8080</span>
+          <span class="yaml-key">initialDelaySeconds:</span> <span class="yaml-value">5</span>
+          <span class="yaml-key">periodSeconds:</span> <span class="yaml-value">3</span>
+        <span class="yaml-key">livenessProbe:</span>
+          <span class="yaml-key">httpGet:</span>
+            <span class="yaml-key">path:</span> <span class="yaml-value">/health</span>
+            <span class="yaml-key">port:</span> <span class="yaml-value">8080</span>
+          <span class="yaml-key">initialDelaySeconds:</span> <span class="yaml-value">15</span>
+          <span class="yaml-key">periodSeconds:</span> <span class="yaml-value">10</span>
             </div>
         </div>
 
@@ -599,9 +996,45 @@
             currentStep: 0,
             isPlaying: false,
             playInterval: null,
+            currentView: 'step-by-step',
+            currentScenario: 'balanced',
             pods: {
                 v1: [],
                 v2: []
+            }
+        };
+
+        // Scenario configurations
+        const scenarios = {
+            balanced: {
+                maxSurge: 1,
+                maxUnavailable: 1,
+                peakPods: 4,
+                minAvailable: 2,
+                resourceOverhead: '33%',
+                updateSpeed: 'Moderate',
+                riskLevel: 'Low',
+                downtimeRisk: 'None'
+            },
+            conservative: {
+                maxSurge: 1,
+                maxUnavailable: 0,
+                peakPods: 4,
+                minAvailable: 3,
+                resourceOverhead: '33%',
+                updateSpeed: 'Slow',
+                riskLevel: 'Very Low',
+                downtimeRisk: 'None'
+            },
+            aggressive: {
+                maxSurge: 2,
+                maxUnavailable: 2,
+                peakPods: 5,
+                minAvailable: 1,
+                resourceOverhead: '67%',
+                updateSpeed: 'Fast',
+                riskLevel: 'Medium',
+                downtimeRisk: 'Minimal'
             }
         };
 
@@ -873,6 +1306,570 @@
 
         // Initialize on load
         init();
+
+        // View switching
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const view = btn.dataset.view;
+                switchView(view);
+            });
+        });
+
+        function switchView(view) {
+            state.currentView = view;
+
+            // Update buttons
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+
+            // Update content
+            document.querySelectorAll('.view-content').forEach(content => {
+                content.classList.toggle('active', content.id === `view-${view}`);
+            });
+
+            // Render view-specific content
+            if (view === 'step-by-step') {
+                createFlowDiagram();
+            } else if (view === 'maxsurge-demo') {
+                createMaxSurgeDiagram(state.currentScenario);
+            } else if (view === 'traffic-shift') {
+                createTrafficShiftDiagram();
+                animateTrafficFlow();
+            } else if (view === 'health-check') {
+                createHealthCheckDiagram();
+                renderHealthPods();
+            }
+        }
+
+        // Scenario selection
+        window.selectScenario = function(scenario) {
+            state.currentScenario = scenario;
+
+            // Update card selection
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.scenario === scenario);
+            });
+
+            // Update metrics
+            const config = scenarios[scenario];
+            document.getElementById('peakPods').textContent = config.peakPods;
+            document.getElementById('minAvailable').textContent = config.minAvailable;
+            document.getElementById('resourceOverhead').textContent = config.resourceOverhead;
+            document.getElementById('updateSpeed').textContent = config.updateSpeed;
+            document.getElementById('riskLevel').textContent = config.riskLevel;
+            document.getElementById('downtimeRisk').textContent = config.downtimeRisk;
+
+            // Recreate diagram
+            createMaxSurgeDiagram(scenario);
+        };
+
+        // Create flow diagram
+        function createFlowDiagram() {
+            const container = document.getElementById('flowDiagram');
+            const svg = `
+                <svg viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Timeline -->
+                    <line x1="50" y1="250" x2="1150" y2="250" stroke="#cbd5e0" stroke-width="2"/>
+
+                    <!-- Step 0: Initial State -->
+                    <g transform="translate(50, 100)">
+                        <text x="50" y="-10" fill="#2d3748" font-weight="bold" text-anchor="middle">Initial State</text>
+                        <rect x="10" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="45" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="80" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <text x="55" y="60" fill="#4a5568" font-size="12" text-anchor="middle">3 v1 pods</text>
+                        <circle cx="50" cy="150" r="8" fill="#48bb78"/>
+                    </g>
+
+                    <!-- Step 1: Create New Pod -->
+                    <g transform="translate(220, 100)">
+                        <text x="60" y="-10" fill="#2d3748" font-weight="bold" text-anchor="middle">Create v2 Pod</text>
+                        <rect x="10" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="45" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="80" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="115" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2" stroke-dasharray="5,5"/>
+                        <text x="65" y="60" fill="#4a5568" font-size="12" text-anchor="middle">3 v1 + 1 v2 starting</text>
+                        <circle cx="210" cy="150" r="8" fill="#48bb78"/>
+                    </g>
+
+                    <!-- Step 2: Wait for Health Check -->
+                    <g transform="translate(450, 100)">
+                        <text x="60" y="-10" fill="#2d3748" font-weight="bold" text-anchor="middle">Health Check</text>
+                        <rect x="10" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="45" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="80" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="115" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                        <circle cx="130" cy="10" r="6" fill="#48bb78" stroke="white" stroke-width="1"/>
+                        <text x="130" cy="11" fill="white" font-size="8" text-anchor="middle">✓</text>
+                        <text x="75" y="60" fill="#4a5568" font-size="12" text-anchor="middle">v2 pod ready</text>
+                        <circle cx="440" cy="150" r="8" fill="#48bb78"/>
+                    </g>
+
+                    <!-- Step 3: Terminate Old Pod -->
+                    <g transform="translate(690, 100)">
+                        <text x="60" y="-10" fill="#2d3748" font-weight="bold" text-anchor="middle">Terminate v1</text>
+                        <rect x="10" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="45" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>
+                        <rect x="80" y="0" width="30" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2" opacity="0.3"/>
+                        <line x1="85" y1="5" x2="105" y2="35" stroke="#f56565" stroke-width="3"/>
+                        <line x1="105" y1="5" x2="85" y2="35" stroke="#f56565" stroke-width="3"/>
+                        <rect x="115" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                        <text x="75" y="60" fill="#4a5568" font-size="12" text-anchor="middle">2 v1 + 1 v2</text>
+                        <circle cx="680" cy="150" r="8" fill="#48bb78"/>
+                    </g>
+
+                    <!-- Step 4: Repeat -->
+                    <g transform="translate(930, 100)">
+                        <text x="55" y="-10" fill="#2d3748" font-weight="bold" text-anchor="middle">Repeat...</text>
+                        <rect x="10" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                        <rect x="45" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                        <rect x="80" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2" stroke-dasharray="5,5"/>
+                        <text x="55" y="60" fill="#4a5568" font-size="12" text-anchor="middle">Continue pattern</text>
+                        <circle cx="920" cy="150" r="8" fill="#48bb78"/>
+                    </g>
+
+                    <!-- Step 5: Final State -->
+                    <g transform="translate(1080, 100)">
+                        <text x="40" y="-10" fill="#2d3748" font-weight="bold" text-anchor="middle">Complete</text>
+                        <rect x="10" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                        <rect x="45" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                        <rect x="80" y="0" width="30" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                        <text x="55" y="60" fill="#4a5568" font-size="12" text-anchor="middle">3 v2 pods</text>
+                        <circle cx="1150" cy="150" r="8" fill="#48bb78"/>
+                    </g>
+
+                    <!-- Arrows -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#4299e1" />
+                        </marker>
+                    </defs>
+                    <path d="M 140 250 L 210 250" stroke="#4299e1" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <path d="M 370 250 L 440 250" stroke="#4299e1" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <path d="M 600 250 L 670 250" stroke="#4299e1" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <path d="M 840 250 L 910 250" stroke="#4299e1" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <path d="M 1040 250 L 1070 250" stroke="#4299e1" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- Legend -->
+                    <g transform="translate(450, 380)">
+                        <rect x="0" y="0" width="30" height="20" fill="#667eea" rx="2" stroke="#5a67d8" stroke-width="1"/>
+                        <text x="40" y="15" fill="#4a5568" font-size="14">Version 1 Pod</text>
+
+                        <rect x="160" y="0" width="30" height="20" fill="#f093fb" rx="2" stroke="#ed64a6" stroke-width="1"/>
+                        <text x="200" y="15" fill="#4a5568" font-size="14">Version 2 Pod</text>
+
+                        <circle cx="15" cy="40" r="6" fill="#48bb78" stroke="white" stroke-width="1"/>
+                        <text x="28" y="45" fill="#4a5568" font-size="14">Readiness Check Passed</text>
+                    </g>
+
+                    <!-- Key Concepts -->
+                    <g transform="translate(350, 450)">
+                        <text x="150" y="0" fill="#326CE5" font-weight="bold" font-size="14" text-anchor="middle">
+                            maxSurge: 1 (allows 4 pods) | maxUnavailable: 1 (min 2 pods available)
+                        </text>
+                    </g>
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        // Create MaxSurge diagram
+        function createMaxSurgeDiagram(scenario) {
+            const container = document.getElementById('maxsurgeDiagram');
+            const config = scenarios[scenario];
+
+            const svg = `
+                <svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+                    <text x="600" y="30" fill="#2d3748" font-weight="bold" font-size="20" text-anchor="middle">
+                        Rollout with maxSurge: ${config.maxSurge}, maxUnavailable: ${config.maxUnavailable}
+                    </text>
+
+                    <!-- Timeline stages -->
+                    ${createMaxSurgeStages(config)}
+
+                    <!-- Capacity indicators -->
+                    <g transform="translate(100, 500)">
+                        <text x="0" y="0" fill="#4a5568" font-size="14">Peak Capacity: ${config.peakPods} pods (${config.resourceOverhead} overhead)</text>
+                        <text x="0" y="25" fill="#4a5568" font-size="14">Minimum Available: ${config.minAvailable} pods</text>
+                        <text x="0" y="50" fill="#4a5568" font-size="14">Update Speed: ${config.updateSpeed}</text>
+                    </g>
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        function createMaxSurgeStages(config) {
+            const stages = [];
+            let x = 100;
+            const y = 80;
+            const spacing = 200;
+
+            // Stage 0: Initial
+            stages.push(`
+                <g transform="translate(${x}, ${y})">
+                    <text x="50" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">Initial</text>
+                    ${createPodRect(10, 20, '#667eea')}
+                    ${createPodRect(40, 20, '#667eea')}
+                    ${createPodRect(70, 20, '#667eea')}
+                    <text x="50" y="90" fill="#4a5568" font-size="12" text-anchor="middle">3 v1 pods</text>
+                    <text x="50" y="110" fill="#48bb78" font-weight="bold" font-size="14" text-anchor="middle">Available: 3</text>
+                </g>
+            `);
+            x += spacing;
+
+            // Stage 1: Add maxSurge
+            const surge1Pods = 3 + Math.min(config.maxSurge, 1);
+            stages.push(`
+                <g transform="translate(${x}, ${y})">
+                    <text x="50" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">+maxSurge</text>
+                    ${createPodRect(10, 20, '#667eea')}
+                    ${createPodRect(40, 20, '#667eea')}
+                    ${createPodRect(70, 20, '#667eea')}
+                    ${config.maxSurge >= 1 ? createPodRect(10, 80, '#f093fb', true) : ''}
+                    ${config.maxSurge >= 2 ? createPodRect(40, 80, '#f093fb', true) : ''}
+                    <text x="50" y="150" fill="#4a5568" font-size="12" text-anchor="middle">${surge1Pods} total</text>
+                    <text x="50" y="170" fill="#4299e1" font-weight="bold" font-size="14" text-anchor="middle">Peak: ${surge1Pods}</text>
+                </g>
+            `);
+            x += spacing;
+
+            // Stage 2: Scale down
+            const stage2V1 = Math.max(3 - config.maxUnavailable, 0);
+            const stage2V2 = surge1Pods - stage2V1;
+            stages.push(`
+                <g transform="translate(${x}, ${y})">
+                    <text x="50" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">-maxUnavailable</text>
+                    ${stage2V1 >= 1 ? createPodRect(10, 20, '#667eea') : ''}
+                    ${stage2V1 >= 2 ? createPodRect(40, 20, '#667eea') : ''}
+                    ${stage2V1 >= 3 ? createPodRect(70, 20, '#667eea') : ''}
+                    ${createPodRect(10, 80, '#f093fb')}
+                    ${stage2V2 >= 2 ? createPodRect(40, 80, '#f093fb') : ''}
+                    <text x="50" y="150" fill="#4a5568" font-size="12" text-anchor="middle">${stage2V1 + stage2V2} total</text>
+                    <text x="50" y="170" fill="#48bb78" font-weight="bold" font-size="14" text-anchor="middle">Available: ${config.minAvailable}</text>
+                </g>
+            `);
+            x += spacing;
+
+            // Stage 3: Continue
+            stages.push(`
+                <g transform="translate(${x}, ${y})">
+                    <text x="50" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">Continue</text>
+                    ${createPodRect(10, 20, '#667eea', false, 0.3)}
+                    ${createPodRect(10, 80, '#f093fb')}
+                    ${createPodRect(40, 80, '#f093fb')}
+                    ${createPodRect(70, 80, '#f093fb', true)}
+                    <text x="50" y="150" fill="#4a5568" font-size="12" text-anchor="middle">Pattern repeats</text>
+                </g>
+            `);
+            x += spacing;
+
+            // Stage 4: Complete
+            stages.push(`
+                <g transform="translate(${x}, ${y})">
+                    <text x="50" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">Complete</text>
+                    ${createPodRect(10, 20, '#f093fb')}
+                    ${createPodRect(40, 20, '#f093fb')}
+                    ${createPodRect(70, 20, '#f093fb')}
+                    <text x="50" y="90" fill="#4a5568" font-size="12" text-anchor="middle">3 v2 pods</text>
+                    <text x="50" y="110" fill="#48bb78" font-weight="bold" font-size="14" text-anchor="middle">Available: 3</text>
+                </g>
+            `);
+
+            return stages.join('');
+        }
+
+        function createPodRect(x, y, color, dashed = false, opacity = 1) {
+            return `<rect x="${x}" y="${y}" width="25" height="40" fill="${color}" rx="4"
+                    stroke="${color === '#667eea' ? '#5a67d8' : '#ed64a6'}" stroke-width="2"
+                    ${dashed ? 'stroke-dasharray="5,5"' : ''} opacity="${opacity}"/>`;
+        }
+
+        // Create traffic shift diagram
+        function createTrafficShiftDiagram() {
+            const container = document.getElementById('trafficShiftDiagram');
+            const svg = `
+                <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+                    <text x="600" y="30" fill="#2d3748" font-weight="bold" font-size="20" text-anchor="middle">
+                        Traffic Distribution During Rollout
+                    </text>
+
+                    <!-- Service -->
+                    <rect x="500" y="60" width="200" height="60" fill="#4299e1" rx="8" stroke="#2c5282" stroke-width="3"/>
+                    <text x="600" y="95" fill="white" font-weight="bold" font-size="18" text-anchor="middle">Service</text>
+
+                    <!-- Time stages -->
+                    ${createTrafficStage(150, 200, '0%', '100%', 0, 3)}
+                    ${createTrafficStage(350, 200, '25%', '75%', 1, 3)}
+                    ${createTrafficStage(550, 200, '50%', '50%', 2, 2)}
+                    ${createTrafficStage(750, 200, '75%', '25%', 3, 1)}
+                    ${createTrafficStage(950, 200, '100%', '0%', 3, 0)}
+
+                    <!-- Timeline arrow -->
+                    <defs>
+                        <marker id="timeArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#4a5568" />
+                        </marker>
+                    </defs>
+                    <line x1="100" y1="600" x2="1100" y2="600" stroke="#4a5568" stroke-width="3" marker-end="url(#timeArrow)"/>
+                    <text x="600" y="640" fill="#4a5568" font-weight="bold" font-size="16" text-anchor="middle">Time</text>
+
+                    <!-- Legend -->
+                    <g transform="translate(450, 660)">
+                        <rect x="0" y="0" width="25" height="25" fill="#f093fb" rx="3"/>
+                        <text x="35" y="18" fill="#4a5568" font-size="14">v2 Traffic</text>
+                        <rect x="140" y="0" width="25" height="25" fill="#667eea" rx="3"/>
+                        <text x="175" y="18" fill="#4a5568" font-size="14">v1 Traffic</text>
+                    </g>
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        function createTrafficStage(x, y, v2Traffic, v1Traffic, v2Pods, v1Pods) {
+            let stage = `<g transform="translate(${x}, ${y})">`;
+
+            // Traffic percentages
+            stage += `<text x="60" y="0" fill="#326CE5" font-weight="bold" font-size="14" text-anchor="middle">v2: ${v2Traffic}</text>`;
+            stage += `<text x="60" y="20" fill="#5a67d8" font-weight="bold" font-size="14" text-anchor="middle">v1: ${v1Traffic}</text>`;
+
+            // Service connections
+            stage += `<line x1="60" y1="50" x2="60" y2="100" stroke="#cbd5e0" stroke-width="2" stroke-dasharray="5,5"/>`;
+
+            // v2 pods
+            for (let i = 0; i < v2Pods; i++) {
+                stage += `<rect x="${15 + i * 35}" y="120" width="25" height="40" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>`;
+                stage += `<line x1="60" y1="100" x2="${27.5 + i * 35}" y2="120" stroke="#f093fb" stroke-width="2"/>`;
+            }
+
+            // v1 pods
+            for (let i = 0; i < v1Pods; i++) {
+                stage += `<rect x="${15 + i * 35}" y="180" width="25" height="40" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2"/>`;
+                stage += `<line x1="60" y1="100" x2="${27.5 + i * 35}" y2="180" stroke="#667eea" stroke-width="2"/>`;
+            }
+
+            stage += '</g>';
+            return stage;
+        }
+
+        // Animate traffic flow
+        function animateTrafficFlow() {
+            const svg = document.getElementById('trafficFlowSvg');
+            const width = svg.clientWidth;
+
+            const svgContent = `
+                <defs>
+                    <marker id="trafficArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#4299e1" />
+                    </marker>
+                </defs>
+
+                <!-- Service at top -->
+                <rect x="${width/2 - 100}" y="30" width="200" height="50" fill="#4299e1" rx="8"/>
+                <text x="${width/2}" y="60" fill="white" font-weight="bold" font-size="16" text-anchor="middle">Service</text>
+
+                <!-- Request indicator -->
+                <text x="${width/2}" y="20" fill="#2d3748" font-weight="bold" font-size="14" text-anchor="middle">Incoming Traffic</text>
+
+                <!-- v2 pods -->
+                <g transform="translate(${width/2 - 200}, 150)">
+                    <text x="60" y="-20" fill="#ed64a6" font-weight="bold" text-anchor="middle">v2 Pods</text>
+                    <rect x="20" y="0" width="30" height="45" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                    <rect x="60" y="0" width="30" height="45" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+                    <rect x="100" y="0" width="30" height="45" fill="#f093fb" rx="4" stroke="#ed64a6" stroke-width="2"/>
+
+                    <!-- Animated arrows -->
+                    <path d="M ${width/2 - 140},90 L 35,150" class="arrow-path" marker-end="url(#trafficArrow)"/>
+                    <path d="M ${width/2 - 140},90 L 75,150" class="arrow-path" marker-end="url(#trafficArrow)"/>
+                    <path d="M ${width/2 - 140},90 L 115,150" class="arrow-path" marker-end="url(#trafficArrow)"/>
+                </g>
+
+                <!-- v1 pods -->
+                <g transform="translate(${width/2 + 50}, 150)">
+                    <text x="60" y="-20" fill="#5a67d8" font-weight="bold" text-anchor="middle">v1 Pods</text>
+                    <rect x="20" y="0" width="30" height="45" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2" opacity="0.5"/>
+                    <rect x="60" y="0" width="30" height="45" fill="#667eea" rx="4" stroke="#5a67d8" stroke-width="2" opacity="0.5"/>
+
+                    <!-- Animated arrows (fewer) -->
+                    <path d="M ${width/2 - 110},90 L ${width/2 + 85},150" class="arrow-path" marker-end="url(#trafficArrow)" opacity="0.5"/>
+                </g>
+
+                <text x="${width/2}" y="260" fill="#4a5568" font-size="14" text-anchor="middle">Traffic flows to all healthy pods based on Service selector</text>
+            `;
+
+            svg.innerHTML = svgContent;
+        }
+
+        // Create health check diagram
+        function createHealthCheckDiagram() {
+            const container = document.getElementById('healthCheckDiagram');
+            const svg = `
+                <svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+                    <text x="600" y="30" fill="#2d3748" font-weight="bold" font-size="20" text-anchor="middle">
+                        Pod Health Check Flow During Rolling Update
+                    </text>
+
+                    <!-- Pod creation -->
+                    <g transform="translate(100, 80)">
+                        <text x="70" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">1. Pod Created</text>
+                        <rect x="40" y="20" width="60" height="80" fill="#f093fb" rx="6" stroke="#ed64a6" stroke-width="3"/>
+                        <text x="70" y="65" fill="white" font-weight="bold" text-anchor="middle">New Pod</text>
+                        <circle cx="90" cy="30" r="12" fill="#fbbf24"/>
+                        <text x="90" y="35" fill="white" font-size="10" text-anchor="middle">?</text>
+                        <text x="70" y="130" fill="#4a5568" font-size="12" text-anchor="middle">Not Ready</text>
+                    </g>
+
+                    <!-- Readiness check -->
+                    <g transform="translate(320, 80)">
+                        <text x="80" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">2. Readiness Probe</text>
+                        <rect x="40" y="20" width="60" height="80" fill="#f093fb" rx="6" stroke="#ed64a6" stroke-width="3"/>
+                        <text x="70" y="65" fill="white" font-weight="bold" text-anchor="middle">New Pod</text>
+                        <circle cx="90" cy="30" r="12" fill="#4299e1" class="pulse-animation"/>
+                        <text x="90" y="35" fill="white" font-size="10" text-anchor="middle">⟳</text>
+                        <text x="70" y="130" fill="#4a5568" font-size="12" text-anchor="middle">Checking /ready</text>
+                        <text x="70" y="150" fill="#4299e1" font-size="11" text-anchor="middle" font-style="italic">periodSeconds: 3</text>
+                    </g>
+
+                    <!-- Probe success -->
+                    <g transform="translate(540, 80)">
+                        <text x="70" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">3. Probe Passes</text>
+                        <rect x="40" y="20" width="60" height="80" fill="#f093fb" rx="6" stroke="#ed64a6" stroke-width="3"/>
+                        <text x="70" y="65" fill="white" font-weight="bold" text-anchor="middle">New Pod</text>
+                        <circle cx="90" cy="30" r="12" fill="#48bb78"/>
+                        <text x="90" y="35" fill="white" font-size="12" font-weight="bold" text-anchor="middle">✓</text>
+                        <text x="70" y="130" fill="#48bb78" font-size="12" font-weight="bold" text-anchor="middle">Ready</text>
+                    </g>
+
+                    <!-- Traffic starts -->
+                    <g transform="translate(760, 80)">
+                        <text x="80" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">4. Receives Traffic</text>
+                        <rect x="40" y="20" width="60" height="80" fill="#f093fb" rx="6" stroke="#ed64a6" stroke-width="3"/>
+                        <text x="70" y="65" fill="white" font-weight="bold" text-anchor="middle">New Pod</text>
+                        <circle cx="90" cy="30" r="12" fill="#48bb78"/>
+                        <text x="90" y="35" fill="white" font-size="12" font-weight="bold" text-anchor="middle">✓</text>
+
+                        <!-- Traffic arrows -->
+                        <path d="M 70,5 L 70,-20" stroke="#4299e1" stroke-width="3" marker-end="url(#arrowhead)"/>
+                        <circle cx="70" cy="-25" r="8" fill="#4299e1"/>
+                        <text x="70" y="130" fill="#4a5568" font-size="12" text-anchor="middle">In Service Pool</text>
+                    </g>
+
+                    <!-- Old pod termination -->
+                    <g transform="translate(1000, 80)">
+                        <text x="70" y="0" fill="#2d3748" font-weight="bold" text-anchor="middle">5. Terminate Old</text>
+                        <rect x="40" y="20" width="60" height="80" fill="#667eea" rx="6" stroke="#5a67d8" stroke-width="3" opacity="0.4"/>
+                        <text x="70" y="65" fill="white" font-weight="bold" text-anchor="middle">Old Pod</text>
+                        <line x1="50" y1="30" x2="90" y2="90" stroke="#f56565" stroke-width="4"/>
+                        <line x1="90" y1="30" x2="50" y2="90" stroke="#f56565" stroke-width="4"/>
+                        <text x="70" y="130" fill="#ed8936" font-size="12" text-anchor="middle">Terminating</text>
+                    </g>
+
+                    <!-- Flow arrows -->
+                    <defs>
+                        <marker id="flowArrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+                    <path d="M 180,120 L 300,120" stroke="#326CE5" stroke-width="3" marker-end="url(#flowArrow)"/>
+                    <path d="M 400,120 L 520,120" stroke="#326CE5" stroke-width="3" marker-end="url(#flowArrow)"/>
+                    <path d="M 620,120 L 740,120" stroke="#326CE5" stroke-width="3" marker-end="url(#flowArrow)"/>
+                    <path d="M 860,120 L 980,120" stroke="#326CE5" stroke-width="3" marker-end="url(#flowArrow)"/>
+
+                    <!-- Key points -->
+                    <g transform="translate(200, 250)">
+                        <text x="0" y="0" fill="#326CE5" font-weight="bold" font-size="16">Key Safety Mechanisms:</text>
+                        <text x="0" y="30" fill="#4a5568" font-size="14">✓ New pods must pass readiness probe before receiving traffic</text>
+                        <text x="0" y="55" fill="#4a5568" font-size="14">✓ Old pods continue serving until new pods are ready</text>
+                        <text x="0" y="80" fill="#4a5568" font-size="14">✓ Rollout controller waits for health checks before proceeding</text>
+                        <text x="0" y="105" fill="#4a5568" font-size="14">✓ Liveness probes restart unhealthy pods automatically</text>
+                    </g>
+
+                    <!-- Health check types -->
+                    <g transform="translate(200, 400)">
+                        <rect x="0" y="0" width="350" height="150" fill="#f7fafc" rx="8" stroke="#cbd5e0" stroke-width="2"/>
+                        <text x="175" y="25" fill="#2d3748" font-weight="bold" font-size="15" text-anchor="middle">Readiness vs Liveness Probes</text>
+
+                        <text x="10" y="55" fill="#48bb78" font-weight="bold" font-size="13">Readiness Probe:</text>
+                        <text x="10" y="75" fill="#4a5568" font-size="12">• Controls traffic routing to pod</text>
+                        <text x="10" y="92" fill="#4a5568" font-size="12">• Failure removes pod from Service endpoints</text>
+
+                        <text x="10" y="122" fill="#f56565" font-weight="bold" font-size="13">Liveness Probe:</text>
+                        <text x="10" y="142" fill="#4a5568" font-size="12">• Detects crashed or deadlocked containers</text>
+                        <text x="10" y="159" fill="#4a5568" font-size="12">• Failure triggers pod restart</text>
+                    </g>
+
+                    <g transform="translate(600, 400)">
+                        <rect x="0" y="0" width="400" height="150" fill="#ebf4ff" rx="8" stroke="#326CE5" stroke-width="2"/>
+                        <text x="200" y="25" fill="#326CE5" font-weight="bold" font-size="15" text-anchor="middle">Common Probe Types</text>
+
+                        <text x="10" y="55" fill="#2d3748" font-weight="bold" font-size="12">HTTP GET:</text>
+                        <text x="10" y="72" fill="#4a5568" font-size="11">GET /ready returns 200-399</text>
+
+                        <text x="150" y="55" fill="#2d3748" font-weight="bold" font-size="12">TCP Socket:</text>
+                        <text x="150" y="72" fill="#4a5568" font-size="11">Connection succeeds on port</text>
+
+                        <text x="10" y="100" fill="#2d3748" font-weight="bold" font-size="12">Exec Command:</text>
+                        <text x="10" y="117" fill="#4a5568" font-size="11">Command exits with code 0</text>
+
+                        <text x="10" y="145" fill="#326CE5" font-size="12" font-weight="bold">
+                            Example: httpGet: {path: /ready, port: 8080}
+                        </text>
+                    </g>
+                </svg>
+            `;
+            container.innerHTML = svg;
+        }
+
+        // Render health-monitored pods
+        function renderHealthPods() {
+            const container = document.getElementById('healthPodsContainer');
+            container.innerHTML = '';
+
+            const podStates = [
+                { version: 'v2', state: 'starting', health: 'pending', tooltip: 'Waiting for readiness probe...' },
+                { version: 'v2', state: 'running', health: 'success', tooltip: 'Readiness probe passed, receiving traffic' },
+                { version: 'v1', state: 'running', health: 'success', tooltip: 'Healthy, will be terminated after new pods ready' }
+            ];
+
+            podStates.forEach((podState, i) => {
+                const pod = document.createElement('div');
+                pod.className = `pod pod-${podState.version}`;
+
+                const healthIcons = {
+                    'pending': '?',
+                    'success': '✓',
+                    'failure': '✕'
+                };
+
+                const healthClass = {
+                    'pending': 'probe-pending',
+                    'success': 'probe-success',
+                    'failure': 'probe-failure'
+                };
+
+                pod.innerHTML = `
+                    <div class="health-probe ${healthClass[podState.health]}">${healthIcons[podState.health]}</div>
+                    <div class="pod-icon">📦</div>
+                    <div class="pod-label">${podState.version.toUpperCase()} Pod</div>
+                    <div class="pod-state state-${podState.state}">${podState.state === 'starting' ? '⟳' : '✓'}</div>
+                `;
+
+                pod.addEventListener('mouseenter', (e) => {
+                    tooltip.innerHTML = `<strong>Health Check Status</strong><br>${podState.tooltip}`;
+                    tooltip.classList.add('show');
+                    moveTooltip(e);
+                });
+                pod.addEventListener('mouseleave', hideTooltip);
+                pod.addEventListener('mousemove', moveTooltip);
+
+                container.appendChild(pod);
+            });
+        }
+
+        // Initialize diagrams on first load
+        setTimeout(() => {
+            createFlowDiagram();
+        }, 100);
     </script>
 </body>
 </html>

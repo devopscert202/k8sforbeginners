@@ -271,6 +271,80 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        /* SVG Diagram Styles */
+        .diagram-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid var(--line);
+        }
+        .diagram-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .diagram-btn {
+            padding: 8px 16px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: var(--kube-blue-deep);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .diagram-btn:hover,
+        .diagram-btn.active {
+            background: var(--kube-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+        .svg-diagram {
+            display: none;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .svg-diagram.active {
+            display: block;
+        }
+        .diagram-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .diagram-node:hover rect,
+        .diagram-node:hover ellipse,
+        .diagram-node:hover circle {
+            filter: brightness(1.1);
+            stroke-width: 3;
+        }
+        .diagram-arrow {
+            transition: all 0.3s ease;
+        }
+        .diagram-node:hover ~ .diagram-arrow {
+            stroke-width: 3;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .tooltip.show {
+            opacity: 1;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
@@ -291,6 +365,7 @@
 
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
+            <button class="btn" data-view="diagram">Diagrams</button>
             <button class="btn" data-view="flow">Flow</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
@@ -319,6 +394,246 @@
             </article>
 </div>
 
+        </section>
+
+        <section id="diagram" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Architecture</div>
+                    <h2>Interactive Multi-Port Service Diagrams</h2>
+                </div>
+            </div>
+
+            <div class="diagram-controls">
+                <button class="diagram-btn active" data-diagram="single-port">Single-Port Service</button>
+                <button class="diagram-btn" data-diagram="multi-port">Multi-Port Service</button>
+                <button class="diagram-btn" data-diagram="named-ports">Named Port Mapping</button>
+            </div>
+
+            <div class="diagram-container">
+                <!-- Single-Port Service Diagram -->
+                <svg class="svg-diagram active" id="single-port" viewBox="0 0 900 450" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+
+                    <!-- Title -->
+                    <text x="450" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Single-Port Service (Simple)</text>
+
+                    <!-- Client -->
+                    <g class="diagram-node" data-tooltip="Client making requests to the service">
+                        <circle cx="150" cy="120" r="40" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                        <text x="150" y="118" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Client</text>
+                        <text x="150" y="133" text-anchor="middle" fill="#fef3c7" font-size="11">Pod</text>
+                    </g>
+
+                    <!-- Arrow to Service -->
+                    <line x1="190" y1="120" x2="280" y2="120" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="235" y="110" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="600">Port 8080</text>
+
+                    <!-- Service -->
+                    <g class="diagram-node" data-tooltip="Service with single port configuration">
+                        <rect x="280" y="60" width="280" height="120" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                        <text x="420" y="85" text-anchor="middle" fill="white" font-weight="bold" font-size="16">Service: my-app</text>
+
+                        <rect x="310" y="100" width="220" height="65" rx="6" fill="white" stroke="#1d4ed8" stroke-width="1"/>
+                        <text x="420" y="120" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="13">Port Configuration</text>
+                        <text x="420" y="140" text-anchor="middle" fill="#334155" font-size="11">port: 8080</text>
+                        <text x="420" y="157" text-anchor="middle" fill="#334155" font-size="11">targetPort: 80</text>
+                    </g>
+
+                    <!-- Arrow to Pods -->
+                    <line x1="560" y1="120" x2="650" y2="120" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="605" y="110" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="600">Port 80</text>
+
+                    <!-- Pods Container -->
+                    <rect x="650" y="30" width="200" height="180" rx="8" fill="#f8fbff" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="750" y="55" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="12">Backend Pods</text>
+
+                    <!-- Pod 1 -->
+                    <g class="diagram-node" data-tooltip="Pod serving HTTP on port 80">
+                        <ellipse cx="750" cy="110" rx="70" ry="40" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="750" y="105" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Pod 1</text>
+                        <text x="750" y="122" text-anchor="middle" fill="#ede9fe" font-size="11">container:80</text>
+                    </g>
+
+                    <!-- Pod 2 -->
+                    <g class="diagram-node" data-tooltip="Pod serving HTTP on port 80">
+                        <ellipse cx="750" cy="180" rx="70" ry="40" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="750" y="175" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Pod 2</text>
+                        <text x="750" y="192" text-anchor="middle" fill="#ede9fe" font-size="11">container:80</text>
+                    </g>
+
+                    <!-- Info Box -->
+                    <rect x="100" y="280" width="700" height="130" rx="8" fill="#f0f9ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="450" y="310" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Single-Port Service Characteristics</text>
+                    <text x="120" y="340" fill="#334155" font-size="12">• Simple configuration with one port exposed</text>
+                    <text x="120" y="360" fill="#334155" font-size="12">• Port naming is optional (but recommended)</text>
+                    <text x="120" y="380" fill="#334155" font-size="12">• Suitable for applications with one interface (e.g., web server only)</text>
+                    <text x="120" y="400" fill="#334155" font-size="12">• Traffic flows: Client → Service Port 8080 → Pod Container Port 80</text>
+                </svg>
+
+                <!-- Multi-Port Service Diagram -->
+                <svg class="svg-diagram" id="multi-port" viewBox="0 0 1000 550" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Title -->
+                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Multi-Port Service Architecture</text>
+
+                    <!-- Clients -->
+                    <g class="diagram-node" data-tooltip="Client accessing HTTP interface">
+                        <circle cx="100" cy="100" r="35" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                        <text x="100" y="98" text-anchor="middle" fill="white" font-weight="bold" font-size="12">HTTP</text>
+                        <text x="100" y="110" text-anchor="middle" fill="#fef3c7" font-size="10">Client</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Prometheus scraping metrics">
+                        <circle cx="100" cy="200" r="35" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <text x="100" y="198" text-anchor="middle" fill="white" font-weight="bold" font-size="11">Metrics</text>
+                        <text x="100" y="210" text-anchor="middle" fill="#d1fae5" font-size="10">Client</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Admin accessing management interface">
+                        <circle cx="100" cy="300" r="35" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                        <text x="100" y="298" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Admin</text>
+                        <text x="100" y="310" text-anchor="middle" fill="#e0e7ff" font-size="10">Client</text>
+                    </g>
+
+                    <!-- Arrows to Service -->
+                    <line x1="135" y1="100" x2="230" y2="120" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="165" y="105" text-anchor="start" fill="#d97706" font-size="10" font-weight="600">8080</text>
+
+                    <line x1="135" y1="200" x2="230" y2="200" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="165" y="195" text-anchor="start" fill="#059669" font-size="10" font-weight="600">9090</text>
+
+                    <line x1="135" y1="300" x2="230" y2="280" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="165" y="295" text-anchor="start" fill="#4f46e5" font-size="10" font-weight="600">8081</text>
+
+                    <!-- Service -->
+                    <g class="diagram-node" data-tooltip="Multi-port service with named ports for different interfaces">
+                        <rect x="230" y="80" width="360" height="240" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                        <text x="410" y="105" text-anchor="middle" fill="white" font-weight="bold" font-size="16">Service: my-app (Multi-Port)</text>
+
+                        <!-- Port 1: HTTP -->
+                        <rect x="250" y="120" width="320" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="280" y="140" text-anchor="start" fill="#92400e" font-weight="bold" font-size="12">name: http</text>
+                        <text x="280" y="157" text-anchor="start" fill="#92400e" font-size="11">port: 8080 → targetPort: 8080</text>
+
+                        <!-- Port 2: Metrics -->
+                        <rect x="250" y="180" width="320" height="50" rx="6" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
+                        <text x="280" y="200" text-anchor="start" fill="#166534" font-weight="bold" font-size="12">name: metrics</text>
+                        <text x="280" y="217" text-anchor="start" fill="#166534" font-size="11">port: 9090 → targetPort: 9090</text>
+
+                        <!-- Port 3: Admin -->
+                        <rect x="250" y="240" width="320" height="50" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                        <text x="280" y="260" text-anchor="start" fill="#4338ca" font-weight="bold" font-size="12">name: admin</text>
+                        <text x="280" y="277" text-anchor="start" fill="#4338ca" font-size="11">port: 8081 → targetPort: 8081</text>
+                    </g>
+
+                    <!-- Arrows to Pods -->
+                    <line x1="590" y1="145" x2="680" y2="145" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="615" y="138" text-anchor="start" fill="#d97706" font-size="10" font-weight="600">:8080</text>
+
+                    <line x1="590" y1="205" x2="680" y2="205" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="615" y="198" text-anchor="start" fill="#059669" font-size="10" font-weight="600">:9090</text>
+
+                    <line x1="590" y1="265" x2="680" y2="265" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="615" y="258" text-anchor="start" fill="#4f46e5" font-size="10" font-weight="600">:8081</text>
+
+                    <!-- Pods Container -->
+                    <rect x="680" y="80" width="260" height="240" rx="8" fill="#f8fbff" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="810" y="105" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="12">Backend Pods</text>
+
+                    <!-- Pod with multiple ports -->
+                    <g class="diagram-node" data-tooltip="Pod exposing multiple container ports">
+                        <rect x="710" y="130" width="200" height="170" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="810" y="155" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Pod: app-pod-1</text>
+
+                        <!-- Container Ports -->
+                        <rect x="730" y="170" width="160" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+                        <text x="810" y="192" text-anchor="middle" fill="#92400e" font-size="11">http: 8080</text>
+
+                        <rect x="730" y="215" width="160" height="35" rx="4" fill="#dcfce7" stroke="#10b981" stroke-width="1"/>
+                        <text x="810" y="237" text-anchor="middle" fill="#166534" font-size="11">metrics: 9090</text>
+
+                        <rect x="730" y="260" width="160" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+                        <text x="810" y="282" text-anchor="middle" fill="#4338ca" font-size="11">admin: 8081</text>
+                    </g>
+
+                    <!-- Info Box -->
+                    <rect x="50" y="380" width="900" height="140" rx="8" fill="#f0f9ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="500" y="410" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Multi-Port Service Benefits</text>
+                    <text x="70" y="435" fill="#334155" font-size="12">• Separate interfaces for different responsibilities (HTTP traffic, monitoring metrics, admin operations)</text>
+                    <text x="70" y="455" fill="#334155" font-size="12">• Named ports required for clarity and valid configuration</text>
+                    <text x="70" y="475" fill="#334155" font-size="12">• Each port name must be unique within the Service</text>
+                    <text x="70" y="495" fill="#334155" font-size="12">• Enables protocol separation and targeted access control via NetworkPolicies</text>
+                </svg>
+
+                <!-- Named Port Mapping Diagram -->
+                <svg class="svg-diagram" id="named-ports" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Title -->
+                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Named Port Mapping Flow</text>
+
+                    <!-- Left Side: Service Definition -->
+                    <rect x="50" y="70" width="400" height="330" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                    <text x="250" y="100" text-anchor="middle" fill="#4338ca" font-weight="bold" font-size="15">Service Specification</text>
+
+                    <rect x="80" y="120" width="340" height="260" rx="6" fill="white" stroke="#6366f1" stroke-width="1"/>
+                    <text x="250" y="145" text-anchor="middle" fill="#1d4ed8" font-family="monospace" font-size="11" font-weight="bold">kind: Service</text>
+                    <text x="250" y="165" text-anchor="middle" fill="#1d4ed8" font-family="monospace" font-size="11" font-weight="bold">metadata:</text>
+                    <text x="250" y="182" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  name: my-app-service</text>
+                    <text x="250" y="202" text-anchor="middle" fill="#1d4ed8" font-family="monospace" font-size="11" font-weight="bold">spec:</text>
+                    <text x="250" y="219" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  selector:</text>
+                    <text x="250" y="236" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">    app: myapp</text>
+                    <text x="250" y="256" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  ports:</text>
+
+                    <!-- HTTP Port -->
+                    <rect x="100" y="265" width="300" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="250" y="285" text-anchor="middle" fill="#92400e" font-family="monospace" font-size="10">  - name: http  port: 80  targetPort: http</text>
+
+                    <!-- Metrics Port -->
+                    <rect x="100" y="310" width="300" height="35" rx="4" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
+                    <text x="250" y="330" text-anchor="middle" fill="#166534" font-family="monospace" font-size="10">  - name: metrics  port: 9090  targetPort: metrics</text>
+
+                    <!-- Admin Port -->
+                    <rect x="100" y="355" width="300" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                    <text x="250" y="375" text-anchor="middle" fill="#4338ca" font-family="monospace" font-size="10">  - name: admin  port: 8081  targetPort: admin</text>
+
+                    <!-- Arrows to Pod -->
+                    <line x1="450" y1="282" x2="530" y2="200" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <line x1="450" y1="327" x2="530" y2="250" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <line x1="450" y1="372" x2="530" y2="300" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+
+                    <!-- Right Side: Pod Definition -->
+                    <rect x="530" y="70" width="420" height="330" rx="8" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
+                    <text x="740" y="100" text-anchor="middle" fill="#be185d" font-weight="bold" font-size="15">Pod Specification</text>
+
+                    <rect x="560" y="120" width="360" height="260" rx="6" fill="white" stroke="#ec4899" stroke-width="1"/>
+                    <text x="740" y="145" text-anchor="middle" fill="#be185d" font-family="monospace" font-size="11" font-weight="bold">kind: Pod</text>
+                    <text x="740" y="165" text-anchor="middle" fill="#be185d" font-family="monospace" font-size="11" font-weight="bold">spec:</text>
+                    <text x="740" y="182" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  containers:</text>
+                    <text x="740" y="199" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  - name: app-container</text>
+                    <text x="740" y="216" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">    image: myapp:1.0</text>
+                    <text x="740" y="236" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">    ports:</text>
+
+                    <!-- Container Ports -->
+                    <rect x="580" y="245" width="320" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="740" y="265" text-anchor="middle" fill="#92400e" font-family="monospace" font-size="10">    - name: http  containerPort: 8080</text>
+
+                    <rect x="580" y="290" width="320" height="35" rx="4" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
+                    <text x="740" y="310" text-anchor="middle" fill="#166534" font-family="monospace" font-size="10">    - name: metrics  containerPort: 9090</text>
+
+                    <rect x="580" y="335" width="320" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                    <text x="740" y="355" text-anchor="middle" fill="#4338ca" font-family="monospace" font-size="10">    - name: admin  containerPort: 8081</text>
+
+                    <!-- Info Box -->
+                    <rect x="100" y="430" width="800" height="50" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="2"/>
+                    <text x="500" y="452" text-anchor="middle" fill="#059669" font-weight="bold" font-size="13">Named Port Resolution</text>
+                    <text x="500" y="470" text-anchor="middle" fill="#166534" font-size="11">Service targetPort name matches Pod containerPort name → Kubernetes automatically resolves to the correct port number</text>
+                </svg>
+            </div>
+
+            <div class="section-note">Hover over components to see detailed explanations. Switch between views to understand single-port vs multi-port configurations.</div>
         </section>
 
         <section id="flow" class="view">
@@ -432,7 +747,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>
@@ -446,6 +760,45 @@
                 views.forEach((view) => view.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Diagram switching
+        const diagramButtons = document.querySelectorAll('.diagram-btn');
+        const diagrams = document.querySelectorAll('.svg-diagram');
+
+        diagramButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const diagramId = button.dataset.diagram;
+                diagramButtons.forEach((item) => item.classList.remove('active'));
+                diagrams.forEach((diagram) => diagram.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(diagramId).classList.add('active');
+            });
+        });
+
+        // Tooltip functionality
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        document.body.appendChild(tooltip);
+
+        const diagramNodes = document.querySelectorAll('.diagram-node');
+        diagramNodes.forEach((node) => {
+            node.addEventListener('mouseenter', (e) => {
+                const tooltipText = node.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    tooltip.textContent = tooltipText;
+                    tooltip.classList.add('show');
+                }
+            });
+
+            node.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.pageX + 15) + 'px';
+                tooltip.style.top = (e.pageY + 15) + 'px';
+            });
+
+            node.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
             });
         });
     </script>

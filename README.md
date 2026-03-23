@@ -3,11 +3,11 @@
 <div align="center">
 
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.24--1.32-326CE5?logo=kubernetes&logoColor=white)
-![Labs](https://img.shields.io/badge/Labs-43-blueviolet)
+![Labs](https://img.shields.io/badge/Labs-46-blueviolet)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-**Learn Kubernetes through hands-on practice with 43 comprehensive lab manuals**
+**Learn Kubernetes through hands-on practice with 46 comprehensive lab manuals**
 
 </div>
 
@@ -17,7 +17,7 @@
 
 This is a **complete, hands-on learning resource** for mastering Kubernetes from absolute basics to production-ready advanced concepts. Whether you're preparing for CKA/CKAD certification or building production skills, this repository provides:
 
-- **43 step-by-step lab manuals** covering every major Kubernetes topic
+- **46 step-by-step lab manuals** covering every major Kubernetes topic
 - **100+ working YAML examples** ready to deploy
 - **Real-world patterns** used in production environments
 - **Modern features** including Kubernetes 1.25-1.28+ capabilities
@@ -146,7 +146,7 @@ graph TB
 
 **Location**: `k8s/docs/labmanuals/`
 
-**43 comprehensive lab manuals** organized into 9 categories:
+**46 comprehensive lab manuals** organized into 9 categories:
 
 | Category | Labs | What You'll Learn |
 |----------|------|-------------------|
@@ -171,6 +171,8 @@ graph TB
 
 **Start here**: [Lab Manuals Index](k8s/docs/labmanuals/README.md) - includes learning paths for different goals.
 
+**YAML focus:** [Lab 46: YAML Manifests Deep Dive](k8s/docs/labmanuals/lab46-basics-yaml-manifests.md) and [YAML 101](k8s/docs/basics/yaml-basics.md).
+
 ---
 
 ### 2. 🗂️ YAML Manifests (Ready-to-Use Examples)
@@ -182,6 +184,7 @@ Over **100 working YAML files** organized by category:
 ```
 k8s/labs/
 ├── basics/              # Pods, Namespaces, Services (Lab 01-02)
+├── yaml-lab/            # Lab 46 — YAML manifests practice
 ├── workloads/          # Deployments, Jobs, CronJobs, StatefulSets (Lab 15-22, 39)
 ├── networking/         # Services, Ingress, Gateway API (Lab 23-25, 41)
 ├── storage/            # Volumes, PV/PVC, StorageClass (Lab 13-14)
@@ -208,6 +211,7 @@ k8s/labs/
 
 #### Quick References
 - **[kubectl Command Reference](k8s/docs/kubectl-reference.md)** - Complete cheat sheet for kubectl
+- **[YAML 101 for Kubernetes Labs](k8s/docs/basics/yaml-basics.md)** - Markdown primer; hands-on [Lab 46](k8s/docs/labmanuals/lab46-basics-yaml-manifests.md); interactive HTML: [Part 1](k8s/docs/html/yaml-k8s-part1-syntax.html), [Part 2](k8s/docs/html/yaml-k8s-part2-objects-editing.html), [Part 3](k8s/docs/html/yaml-k8s-part3-tools-troubleshooting.html); [all HTML guides](k8s/docs/html/index.html)
 - **[Kubernetes Objects Guide](k8s/docs/basics/k8s-objects-complete.md)** - All K8s objects explained (basics → advanced)
 
 #### Conceptual Deep Dives
@@ -229,6 +233,7 @@ Choose your path based on your goal:
 ### Path 1: Complete Beginner (Start Here)
 New to Kubernetes? Start with these:
 ```
+YAML 101 (read yaml-basics.md or HTML Parts 1–3) → Lab 46 (YAML manifests hands-on) →
 Lab 08 (Docker Basics) → Lab 01 (Pods) → Lab 02 (Services) →
 Lab 04 (kubectl) → Lab 15 (ConfigMaps) → Lab 16 (Deployments)
 ```
@@ -315,6 +320,7 @@ See [Learning Paths](#-learning-paths) above.
 ### Step 4: Reference Documentation as Needed
 
 When you need deeper understanding:
+- **YAML syntax or manifest structure?** → Read [yaml-basics.md](k8s/docs/basics/yaml-basics.md), run [Lab 46](k8s/docs/labmanuals/lab46-basics-yaml-manifests.md), or open the [HTML YAML series](k8s/docs/html/yaml-k8s-part1-syntax.html)
 - **kubectl commands?** → Check [kubectl-reference.md](k8s/docs/kubectl-reference.md)
 - **How storage works?** → Read [k8s-storage-complete.md](k8s/docs/storage/k8s-storage-complete.md)
 - **Observability concepts?** → See [observability-basics.md](k8s/docs/workloads/observability-basics.md)
@@ -469,7 +475,7 @@ This is a **hands-on learning resource**, not a copy-paste tutorial:
 
 ## 📊 Repository Statistics
 
-- **43** comprehensive lab manuals with step-by-step instructions
+- **46** comprehensive lab manuals with step-by-step instructions
 - **100+** working YAML manifests covering all K8s concepts
 - **9** logical categories from basics to advanced
 - **7** curated learning paths for different goals
@@ -524,6 +530,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Master Kubernetes one lab at a time* 🎯
 
-**Last Updated**: March 2026 | **Total Labs**: 43 | **K8s Versions**: v1.24-1.32
+**Last Updated**: March 2026 | **Total Labs**: 46 | **K8s Versions**: v1.24-1.32
 
 </div>

@@ -328,28 +328,491 @@
                     <h2>Probe Decision Flow</h2>
                 </div>
             </div>
-            <div class="flow-track">
-            <article class="flow-step">
-                <div class="step-number">1</div>
-                <h3>Run probe</h3>
-                <p>Kubelet executes exec, HTTP, TCP, or gRPC health checks.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">2</div>
-                <h3>Evaluate result</h3>
-                <p>Probe success or failure is recorded repeatedly over time.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">3</div>
-                <h3>Reach threshold</h3>
-                <p>Configured failure thresholds determine when action is taken.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">4</div>
-                <h3>Apply action</h3>
-                <p>Kubernetes restarts the container, removes it from endpoints, or continues startup isolation.</p>
-            </article>
-</div>
+
+            <!-- Probe Type Switcher -->
+            <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;">
+                <button class="btn" style="border-color: #ef4444; color: #991b1b;" onclick="showProbeFlow('liveness')">Liveness Probe</button>
+                <button class="btn" style="border-color: #22c55e; color: #166534;" onclick="showProbeFlow('readiness')">Readiness Probe</button>
+                <button class="btn" style="border-color: #f59e0b; color: #92400e;" onclick="showProbeFlow('startup')">Startup Probe</button>
+                <button class="btn" style="border-color: #8b5cf6; color: #6b21a8;" onclick="showProbeFlow('comparison')">Side-by-Side</button>
+            </div>
+
+            <!-- SVG Flow Diagram Container -->
+            <div id="probe-svg-container" style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 24px; border: 1px solid #dbe3f1; min-height: 400px;">
+                <svg id="probe-flow-diagram" width="100%" height="450" viewBox="0 0 1200 450" style="max-width: 100%;">
+                    <defs>
+                        <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#ef4444" />
+                        </marker>
+                        <marker id="arrow-green-probe" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#22c55e" />
+                        </marker>
+                        <marker id="arrow-amber-probe" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#f59e0b" />
+                        </marker>
+                        <marker id="arrow-blue-probe" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                        <linearGradient id="redGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ef4444;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="greenGradientProbe" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="amberGradientProbe" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Liveness Probe Flow -->
+                    <g id="liveness-flow" style="display: block;">
+                        <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#ef4444">Liveness Probe: Container Restart Flow</text>
+
+                        <!-- Container Running -->
+                        <g class="probe-component" data-tooltip="Container is running and serving requests">
+                            <rect x="100" y="80" width="200" height="80" rx="12" fill="#fff" stroke="#22c55e" stroke-width="3"/>
+                            <text x="200" y="110" text-anchor="middle" font-size="15" font-weight="bold" fill="#166534">Container Running</text>
+                            <text x="200" y="135" text-anchor="middle" font-size="13" fill="#166534">Process Active</text>
+                            <circle cx="200" cy="145" r="6" fill="#22c55e"/>
+                        </g>
+
+                        <!-- Probe Check -->
+                        <path d="M 300 120 L 380 120" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-blue-probe)"/>
+                        <text x="340" y="110" text-anchor="middle" font-size="11" fill="#326CE5" font-weight="600">Every 10s</text>
+
+                        <g class="probe-component" data-tooltip="Kubelet runs liveness check periodically">
+                            <rect x="380" y="80" width="180" height="80" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="470" y="110" text-anchor="middle" fill="white" font-size="15" font-weight="bold">Liveness Check</text>
+                            <text x="470" y="130" text-anchor="middle" fill="white" font-size="12">HTTP GET /healthz</text>
+                            <text x="470" y="145" text-anchor="middle" fill="white" font-size="11">or exec/tcp/grpc</text>
+                        </g>
+
+                        <!-- Decision Diamond -->
+                        <path d="M 560 120 L 640 120" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-blue-probe)"/>
+
+                        <g class="probe-component" data-tooltip="Check if probe succeeds or fails">
+                            <polygon points="720,70 770,120 720,170 670,120" fill="#fff" stroke="#326CE5" stroke-width="3"/>
+                            <text x="720" y="125" text-anchor="middle" font-size="13" font-weight="bold" fill="#326CE5">Pass?</text>
+                        </g>
+
+                        <!-- Success Path -->
+                        <path d="M 770 120 L 850 120" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-green-probe)"/>
+                        <text x="810" y="110" text-anchor="middle" font-size="11" fill="#22c55e" font-weight="600">Yes</text>
+
+                        <g class="probe-component" data-tooltip="Container continues running normally">
+                            <rect x="850" y="80" width="180" height="80" rx="12" fill="url(#greenGradientProbe)" stroke="#22c55e" stroke-width="2"/>
+                            <text x="940" y="110" text-anchor="middle" fill="white" font-size="15" font-weight="bold">Continue</text>
+                            <text x="940" y="130" text-anchor="middle" fill="white" font-size="12">Container OK</text>
+                            <text x="940" y="145" text-anchor="middle" fill="white" font-size="11">Next check in 10s</text>
+                        </g>
+
+                        <!-- Failure Path -->
+                        <path d="M 720 170 L 720 240" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red)"/>
+                        <text x="735" y="210" font-size="11" fill="#ef4444" font-weight="600">No (3x)</text>
+
+                        <g class="probe-component" data-tooltip="After failureThreshold (default 3), kubelet restarts container">
+                            <rect x="620" y="240" width="200" height="80" rx="12" fill="url(#redGradient)" stroke="#ef4444" stroke-width="2"/>
+                            <text x="720" y="270" text-anchor="middle" fill="white" font-size="15" font-weight="bold">RESTART Container</text>
+                            <text x="720" y="290" text-anchor="middle" fill="white" font-size="12">Kill & Recreate</text>
+                            <text x="720" y="305" text-anchor="middle" fill="white" font-size="11">Restart count++</text>
+                        </g>
+
+                        <!-- Loop back -->
+                        <path d="M 620 280 L 300 280 L 300 160" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-red)"/>
+                        <text x="460" y="300" text-anchor="middle" font-size="11" fill="#ef4444" font-style="italic">Container restarts</text>
+
+                        <!-- Timeline -->
+                        <g transform="translate(100, 350)">
+                            <text x="0" y="0" font-size="14" font-weight="bold">Probe Timeline</text>
+                            <line x1="0" y1="20" x2="800" y2="20" stroke="#e2e8f0" stroke-width="3"/>
+
+                            <!-- Success ticks -->
+                            <g transform="translate(0, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#22c55e" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#22c55e">✓</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">T=0s</text>
+                            </g>
+                            <g transform="translate(100, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#22c55e" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#22c55e">✓</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">T=10s</text>
+                            </g>
+
+                            <!-- Failure sequence -->
+                            <g transform="translate(200, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#ef4444" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#ef4444">✗</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">T=20s</text>
+                            </g>
+                            <g transform="translate(300, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#ef4444" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#ef4444">✗</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">T=30s</text>
+                            </g>
+                            <g transform="translate(400, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#ef4444" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#ef4444">✗</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">T=40s</text>
+                            </g>
+
+                            <!-- Restart action -->
+                            <g transform="translate(500, 0)">
+                                <rect x="-30" y="0" width="160" height="25" rx="5" fill="#ef4444"/>
+                                <text x="50" y="17" text-anchor="middle" font-size="11" fill="white" font-weight="bold">RESTART</text>
+                            </g>
+
+                            <!-- After restart -->
+                            <g transform="translate(700, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#22c55e" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#22c55e">✓</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">T=60s</text>
+                            </g>
+                        </g>
+                    </g>
+
+                    <!-- Readiness Probe Flow -->
+                    <g id="readiness-flow" style="display: none;">
+                        <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#22c55e">Readiness Probe: Traffic Control Flow</text>
+
+                        <!-- Pod Receiving Traffic -->
+                        <g class="probe-component" data-tooltip="Pod is ready and receiving traffic from Service">
+                            <rect x="100" y="80" width="200" height="80" rx="12" fill="#fff" stroke="#22c55e" stroke-width="3"/>
+                            <text x="200" y="110" text-anchor="middle" font-size="15" font-weight="bold" fill="#166534">Pod Ready</text>
+                            <text x="200" y="130" text-anchor="middle" font-size="13" fill="#166534">In Service Endpoints</text>
+                            <text x="200" y="145" text-anchor="middle" font-size="11" fill="#166534">Traffic: Active</text>
+                        </g>
+
+                        <!-- Probe Check -->
+                        <path d="M 300 120 L 380 120" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-blue-probe)"/>
+                        <text x="340" y="110" text-anchor="middle" font-size="11" fill="#326CE5" font-weight="600">Every 10s</text>
+
+                        <g class="probe-component" data-tooltip="Kubelet checks if pod can handle requests">
+                            <rect x="380" y="80" width="180" height="80" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="470" y="110" text-anchor="middle" fill="white" font-size="15" font-weight="bold">Readiness Check</text>
+                            <text x="470" y="130" text-anchor="middle" fill="white" font-size="12">HTTP GET /ready</text>
+                            <text x="470" y="145" text-anchor="middle" fill="white" font-size="11">or exec/tcp/grpc</text>
+                        </g>
+
+                        <!-- Decision Diamond -->
+                        <path d="M 560 120 L 640 120" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-blue-probe)"/>
+
+                        <g class="probe-component" data-tooltip="Check if pod can accept traffic">
+                            <polygon points="720,70 770,120 720,170 670,120" fill="#fff" stroke="#326CE5" stroke-width="3"/>
+                            <text x="720" y="125" text-anchor="middle" font-size="13" font-weight="bold" fill="#326CE5">Ready?</text>
+                        </g>
+
+                        <!-- Success Path -->
+                        <path d="M 770 120 L 850 120" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-green-probe)"/>
+                        <text x="810" y="110" text-anchor="middle" font-size="11" fill="#22c55e" font-weight="600">Yes</text>
+
+                        <g class="probe-component" data-tooltip="Pod stays in Service endpoints, continues receiving traffic">
+                            <rect x="850" y="80" width="180" height="80" rx="12" fill="url(#greenGradientProbe)" stroke="#22c55e" stroke-width="2"/>
+                            <text x="940" y="110" text-anchor="middle" fill="white" font-size="15" font-weight="bold">Keep in Service</text>
+                            <text x="940" y="130" text-anchor="middle" fill="white" font-size="12">Traffic continues</text>
+                            <text x="940" y="145" text-anchor="middle" fill="white" font-size="11">Next check in 10s</text>
+                        </g>
+
+                        <!-- Failure Path -->
+                        <path d="M 720 170 L 720 240" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-amber-probe)"/>
+                        <text x="735" y="210" font-size="11" fill="#f59e0b" font-weight="600">No</text>
+
+                        <g class="probe-component" data-tooltip="Pod removed from Service endpoints immediately - NO RESTART">
+                            <rect x="620" y="240" width="200" height="80" rx="12" fill="url(#amberGradientProbe)" stroke="#f59e0b" stroke-width="2"/>
+                            <text x="720" y="270" text-anchor="middle" fill="white" font-size="15" font-weight="bold">Remove from Service</text>
+                            <text x="720" y="290" text-anchor="middle" fill="white" font-size="12">NO Container Restart</text>
+                            <text x="720" y="305" text-anchor="middle" fill="white" font-size="11">Traffic stops</text>
+                        </g>
+
+                        <!-- Can recover -->
+                        <path d="M 620 280 L 300 280 L 300 160" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-green-probe)"/>
+                        <text x="460" y="300" text-anchor="middle" font-size="11" fill="#22c55e" font-style="italic">Can recover without restart</text>
+
+                        <!-- Service Endpoint visualization -->
+                        <g transform="translate(100, 350)">
+                            <text x="0" y="0" font-size="14" font-weight="bold">Service Endpoint Status</text>
+
+                            <!-- Ready state -->
+                            <g transform="translate(0, 20)">
+                                <rect x="0" y="0" width="350" height="60" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                                <text x="175" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Pod Ready</text>
+                                <text x="175" y="45" text-anchor="middle" font-size="11" fill="#166534">Service Endpoint: pod-ip:8080 → Active</text>
+                            </g>
+
+                            <!-- Not ready state -->
+                            <g transform="translate(400, 20)">
+                                <rect x="0" y="0" width="350" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                                <text x="175" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Pod Not Ready</text>
+                                <text x="175" y="45" text-anchor="middle" font-size="11" fill="#92400e">Service Endpoint: pod-ip:8080 → Removed</text>
+                            </g>
+
+                            <path d="M 175 80 L 175 110 L 575 110 L 575 80" stroke="#326CE5" stroke-width="2" fill="none"/>
+                            <text x="375" y="105" text-anchor="middle" font-size="10" fill="#326CE5">Probe result controls endpoint membership</text>
+                        </g>
+                    </g>
+
+                    <!-- Startup Probe Flow -->
+                    <g id="startup-flow" style="display: none;">
+                        <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#f59e0b">Startup Probe: Slow Boot Protection</text>
+
+                        <!-- Container Starting -->
+                        <g class="probe-component" data-tooltip="Container just started, needs time to initialize">
+                            <rect x="100" y="80" width="200" height="80" rx="12" fill="#fff" stroke="#f59e0b" stroke-width="3"/>
+                            <text x="200" y="110" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">Container Starting</text>
+                            <text x="200" y="130" text-anchor="middle" font-size="13" fill="#92400e">Heavy initialization</text>
+                            <text x="200" y="145" text-anchor="middle" font-size="11" fill="#92400e">Loading data...</text>
+                        </g>
+
+                        <!-- Startup Probe -->
+                        <path d="M 300 120 L 380 120" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-amber-probe)"/>
+                        <text x="340" y="110" text-anchor="middle" font-size="11" fill="#f59e0b" font-weight="600">Every 10s</text>
+
+                        <g class="probe-component" data-tooltip="Startup probe runs until it succeeds - blocks liveness/readiness">
+                            <rect x="380" y="80" width="180" height="80" rx="12" fill="url(#amberGradientProbe)" stroke="#f59e0b" stroke-width="2"/>
+                            <text x="470" y="110" text-anchor="middle" fill="white" font-size="15" font-weight="bold">Startup Check</text>
+                            <text x="470" y="130" text-anchor="middle" fill="white" font-size="12">HTTP GET /startup</text>
+                            <text x="470" y="145" text-anchor="middle" fill="white" font-size="11">Liveness DISABLED</text>
+                        </g>
+
+                        <!-- Decision Diamond -->
+                        <path d="M 560 120 L 640 120" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-amber-probe)"/>
+
+                        <g class="probe-component" data-tooltip="Check if startup completed">
+                            <polygon points="720,70 770,120 720,170 670,120" fill="#fff" stroke="#f59e0b" stroke-width="3"/>
+                            <text x="720" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#f59e0b">Started</text>
+                            <text x="720" y="133" text-anchor="middle" font-size="10" fill="#f59e0b">?</text>
+                        </g>
+
+                        <!-- Success Path -->
+                        <path d="M 770 120 L 850 120" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-green-probe)"/>
+                        <text x="810" y="110" text-anchor="middle" font-size="11" fill="#22c55e" font-weight="600">Yes</text>
+
+                        <g class="probe-component" data-tooltip="Startup probe disabled, liveness and readiness take over">
+                            <rect x="850" y="80" width="200" height="80" rx="12" fill="url(#greenGradientProbe)" stroke="#22c55e" stroke-width="2"/>
+                            <text x="950" y="105" text-anchor="middle" fill="white" font-size="15" font-weight="bold">Hand Off</text>
+                            <text x="950" y="125" text-anchor="middle" fill="white" font-size="12">Startup probe stops</text>
+                            <text x="950" y="140" text-anchor="middle" fill="white" font-size="11">Liveness probe starts</text>
+                            <text x="950" y="153" text-anchor="middle" fill="white" font-size="11">Readiness probe starts</text>
+                        </g>
+
+                        <!-- Failure Path -->
+                        <path d="M 720 170 L 720 240" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red)"/>
+                        <text x="735" y="205" font-size="11" fill="#ef4444" font-weight="600">No</text>
+                        <text x="735" y="220" font-size="10" fill="#ef4444">(30+ tries)</text>
+
+                        <g class="probe-component" data-tooltip="After failureThreshold * periodSeconds, container restarted">
+                            <rect x="620" y="240" width="200" height="80" rx="12" fill="url(#redGradient)" stroke="#ef4444" stroke-width="2"/>
+                            <text x="720" y="270" text-anchor="middle" fill="white" font-size="15" font-weight="bold">RESTART Container</text>
+                            <text x="720" y="290" text-anchor="middle" fill="white" font-size="12">Failed to start</text>
+                            <text x="720" y="305" text-anchor="middle" fill="white" font-size="11">Try again</text>
+                        </g>
+
+                        <!-- Loop back -->
+                        <path d="M 620 280 L 300 280 L 300 160" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-red)"/>
+
+                        <!-- Timeline -->
+                        <g transform="translate(100, 350)">
+                            <text x="0" y="0" font-size="14" font-weight="bold">Startup Protection Timeline</text>
+                            <line x1="0" y1="20" x2="900" y2="20" stroke="#e2e8f0" stroke-width="3"/>
+
+                            <!-- Startup phase -->
+                            <rect x="0" y="10" width="600" height="20" rx="5" fill="#fef3c7" opacity="0.7"/>
+                            <text x="300" y="0" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">Startup Probe Active (liveness disabled)</text>
+
+                            <!-- Checks -->
+                            <g transform="translate(0, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#f59e0b" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#f59e0b">✗</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">0s</text>
+                            </g>
+                            <g transform="translate(150, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#f59e0b" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#f59e0b">✗</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">30s</text>
+                            </g>
+                            <g transform="translate(300, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#f59e0b" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#f59e0b">✗</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">60s</text>
+                            </g>
+                            <g transform="translate(450, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#f59e0b" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#f59e0b">✗</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">90s</text>
+                            </g>
+
+                            <!-- Success -->
+                            <g transform="translate(600, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#22c55e" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#22c55e">✓</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">120s</text>
+                            </g>
+
+                            <!-- Liveness takes over -->
+                            <rect x="600" y="10" width="300" height="20" rx="5" fill="#dcfce7" opacity="0.7"/>
+                            <text x="750" y="0" text-anchor="middle" font-size="11" fill="#166534" font-weight="600">Liveness/Readiness Active</text>
+
+                            <g transform="translate(750, 20)">
+                                <line x1="0" y1="-5" x2="0" y2="5" stroke="#22c55e" stroke-width="2"/>
+                                <text x="0" y="20" text-anchor="middle" font-size="10" fill="#22c55e">✓</text>
+                                <text x="0" y="35" text-anchor="middle" font-size="9">130s</text>
+                            </g>
+                        </g>
+                    </g>
+
+                    <!-- Side-by-Side Comparison -->
+                    <g id="comparison-flow" style="display: none;">
+                        <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#8b5cf6">Probe Comparison: Actions on Failure</text>
+
+                        <!-- Liveness -->
+                        <g transform="translate(50, 70)">
+                            <text x="150" y="0" text-anchor="middle" font-size="16" font-weight="bold" fill="#ef4444">Liveness</text>
+                            <rect x="0" y="10" width="300" height="100" rx="10" fill="#fff" stroke="#ef4444" stroke-width="3"/>
+                            <text x="150" y="40" text-anchor="middle" font-size="14" font-weight="600" fill="#991b1b">Question:</text>
+                            <text x="150" y="60" text-anchor="middle" font-size="12" fill="#2d3748">Is the process alive?</text>
+                            <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="600" fill="#991b1b">On Failure:</text>
+                            <text x="150" y="103" text-anchor="middle" font-size="12" fill="#ef4444" font-weight="bold">RESTART Container</text>
+
+                            <!-- Flow -->
+                            <g transform="translate(0, 130)">
+                                <rect x="20" y="0" width="80" height="50" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                                <text x="60" y="30" text-anchor="middle" font-size="11" fill="white" font-weight="600">Running</text>
+
+                                <path d="M 100 25 L 120 25" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red)"/>
+
+                                <rect x="120" y="0" width="80" height="50" rx="8" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+                                <text x="160" y="23" text-anchor="middle" font-size="11" fill="white" font-weight="600">Probe</text>
+                                <text x="160" y="38" text-anchor="middle" font-size="11" fill="white" font-weight="600">Fails 3x</text>
+
+                                <path d="M 200 25 L 220 25" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red)"/>
+
+                                <rect x="220" y="0" width="60" height="50" rx="8" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+                                <text x="250" y="20" text-anchor="middle" font-size="10" fill="white" font-weight="600">KILL</text>
+                                <text x="250" y="35" text-anchor="middle" font-size="10" fill="white" font-weight="600">and</text>
+                                <text x="250" y="47" text-anchor="middle" font-size="10" fill="white" font-weight="600">RESTART</text>
+                            </g>
+                        </g>
+
+                        <!-- Readiness -->
+                        <g transform="translate(450, 70)">
+                            <text x="150" y="0" text-anchor="middle" font-size="16" font-weight="bold" fill="#22c55e">Readiness</text>
+                            <rect x="0" y="10" width="300" height="100" rx="10" fill="#fff" stroke="#22c55e" stroke-width="3"/>
+                            <text x="150" y="40" text-anchor="middle" font-size="14" font-weight="600" fill="#166534">Question:</text>
+                            <text x="150" y="60" text-anchor="middle" font-size="12" fill="#2d3748">Can it receive traffic?</text>
+                            <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="600" fill="#166534">On Failure:</text>
+                            <text x="150" y="103" text-anchor="middle" font-size="12" fill="#f59e0b" font-weight="bold">Remove from Service</text>
+
+                            <!-- Flow -->
+                            <g transform="translate(0, 130)">
+                                <rect x="20" y="0" width="80" height="50" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                                <text x="60" y="20" text-anchor="middle" font-size="11" fill="white" font-weight="600">In</text>
+                                <text x="60" y="35" text-anchor="middle" font-size="11" fill="white" font-weight="600">Endpoints</text>
+
+                                <path d="M 100 25 L 120 25" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-amber-probe)"/>
+
+                                <rect x="120" y="0" width="80" height="50" rx="8" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                                <text x="160" y="23" text-anchor="middle" font-size="11" fill="white" font-weight="600">Probe</text>
+                                <text x="160" y="38" text-anchor="middle" font-size="11" fill="white" font-weight="600">Fails</text>
+
+                                <path d="M 200 25 L 220 25" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-amber-probe)"/>
+
+                                <rect x="220" y="0" width="60" height="50" rx="8" fill="#d97706" stroke="#92400e" stroke-width="2"/>
+                                <text x="250" y="20" text-anchor="middle" font-size="10" fill="white" font-weight="600">Remove</text>
+                                <text x="250" y="33" text-anchor="middle" font-size="10" fill="white" font-weight="600">from</text>
+                                <text x="250" y="45" text-anchor="middle" font-size="10" fill="white" font-weight="600">Service</text>
+                            </g>
+                        </g>
+
+                        <!-- Startup -->
+                        <g transform="translate(850, 70)">
+                            <text x="150" y="0" text-anchor="middle" font-size="16" font-weight="bold" fill="#f59e0b">Startup</text>
+                            <rect x="0" y="10" width="300" height="100" rx="10" fill="#fff" stroke="#f59e0b" stroke-width="3"/>
+                            <text x="150" y="40" text-anchor="middle" font-size="14" font-weight="600" fill="#92400e">Question:</text>
+                            <text x="150" y="60" text-anchor="middle" font-size="12" fill="#2d3748">Has startup finished?</text>
+                            <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="600" fill="#92400e">On Success:</text>
+                            <text x="150" y="103" text-anchor="middle" font-size="12" fill="#22c55e" font-weight="bold">Enable Liveness</text>
+
+                            <!-- Flow -->
+                            <g transform="translate(0, 130)">
+                                <rect x="20" y="0" width="80" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                                <text x="60" y="23" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">Starting</text>
+                                <text x="60" y="38" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">Up...</text>
+
+                                <path d="M 100 25 L 120 25" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-amber-probe)"/>
+
+                                <rect x="120" y="0" width="80" height="50" rx="8" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                                <text x="160" y="23" text-anchor="middle" font-size="11" fill="white" font-weight="600">Startup</text>
+                                <text x="160" y="38" text-anchor="middle" font-size="11" fill="white" font-weight="600">Succeeds</text>
+
+                                <path d="M 200 25 L 220 25" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-green-probe)"/>
+
+                                <rect x="220" y="0" width="60" height="50" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                                <text x="250" y="20" text-anchor="middle" font-size="10" fill="white" font-weight="600">Enable</text>
+                                <text x="250" y="35" text-anchor="middle" font-size="10" fill="white" font-weight="600">Liveness</text>
+                            </g>
+                        </g>
+
+                        <!-- Key Differences Table -->
+                        <g transform="translate(100, 280)">
+                            <text x="500" y="0" text-anchor="middle" font-size="16" font-weight="bold">Key Differences</text>
+
+                            <!-- Headers -->
+                            <rect x="0" y="10" width="200" height="35" fill="#326CE5"/>
+                            <text x="100" y="33" text-anchor="middle" fill="white" font-size="13" font-weight="600">Aspect</text>
+
+                            <rect x="200" y="10" width="250" height="35" fill="#ef4444"/>
+                            <text x="325" y="33" text-anchor="middle" fill="white" font-size="13" font-weight="600">Liveness</text>
+
+                            <rect x="450" y="10" width="250" height="35" fill="#22c55e"/>
+                            <text x="575" y="33" text-anchor="middle" fill="white" font-size="13" font-weight="600">Readiness</text>
+
+                            <rect x="700" y="10" width="250" height="35" fill="#f59e0b"/>
+                            <text x="825" y="33" text-anchor="middle" fill="white" font-size="13" font-weight="600">Startup</text>
+
+                            <!-- Row 1: Restarts container -->
+                            <rect x="0" y="45" width="200" height="30" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="10" y="65" font-size="12" fill="#2d3748">Restarts container?</text>
+
+                            <rect x="200" y="45" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="325" y="65" text-anchor="middle" font-size="12" fill="#ef4444" font-weight="bold">YES</text>
+
+                            <rect x="450" y="45" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="575" y="65" text-anchor="middle" font-size="12" fill="#64748b">NO</text>
+
+                            <rect x="700" y="45" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="825" y="65" text-anchor="middle" font-size="12" fill="#ef4444" font-weight="bold">YES (eventually)</text>
+
+                            <!-- Row 2: Affects traffic -->
+                            <rect x="0" y="75" width="200" height="30" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="10" y="95" font-size="12" fill="#2d3748">Affects traffic?</text>
+
+                            <rect x="200" y="75" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="325" y="95" text-anchor="middle" font-size="12" fill="#64748b">NO</text>
+
+                            <rect x="450" y="75" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="575" y="95" text-anchor="middle" font-size="12" fill="#22c55e" font-weight="bold">YES</text>
+
+                            <rect x="700" y="75" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="825" y="95" text-anchor="middle" font-size="12" fill="#64748b">NO</text>
+
+                            <!-- Row 3: When active -->
+                            <rect x="0" y="105" width="200" height="30" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="10" y="125" font-size="12" fill="#2d3748">When active?</text>
+
+                            <rect x="200" y="105" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="325" y="125" text-anchor="middle" font-size="11" fill="#2d3748">After startup</text>
+
+                            <rect x="450" y="105" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="575" y="125" text-anchor="middle" font-size="11" fill="#2d3748">Entire lifetime</text>
+
+                            <rect x="700" y="105" width="250" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+                            <text x="825" y="125" text-anchor="middle" font-size="11" fill="#2d3748">Only during startup</text>
+                        </g>
+                    </g>
+                </svg>
+            </div>
 
             <div class="section-note">Readiness affects traffic. Liveness affects process restart. Startup protects slow boot sequences from false liveness failure.</div>
         </section>
@@ -432,7 +895,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>
@@ -446,6 +908,48 @@
                 views.forEach((view) => view.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Probe flow switching
+        function showProbeFlow(flowType) {
+            const flows = ['liveness-flow', 'readiness-flow', 'startup-flow', 'comparison-flow'];
+            flows.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            document.getElementById(flowType + '-flow').style.display = 'block';
+        }
+
+        // Add hover tooltips to probe components
+        document.addEventListener('DOMContentLoaded', () => {
+            const probeComponents = document.querySelectorAll('.probe-component');
+            probeComponents.forEach(comp => {
+                comp.style.cursor = 'pointer';
+                comp.addEventListener('mouseenter', function(e) {
+                    const tooltip = this.getAttribute('data-tooltip');
+                    if (tooltip) {
+                        const tooltipEl = document.createElement('div');
+                        tooltipEl.id = 'probe-tooltip';
+                        tooltipEl.style.cssText = 'position: absolute; background: #1a1a2e; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; pointer-events: none; z-index: 1000; max-width: 250px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                        tooltipEl.textContent = tooltip;
+                        document.body.appendChild(tooltipEl);
+                    }
+                });
+
+                comp.addEventListener('mousemove', function(e) {
+                    const tooltip = document.getElementById('probe-tooltip');
+                    if (tooltip) {
+                        tooltip.style.left = (e.pageX + 15) + 'px';
+                        tooltip.style.top = (e.pageY + 15) + 'px';
+                    }
+                });
+
+                comp.addEventListener('mouseleave', function() {
+                    const tooltip = document.getElementById('probe-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                });
             });
         });
     </script>

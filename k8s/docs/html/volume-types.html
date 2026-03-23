@@ -322,6 +322,154 @@
             </tbody>
         </table>
 
+        <!-- Persistence Timeline Diagram -->
+        <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; border: 2px solid #667eea;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #2d3748;">Persistence Timeline</h2>
+            <svg viewBox="0 0 900 350" style="width: 100%; max-width: 900px; margin: 0 auto; display: block;">
+                <!-- Timeline -->
+                <line x1="50" y1="175" x2="850" y2="175" stroke="#cbd5e0" stroke-width="4"/>
+
+                <!-- Pod Lifetime -->
+                <rect x="100" y="50" width="250" height="80" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="225" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">Pod Lifetime</text>
+                <text x="225" y="95" text-anchor="middle" font-size="11" fill="#78350f">Pod Created → Running → Terminated</text>
+                <text x="225" y="115" text-anchor="middle" font-size="10" fill="#78350f">Duration: Minutes to Hours</text>
+
+                <!-- emptyDir -->
+                <circle cx="225" cy="175" r="12" fill="#f59e0b"/>
+                <line x1="225" y1="135" x2="225" y2="163" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-empty)"/>
+                <rect x="155" y="200" width="140" height="60" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="225" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">emptyDir</text>
+                <text x="225" y="238" text-anchor="middle" font-size="10" fill="#78350f">Dies with Pod</text>
+                <text x="225" y="253" text-anchor="middle" font-size="9" fill="#78350f">✗ No persistence</text>
+
+                <!-- Node Lifetime -->
+                <rect x="400" y="50" width="200" height="80" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                <text x="500" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#3730a3">Node Lifetime</text>
+                <text x="500" y="95" text-anchor="middle" font-size="11" fill="#4338ca">Survives Pod restarts</text>
+                <text x="500" y="115" text-anchor="middle" font-size="10" fill="#4338ca">Duration: Days to Weeks</text>
+
+                <!-- hostPath -->
+                <circle cx="500" cy="175" r="12" fill="#6366f1"/>
+                <line x1="500" y1="135" x2="500" y2="163" stroke="#6366f1" stroke-width="3" marker-end="url(#arrow-host)"/>
+                <rect x="435" y="200" width="130" height="60" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                <text x="500" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="#3730a3">hostPath</text>
+                <text x="500" y="238" text-anchor="middle" font-size="10" fill="#4338ca">Tied to Node</text>
+                <text x="500" y="253" text-anchor="middle" font-size="9" fill="#4338ca">⚠ Node-bound</text>
+
+                <!-- Cluster Lifetime -->
+                <rect x="650" y="50" width="200" height="80" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="750" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Cluster Lifetime</text>
+                <text x="750" y="95" text-anchor="middle" font-size="11" fill="#14532d">Independent of Pods/Nodes</text>
+                <text x="750" y="115" text-anchor="middle" font-size="10" fill="#14532d">Duration: Weeks to Years</text>
+
+                <!-- PV/PVC -->
+                <circle cx="750" cy="175" r="12" fill="#22c55e"/>
+                <line x1="750" y1="135" x2="750" y2="163" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-pv)"/>
+                <rect x="680" y="200" width="140" height="80" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="750" y="220" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">PV/PVC</text>
+                <text x="750" y="238" text-anchor="middle" font-size="10" fill="#14532d">True Persistence</text>
+                <text x="750" y="253" text-anchor="middle" font-size="9" fill="#14532d">✓ Survives everything</text>
+                <text x="750" y="270" text-anchor="middle" font-size="9" fill="#14532d">Reclaim: Retain/Delete</text>
+
+                <!-- Legend -->
+                <rect x="50" y="290" width="800" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e0" stroke-width="1"/>
+                <circle cx="80" cy="315" r="6" fill="#f59e0b"/>
+                <text x="95" y="320" font-size="10" fill="#4a5568">Ephemeral (lost on Pod deletion)</text>
+
+                <circle cx="320" cy="315" r="6" fill="#6366f1"/>
+                <text x="335" y="320" font-size="10" fill="#4a5568">Host-bound (lost if node fails)</text>
+
+                <circle cx="570" cy="315" r="6" fill="#22c55e"/>
+                <text x="585" y="320" font-size="10" fill="#4a5568">Persistent (independent lifecycle)</text>
+
+                <defs>
+                    <marker id="arrow-empty" markerWidth="8" markerHeight="8" refX="4" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#f59e0b"/>
+                    </marker>
+                    <marker id="arrow-host" markerWidth="8" markerHeight="8" refX="4" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#6366f1"/>
+                    </marker>
+                    <marker id="arrow-pv" markerWidth="8" markerHeight="8" refX="4" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#22c55e"/>
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- Storage Chain Diagram -->
+        <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; border: 2px solid #667eea;">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #2d3748;">Storage Chain: StorageClass → PV → PVC → Pod</h2>
+            <svg viewBox="0 0 900 280" style="width: 100%; max-width: 900px; margin: 0 auto; display: block;">
+                <!-- StorageClass -->
+                <rect x="50" y="50" width="160" height="120" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                <text x="130" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#3730a3">StorageClass</text>
+                <text x="130" y="95" text-anchor="middle" font-size="10" fill="#4338ca">standard</text>
+                <rect x="65" y="105" width="130" height="55" rx="4" fill="white"/>
+                <text x="130" y="123" text-anchor="middle" font-size="9" fill="#4338ca">provisioner: k8s.io/</text>
+                <text x="130" y="137" text-anchor="middle" font-size="9" fill="#4338ca">minikube-hostpath</text>
+                <text x="130" y="152" text-anchor="middle" font-size="9" fill="#4338ca">type: pd-standard</text>
+
+                <!-- Arrow 1 -->
+                <line x1="210" y1="110" x2="260" y2="110" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-sc)"/>
+                <text x="235" y="100" text-anchor="middle" font-size="9" fill="#22c55e" font-weight="bold">Provisions</text>
+
+                <!-- PV -->
+                <rect x="270" y="50" width="160" height="120" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="350" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">PersistentVolume</text>
+                <text x="350" y="95" text-anchor="middle" font-size="10" fill="#14532d">pv-example</text>
+                <rect x="285" y="105" width="130" height="55" rx="4" fill="white"/>
+                <text x="350" y="123" text-anchor="middle" font-size="9" fill="#14532d">capacity: 5Gi</text>
+                <text x="350" y="137" text-anchor="middle" font-size="9" fill="#14532d">accessModes: RWO</text>
+                <text x="350" y="152" text-anchor="middle" font-size="9" fill="#14532d">storageClass: standard</text>
+
+                <!-- Arrow 2 -->
+                <line x1="430" y1="110" x2="480" y2="110" stroke="#3b82f6" stroke-width="3" marker-end="url(#arrow-pvc)"/>
+                <text x="455" y="100" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="bold">Binds To</text>
+
+                <!-- PVC -->
+                <rect x="490" y="50" width="160" height="120" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="570" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">PersistentVolumeClaim</text>
+                <text x="570" y="95" text-anchor="middle" font-size="10" fill="#1e3a8a">pvc-example</text>
+                <rect x="505" y="105" width="130" height="55" rx="4" fill="white"/>
+                <text x="570" y="123" text-anchor="middle" font-size="9" fill="#1e3a8a">requests: 5Gi</text>
+                <text x="570" y="137" text-anchor="middle" font-size="9" fill="#1e3a8a">accessModes: RWO</text>
+                <text x="570" y="152" text-anchor="middle" font-size="9" fill="#1e3a8a">storageClass: standard</text>
+
+                <!-- Arrow 3 -->
+                <line x1="650" y1="110" x2="700" y2="110" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-pod)"/>
+                <text x="675" y="100" text-anchor="middle" font-size="9" fill="#f59e0b" font-weight="bold">Mounts</text>
+
+                <!-- Pod -->
+                <rect x="710" y="50" width="160" height="120" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="790" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Pod</text>
+                <text x="790" y="95" text-anchor="middle" font-size="10" fill="#78350f">my-app-pod</text>
+                <rect x="725" y="105" width="130" height="55" rx="4" fill="white"/>
+                <text x="790" y="123" text-anchor="middle" font-size="9" fill="#78350f">volumes:</text>
+                <text x="790" y="137" text-anchor="middle" font-size="9" fill="#78350f">  - pvc: pvc-example</text>
+                <text x="790" y="152" text-anchor="middle" font-size="9" fill="#78350f">mountPath: /data</text>
+
+                <!-- Flow Description -->
+                <rect x="50" y="190" width="820" height="70" rx="6" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+                <text x="460" y="215" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">Storage Provisioning Flow</text>
+                <text x="460" y="235" text-anchor="middle" font-size="10" fill="#075985">1. Admin creates StorageClass (or uses default)</text>
+                <text x="460" y="250" text-anchor="middle" font-size="10" fill="#075985">2. User creates PVC → StorageClass dynamically provisions PV → PVC binds to PV</text>
+                <text x="460" y="265" text-anchor="middle" font-size="10" fill="#075985">3. Pod references PVC → Kubernetes mounts volume at specified path</text>
+
+                <defs>
+                    <marker id="arrow-sc" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#22c55e"/>
+                    </marker>
+                    <marker id="arrow-pvc" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/>
+                    </marker>
+                    <marker id="arrow-pod" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#f59e0b"/>
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+
         <div class="decision-tree">
             <h2>🎯 Decision Tree: Which Volume Type to Use?</h2>
             <div class="decision-item">

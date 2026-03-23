@@ -128,7 +128,113 @@
     </section>
 
     <section class="panel">
-      <h2 class="section-title">Reference Architecture Stack</h2>
+      <h2 class="section-title">Installation Flow Architecture</h2>
+      <p class="section-copy">Visual diagram showing the complete Helm installation and access flow.</p>
+
+      <svg viewBox="0 0 1200 600" style="width: 100%; height: auto; margin-bottom: 24px;">
+        <defs>
+          <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+            <polygon points="0 0, 10 3, 0 6" fill="#1d4ed8" />
+          </marker>
+        </defs>
+
+        <!-- Admin Workstation -->
+        <g transform="translate(50, 50)">
+          <rect width="200" height="120" rx="12" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2"/>
+          <text x="100" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">Admin Workstation</text>
+          <image x="75" y="35" width="50" height="50" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231d4ed8'%3E%3Cpath d='M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z'/%3E%3C/svg%3E"/>
+          <text x="100" y="105" text-anchor="middle" font-size="11" fill="#475569">kubectl + helm</text>
+        </g>
+
+        <!-- Arrow 1 -->
+        <path d="M 250 110 L 330 110" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrow-blue)"/>
+        <text x="280" y="100" font-size="10" fill="#1d4ed8">helm repo add</text>
+
+        <!-- Helm Repository -->
+        <g transform="translate(330, 50)">
+          <rect width="200" height="120" rx="12" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2"/>
+          <text x="100" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">Helm Repository</text>
+          <circle cx="100" cy="70" r="30" fill="#fff" stroke="#1d4ed8" stroke-width="2"/>
+          <text x="100" y="78" text-anchor="middle" font-size="16" fill="#1d4ed8">⎈</text>
+          <text x="100" y="105" text-anchor="middle" font-size="11" fill="#475569">Headlamp Chart</text>
+        </g>
+
+        <!-- Arrow 2 -->
+        <path d="M 430 170 L 430 230" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrow-blue)"/>
+        <text x="445" y="205" font-size="10" fill="#1d4ed8">helm install</text>
+
+        <!-- Kubernetes Cluster -->
+        <g transform="translate(180, 230)">
+          <rect width="700" height="320" rx="12" fill="#f8fbff" stroke="#326CE5" stroke-width="3"/>
+          <text x="350" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#326CE5">Kubernetes Cluster (kube-system)</text>
+
+          <!-- API Server -->
+          <g transform="translate(280, 50)">
+            <rect width="140" height="60" rx="8" fill="#1d4ed8"/>
+            <text x="70" y="25" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">API Server</text>
+            <text x="70" y="45" text-anchor="middle" font-size="10" fill="#dbeafe">Port 6443</text>
+          </g>
+
+          <!-- Headlamp Deployment -->
+          <g transform="translate(50, 140)">
+            <rect width="270" height="140" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+            <text x="135" y="20" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Headlamp Deployment</text>
+
+            <!-- Pod 1 -->
+            <rect x="20" y="35" width="80" height="50" rx="6" fill="#fff" stroke="#326CE5" stroke-width="2"/>
+            <text x="60" y="55" text-anchor="middle" font-size="11" fill="#1d4ed8">Pod 1</text>
+            <text x="60" y="70" text-anchor="middle" font-size="9" fill="#64748b">Running</text>
+
+            <!-- Pod 2 -->
+            <rect x="110" y="35" width="80" height="50" rx="6" fill="#fff" stroke="#326CE5" stroke-width="2"/>
+            <text x="150" y="55" text-anchor="middle" font-size="11" fill="#1d4ed8">Pod 2</text>
+            <text x="150" y="70" text-anchor="middle" font-size="9" fill="#64748b">Running</text>
+
+            <!-- Service -->
+            <rect x="50" y="100" width="170" height="30" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+            <text x="135" y="120" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">Service: headlamp</text>
+          </g>
+
+          <!-- ServiceAccount -->
+          <g transform="translate(380, 140)">
+            <rect width="270" height="140" rx="8" fill="#ffe4e6" stroke="#be123c" stroke-width="2"/>
+            <text x="135" y="20" text-anchor="middle" font-size="13" font-weight="bold" fill="#be123c">Authentication</text>
+
+            <rect x="30" y="35" width="210" height="35" rx="6" fill="#fff" stroke="#be123c" stroke-width="1"/>
+            <text x="135" y="58" text-anchor="middle" font-size="11" fill="#be123c">ServiceAccount: headlamp-admin</text>
+
+            <rect x="30" y="80" width="210" height="35" rx="6" fill="#fff" stroke="#be123c" stroke-width="1"/>
+            <text x="135" y="103" text-anchor="middle" font-size="11" fill="#be123c">ClusterRoleBinding → cluster-admin</text>
+          </g>
+
+          <!-- Arrow from Service to API Server -->
+          <path d="M 185 265 L 350 140" stroke="#326CE5" stroke-width="1" stroke-dasharray="5,5"/>
+          <text x="250" y="195" font-size="9" fill="#64748b">Reads K8s API</text>
+        </g>
+
+        <!-- Port-forward -->
+        <g transform="translate(920, 350)">
+          <rect width="240" height="80" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+          <text x="120" y="25" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">kubectl port-forward</text>
+          <text x="120" y="45" text-anchor="middle" font-size="10" fill="#64748b">service/headlamp</text>
+          <text x="120" y="65" text-anchor="middle" font-size="10" fill="#64748b">8080:80</text>
+        </g>
+
+        <!-- Arrow from Service to port-forward -->
+        <path d="M 495 400 L 920 400" stroke="#d97706" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+        <!-- Browser -->
+        <g transform="translate(920, 470)">
+          <rect width="240" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+          <image x="85" y="10" width="70" height="40" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2316a34a'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E"/>
+          <text x="120" y="70" text-anchor="middle" font-size="11" fill="#166534">http://localhost:8080</text>
+        </g>
+
+        <!-- Arrow from port-forward to browser -->
+        <path d="M 1040 430 L 1040 470" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-blue)"/>
+      </svg>
+
+      <h2 class="section-title" style="margin-top: 30px;">Reference Architecture Stack</h2>
       <p class="section-copy">The install path is simple, but it still helps to show the layers clearly so the relationship between Headlamp, Kubernetes authentication, and RBAC is easy to follow.</p>
       <div class="stack-grid">
         <div class="stack-card"><h3>1. Admin Workstation</h3><p>The operator uses `kubectl` and `helm` from the control plane VM or a separate admin machine.</p><ul><li>kubectl configured</li><li>helm available</li><li>cluster-admin for setup</li></ul><div class="stack-arrow">></div></div>

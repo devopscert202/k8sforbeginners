@@ -284,11 +284,55 @@
             color: #64748b;
         }
 
+        .toggle-btn {
+            border: 2px solid #326CE5;
+            background: white;
+            color: #1d4ed8;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 5px;
+        }
+        .toggle-btn:hover,
+        .toggle-btn.active {
+            background: #326CE5;
+            color: white;
+            box-shadow: 0 4px 12px rgba(50,108,229,0.3);
+            transform: translateY(-2px);
+        }
+        .comparison-view {
+            display: none;
+        }
+        .comparison-view.active {
+            display: block;
+        }
+        .highlight-deployment {
+            transition: opacity 0.3s ease;
+        }
+        .highlight-stateful {
+            transition: opacity 0.3s ease;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .highlight-deployment.pulse,
+        .highlight-stateful.pulse {
+            animation: pulse 2s infinite;
+        }
         @media (max-width: 768px) {
             .visual-section,
             .yaml-section,
             .use-case-grid {
                 grid-template-columns: 1fr;
+            }
+            .toggle-btn {
+                display: block;
+                margin: 5px auto;
+                width: 90%;
             }
         }
 
@@ -360,6 +404,308 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Interactive Toggle -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: inline-block;">
+                <h3 style="margin-bottom: 15px; color: #1e293b;">Interactive Comparison</h3>
+                <button class="toggle-btn active" data-type="deployment">View Deployment</button>
+                <button class="toggle-btn" data-type="statefulset">View StatefulSet</button>
+                <button class="toggle-btn" data-type="both">Compare Both</button>
+            </div>
+        </div>
+
+        <!-- Side-by-side SVG Comparison -->
+        <div id="svg-comparison" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px;">
+            <h2 style="text-align: center; color: #1e293b; margin-bottom: 25px; font-size: 1.5rem;">Scaling & Pod Creation Flow</h2>
+
+            <div class="comparison-view active" id="deployment-view">
+                <svg viewBox="0 0 900 450" style="width: 100%; max-width: 900px; margin: 0 auto; display: block;">
+                    <defs>
+                        <marker id="arrowdeployment" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <path d="M0,0 L0,6 L9,3 z" fill="#2563eb" />
+                        </marker>
+                        <filter id="shadow">
+                            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+                        </filter>
+                    </defs>
+
+                    <text x="450" y="30" text-anchor="middle" font-size="24" font-weight="700" fill="#2563eb">Deployment: Parallel Scaling</text>
+
+                    <!-- Deployment Controller -->
+                    <rect x="350" y="60" width="200" height="60" rx="8" fill="#2563eb" filter="url(#shadow)"/>
+                    <text x="450" y="88" text-anchor="middle" fill="white" font-size="16" font-weight="700">Deployment</text>
+                    <text x="450" y="105" text-anchor="middle" fill="#dbeafe" font-size="12">replicas: 3</text>
+
+                    <!-- Parallel arrows -->
+                    <line x1="350" y1="150" x2="150" y2="250" stroke="#2563eb" stroke-width="3" marker-end="url(#arrowdeployment)"/>
+                    <line x1="450" y1="150" x2="450" y2="230" stroke="#2563eb" stroke-width="3" marker-end="url(#arrowdeployment)"/>
+                    <line x1="550" y1="150" x2="750" y2="250" stroke="#2563eb" stroke-width="3" marker-end="url(#arrowdeployment)"/>
+
+                    <text x="450" y="180" text-anchor="middle" fill="#2563eb" font-size="14" font-weight="700">Creates ALL pods in parallel ⚡</text>
+
+                    <!-- Pods with random names -->
+                    <g class="highlight-deployment">
+                        <rect x="50" y="250" width="200" height="70" rx="8" fill="#60a5fa" filter="url(#shadow)"/>
+                        <text x="150" y="275" text-anchor="middle" fill="white" font-size="13" font-weight="700">nginx-7d4c9b8f-xk2jm</text>
+                        <text x="150" y="295" text-anchor="middle" fill="#dbeafe" font-size="11">Random name</text>
+                        <text x="150" y="310" text-anchor="middle" fill="#dbeafe" font-size="11">No stable identity</text>
+                    </g>
+
+                    <g class="highlight-deployment">
+                        <rect x="350" y="250" width="200" height="70" rx="8" fill="#60a5fa" filter="url(#shadow)"/>
+                        <text x="450" y="275" text-anchor="middle" fill="white" font-size="13" font-weight="700">nginx-7d4c9b8f-9t5kl</text>
+                        <text x="450" y="295" text-anchor="middle" fill="#dbeafe" font-size="11">Random name</text>
+                        <text x="450" y="310" text-anchor="middle" fill="#dbeafe" font-size="11">No stable identity</text>
+                    </g>
+
+                    <g class="highlight-deployment">
+                        <rect x="650" y="250" width="200" height="70" rx="8" fill="#60a5fa" filter="url(#shadow)"/>
+                        <text x="750" y="275" text-anchor="middle" fill="white" font-size="13" font-weight="700">nginx-7d4c9b8f-hs8wp</text>
+                        <text x="750" y="295" text-anchor="middle" fill="#dbeafe" font-size="11">Random name</text>
+                        <text x="750" y="310" text-anchor="middle" fill="#dbeafe" font-size="11">No stable identity</text>
+                    </g>
+
+                    <!-- Storage visualization -->
+                    <text x="450" y="360" text-anchor="middle" fill="#64748b" font-size="14" font-weight="700">Storage: Shared or Ephemeral</text>
+                    <rect x="300" y="375" width="300" height="50" rx="8" fill="#cbd5e1" opacity="0.5" stroke="#64748b" stroke-width="2" stroke-dasharray="5"/>
+                    <text x="450" y="405" text-anchor="middle" fill="#475569" font-size="12">No persistent per-pod storage</text>
+                </svg>
+            </div>
+
+            <div class="comparison-view" id="statefulset-view">
+                <svg viewBox="0 0 900 550" style="width: 100%; max-width: 900px; margin: 0 auto; display: block;">
+                    <defs>
+                        <marker id="arrowstateful" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <path d="M0,0 L0,6 L9,3 z" fill="#ec4899" />
+                        </marker>
+                    </defs>
+
+                    <text x="450" y="30" text-anchor="middle" font-size="24" font-weight="700" fill="#ec4899">StatefulSet: Sequential Scaling</text>
+
+                    <!-- StatefulSet Controller -->
+                    <rect x="350" y="60" width="200" height="60" rx="8" fill="#ec4899" filter="url(#shadow)"/>
+                    <text x="450" y="88" text-anchor="middle" fill="white" font-size="16" font-weight="700">StatefulSet</text>
+                    <text x="450" y="105" text-anchor="middle" fill="#fdf2f8" font-size="12">replicas: 3</text>
+
+                    <!-- Sequential arrows with numbers -->
+                    <g>
+                        <circle cx="250" cy="155" r="15" fill="#f59e0b" filter="url(#shadow)"/>
+                        <text x="250" y="162" text-anchor="middle" fill="white" font-size="14" font-weight="700">1</text>
+                        <line x1="450" y1="120" x2="450" y2="170" stroke="#ec4899" stroke-width="3" marker-end="url(#arrowstateful)"/>
+                    </g>
+
+                    <g>
+                        <circle cx="250" cy="285" r="15" fill="#f59e0b" filter="url(#shadow)"/>
+                        <text x="250" y="292" text-anchor="middle" fill="white" font-size="14" font-weight="700">2</text>
+                        <line x1="450" y1="250" x2="450" y2="300" stroke="#ec4899" stroke-width="3" marker-end="url(#arrowstateful)"/>
+                    </g>
+
+                    <g>
+                        <circle cx="250" cy="415" r="15" fill="#f59e0b" filter="url(#shadow)"/>
+                        <text x="250" y="422" text-anchor="middle" fill="white" font-size="14" font-weight="700">3</text>
+                        <line x1="450" y1="380" x2="450" y2="430" stroke="#ec4899" stroke-width="3" marker-end="url(#arrowstateful)"/>
+                    </g>
+
+                    <text x="150" y="270" text-anchor="middle" fill="#ec4899" font-size="14" font-weight="700">Creates pods</text>
+                    <text x="150" y="290" text-anchor="middle" fill="#ec4899" font-size="14" font-weight="700">ONE AT A TIME</text>
+
+                    <!-- Pods with ordered names -->
+                    <g class="highlight-stateful">
+                        <rect x="350" y="180" width="200" height="60" rx="8" fill="#f472b6" filter="url(#shadow)"/>
+                        <text x="450" y="205" text-anchor="middle" fill="white" font-size="15" font-weight="700">mysql-0</text>
+                        <text x="450" y="225" text-anchor="middle" fill="#fdf2f8" font-size="11">Stable identity</text>
+                    </g>
+
+                    <!-- PVC for pod 0 -->
+                    <rect x="650" y="185" width="120" height="50" rx="6" fill="#22c55e" opacity="0.8" filter="url(#shadow)"/>
+                    <text x="710" y="210" text-anchor="middle" fill="white" font-size="12" font-weight="700">PVC: data-mysql-0</text>
+                    <line x1="550" y1="210" x2="645" y2="210" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowstateful)"/>
+
+                    <g class="highlight-stateful">
+                        <rect x="350" y="310" width="200" height="60" rx="8" fill="#f472b6" filter="url(#shadow)"/>
+                        <text x="450" y="335" text-anchor="middle" fill="white" font-size="15" font-weight="700">mysql-1</text>
+                        <text x="450" y="355" text-anchor="middle" fill="#fdf2f8" font-size="11">Stable identity</text>
+                    </g>
+
+                    <!-- PVC for pod 1 -->
+                    <rect x="650" y="315" width="120" height="50" rx="6" fill="#22c55e" opacity="0.8" filter="url(#shadow)"/>
+                    <text x="710" y="340" text-anchor="middle" fill="white" font-size="12" font-weight="700">PVC: data-mysql-1</text>
+                    <line x1="550" y1="340" x2="645" y2="340" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowstateful)"/>
+
+                    <g class="highlight-stateful">
+                        <rect x="350" y="440" width="200" height="60" rx="8" fill="#f472b6" filter="url(#shadow)"/>
+                        <text x="450" y="465" text-anchor="middle" fill="white" font-size="15" font-weight="700">mysql-2</text>
+                        <text x="450" y="485" text-anchor="middle" fill="#fdf2f8" font-size="11">Stable identity</text>
+                    </g>
+
+                    <!-- PVC for pod 2 -->
+                    <rect x="650" y="445" width="120" height="50" rx="6" fill="#22c55e" opacity="0.8" filter="url(#shadow)"/>
+                    <text x="710" y="470" text-anchor="middle" fill="white" font-size="12" font-weight="700">PVC: data-mysql-2</text>
+                    <line x1="550" y1="470" x2="645" y2="470" stroke="#22c55e" stroke-width="2" marker-end="url(#arrowstateful)"/>
+                </svg>
+            </div>
+
+            <div class="comparison-view" id="both-view">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div style="border: 3px solid #2563eb; border-radius: 12px; padding: 20px;">
+                        <h3 style="text-align: center; color: #2563eb; margin-bottom: 15px;">Deployment</h3>
+                        <svg viewBox="0 0 400 350" style="width: 100%;">
+                            <text x="200" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#2563eb">Parallel Creation</text>
+
+                            <rect x="150" y="50" width="100" height="40" rx="6" fill="#2563eb" filter="url(#shadow)"/>
+                            <text x="200" y="75" text-anchor="middle" fill="white" font-size="13" font-weight="700">Deployment</text>
+
+                            <!-- All pods created at once -->
+                            <line x1="170" y1="90" x2="100" y2="140" stroke="#2563eb" stroke-width="2"/>
+                            <line x1="200" y1="90" x2="200" y2="140" stroke="#2563eb" stroke-width="2"/>
+                            <line x1="230" y1="90" x2="300" y2="140" stroke="#2563eb" stroke-width="2"/>
+
+                            <g class="highlight-deployment">
+                                <rect x="50" y="150" width="100" height="45" rx="6" fill="#60a5fa" filter="url(#shadow)"/>
+                                <text x="100" y="170" text-anchor="middle" fill="white" font-size="11" font-weight="700">nginx-a1b2c</text>
+                                <text x="100" y="185" text-anchor="middle" fill="#dbeafe" font-size="9">Random</text>
+                            </g>
+
+                            <g class="highlight-deployment">
+                                <rect x="170" y="150" width="100" height="45" rx="6" fill="#60a5fa" filter="url(#shadow)"/>
+                                <text x="220" y="170" text-anchor="middle" fill="white" font-size="11" font-weight="700">nginx-x9y8z</text>
+                                <text x="220" y="185" text-anchor="middle" fill="#dbeafe" font-size="9">Random</text>
+                            </g>
+
+                            <g class="highlight-deployment">
+                                <rect x="290" y="150" width="100" height="45" rx="6" fill="#60a5fa" filter="url(#shadow)"/>
+                                <text x="340" y="170" text-anchor="middle" fill="white" font-size="11" font-weight="700">nginx-m5n6p</text>
+                                <text x="340" y="185" text-anchor="middle" fill="#dbeafe" font-size="9">Random</text>
+                            </g>
+
+                            <!-- Storage -->
+                            <rect x="100" y="230" width="200" height="40" rx="6" fill="#cbd5e1" opacity="0.5" stroke="#64748b" stroke-width="2" stroke-dasharray="4"/>
+                            <text x="200" y="255" text-anchor="middle" fill="#475569" font-size="11">Shared/Ephemeral Storage</text>
+
+                            <!-- Key points -->
+                            <text x="20" y="300" fill="#64748b" font-size="10">✓ Fast parallel scaling</text>
+                            <text x="20" y="315" fill="#64748b" font-size="10">✓ No pod identity</text>
+                            <text x="20" y="330" fill="#64748b" font-size="10">✓ Interchangeable pods</text>
+                        </svg>
+                    </div>
+
+                    <div style="border: 3px solid #ec4899; border-radius: 12px; padding: 20px;">
+                        <h3 style="text-align: center; color: #ec4899; margin-bottom: 15px;">StatefulSet</h3>
+                        <svg viewBox="0 0 400 350" style="width: 100%;">
+                            <text x="200" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#ec4899">Sequential Creation</text>
+
+                            <rect x="150" y="50" width="100" height="40" rx="6" fill="#ec4899" filter="url(#shadow)"/>
+                            <text x="200" y="75" text-anchor="middle" fill="white" font-size="13" font-weight="700">StatefulSet</text>
+
+                            <!-- Sequential pods -->
+                            <g class="highlight-stateful">
+                                <circle cx="30" cy="120" r="12" fill="#f59e0b" filter="url(#shadow)"/>
+                                <text x="30" y="125" text-anchor="middle" fill="white" font-size="11" font-weight="700">1</text>
+                                <rect x="70" y="105" width="80" height="35" rx="6" fill="#f472b6" filter="url(#shadow)"/>
+                                <text x="110" y="125" text-anchor="middle" fill="white" font-size="11" font-weight="700">mysql-0</text>
+                                <rect x="180" y="110" width="70" height="25" rx="4" fill="#22c55e" opacity="0.8"/>
+                                <text x="215" y="126" text-anchor="middle" fill="white" font-size="9" font-weight="700">PVC-0</text>
+                            </g>
+
+                            <g class="highlight-stateful">
+                                <circle cx="30" cy="175" r="12" fill="#f59e0b" filter="url(#shadow)"/>
+                                <text x="30" y="180" text-anchor="middle" fill="white" font-size="11" font-weight="700">2</text>
+                                <rect x="70" y="160" width="80" height="35" rx="6" fill="#f472b6" filter="url(#shadow)"/>
+                                <text x="110" y="180" text-anchor="middle" fill="white" font-size="11" font-weight="700">mysql-1</text>
+                                <rect x="180" y="165" width="70" height="25" rx="4" fill="#22c55e" opacity="0.8"/>
+                                <text x="215" y="181" text-anchor="middle" fill="white" font-size="9" font-weight="700">PVC-1</text>
+                            </g>
+
+                            <g class="highlight-stateful">
+                                <circle cx="30" cy="230" r="12" fill="#f59e0b" filter="url(#shadow)"/>
+                                <text x="30" y="235" text-anchor="middle" fill="white" font-size="11" font-weight="700">3</text>
+                                <rect x="70" y="215" width="80" height="35" rx="6" fill="#f472b6" filter="url(#shadow)"/>
+                                <text x="110" y="235" text-anchor="middle" fill="white" font-size="11" font-weight="700">mysql-2</text>
+                                <rect x="180" y="220" width="70" height="25" rx="4" fill="#22c55e" opacity="0.8"/>
+                                <text x="215" y="236" text-anchor="middle" fill="white" font-size="9" font-weight="700">PVC-2</text>
+                            </g>
+
+                            <!-- Headless Service -->
+                            <rect x="50" y="270" width="200" height="35" rx="6" fill="#8b5cf6" opacity="0.7" filter="url(#shadow)"/>
+                            <text x="150" y="292" text-anchor="middle" fill="white" font-size="11" font-weight="700">Headless Service (mysql)</text>
+
+                            <!-- Key points -->
+                            <text x="20" y="320" fill="#64748b" font-size="10">✓ Ordered scaling</text>
+                            <text x="20" y="335" fill="#64748b" font-size="10">✓ Stable pod identity</text>
+                            <text x="20" y="350" fill="#64748b" font-size="10">✓ Persistent per-pod storage</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Identity Diagram -->
+        <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px;">
+            <h2 style="text-align: center; color: #1e293b; margin-bottom: 25px; font-size: 1.5rem;">Network Identity Comparison</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h3 style="text-align: center; color: #2563eb; margin-bottom: 15px;">Deployment (ClusterIP Service)</h3>
+                    <svg viewBox="0 0 400 250" style="width: 100%;">
+                        <rect x="100" y="30" width="200" height="50" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+                        <text x="200" y="58" text-anchor="middle" fill="white" font-size="14" font-weight="700">Service: nginx-service</text>
+
+                        <line x1="150" y1="80" x2="100" y2="130" stroke="#3b82f6" stroke-width="2"/>
+                        <line x1="200" y1="80" x2="200" y2="130" stroke="#3b82f6" stroke-width="2"/>
+                        <line x1="250" y1="80" x2="300" y2="130" stroke="#3b82f6" stroke-width="2"/>
+
+                        <rect x="50" y="140" width="100" height="40" rx="6" fill="#60a5fa" opacity="0.8" filter="url(#shadow)"/>
+                        <text x="100" y="165" text-anchor="middle" fill="white" font-size="11">Pod 1</text>
+
+                        <rect x="170" y="140" width="100" height="40" rx="6" fill="#60a5fa" opacity="0.8" filter="url(#shadow)"/>
+                        <text x="220" y="165" text-anchor="middle" fill="white" font-size="11">Pod 2</text>
+
+                        <rect x="290" y="140" width="100" height="40" rx="6" fill="#60a5fa" opacity="0.8" filter="url(#shadow)"/>
+                        <text x="340" y="165" text-anchor="middle" fill="white" font-size="11">Pod 3</text>
+
+                        <text x="200" y="210" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">Load-balanced across all pods</text>
+                        <text x="200" y="230" text-anchor="middle" fill="#64748b" font-size="10">No individual pod addressing</text>
+                    </svg>
+                </div>
+
+                <div>
+                    <h3 style="text-align: center; color: #ec4899; margin-bottom: 15px;">StatefulSet (Headless Service)</h3>
+                    <svg viewBox="0 0 400 250" style="width: 100%;">
+                        <rect x="50" y="30" width="300" height="50" rx="8" fill="#8b5cf6" filter="url(#shadow)"/>
+                        <text x="200" y="58" text-anchor="middle" fill="white" font-size="14" font-weight="700">Headless Service: mysql (clusterIP: None)</text>
+
+                        <g>
+                            <rect x="50" y="120" width="100" height="40" rx="6" fill="#f472b6" opacity="0.8" filter="url(#shadow)"/>
+                            <text x="100" y="145" text-anchor="middle" fill="white" font-size="11" font-weight="700">mysql-0</text>
+                            <text x="100" y="180" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">mysql-0.mysql</text>
+                            <text x="100" y="195" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">.default.svc</text>
+                        </g>
+
+                        <g>
+                            <rect x="170" y="120" width="100" height="40" rx="6" fill="#f472b6" opacity="0.8" filter="url(#shadow)"/>
+                            <text x="220" y="145" text-anchor="middle" fill="white" font-size="11" font-weight="700">mysql-1</text>
+                            <text x="220" y="180" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">mysql-1.mysql</text>
+                            <text x="220" y="195" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">.default.svc</text>
+                        </g>
+
+                        <g>
+                            <rect x="290" y="120" width="100" height="40" rx="6" fill="#f472b6" opacity="0.8" filter="url(#shadow)"/>
+                            <text x="340" y="145" text-anchor="middle" fill="white" font-size="11" font-weight="700">mysql-2</text>
+                            <text x="340" y="180" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">mysql-2.mysql</text>
+                            <text x="340" y="195" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">.default.svc</text>
+                        </g>
+
+                        <line x1="100" y1="85" x2="100" y2="115" stroke="#8b5cf6" stroke-width="2"/>
+                        <line x1="220" y1="85" x2="220" y2="115" stroke="#8b5cf6" stroke-width="2"/>
+                        <line x1="340" y1="85" x2="340" y2="115" stroke="#8b5cf6" stroke-width="2"/>
+
+                        <text x="200" y="225" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">Each pod has stable DNS name</text>
+                        <text x="200" y="242" text-anchor="middle" fill="#64748b" font-size="10">Direct pod addressing possible</text>
+                    </svg>
+                </div>
+            </div>
         </div>
 
         <!-- Visual Pod Naming Patterns -->
@@ -548,5 +894,36 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Toggle between views
+        const toggleButtons = document.querySelectorAll('.toggle-btn');
+        const comparisonViews = document.querySelectorAll('.comparison-view');
+
+        toggleButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const type = button.dataset.type;
+
+                toggleButtons.forEach((btn) => btn.classList.remove('active'));
+                comparisonViews.forEach((view) => view.classList.remove('active'));
+
+                button.classList.add('active');
+                document.getElementById(type + '-view').classList.add('active');
+
+                // Add pulse animation to highlight differences
+                if (type === 'deployment') {
+                    document.querySelectorAll('.highlight-deployment').forEach((el) => {
+                        el.classList.add('pulse');
+                        setTimeout(() => el.classList.remove('pulse'), 4000);
+                    });
+                } else if (type === 'statefulset') {
+                    document.querySelectorAll('.highlight-stateful').forEach((el) => {
+                        el.classList.add('pulse');
+                        setTimeout(() => el.classList.remove('pulse'), 4000);
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

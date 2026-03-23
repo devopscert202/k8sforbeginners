@@ -271,6 +271,12 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        .diagram-view {
+            display: none;
+        }
+        .diagram-view.active {
+            display: block;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
@@ -292,6 +298,7 @@
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
             <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="diagrams">Diagrams</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
             <button class="btn" data-view="practice">Practice</button>
@@ -352,6 +359,174 @@
 </div>
 
             <div class="section-note">A strong mental model starts with Pods, but daily operations usually happen through controllers and supporting abstractions.</div>
+        </section>
+
+        <section id="diagrams" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Diagrams</div>
+                    <h2>Workload Decision Tree & Controller Hierarchy</h2>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Workload Type Decision Tree</h3>
+            <svg viewBox="0 0 1000 600" style="width: 100%; max-width: 1000px; height: auto; margin-bottom: 40px;">
+                <defs>
+                    <marker id="arrow-wl" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                    </marker>
+                </defs>
+
+                <!-- Start -->
+                <rect x="400" y="30" width="200" height="60" rx="8" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
+                <text x="500" y="55" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Choose Workload</text>
+                <text x="500" y="75" text-anchor="middle" fill="white" font-size="12">Type</text>
+
+                <!-- Question 1 -->
+                <line x1="500" y1="90" x2="500" y2="140" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-wl)"/>
+
+                <rect x="350" y="140" width="300" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="500" y="170" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="13">Does it need to finish?</text>
+
+                <!-- Yes branch -->
+                <line x1="350" y1="170" x2="220" y2="220" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="280" y="190" text-anchor="middle" fill="#22c55e" font-weight="bold" font-size="12">Yes</text>
+
+                <rect x="80" y="220" width="280" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="220" y="250" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="13">Scheduled or one-time?</text>
+
+                <!-- Job -->
+                <line x1="150" y1="270" x2="150" y2="320" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="110" y="300" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="11">One-time</text>
+
+                <rect x="50" y="320" width="200" height="80" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="3"/>
+                <text x="150" y="350" text-anchor="middle" fill="white" font-weight="bold" font-size="15">Job</text>
+                <text x="150" y="370" text-anchor="middle" fill="white" font-size="11">Run to completion</text>
+                <text x="150" y="388" text-anchor="middle" fill="#dcfce7" font-size="10">Migrations, batch tasks</text>
+
+                <!-- CronJob -->
+                <line x1="290" y1="270" x2="290" y2="320" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="330" y="300" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="11">Scheduled</text>
+
+                <rect x="280" y="320" width="200" height="80" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="3"/>
+                <text x="380" y="350" text-anchor="middle" fill="white" font-weight="bold" font-size="15">CronJob</text>
+                <text x="380" y="370" text-anchor="middle" fill="white" font-size="11">Time-based execution</text>
+                <text x="380" y="388" text-anchor="middle" fill="#dcfce7" font-size="10">Backups, reports</text>
+
+                <!-- No branch - continuous -->
+                <line x1="650" y1="170" x2="780" y2="220" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="720" y="190" text-anchor="middle" fill="#ef4444" font-weight="bold" font-size="12">No (runs continuously)</text>
+
+                <rect x="640" y="220" width="280" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="780" y="250" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="13">One per node?</text>
+
+                <!-- DaemonSet -->
+                <line x1="920" y1="245" x2="970" y2="290" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="950" y="260" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="11">Yes</text>
+
+                <rect x="870" y="290" width="200" height="80" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="3"/>
+                <text x="970" y="320" text-anchor="middle" fill="white" font-weight="bold" font-size="15">DaemonSet</text>
+                <text x="970" y="340" text-anchor="middle" fill="white" font-size="11">One pod per node</text>
+                <text x="970" y="358" text-anchor="middle" fill="#e9d5ff" font-size="10">Logs, monitoring agents</text>
+
+                <!-- No - replicated -->
+                <line x1="780" y1="270" x2="780" y2="320" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="820" y="300" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="11">No</text>
+
+                <rect x="640" y="320" width="280" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="780" y="350" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="13">Needs stable identity?</text>
+
+                <!-- StatefulSet -->
+                <line x1="920" y1="345" x2="970" y2="390" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="950" y="365" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="11">Yes</text>
+
+                <rect x="870" y="390" width="200" height="80" rx="8" fill="#f59e0b" stroke="#d97706" stroke-width="3"/>
+                <text x="970" y="420" text-anchor="middle" fill="white" font-weight="bold" font-size="15">StatefulSet</text>
+                <text x="970" y="440" text-anchor="middle" fill="white" font-size="11">Ordered, stable pods</text>
+                <text x="970" y="458" text-anchor="middle" fill="#fef3c7" font-size="10">Databases, queues</text>
+
+                <!-- Deployment -->
+                <line x1="640" y1="345" x2="590" y2="390" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-wl)"/>
+                <text x="610" y="365" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="11">No</text>
+
+                <rect x="490" y="390" width="200" height="80" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="3"/>
+                <text x="590" y="420" text-anchor="middle" fill="white" font-weight="bold" font-size="15">Deployment</text>
+                <text x="590" y="440" text-anchor="middle" fill="white" font-size="11">Stateless replicas</text>
+                <text x="590" y="458" text-anchor="middle" fill="#dbeafe" font-size="10">Web apps, APIs</text>
+
+                <!-- Summary box -->
+                <rect x="200" y="520" width="600" height="60" rx="8" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                <text x="500" y="545" text-anchor="middle" fill="#1e3a8a" font-weight="bold" font-size="13">Decision Path: Completion → Scheduling → Distribution → Identity</text>
+                <text x="500" y="565" text-anchor="middle" fill="#475569" font-size="11">Each workload type optimizes for different operational characteristics</text>
+            </svg>
+
+            <h3 style="margin-bottom: 15px; margin-top: 30px; color: var(--kube-blue);">Controller Hierarchy: Deployment → ReplicaSet → Pod</h3>
+            <svg viewBox="0 0 900 450" style="width: 100%; max-width: 900px; height: auto;">
+                <defs>
+                    <marker id="arrow-ctrl" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                    </marker>
+                </defs>
+
+                <!-- Deployment -->
+                <rect x="300" y="50" width="300" height="100" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="3"/>
+                <text x="450" y="80" text-anchor="middle" fill="white" font-weight="bold" font-size="16">Deployment</text>
+                <text x="450" y="105" text-anchor="middle" fill="white" font-size="12">nginx-deployment</text>
+                <text x="450" y="127" text-anchor="middle" fill="#dbeafe" font-size="11">replicas: 3, strategy: RollingUpdate</text>
+                <title>Deployment manages ReplicaSets</title>
+
+                <!-- Arrows to ReplicaSets -->
+                <line x1="370" y1="150" x2="240" y2="200" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-ctrl)"/>
+                <text x="300" y="175" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="11">Manages</text>
+
+                <line x1="530" y1="150" x2="660" y2="200" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,5"/>
+                <text x="600" y="175" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="11">Old (scaling down)</text>
+
+                <!-- ReplicaSet (current) -->
+                <rect x="100" y="200" width="280" height="90" rx="8" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
+                <text x="240" y="230" text-anchor="middle" fill="white" font-weight="bold" font-size="15">ReplicaSet (current)</text>
+                <text x="240" y="252" text-anchor="middle" fill="white" font-size="11">nginx-deployment-abc123</text>
+                <text x="240" y="272" text-anchor="middle" fill="#dbeafe" font-size="10">desired: 3, current: 3, ready: 3</text>
+                <title>Active ReplicaSet managing current pods</title>
+
+                <!-- ReplicaSet (old) -->
+                <rect x="520" y="200" width="280" height="90" rx="8" fill="#cbd5e0" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,5"/>
+                <text x="660" y="230" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="15">ReplicaSet (old)</text>
+                <text x="660" y="252" text-anchor="middle" fill="#64748b" font-size="11">nginx-deployment-xyz789</text>
+                <text x="660" y="272" text-anchor="middle" fill="#94a3b8" font-size="10">desired: 0, current: 0, ready: 0</text>
+                <title>Previous ReplicaSet (rollback capability)</title>
+
+                <!-- Arrows to Pods -->
+                <line x1="180" y1="290" x2="150" y2="330" stroke="#6366f1" stroke-width="3" marker-end="url(#arrow-ctrl)"/>
+                <line x1="240" y1="290" x2="240" y2="330" stroke="#6366f1" stroke-width="3" marker-end="url(#arrow-ctrl)"/>
+                <line x1="300" y1="290" x2="330" y2="330" stroke="#6366f1" stroke-width="3" marker-end="url(#arrow-ctrl)"/>
+                <text x="240" y="315" text-anchor="middle" fill="#6366f1" font-weight="bold" font-size="11">Creates & Maintains</text>
+
+                <!-- Pods -->
+                <rect x="50" y="330" width="140" height="80" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="120" y="358" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Pod 1</text>
+                <text x="120" y="378" text-anchor="middle" fill="white" font-size="10">nginx-abc123-p1</text>
+                <text x="120" y="398" text-anchor="middle" fill="#dcfce7" font-size="9">Running on node-1</text>
+
+                <rect x="210" y="330" width="140" height="80" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="280" y="358" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Pod 2</text>
+                <text x="280" y="378" text-anchor="middle" fill="white" font-size="10">nginx-abc123-p2</text>
+                <text x="280" y="398" text-anchor="middle" fill="#dcfce7" font-size="9">Running on node-2</text>
+
+                <rect x="370" y="330" width="140" height="80" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="440" y="358" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Pod 3</text>
+                <text x="440" y="378" text-anchor="middle" fill="white" font-size="10">nginx-abc123-p3</text>
+                <text x="440" y="398" text-anchor="middle" fill="#dcfce7" font-size="9">Running on node-3</text>
+
+                <!-- Explanation boxes -->
+                <rect x="580" y="330" width="280" height="80" rx="8" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                <text x="720" y="355" text-anchor="middle" fill="#1e3a8a" font-weight="bold" font-size="12">3-Layer Abstraction</text>
+                <text x="720" y="375" text-anchor="middle" fill="#475569" font-size="10">Deployment: rollout strategy</text>
+                <text x="720" y="390" text-anchor="middle" fill="#475569" font-size="10">ReplicaSet: replica management</text>
+                <text x="720" y="405" text-anchor="middle" fill="#475569" font-size="10">Pod: actual workload execution</text>
+            </svg>
+
+            <div class="section-note" style="margin-top: 20px;">Understanding workload controllers helps you choose the right abstraction for your application's lifecycle requirements. Deployments are most common, but each controller type serves specific patterns.</div>
         </section>
 
         <section id="examples" class="view">
@@ -437,7 +612,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>

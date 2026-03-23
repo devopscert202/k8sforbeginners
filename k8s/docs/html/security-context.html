@@ -272,6 +272,51 @@
             }
         }
 
+        /* Interactive View Styles */
+        .view-button {
+            padding: 10px 18px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: #326CE5;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .view-button:hover {
+            background: #f0f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.2);
+        }
+
+        .view-button.active {
+            background: #326CE5;
+            color: white;
+            box-shadow: 0 4px 12px rgba(50, 108, 229, 0.3);
+        }
+
+        .interactive-view {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .interactive-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @media print {
             body {
                 background: white;
@@ -560,6 +605,217 @@
             </div>
         </div>
 
+        <!-- Interactive Diagram Section -->
+        <div class="diagram-container">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Interactive Security Context Views</h2>
+
+            <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center;">
+                <button class="view-button active" data-view="inheritance">Inheritance Model</button>
+                <button class="view-button" data-view="usergroup">User/Group IDs</button>
+                <button class="view-button" data-view="capabilities">Capabilities</button>
+            </div>
+
+            <!-- Inheritance Model View -->
+            <div id="inheritance-view" class="interactive-view active">
+                <svg viewBox="0 0 800 500" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
+                    <!-- Pod Security Context -->
+                    <rect x="50" y="30" width="700" height="120" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+                    <text x="400" y="60" text-anchor="middle" font-size="20" font-weight="bold" fill="#92400e">Pod securityContext</text>
+                    <text x="400" y="85" text-anchor="middle" font-size="14" fill="#78350f">spec.securityContext</text>
+
+                    <!-- Pod Settings -->
+                    <rect x="70" y="100" width="200" height="35" rx="4" fill="white" opacity="0.9"/>
+                    <text x="170" y="122" text-anchor="middle" font-size="12" fill="#78350f">runAsUser: 1000</text>
+
+                    <rect x="290" y="100" width="200" height="35" rx="4" fill="white" opacity="0.9"/>
+                    <text x="390" y="122" text-anchor="middle" font-size="12" fill="#78350f">runAsGroup: 3000</text>
+
+                    <rect x="510" y="100" width="220" height="35" rx="4" fill="white" opacity="0.9"/>
+                    <text x="620" y="122" text-anchor="middle" font-size="12" fill="#78350f">fsGroup: 2000</text>
+
+                    <!-- Arrow with label -->
+                    <line x1="400" y1="160" x2="400" y2="200" stroke="#6366f1" stroke-width="3" marker-end="url(#arrowhead)"/>
+                    <rect x="300" y="170" width="200" height="30" rx="15" fill="#6366f1"/>
+                    <text x="400" y="191" text-anchor="middle" font-size="13" font-weight="bold" fill="white">Container Overrides Apply</text>
+
+                    <!-- Container 1 -->
+                    <rect x="50" y="210" width="330" height="260" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="3"/>
+                    <text x="215" y="240" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e40af">Container: app</text>
+                    <text x="215" y="260" text-anchor="middle" font-size="12" fill="#1e3a8a">containers[0].securityContext</text>
+
+                    <!-- Container 1 Inherited -->
+                    <rect x="70" y="275" width="290" height="70" rx="4" fill="#bfdbfe" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4,4"/>
+                    <text x="215" y="292" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">✓ Inherited from Pod</text>
+                    <text x="215" y="310" text-anchor="middle" font-size="11" fill="#1e3a8a">runAsUser: 1000</text>
+                    <text x="215" y="326" text-anchor="middle" font-size="11" fill="#1e3a8a">runAsGroup: 3000</text>
+                    <text x="215" y="342" text-anchor="middle" font-size="11" fill="#1e3a8a">fsGroup: 2000</text>
+
+                    <!-- Container 1 Specific -->
+                    <rect x="70" y="355" width="290" height="100" rx="4" fill="white" stroke="#3b82f6" stroke-width="2"/>
+                    <text x="215" y="375" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">Container-Specific Settings</text>
+                    <text x="215" y="395" text-anchor="middle" font-size="11" fill="#1e3a8a">allowPrivilegeEscalation: false</text>
+                    <text x="215" y="413" text-anchor="middle" font-size="11" fill="#1e3a8a">readOnlyRootFilesystem: true</text>
+                    <text x="215" y="431" text-anchor="middle" font-size="11" fill="#1e3a8a">capabilities: drop [ALL]</text>
+                    <text x="215" y="449" text-anchor="middle" font-size="11" fill="#1e3a8a">add [NET_BIND_SERVICE]</text>
+
+                    <!-- Container 2 -->
+                    <rect x="420" y="210" width="330" height="260" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="3"/>
+                    <text x="585" y="240" text-anchor="middle" font-size="18" font-weight="bold" fill="#166534">Container: sidecar</text>
+                    <text x="585" y="260" text-anchor="middle" font-size="12" fill="#14532d">containers[1].securityContext</text>
+
+                    <!-- Container 2 Override Badge -->
+                    <rect x="470" y="270" width="230" height="25" rx="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="585" y="288" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">⚠ OVERRIDES POD DEFAULTS</text>
+
+                    <!-- Container 2 Overridden -->
+                    <rect x="440" y="305" width="290" height="70" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="585" y="322" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">✗ Overrides Pod Settings</text>
+                    <text x="585" y="340" text-anchor="middle" font-size="11" fill="#78350f">runAsUser: 2000 (was 1000)</text>
+                    <text x="585" y="358" text-anchor="middle" font-size="11" fill="#78350f">runAsGroup: 4000 (was 3000)</text>
+                    <text x="585" y="373" text-anchor="middle" font-size="10" fill="#78350f" font-style="italic">fsGroup still 2000 (Pod-only)</text>
+
+                    <!-- Container 2 Specific -->
+                    <rect x="440" y="385" width="290" height="70" rx="4" fill="white" stroke="#22c55e" stroke-width="2"/>
+                    <text x="585" y="405" text-anchor="middle" font-size="11" font-weight="bold" fill="#166534">Container-Specific Settings</text>
+                    <text x="585" y="425" text-anchor="middle" font-size="11" fill="#14532d">runAsNonRoot: true</text>
+                    <text x="585" y="443" text-anchor="middle" font-size="11" fill="#14532d">allowPrivilegeEscalation: false</text>
+
+                    <!-- Arrow marker definition -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#6366f1"/>
+                        </marker>
+                    </defs>
+                </svg>
+                <p style="text-align: center; color: #64748b; margin-top: 16px; font-size: 0.9rem;">
+                    <strong>Key Insight:</strong> Container settings always override Pod settings for the same field. Some settings (fsGroup, sysctls) are Pod-only; others (capabilities, privileged) are Container-only.
+                </p>
+            </div>
+
+            <!-- User/Group ID View -->
+            <div id="usergroup-view" class="interactive-view">
+                <svg viewBox="0 0 800 550" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
+                    <!-- Title -->
+                    <text x="400" y="30" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">User/Group ID Enforcement Flow</text>
+
+                    <!-- Pod Definition -->
+                    <rect x="50" y="60" width="300" height="140" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+                    <text x="200" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#0c4a6e">Pod Specification</text>
+                    <text x="200" y="110" text-anchor="middle" font-size="12" fill="#075985" font-family="monospace">spec.securityContext:</text>
+                    <text x="200" y="130" text-anchor="middle" font-size="12" fill="#075985" font-family="monospace">  runAsUser: 1000</text>
+                    <text x="200" y="148" text-anchor="middle" font-size="12" fill="#075985" font-family="monospace">  runAsGroup: 3000</text>
+                    <text x="200" y="166" text-anchor="middle" font-size="12" fill="#075985" font-family="monospace">  fsGroup: 2000</text>
+                    <text x="200" y="184" text-anchor="middle" font-size="12" fill="#075985" font-family="monospace">  supplementalGroups: [4000]</text>
+
+                    <!-- Arrow 1 -->
+                    <line x1="200" y1="210" x2="200" y2="250" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow2)"/>
+                    <text x="220" y="232" font-size="11" fill="#6366f1" font-weight="bold">Apply to Process</text>
+
+                    <!-- Process Identity -->
+                    <rect x="50" y="260" width="300" height="140" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                    <text x="200" y="285" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e40af">Running Process</text>
+                    <text x="200" y="310" text-anchor="middle" font-size="13" fill="#1e3a8a">$ id</text>
+                    <text x="200" y="330" text-anchor="middle" font-size="12" fill="#1e3a8a" font-family="monospace">uid=1000 gid=3000</text>
+                    <text x="200" y="348" text-anchor="middle" font-size="12" fill="#1e3a8a" font-family="monospace">groups=2000,3000,4000</text>
+                    <circle cx="120" cy="372" r="8" fill="#22c55e"/>
+                    <text x="135" y="377" font-size="11" fill="#166534">Process runs as UID 1000</text>
+                    <circle cx="120" cy="390" r="8" fill="#22c55e"/>
+                    <text x="135" y="395" font-size="11" fill="#166534">Member of GIDs 2000, 3000, 4000</text>
+
+                    <!-- Arrow 2 to Filesystem -->
+                    <line x1="350" y1="330" x2="430" y2="330" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow2)"/>
+                    <text x="390" y="320" text-anchor="middle" font-size="11" fill="#6366f1" font-weight="bold">Access Files</text>
+
+                    <!-- Volume Filesystem -->
+                    <rect x="440" y="250" width="310" height="160" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+                    <text x="595" y="275" text-anchor="middle" font-size="16" font-weight="bold" fill="#166534">Volume Filesystem</text>
+                    <text x="595" y="300" text-anchor="middle" font-size="13" fill="#14532d">$ ls -l /data</text>
+
+                    <rect x="460" y="310" width="270" height="90" rx="4" fill="white" stroke="#22c55e" stroke-width="1"/>
+                    <text x="595" y="330" text-anchor="middle" font-size="11" fill="#14532d" font-family="monospace">drwxrwsr-x 2 root 2000 4096 file1.txt</text>
+                    <text x="595" y="348" text-anchor="middle" font-size="11" fill="#14532d" font-family="monospace">-rw-rw-r-- 1 1000 2000  512 file2.txt</text>
+                    <text x="595" y="366" text-anchor="middle" font-size="11" fill="#14532d" font-family="monospace">-rw-rw-r-- 1 1000 3000 1024 file3.txt</text>
+                    <circle cx="480" cy="385" r="6" fill="#22c55e"/>
+                    <text x="492" y="389" font-size="10" fill="#166534">fsGroup: 2000 owns volumes</text>
+
+                    <!-- Explanation Box -->
+                    <rect x="50" y="430" width="700" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="400" y="455" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">How fsGroup Works</text>
+                    <text x="400" y="475" text-anchor="middle" font-size="12" fill="#78350f">1. Kubernetes sets volume ownership to fsGroup (2000)</text>
+                    <text x="400" y="493" text-anchor="middle" font-size="12" fill="#78350f">2. Process (UID 1000) is member of GID 2000, so it can read/write</text>
+                    <text x="400" y="511" text-anchor="middle" font-size="12" fill="#78350f">3. All containers in the Pod share the same fsGroup for volume access</text>
+
+                    <defs>
+                        <marker id="arrow2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                            <polygon points="0 0, 8 3, 0 6" fill="#6366f1"/>
+                        </marker>
+                    </defs>
+                </svg>
+                <p style="text-align: center; color: #64748b; margin-top: 16px; font-size: 0.9rem;">
+                    <strong>Validation:</strong> Use <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 3px;">kubectl exec pod-name -- id</code> to verify user/group IDs are applied correctly.
+                </p>
+            </div>
+
+            <!-- Capabilities View -->
+            <div id="capabilities-view" class="interactive-view">
+                <svg viewBox="0 0 800 600" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
+                    <!-- Title -->
+                    <text x="400" y="30" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">Linux Capabilities: Add vs Drop</text>
+
+                    <!-- Default Container Capabilities -->
+                    <rect x="50" y="60" width="320" height="220" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+                    <text x="210" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#0c4a6e">Default Container Capabilities</text>
+                    <text x="210" y="105" text-anchor="middle" font-size="11" fill="#075985">(No securityContext specified)</text>
+
+                    <rect x="70" y="120" width="280" height="145" rx="4" fill="white" stroke="#0284c7" stroke-width="1"/>
+                    <text x="210" y="140" text-anchor="middle" font-size="12" font-family="monospace" fill="#0c4a6e">CAP_CHOWN</text>
+                    <text x="210" y="158" text-anchor="middle" font-size="12" font-family="monospace" fill="#0c4a6e">CAP_DAC_OVERRIDE</text>
+                    <text x="210" y="176" text-anchor="middle" font-size="12" font-family="monospace" fill="#0c4a6e">CAP_FOWNER</text>
+                    <text x="210" y="194" text-anchor="middle" font-size="12" font-family="monospace" fill="#0c4a6e">CAP_SETGID</text>
+                    <text x="210" y="212" text-anchor="middle" font-size="12" font-family="monospace" fill="#0c4a6e">CAP_SETUID</text>
+                    <text x="210" y="230" text-anchor="middle" font-size="12" font-family="monospace" fill="#0c4a6e">CAP_NET_BIND_SERVICE</text>
+                    <text x="210" y="248" text-anchor="middle" font-size="12" font-family="monospace" fill="#0c4a6e">+ 8 more...</text>
+
+                    <!-- Drop ALL Capabilities -->
+                    <rect x="430" y="60" width="320" height="220" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+                    <text x="590" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#991b1b">Drop ALL Capabilities</text>
+                    <text x="590" y="105" text-anchor="middle" font-size="11" fill="#7f1d1d" font-family="monospace">capabilities.drop: [ALL]</text>
+
+                    <rect x="450" y="120" width="280" height="145" rx="4" fill="white" stroke="#dc2626" stroke-width="1"/>
+                    <text x="590" y="200" text-anchor="middle" font-size="24" fill="#dc2626">∅</text>
+                    <text x="590" y="225" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">No Capabilities</text>
+                    <text x="590" y="243" text-anchor="middle" font-size="11" fill="#991b1b">Minimal attack surface</text>
+
+                    <!-- Arrow -->
+                    <line x1="210" y1="290" x2="590" y2="290" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow3)"/>
+                    <text x="400" y="310" text-anchor="middle" font-size="12" fill="#6366f1" font-weight="bold">Security Hardening</text>
+
+                    <!-- Selective Add Pattern -->
+                    <rect x="150" y="330" width="500" height="240" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="3"/>
+                    <text x="400" y="360" text-anchor="middle" font-size="18" font-weight="bold" fill="#166534">Best Practice: Drop ALL + Add Selective</text>
+
+                    <rect x="180" y="375" width="440" height="185" rx="6" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>
+                    <text x="400" y="400" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="monospace">securityContext:</text>
+                    <text x="400" y="420" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="monospace">  capabilities:</text>
+                    <text x="400" y="440" text-anchor="middle" font-size="12" fill="#ef4444" font-family="monospace">    drop:</text>
+                    <text x="400" y="460" text-anchor="middle" font-size="12" fill="#ef4444" font-family="monospace">      - ALL</text>
+                    <text x="400" y="485" text-anchor="middle" font-size="12" fill="#22c55e" font-family="monospace">    add:</text>
+                    <text x="400" y="505" text-anchor="middle" font-size="12" fill="#22c55e" font-family="monospace">      - NET_BIND_SERVICE</text>
+                    <text x="400" y="525" text-anchor="middle" font-size="11" fill="#64748b" font-style="italic"># Only allows binding to ports &lt; 1024</text>
+                    <text x="400" y="545" text-anchor="middle" font-size="11" fill="#64748b" font-style="italic"># All other capabilities dropped</text>
+
+                    <defs>
+                        <marker id="arrow3" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                            <polygon points="0 0, 8 3, 0 6" fill="#6366f1"/>
+                        </marker>
+                    </defs>
+                </svg>
+                <p style="text-align: center; color: #64748b; margin-top: 16px; font-size: 0.9rem;">
+                    <strong>Security Tip:</strong> Always start with <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 3px;">drop: [ALL]</code> and add only required capabilities. Never use <code style="background: #fef2f2; padding: 2px 6px; border-radius: 3px; color: #dc2626;">privileged: true</code> unless absolutely necessary.
+                </p>
+            </div>
+        </div>
+
         <!-- Practical Guidance -->
         <div class="diagram-container">
             <h2 style="margin-bottom: 20px; color: #1e293b;">Best Practices & Security Guidance</h2>
@@ -600,5 +856,25 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Interactive view switching for security context diagrams
+        const viewButtons = document.querySelectorAll('.view-button');
+        const interactiveViews = document.querySelectorAll('.interactive-view');
+
+        viewButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const viewName = button.getAttribute('data-view');
+
+                // Remove active class from all buttons and views
+                viewButtons.forEach(btn => btn.classList.remove('active'));
+                interactiveViews.forEach(view => view.classList.remove('active'));
+
+                // Add active class to clicked button and corresponding view
+                button.classList.add('active');
+                document.getElementById(`${viewName}-view`).classList.add('active');
+            });
+        });
+    </script>
 </body>
 </html>

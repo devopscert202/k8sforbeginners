@@ -271,6 +271,12 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        .diagram-view {
+            display: none;
+        }
+        .diagram-view.active {
+            display: block;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
@@ -292,6 +298,7 @@
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
             <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="diagrams">Diagrams</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
             <button class="btn" data-view="practice">Practice</button>
@@ -357,6 +364,202 @@
 </div>
 
             <div class="section-note">Jobs are controller-driven just like Deployments, but the success metric is completions rather than continuously running replicas.</div>
+        </section>
+
+        <section id="diagrams" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Diagrams</div>
+                    <h2>Interactive Job Patterns</h2>
+                </div>
+            </div>
+
+            <div class="controls" style="margin-bottom: 20px;">
+                <button class="btn active" data-diagram="simple">Simple Job</button>
+                <button class="btn" data-diagram="parallel">Parallel Execution</button>
+                <button class="btn" data-diagram="failure">Failure Handling</button>
+            </div>
+
+            <div id="diagram-simple" class="diagram-view active">
+                <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Simple Job Lifecycle</h3>
+                <svg viewBox="0 0 800 300" style="width: 100%; max-width: 800px; height: auto;">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+
+                    <!-- Create Job -->
+                    <rect x="50" y="120" width="120" height="60" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                    <text x="110" y="145" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Create Job</text>
+                    <text x="110" y="165" text-anchor="middle" fill="white" font-size="12">kubectl apply</text>
+                    <title>Job resource created in API server</title>
+
+                    <!-- Arrow -->
+                    <line x1="170" y1="150" x2="230" y2="150" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                    <!-- Pod Running -->
+                    <rect x="230" y="120" width="120" height="60" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="290" y="145" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Pod Running</text>
+                    <text x="290" y="165" text-anchor="middle" fill="white" font-size="12">Executing task</text>
+                    <title>Job controller creates and manages pod</title>
+
+                    <!-- Arrow -->
+                    <line x1="350" y1="150" x2="410" y2="150" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                    <!-- Completed -->
+                    <rect x="410" y="120" width="120" height="60" rx="8" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                    <text x="470" y="145" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Completed</text>
+                    <text x="470" y="165" text-anchor="middle" fill="white" font-size="12">Exit code 0</text>
+                    <title>Pod finished successfully</title>
+
+                    <!-- Arrow -->
+                    <line x1="530" y1="150" x2="590" y2="150" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                    <!-- Job Done -->
+                    <rect x="590" y="120" width="120" height="60" rx="8" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                    <text x="650" y="145" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Job Done</text>
+                    <text x="650" y="165" text-anchor="middle" fill="white" font-size="12">Retained state</text>
+                    <title>Job reaches completed state</title>
+
+                    <!-- Timeline -->
+                    <text x="50" y="250" fill="#64748b" font-size="12">Time →</text>
+                    <line x1="50" y1="260" x2="710" y2="260" stroke="#cbd5e0" stroke-width="2"/>
+                </svg>
+            </div>
+
+            <div id="diagram-parallel" class="diagram-view">
+                <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Parallel Job Execution (parallelism: 3)</h3>
+                <svg viewBox="0 0 800 400" style="width: 100%; max-width: 800px; height: auto;">
+                    <defs>
+                        <marker id="arrowhead2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+
+                    <!-- Job Controller -->
+                    <rect x="50" y="170" width="140" height="60" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                    <text x="120" y="195" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Job Controller</text>
+                    <text x="120" y="215" text-anchor="middle" fill="white" font-size="12">completions: 6</text>
+                    <title>Job creates up to 3 pods at a time</title>
+
+                    <!-- Pod 1 -->
+                    <rect x="250" y="50" width="100" height="50" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="300" y="72" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod 1</text>
+                    <text x="300" y="88" text-anchor="middle" fill="white" font-size="11">Running</text>
+                    <line x1="190" y1="180" x2="250" y2="75" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead2)"/>
+
+                    <!-- Pod 2 -->
+                    <rect x="250" y="130" width="100" height="50" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="300" y="152" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod 2</text>
+                    <text x="300" y="168" text-anchor="middle" fill="white" font-size="11">Running</text>
+                    <line x1="190" y1="195" x2="250" y2="155" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead2)"/>
+
+                    <!-- Pod 3 -->
+                    <rect x="250" y="210" width="100" height="50" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="300" y="232" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod 3</text>
+                    <text x="300" y="248" text-anchor="middle" fill="white" font-size="11">Running</text>
+                    <line x1="190" y1="210" x2="250" y2="235" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead2)"/>
+
+                    <!-- Completed Pods -->
+                    <rect x="400" y="50" width="100" height="50" rx="6" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                    <text x="450" y="72" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod 1</text>
+                    <text x="450" y="88" text-anchor="middle" fill="white" font-size="11">✓ Done</text>
+                    <line x1="350" y1="75" x2="400" y2="75" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead2)"/>
+
+                    <rect x="400" y="130" width="100" height="50" rx="6" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                    <text x="450" y="152" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod 2</text>
+                    <text x="450" y="168" text-anchor="middle" fill="white" font-size="11">✓ Done</text>
+                    <line x1="350" y1="155" x2="400" y2="155" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead2)"/>
+
+                    <rect x="400" y="210" width="100" height="50" rx="6" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                    <text x="450" y="232" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod 3</text>
+                    <text x="450" y="248" text-anchor="middle" fill="white" font-size="11">✓ Done</text>
+                    <line x1="350" y1="235" x2="400" y2="235" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead2)"/>
+
+                    <!-- Next Wave -->
+                    <rect x="550" y="90" width="100" height="50" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="600" y="112" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod 4</text>
+                    <text x="600" y="128" text-anchor="middle" fill="white" font-size="11">Starting...</text>
+                    <line x1="500" y1="75" x2="550" y2="115" stroke="#326CE5" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead2)"/>
+
+                    <rect x="550" y="170" width="100" height="50" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+                    <text x="600" y="192" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="12">Pod 5-6</text>
+                    <text x="600" y="208" text-anchor="middle" fill="#64748b" font-size="11">Waiting...</text>
+
+                    <!-- Label -->
+                    <text x="400" y="320" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="14">3 Pods Run Concurrently</text>
+                    <text x="400" y="340" text-anchor="middle" fill="#64748b" font-size="12">New pods start as previous ones complete</text>
+                </svg>
+            </div>
+
+            <div id="diagram-failure" class="diagram-view">
+                <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Failure Handling with Backoff Limit</h3>
+                <svg viewBox="0 0 900 350" style="width: 100%; max-width: 900px; height: auto;">
+                    <defs>
+                        <marker id="arrowhead3" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                        <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#ef4444" />
+                        </marker>
+                    </defs>
+
+                    <!-- Attempt 1 -->
+                    <rect x="50" y="100" width="100" height="60" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="100" y="122" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Attempt 1</text>
+                    <text x="100" y="142" text-anchor="middle" fill="white" font-size="11">Pod Running</text>
+
+                    <!-- Fail 1 -->
+                    <rect x="180" y="100" width="100" height="60" rx="6" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+                    <text x="230" y="122" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Failed</text>
+                    <text x="230" y="142" text-anchor="middle" fill="white" font-size="11">Exit code 1</text>
+                    <line x1="150" y1="130" x2="180" y2="130" stroke="#ef4444" stroke-width="3" marker-end="url(#arrowhead-red)"/>
+
+                    <!-- Retry 1 -->
+                    <path d="M 230 160 Q 230 200 100 200 Q 100 200 100 160" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#arrowhead3)"/>
+                    <text x="165" y="215" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="bold">Retry 1</text>
+
+                    <!-- Attempt 2 -->
+                    <rect x="330" y="100" width="100" height="60" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="380" y="122" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Attempt 2</text>
+                    <text x="380" y="142" text-anchor="middle" fill="white" font-size="11">Pod Running</text>
+                    <line x1="280" y1="130" x2="330" y2="130" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead3)"/>
+
+                    <!-- Fail 2 -->
+                    <rect x="460" y="100" width="100" height="60" rx="6" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+                    <text x="510" y="122" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Failed</text>
+                    <text x="510" y="142" text-anchor="middle" fill="white" font-size="11">Exit code 1</text>
+                    <line x1="430" y1="130" x2="460" y2="130" stroke="#ef4444" stroke-width="3" marker-end="url(#arrowhead-red)"/>
+
+                    <!-- Retry 2 -->
+                    <path d="M 510 160 Q 510 200 380 200 Q 380 200 380 160" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#arrowhead3)"/>
+                    <text x="445" y="215" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="bold">Retry 2</text>
+
+                    <!-- Attempt 3 -->
+                    <rect x="610" y="100" width="100" height="60" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                    <text x="660" y="122" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Attempt 3</text>
+                    <text x="660" y="142" text-anchor="middle" fill="white" font-size="11">Pod Running</text>
+                    <line x1="560" y1="130" x2="610" y2="130" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead3)"/>
+
+                    <!-- Job Failed -->
+                    <rect x="740" y="100" width="120" height="60" rx="6" fill="#7c3aed" stroke="#6d28d9" stroke-width="2"/>
+                    <text x="800" y="122" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Job Failed</text>
+                    <text x="800" y="142" text-anchor="middle" fill="white" font-size="11">Backoff limit: 2</text>
+                    <line x1="710" y1="130" x2="740" y2="130" stroke="#7c3aed" stroke-width="3" marker-end="url(#arrowhead3)"/>
+
+                    <!-- Info Box -->
+                    <rect x="250" y="260" width="400" height="60" rx="8" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="450" y="280" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="13">backoffLimit: 2 (max retries)</text>
+                    <text x="450" y="300" text-anchor="middle" fill="#475569" font-size="12">After 2 failures, Job stops retrying and marks as Failed</text>
+
+                    <!-- Legend -->
+                    <text x="50" y="30" fill="#64748b" font-size="11">restartPolicy: Never</text>
+                    <text x="50" y="50" fill="#64748b" font-size="11">Each failure creates a new Pod</text>
+                </svg>
+            </div>
+
+            <div class="section-note">Click the buttons above to explore different Job execution patterns. Hover over diagram elements for tooltips.</div>
         </section>
 
         <section id="examples" class="view">
@@ -442,11 +645,10 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>
-        const buttons = document.querySelectorAll('.btn');
+        const buttons = document.querySelectorAll('.btn[data-view]');
         const views = document.querySelectorAll('.view');
 
         buttons.forEach((button) => {
@@ -456,6 +658,20 @@
                 views.forEach((view) => view.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Diagram switching
+        const diagramButtons = document.querySelectorAll('.btn[data-diagram]');
+        const diagramViews = document.querySelectorAll('.diagram-view');
+
+        diagramButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const diagramId = button.dataset.diagram;
+                diagramButtons.forEach((item) => item.classList.remove('active'));
+                diagramViews.forEach((view) => view.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById('diagram-' + diagramId).classList.add('active');
             });
         });
     </script>

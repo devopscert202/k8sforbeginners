@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML for Kubernetes — Part 3: Tools &amp; Troubleshooting</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #326CE5;
+            --blue-dark: #1d4ed8;
+            --sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --bg: #f5f6fa;
+            --panel: #ffffff;
+            --green: #16a34a;
+            --green-soft: #dcfce7;
+            --rose: #e11d48;
+            --rose-soft: #ffe4e6;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.65;
+            padding: 20px;
+        }
+        .container { max-width: 1420px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 22px;
+            background: white;
+            border-radius: 16px;
+            padding: 32px 26px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(50, 108, 229, 0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f1ff;
+            color: var(--blue-dark);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        h1 { font-size: 2.05rem; color: var(--blue); margin-bottom: 10px; line-height: 1.15; }
+        .subtitle { max-width: 920px; margin: 0 auto 14px; color: var(--muted); font-size: 1.02rem; }
+        .lead {
+            max-width: 920px; margin: 0 auto;
+            padding: 14px 18px; border-radius: 14px;
+            border: 1px solid var(--sky);
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            color: #334155; font-size: 0.98rem; text-align: left;
+        }
+        .series-nav {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            margin: 22px 0 28px;
+        }
+        .series-nav a {
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border: 2px solid var(--blue);
+            background: white;
+            color: var(--blue-dark);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+        .series-nav a:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(50,108,229,0.25); }
+        .series-nav a.current { background: var(--blue); color: white; }
+        section {
+            background: var(--panel);
+            border-radius: 14px;
+            padding: 28px 30px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(15, 23, 42, 0.05);
+        }
+        h2 {
+            font-size: 1.35rem;
+            color: #0f172a;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line);
+        }
+        h3 { font-size: 1.05rem; color: #1e293b; margin: 18px 0 10px; }
+        p, li { color: #475569; font-size: 0.96rem; }
+        ul { margin: 10px 0 10px 1.25rem; }
+        li { margin-bottom: 6px; }
+        .note {
+            margin-top: 14px;
+            padding: 14px 16px;
+            border-left: 4px solid var(--blue);
+            background: #eff6ff;
+            border-radius: 12px;
+            color: #1e3a8a;
+            font-size: 0.95rem;
+        }
+        .warn {
+            border-left-color: var(--rose);
+            background: var(--rose-soft);
+            color: #9f1239;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .badge.green { background: var(--green-soft); color: #166534; }
+        .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; margin: 12px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 0.92rem; }
+        th {
+            background: linear-gradient(180deg, #326CE5 0%, #2557be 100%);
+            color: white;
+            font-size: 0.8rem;
+        }
+        tbody tr:nth-child(even) { background: #f8fbff; }
+        code {
+            font-family: Consolas, "Cascadia Code", monospace;
+            background: #eef2ff;
+            color: #1e3a8a;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.88em;
+        }
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 14px;
+            padding: 18px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+        .tool-card {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 18px;
+            margin: 12px 0;
+            background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+            border-top: 4px solid var(--blue);
+        }
+        .tool-card h3 { margin-top: 0; }
+        .footer-links { text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 8px; padding-bottom: 12px; }
+        .footer-links a { color: var(--blue-dark); font-weight: 600; }
+        @media (max-width: 768px) { body { padding: 14px; } section { padding: 20px; } h1 { font-size: 1.6rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="eyebrow">YAML for Kubernetes · Part 3 of 3</div>
+            <h1>Editors, validation, and fixing broken manifests</h1>
+            <p class="subtitle">Make YAML editing pleasant: VS Code extensions, safe online validators, kubectl dry-run and diff, and a troubleshooting matrix for the errors learners hit most often in labs.</p>
+            <div class="lead">
+                <strong>Prerequisites:</strong> <a href="./yaml-k8s-part1-syntax.html">Part 1</a> and <a href="./yaml-k8s-part2-objects-editing.html">Part 2</a>. This part is about <em>workflow</em> and <em>debugging</em>—so you spend less time staring at parse errors and more time learning Kubernetes behavior.
+            </div>
+        </header>
+
+        <nav class="series-nav" aria-label="YAML guide parts">
+            <a href="./yaml-k8s-part1-syntax.html">Part 1 — Syntax</a>
+            <a href="./yaml-k8s-part2-objects-editing.html">Part 2 — Objects &amp; editing</a>
+            <a class="current" href="./yaml-k8s-part3-tools-troubleshooting.html">Part 3 — Tools &amp; fixes</a>
+        </nav>
+
+        <section id="vscode">
+            <h2>Visual Studio Code (recommended setup)</h2>
+            <span class="badge green">Daily driver for labs</span>
+            <div class="tool-card">
+                <h3>YAML (Red Hat)</h3>
+                <p>Extension ID: <code>redhat.vscode-yaml</code>. Provides syntax highlighting, schema-based validation when configured, and hover help for many Kubernetes resources if you associate schemas or use the Kubernetes extension below.</p>
+            </div>
+            <div class="tool-card">
+                <h3>Kubernetes (Microsoft)</h3>
+                <p>Extension ID: <code>ms-kubernetes-tools.vscode-kubernetes-tools</code>. Snippets for resources, navigation between manifests, and cluster integration. Pairs well with the YAML extension for fewer “mystery indent” mistakes.</p>
+            </div>
+            <h3>Editor habits that prevent pain</h3>
+            <ul>
+                <li>Enable <strong>Render Whitespace</strong> so tabs show as arrows—delete them immediately in YAML.</li>
+                <li>Set <strong>Files: Insert Final Newline</strong> for cleaner diffs and POSIX-friendly files.</li>
+                <li>Keep the integrated terminal beside the manifest: apply, read errors, fix line, repeat.</li>
+                <li>Use <strong>Fold Level</strong> (folding) to collapse deep <code>spec</code> trees while editing one section.</li>
+            </ul>
+        </section>
+
+        <section id="online">
+            <h2>Online YAML validators (paste with care)</h2>
+            <div class="note warn">Never paste manifests that contain real credentials, live tokens, or production Secret data into third-party websites. Use scrubbed examples or lab-only values.</div>
+            <ul>
+                <li><strong>YAML Lint</strong> — <a href="https://www.yamllint.com/" target="_blank" rel="noopener">yamllint.com</a>: quick syntax check for plain YAML.</li>
+                <li><strong>Code Beautify YAML Validator</strong> — <a href="https://codebeautify.org/yaml-validator" target="_blank" rel="noopener">codebeautify.org/yaml-validator</a>: validates and can format.</li>
+                <li><strong>JSON ↔ YAML</strong> — useful when you have JSON from an API and want a readable YAML starting point (still verify against <code>kubectl explain</code>).</li>
+            </ul>
+            <p>Use these when the error says <code>error converting YAML to JSON</code>—that usually means the file is not valid YAML yet, before Kubernetes even checks resource fields.</p>
+        </section>
+
+        <section id="kubectl-validate">
+            <h2>Validate with kubectl (best signal for K8s YAML)</h2>
+            <h3>Client dry-run (fast, offline-friendly)</h3>
+            <pre>kubectl apply --dry-run=client -o yaml -f your-manifest.yaml</pre>
+            <p>Checks that kubectl can parse the file and build the object. Does not talk to admission webhooks.</p>
+            <h3>Server dry-run (stronger checks)</h3>
+            <pre>kubectl apply --dry-run=server -f your-manifest.yaml</pre>
+            <p>Requires a cluster connection. Catches more validation, including some policy and admission issues.</p>
+            <h3>See what would change</h3>
+            <pre>kubectl diff -f your-manifest.yaml</pre>
+            <p>Compares your file to live objects—great after hand-editing exported YAML.</p>
+            <h3>Schema discovery</h3>
+            <pre>kubectl explain deployment.spec.template.spec.containers --recursive</pre>
+        </section>
+
+        <section id="errors">
+            <h2>Troubleshooting matrix</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Error or symptom</th><th>Likely cause</th><th>Fix</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>found character that cannot start any token</code></td><td>Tab character or stray character in column 1</td><td>Replace tabs with spaces; show invisible characters in the editor.</td></tr>
+                        <tr><td><code>did not find expected key</code></td><td>List item or child key mis-indented</td><td>Align <code>-</code> list markers; ensure <code>name:</code> under a container is deeper than <code>-</code>.</td></tr>
+                        <tr><td><code>mapping values are not allowed here</code></td><td>Missing newline after <code>:</code> or broken flow</td><td>Put value on same line or indent block correctly on next line.</td></tr>
+                        <tr><td><code>unknown field</code> in Pod spec</td><td>Field belongs under Deployment <code>template</code></td><td>Move under <code>spec.template.spec</code> for workload templates.</td></tr>
+                        <tr><td>Service has no Endpoints</td><td>Selector labels mismatch Pod labels</td><td>Compare <code>spec.selector</code> to <code>metadata.labels</code> on Pods.</td></tr>
+                        <tr><td>Resource unchanged but behavior wrong</td><td>Edited file but applied wrong path</td><td>Confirm <code>kubectl apply -f</code> path; use <code>kubectl diff</code>.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="recovery">
+            <h2>Lab-safe recovery loop</h2>
+            <ol style="margin-left:1.25rem; color:#475569;">
+                <li style="margin-bottom:8px;">Read the full error message (line/column if given).</li>
+                <li style="margin-bottom:8px;">Fix YAML structure first; then fix Kubernetes field names.</li>
+                <li style="margin-bottom:8px;">Run <code>kubectl apply --dry-run=client -f ...</code>.</li>
+                <li style="margin-bottom:8px;">Apply for real; use <code>kubectl describe</code> / <code>logs</code> for runtime issues.</li>
+                <li style="margin-bottom:8px;">If stuck, revert the file from git and re-apply a known-good manifest.</li>
+            </ol>
+        </section>
+
+        <section id="wrap">
+            <h2>Series complete</h2>
+            <p>You now have syntax (Part 1), object patterns and editing (Part 2), and tooling plus troubleshooting (Part 3).</p>
+            <div class="note">See also <a href="./kubectl-essentials.html">kubectl Essentials</a> and <a href="./k8s-objects-reference.html">Kubernetes Objects Reference</a>.</div>
+        </section>
+
+        <p class="footer-links">Self-contained HTML · Works offline</p>
+    </div>
+</body>
+</html>

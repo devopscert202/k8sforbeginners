@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML for Kubernetes — Part 1: Syntax</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #326CE5;
+            --blue-dark: #1d4ed8;
+            --sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --bg: #f5f6fa;
+            --panel: #ffffff;
+            --green: #16a34a;
+            --green-soft: #dcfce7;
+            --amber: #d97706;
+            --amber-soft: #fef3c7;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.65;
+            padding: 20px;
+        }
+        .container { max-width: 1420px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 22px;
+            background: white;
+            border-radius: 16px;
+            padding: 32px 26px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(50, 108, 229, 0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f1ff;
+            color: var(--blue-dark);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        h1 { font-size: 2.1rem; color: var(--blue); margin-bottom: 10px; line-height: 1.15; }
+        .subtitle { max-width: 920px; margin: 0 auto 14px; color: var(--muted); font-size: 1.02rem; }
+        .lead {
+            max-width: 920px; margin: 0 auto;
+            padding: 14px 18px; border-radius: 14px;
+            border: 1px solid var(--sky);
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            color: #334155; font-size: 0.98rem; text-align: left;
+        }
+        .series-nav {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            margin: 22px 0 28px;
+        }
+        .series-nav a {
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border: 2px solid var(--blue);
+            background: white;
+            color: var(--blue-dark);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+        .series-nav a:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(50,108,229,0.25); }
+        .series-nav a.current { background: var(--blue); color: white; }
+        section {
+            background: var(--panel);
+            border-radius: 14px;
+            padding: 28px 30px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(15, 23, 42, 0.05);
+        }
+        h2 {
+            font-size: 1.35rem;
+            color: #0f172a;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line);
+        }
+        h3 { font-size: 1.05rem; color: #1e293b; margin: 18px 0 10px; }
+        p, li { color: #475569; font-size: 0.96rem; }
+        ul { margin: 10px 0 10px 1.25rem; }
+        li { margin-bottom: 6px; }
+        .note {
+            margin-top: 14px;
+            padding: 14px 16px;
+            border-left: 4px solid var(--blue);
+            background: #eff6ff;
+            border-radius: 12px;
+            color: #1e3a8a;
+            font-size: 0.95rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .badge.green { background: var(--green-soft); color: #166534; }
+        .badge.amber { background: var(--amber-soft); color: #92400e; }
+        .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; margin: 12px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+        th {
+            background: linear-gradient(180deg, #326CE5 0%, #2557be 100%);
+            color: white;
+            font-size: 0.82rem;
+        }
+        tbody tr:nth-child(even) { background: #f8fbff; }
+        code {
+            font-family: Consolas, "Cascadia Code", "Ubuntu Mono", monospace;
+            background: #eef2ff;
+            color: #1e3a8a;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.88em;
+        }
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 14px;
+            padding: 18px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+        pre .k { color: #7dd3fc; }
+        pre .s { color: #86efac; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .card {
+            border: 1px solid var(--line);
+            border-top: 4px solid var(--blue);
+            border-radius: 14px;
+            padding: 18px;
+            background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+        }
+        .footer-links {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            padding-bottom: 12px;
+        }
+        .footer-links a { color: var(--blue-dark); font-weight: 600; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { body { padding: 14px; } section { padding: 20px; } h1 { font-size: 1.65rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="eyebrow">YAML for Kubernetes · Part 1 of 3</div>
+            <h1>Syntax, indentation, and building blocks</h1>
+            <p class="subtitle">Start here if manifests look like a wall of colons. This part covers the YAML rules that apply to every Pod, Service, and Deployment in the labs—before we talk about Kubernetes fields.</p>
+            <div class="lead">
+                <strong>Goal:</strong> Read any lab YAML and recognize scalars, mappings, lists, and nesting. Avoid tabs, fix indentation errors quickly, and understand how a minimal <code>Pod</code> maps to YAML structure. Parts 2 and 3 cover Kubernetes object anatomy, editing workflows, editors, and troubleshooting.
+            </div>
+        </header>
+
+        <nav class="series-nav" aria-label="YAML guide parts">
+            <a class="current" href="./yaml-k8s-part1-syntax.html">Part 1 — Syntax</a>
+            <a href="./yaml-k8s-part2-objects-editing.html">Part 2 — Objects &amp; editing</a>
+            <a href="./yaml-k8s-part3-tools-troubleshooting.html">Part 3 — Tools &amp; fixes</a>
+        </nav>
+
+        <section id="why">
+            <h2>Why Kubernetes uses YAML</h2>
+            <p>Kubernetes stores <strong>desired state</strong> as API objects. You declare that state in files—almost always YAML—then run <code>kubectl apply -f your-file.yaml</code>. The control plane reconciles the cluster to match your <code>spec</code>.</p>
+            <div class="note">YAML is indentation-based. Unlike JSON, there are no <code>{ }</code> braces; <strong>spaces</strong> show what belongs to which parent key. That is why a single wrong indent breaks the whole file.</div>
+        </section>
+
+        <section id="rules">
+            <h2>Rules to memorize</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Rule</th><th>What to do</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>No tabs</strong></td><td>Use the space bar (or editor “convert indentation to spaces”). Tabs cause parser errors.</td></tr>
+                        <tr><td><strong>Consistent depth</strong></td><td>Use <strong>2 spaces</strong> per level—this matches most Kubernetes documentation.</td></tr>
+                        <tr><td><strong>Lists use <code>-</code></strong></td><td>Each list item starts with <code>-</code> at the correct indent, then properties of that item are indented further.</td></tr>
+                        <tr><td><strong>Case-sensitive</strong></td><td><code>kind: Pod</code> is valid; <code>kind: pod</code> is not.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="scalars">
+            <h2>Scalars (single values)</h2>
+            <p>Strings, numbers, booleans—one value per key.</p>
+            <pre><span class="k">name:</span> nginx
+<span class="k">replicas:</span> <span class="s">3</span>
+<span class="k">enabled:</span> <span class="s">true</span></pre>
+            <p>Quote strings when they look like numbers or you need special characters: <code>version: "1.20"</code>.</p>
+        </section>
+
+        <section id="maps">
+            <h2>Mappings (nested objects)</h2>
+            <p>A key whose value is another set of keys is a <strong>mapping</strong>. Child keys are indented deeper than the parent.</p>
+            <pre><span class="k">metadata:</span>
+  <span class="k">name:</span> my-pod
+  <span class="k">labels:</span>
+    <span class="k">app:</span> demo</pre>
+        </section>
+
+        <section id="lists">
+            <h2>Lists (sequences)</h2>
+            <span class="badge green">Critical for containers and ports</span>
+            <p>Items in a list share the same parent key. Each item begins with <code>-</code>.</p>
+            <pre><span class="k">containers:</span>
+  <span class="k">-</span> <span class="k">name:</span> web
+    <span class="k">image:</span> nginx:1.25
+  <span class="k">-</span> <span class="k">name:</span> sidecar
+    <span class="k">image:</span> busybox:1.36</pre>
+            <div class="note">The <code>-</code> for <code>web</code> and <code>sidecar</code> must align: both are direct children of <code>containers:</code>. Properties like <code>name:</code> and <code>image:</code> are indented one level deeper than <code>-</code>.</div>
+        </section>
+
+        <section id="pod-minimal">
+            <h2>Minimal Pod (lab-shaped)</h2>
+            <p>This mirrors the idea of <code>k8s/labs/basics/apache1.yaml</code>: one Pod, one container, one port.</p>
+            <pre><span class="k">apiVersion:</span> v1
+<span class="k">kind:</span> Pod
+<span class="k">metadata:</span>
+  <span class="k">name:</span> apache1
+  <span class="k">labels:</span>
+    <span class="k">mycka:</span> k8slearning
+<span class="k">spec:</span>
+  <span class="k">containers:</span>
+    <span class="k">-</span> <span class="k">name:</span> mycontainer
+      <span class="k">image:</span> docker.io/httpd
+      <span class="k">ports:</span>
+        <span class="k">-</span> <span class="k">containerPort:</span> <span class="s">80</span></pre>
+            <div class="grid-2">
+                <div class="card">
+                    <h3><code>apiVersion</code> + <code>kind</code></h3>
+                    <p>Identifies which API endpoint handles the object (<code>v1</code> for core Pod, <code>apps/v1</code> for Deployment, etc.).</p>
+                </div>
+                <div class="card">
+                    <h3><code>metadata</code> vs <code>spec</code></h3>
+                    <p><code>metadata</code> is identity (name, labels). <code>spec</code> is what you want running—containers, volumes, and so on.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="comments">
+            <h2>Comments and multiline text</h2>
+            <h3>Comments</h3>
+            <pre><span class="k"># whole line comment</span>
+<span class="k">image:</span> nginx:1.25  <span class="k"># inline</span></pre>
+            <h3>Multiline blocks</h3>
+            <p><code>|</code> keeps line breaks (common in ConfigMaps). <code>&gt;</code> folds lines into a paragraph.</p>
+            <pre><span class="k">script.sh:</span> <span class="s">|</span>
+  #!/bin/sh
+  echo hello</pre>
+        </section>
+
+        <section id="multi-doc">
+            <h2>Multiple objects in one file</h2>
+            <span class="badge amber">Uses <code>---</code></span>
+            <p>Separate documents with <code>---</code> on its own line. <code>kubectl apply -f</code> applies each object in order.</p>
+            <pre><span class="k">apiVersion:</span> v1
+<span class="k">kind:</span> Namespace
+<span class="k">metadata:</span>
+  <span class="k">name:</span> demo
+<span class="s">---</span>
+<span class="k">apiVersion:</span> v1
+<span class="k">kind:</span> Pod
+<span class="k">metadata:</span>
+  <span class="k">name:</span> app
+  <span class="k">namespace:</span> demo
+<span class="k">spec:</span>
+  <span class="k">containers:</span>
+    <span class="k">-</span> <span class="k">name:</span> app
+      <span class="k">image:</span> nginx:1.25</pre>
+        </section>
+
+        <section id="next">
+            <h2>Next: Kubernetes fields and lab workflows</h2>
+            <p>Continue to <a href="./yaml-k8s-part2-objects-editing.html">Part 2 — Objects, labels, Deployments, Services, and kubectl edit/apply patterns</a>.</p>
+        </section>
+
+        <p class="footer-links">Self-contained HTML · Works offline</p>
+    </div>
+</body>
+</html>

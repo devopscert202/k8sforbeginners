@@ -15,6 +15,7 @@ Welcome to the complete hands-on Kubernetes learning guide! This repository prov
 
 ### 📚 Documentation
 - [Basics](k8s/docs/basics/)
+- [YAML 101 for Kubernetes (markdown)](k8s/docs/basics/yaml-basics.md) · [Lab 46: YAML hands-on](k8s/docs/labmanuals/lab46-basics-yaml-manifests.md) · [HTML Part 1](k8s/docs/html/yaml-k8s-part1-syntax.html) · [Part 2](k8s/docs/html/yaml-k8s-part2-objects-editing.html) · [Part 3](k8s/docs/html/yaml-k8s-part3-tools-troubleshooting.html) · [Interactive HTML catalog](k8s/docs/html/index.html)
 - [Workloads](k8s/docs/workloads/)
 - [Networking](k8s/docs/networking/)
 - [Security](k8s/docs/security/)

@@ -307,6 +307,82 @@
             </div>
         </div>
 
+        <!-- SVG: Sequential component upgrade visualization -->
+        <svg viewBox="0 0 1200 500" style="max-width: 100%; height: auto; margin: 25px 0;">
+            <defs>
+                <marker id="upgradeArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#667eea" />
+                </marker>
+                <linearGradient id="upgradeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+
+            <!-- Title -->
+            <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#667eea">Sequential Component Upgrade: Dependency Chain</text>
+
+            <!-- etcd -->
+            <rect x="50" y="80" width="180" height="90" rx="8" fill="url(#upgradeGrad)" opacity="0.9"/>
+            <text x="140" y="110" text-anchor="middle" font-size="16" font-weight="bold" fill="white">1. etcd</text>
+            <text x="140" y="130" text-anchor="middle" font-size="11" fill="white">Upgrade data store first</text>
+            <text x="140" y="150" text-anchor="middle" font-size="10" fill="white">No dependencies</text>
+            <line x1="230" y1="125" x2="290" y2="125" stroke="#667eea" stroke-width="3" marker-end="url(#upgradeArrow)"/>
+
+            <!-- API server -->
+            <rect x="300" y="80" width="180" height="90" rx="8" fill="url(#upgradeGrad)" opacity="0.9"/>
+            <text x="390" y="110" text-anchor="middle" font-size="16" font-weight="bold" fill="white">2. kube-apiserver</text>
+            <text x="390" y="130" text-anchor="middle" font-size="11" fill="white">Central hub upgrade</text>
+            <text x="390" y="150" text-anchor="middle" font-size="10" fill="white">Depends on etcd</text>
+            <line x1="480" y1="125" x2="540" y2="125" stroke="#667eea" stroke-width="3" marker-end="url(#upgradeArrow)"/>
+
+            <!-- Controller manager -->
+            <rect x="550" y="80" width="180" height="90" rx="8" fill="url(#upgradeGrad)" opacity="0.9"/>
+            <text x="640" y="110" text-anchor="middle" font-size="16" font-weight="bold" fill="white">3. controller-manager</text>
+            <text x="640" y="130" text-anchor="middle" font-size="11" fill="white">Control loops upgrade</text>
+            <text x="640" y="150" text-anchor="middle" font-size="10" fill="white">Depends on API</text>
+            <line x1="730" y1="125" x2="790" y2="125" stroke="#667eea" stroke-width="3" marker-end="url(#upgradeArrow)"/>
+
+            <!-- Scheduler -->
+            <rect x="800" y="80" width="180" height="90" rx="8" fill="url(#upgradeGrad)" opacity="0.9"/>
+            <text x="890" y="110" text-anchor="middle" font-size="16" font-weight="bold" fill="white">4. kube-scheduler</text>
+            <text x="890" y="130" text-anchor="middle" font-size="11" fill="white">Pod placement upgrade</text>
+            <text x="890" y="150" text-anchor="middle" font-size="10" fill="white">Depends on API</text>
+            <line x1="980" y1="125" x2="1000" y2="125" stroke="#667eea" stroke-width="3" marker-end="url(#upgradeArrow)"/>
+
+            <!-- Kubelet -->
+            <rect x="1010" y="80" width="140" height="90" rx="8" fill="#48bb78" opacity="0.9"/>
+            <text x="1080" y="110" text-anchor="middle" font-size="16" font-weight="bold" fill="white">5. kubelet</text>
+            <text x="1080" y="130" text-anchor="middle" font-size="11" fill="white">Node agent</text>
+            <text x="1080" y="150" text-anchor="middle" font-size="10" fill="white">Last to upgrade</text>
+
+            <!-- Safe vs Unsafe paths -->
+            <text x="600" y="230" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50">Safe vs Unsafe Upgrade Paths</text>
+
+            <!-- Safe path -->
+            <rect x="100" y="260" width="450" height="180" rx="8" fill="#d4edda" stroke="#28a745" stroke-width="3"/>
+            <text x="325" y="290" text-anchor="middle" font-size="16" font-weight="bold" fill="#155724">✓ Safe Upgrade Path</text>
+            <text x="120" y="320" font-size="13" fill="#155724">Sequential one version at a time:</text>
+            <text x="140" y="345" font-size="12" fill="#155724">v1.27.0 → v1.28.0 → v1.29.0</text>
+            <text x="120" y="375" font-size="11" fill="#155724">Why safe:</text>
+            <text x="140" y="395" font-size="11" fill="#155724">• Each component tested with adjacent versions</text>
+            <text x="140" y="410" font-size="11" fill="#155724">• API compatibility guaranteed</text>
+            <text x="140" y="425" font-size="11" fill="#155724">• Can rollback to previous version if needed</text>
+
+            <!-- Unsafe path -->
+            <rect x="650" y="260" width="450" height="180" rx="8" fill="#f8d7da" stroke="#dc3545" stroke-width="3"/>
+            <text x="875" y="290" text-anchor="middle" font-size="16" font-weight="bold" fill="#721c24">✗ Unsafe Upgrade Path</text>
+            <text x="670" y="320" font-size="13" fill="#721c24">Skipping versions:</text>
+            <text x="690" y="345" font-size="12" fill="#721c24">v1.27.0 → v1.29.0 (skips v1.28.0)</text>
+            <text x="670" y="375" font-size="11" fill="#721c24">Why unsafe:</text>
+            <text x="690" y="395" font-size="11" fill="#721c24">• API deprecations not handled incrementally</text>
+            <text x="690" y="410" font-size="11" fill="#721c24">• Version skew policy violated</text>
+            <text x="690" y="425" font-size="11" fill="#721c24">• Upgrade path not tested by Kubernetes team</text>
+
+            <!-- Important note -->
+            <text x="600" y="475" text-anchor="middle" font-size="13" font-weight="bold" fill="#2c3e50">Always upgrade control plane before worker nodes | Never skip minor versions</text>
+        </svg>
+
         <div class="command-section" id="step1-commands">
             <h4>Step 1: Upgrade kubeadm</h4>
 

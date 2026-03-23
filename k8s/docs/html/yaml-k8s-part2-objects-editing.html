@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML for Kubernetes — Part 2: Objects &amp; Editing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #326CE5;
+            --blue-dark: #1d4ed8;
+            --sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --bg: #f5f6fa;
+            --panel: #ffffff;
+            --green: #16a34a;
+            --green-soft: #dcfce7;
+            --amber: #d97706;
+            --amber-soft: #fef3c7;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.65;
+            padding: 20px;
+        }
+        .container { max-width: 1420px; margin: 0 auto; }
+        header {
+            text-align: center;
+            margin-bottom: 22px;
+            background: white;
+            border-radius: 16px;
+            padding: 32px 26px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(50, 108, 229, 0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f1ff;
+            color: var(--blue-dark);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        h1 { font-size: 2.05rem; color: var(--blue); margin-bottom: 10px; line-height: 1.15; }
+        .subtitle { max-width: 920px; margin: 0 auto 14px; color: var(--muted); font-size: 1.02rem; }
+        .lead {
+            max-width: 920px; margin: 0 auto;
+            padding: 14px 18px; border-radius: 14px;
+            border: 1px solid var(--sky);
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            color: #334155; font-size: 0.98rem; text-align: left;
+        }
+        .series-nav {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            margin: 22px 0 28px;
+        }
+        .series-nav a {
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border: 2px solid var(--blue);
+            background: white;
+            color: var(--blue-dark);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+        .series-nav a:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(50,108,229,0.25); }
+        .series-nav a.current { background: var(--blue); color: white; }
+        section {
+            background: var(--panel);
+            border-radius: 14px;
+            padding: 28px 30px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(15, 23, 42, 0.05);
+        }
+        h2 {
+            font-size: 1.35rem;
+            color: #0f172a;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line);
+        }
+        h3 { font-size: 1.05rem; color: #1e293b; margin: 18px 0 10px; }
+        p, li { color: #475569; font-size: 0.96rem; }
+        ul { margin: 10px 0 10px 1.25rem; }
+        li { margin-bottom: 6px; }
+        .note {
+            margin-top: 14px;
+            padding: 14px 16px;
+            border-left: 4px solid var(--blue);
+            background: #eff6ff;
+            border-radius: 12px;
+            color: #1e3a8a;
+            font-size: 0.95rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .badge.green { background: var(--green-soft); color: #166534; }
+        .badge.amber { background: var(--amber-soft); color: #92400e; }
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin: 16px 0;
+        }
+        .step {
+            border: 1px solid rgba(50,108,229,0.2);
+            border-radius: 14px;
+            padding: 16px;
+            background: linear-gradient(160deg, #fff 0%, #eff6ff 100%);
+        }
+        .step strong { color: var(--blue-dark); display: block; margin-bottom: 6px; }
+        code {
+            font-family: Consolas, "Cascadia Code", monospace;
+            background: #eef2ff;
+            color: #1e3a8a;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.88em;
+        }
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 14px;
+            padding: 18px;
+            overflow-x: auto;
+            margin: 12px 0;
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+        pre .k { color: #7dd3fc; }
+        pre .s { color: #86efac; }
+        .footer-links { text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 8px; padding-bottom: 12px; }
+        .footer-links a { color: var(--blue-dark); font-weight: 600; }
+        @media (max-width: 768px) { body { padding: 14px; } section { padding: 20px; } h1 { font-size: 1.6rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="eyebrow">YAML for Kubernetes · Part 2 of 3</div>
+            <h1>Kubernetes objects, labels, and editing workflows</h1>
+            <p class="subtitle">Connect YAML structure to real resources: Deployments, Services, ConfigMaps, and the kubectl commands you use in labs to create, inspect, and change manifests safely.</p>
+            <div class="lead">
+                <strong>Prerequisite:</strong> <a href="./yaml-k8s-part1-syntax.html">Part 1</a> (indentation, lists, mappings). <strong>This part:</strong> the standard <code>apiVersion</code>/<code>kind</code>/<code>metadata</code>/<code>spec</code> pattern, label/selectors, full Deployment+Service examples, and practical add/edit flows aligned with repo paths like <code>k8s/labs/basics/</code>.
+            </div>
+        </header>
+
+        <nav class="series-nav" aria-label="YAML guide parts">
+            <a href="./yaml-k8s-part1-syntax.html">Part 1 — Syntax</a>
+            <a class="current" href="./yaml-k8s-part2-objects-editing.html">Part 2 — Objects &amp; editing</a>
+            <a href="./yaml-k8s-part3-tools-troubleshooting.html">Part 3 — Tools &amp; fixes</a>
+        </nav>
+
+        <section id="shape">
+            <h2>The standard object shape</h2>
+            <pre><span class="k">apiVersion:</span> ...    <span class="s"># which API</span>
+<span class="k">kind:</span> ...          <span class="s"># resource type</span>
+<span class="k">metadata:</span>         <span class="s"># name, namespace, labels, annotations</span>
+  ...
+<span class="k">spec:</span>              <span class="s"># desired state (varies by kind)</span>
+  ...</pre>
+            <p>The cluster fills <code>status</code> for you—do not copy <code>status</code> from <code>kubectl get -o yaml</code> back into hand-written files unless you know you need it (usually you do not).</p>
+        </section>
+
+        <section id="labels">
+            <h2>Labels and selectors</h2>
+            <p>Labels are metadata used for grouping and routing. A Service <code>selector</code> must match Pod <code>labels</code>.</p>
+            <h3>Pod template labels</h3>
+            <pre><span class="k">metadata:</span>
+  <span class="k">labels:</span>
+    <span class="k">app:</span> nginx
+    <span class="k">tier:</span> frontend</pre>
+            <h3>Service selector</h3>
+            <pre><span class="k">spec:</span>
+  <span class="k">selector:</span>
+    <span class="k">app:</span> nginx
+  <span class="k">ports:</span>
+    <span class="k">-</span> <span class="k">port:</span> <span class="s">80</span>
+      <span class="k">targetPort:</span> <span class="s">8080</span></pre>
+            <div class="note">If selectors and labels disagree, the Service has no endpoints—always check <code>kubectl describe svc &lt;name&gt;</code> in the lab.</div>
+        </section>
+
+        <section id="deployment">
+            <h2>Deployment YAML (controllers + Pod template)</h2>
+            <span class="badge green">Workloads labs</span>
+            <p>A Deployment nests a Pod template under <code>spec.template</code>. Indentation depth is easy to get wrong: <code>containers</code> belongs under <code>template.spec</code>, not under <code>spec</code> next to <code>replicas</code>.</p>
+            <pre><span class="k">apiVersion:</span> apps/v1
+<span class="k">kind:</span> Deployment
+<span class="k">metadata:</span>
+  <span class="k">name:</span> nginx-deployment
+  <span class="k">labels:</span>
+    <span class="k">app:</span> nginx
+<span class="k">spec:</span>
+  <span class="k">replicas:</span> <span class="s">2</span>
+  <span class="k">selector:</span>
+    <span class="k">matchLabels:</span>
+      <span class="k">app:</span> nginx
+  <span class="k">template:</span>
+    <span class="k">metadata:</span>
+      <span class="k">labels:</span>
+        <span class="k">app:</span> nginx
+    <span class="k">spec:</span>
+      <span class="k">containers:</span>
+        <span class="k">-</span> <span class="k">name:</span> nginx
+          <span class="k">image:</span> nginx:1.25.3
+          <span class="k">ports:</span>
+            <span class="k">-</span> <span class="k">containerPort:</span> <span class="s">80</span></pre>
+        </section>
+
+        <section id="configmap-secret">
+            <h2>ConfigMap and Secret (data you will edit)</h2>
+            <h3>ConfigMap</h3>
+            <pre><span class="k">apiVersion:</span> v1
+<span class="k">kind:</span> ConfigMap
+<span class="k">metadata:</span>
+  <span class="k">name:</span> app-config
+<span class="k">data:</span>
+  <span class="k">LOG_LEVEL:</span> info
+  <span class="k">app.properties:</span> <span class="s">|</span>
+    feature.enabled=true</pre>
+            <h3>Secret (authoring with <code>stringData</code>)</h3>
+            <p>Use <code>stringData</code> when writing by hand; Kubernetes stores encoded values. Never commit real production secrets to git.</p>
+            <pre><span class="k">apiVersion:</span> v1
+<span class="k">kind:</span> Secret
+<span class="k">metadata:</span>
+  <span class="k">name:</span> app-secret
+<span class="k">type:</span> Opaque
+<span class="k">stringData:</span>
+  <span class="k">api_token:</span> replace-in-lab-only</pre>
+        </section>
+
+        <section id="workflows">
+            <h2>Lab workflows: add, apply, edit, re-apply</h2>
+            <div class="flow">
+                <div class="step"><strong>1. Edit file</strong>Open <code>k8s/labs/...</code> in your editor. Change image tag, replicas, or env vars.</div>
+                <div class="step"><strong>2. Dry-run (optional)</strong><code>kubectl apply --dry-run=client -f path/to/file.yaml</code></div>
+                <div class="step"><strong>3. Apply</strong><code>kubectl apply -f path/to/file.yaml</code></div>
+                <div class="step"><strong>4. Verify</strong><code>kubectl get</code>, <code>kubectl describe</code>, <code>kubectl logs</code></div>
+            </div>
+            <h3>Quick experiment: kubectl edit</h3>
+            <pre>kubectl edit deployment/nginx-deployment</pre>
+            <p>Opens the live object in an editor. Good for learning; for reproducible labs, prefer changing the YAML file and re-applying.</p>
+            <h3>Export what the cluster has</h3>
+            <pre>kubectl get deployment nginx-deployment -o yaml</pre>
+            <span class="badge amber">Strip status</span>
+            <p>Use exports to compare field names, then trim <code>status</code> and read-only fields before saving as a manifest.</p>
+        </section>
+
+        <section id="practice">
+            <h2>Try in the labs (concrete exercises)</h2>
+            <ul>
+                <li><strong>Change image:</strong> In a Pod or Deployment manifest under <code>k8s/labs/basics/</code> or <code>k8s/labs/workloads/</code>, set <code>image:</code> to another tag (e.g. <code>nginx:1.25-alpine</code>), apply, run <code>kubectl describe pod</code> and confirm the image.</li>
+                <li><strong>Scale via YAML:</strong> Edit <code>replicas:</code> in a Deployment file, apply, watch <code>kubectl get pods -w</code>.</li>
+                <li><strong>Fix a broken file:</strong> Intentionally break indentation under <code>containers:</code>, run <code>kubectl apply</code>, read the error, fix spaces, re-apply.</li>
+                <li><strong>Two resources, one file:</strong> Append <code>---</code> and a small Service below a Deployment; apply once and verify both objects.</li>
+            </ul>
+        </section>
+
+        <section id="explain">
+            <h2>Discover fields with kubectl explain</h2>
+            <pre>kubectl explain pod
+kubectl explain pod.spec
+kubectl explain pod.spec.containers
+kubectl explain deployment.spec.template.spec</pre>
+            <div class="note">When YAML fails validation, <code>kubectl explain</code> is faster than guessing field names from blog posts.</div>
+        </section>
+
+        <section id="next">
+            <h2>Next: editors, validation, and troubleshooting</h2>
+            <p>Go to <a href="./yaml-k8s-part3-tools-troubleshooting.html">Part 3 — VS Code extensions, online YAML tools, dry-run/server checks, and common error patterns</a>.</p>
+        </section>
+
+        <p class="footer-links">Self-contained HTML · Works offline</p>
+    </div>
+</body>
+</html>

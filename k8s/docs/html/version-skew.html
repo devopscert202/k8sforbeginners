@@ -385,6 +385,126 @@
             </div>
         </div>
 
+        <!-- SVG: Visual compatibility grid -->
+        <svg viewBox="0 0 1200 700" style="max-width: 100%; height: auto; margin: 25px 0;">
+            <defs>
+                <pattern id="greenDiag" patternUnits="userSpaceOnUse" width="4" height="4">
+                    <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" stroke="#22c55e" stroke-width="1"/>
+                </pattern>
+                <pattern id="redDiag" patternUnits="userSpaceOnUse" width="4" height="4">
+                    <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" stroke="#ef4444" stroke-width="1"/>
+                </pattern>
+            </defs>
+
+            <!-- Title -->
+            <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#667eea">Interactive Version Compatibility Grid</text>
+            <text x="600" y="55" text-anchor="middle" font-size="14" fill="#7f8c8d">kube-apiserver v1.28.x as baseline (N)</text>
+
+            <!-- Grid headers -->
+            <rect x="150" y="90" width="150" height="50" rx="4" fill="#34495e"/>
+            <text x="225" y="122" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Component</text>
+
+            <rect x="310" y="90" width="140" height="50" rx="4" fill="#34495e"/>
+            <text x="380" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="white">v1.26</text>
+            <text x="380" y="130" text-anchor="middle" font-size="10" fill="#bdc3c7">(N-2)</text>
+
+            <rect x="460" y="90" width="140" height="50" rx="4" fill="#34495e"/>
+            <text x="530" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="white">v1.27</text>
+            <text x="530" y="130" text-anchor="middle" font-size="10" fill="#bdc3c7">(N-1)</text>
+
+            <rect x="610" y="90" width="140" height="50" rx="4" fill="#667eea"/>
+            <text x="680" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="white">v1.28</text>
+            <text x="680" y="130" text-anchor="middle" font-size="10" fill="white">(N baseline)</text>
+
+            <rect x="760" y="90" width="140" height="50" rx="4" fill="#34495e"/>
+            <text x="830" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="white">v1.29</text>
+            <text x="830" y="130" text-anchor="middle" font-size="10" fill="#bdc3c7">(N+1)</text>
+
+            <!-- API server row -->
+            <rect x="150" y="150" width="150" height="60" rx="4" fill="#e9ecef"/>
+            <text x="225" y="185" text-anchor="middle" font-size="12" font-weight="600" fill="#2c3e50">kube-apiserver</text>
+
+            <rect x="310" y="150" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="380" y="185" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+            <rect x="460" y="150" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="530" y="185" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+            <rect x="610" y="150" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="680" y="185" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="760" y="150" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="830" y="185" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+
+            <!-- kubelet row -->
+            <rect x="150" y="220" width="150" height="60" rx="4" fill="#e9ecef"/>
+            <text x="225" y="255" text-anchor="middle" font-size="12" font-weight="600" fill="#2c3e50">kubelet</text>
+
+            <rect x="310" y="220" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="380" y="255" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="460" y="220" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="530" y="255" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="610" y="220" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="680" y="255" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="760" y="220" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="830" y="255" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+
+            <!-- kubectl row -->
+            <rect x="150" y="290" width="150" height="60" rx="4" fill="#e9ecef"/>
+            <text x="225" y="325" text-anchor="middle" font-size="12" font-weight="600" fill="#2c3e50">kubectl</text>
+
+            <rect x="310" y="290" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="380" y="325" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+            <rect x="460" y="290" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="530" y="325" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="610" y="290" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="680" y="325" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="760" y="290" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="830" y="325" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+
+            <!-- controller-manager row -->
+            <rect x="150" y="360" width="150" height="60" rx="4" fill="#e9ecef"/>
+            <text x="225" y="388" text-anchor="middle" font-size="11" font-weight="600" fill="#2c3e50">kube-controller-</text>
+            <text x="225" y="402" text-anchor="middle" font-size="11" font-weight="600" fill="#2c3e50">manager</text>
+
+            <rect x="310" y="360" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="380" y="395" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+            <rect x="460" y="360" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="530" y="395" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="610" y="360" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="680" y="395" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="760" y="360" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="830" y="395" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+
+            <!-- scheduler row -->
+            <rect x="150" y="430" width="150" height="60" rx="4" fill="#e9ecef"/>
+            <text x="225" y="465" text-anchor="middle" font-size="12" font-weight="600" fill="#2c3e50">kube-scheduler</text>
+
+            <rect x="310" y="430" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="380" y="465" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+            <rect x="460" y="430" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="530" y="465" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="610" y="430" width="140" height="60" rx="4" fill="#d4edda"/>
+            <text x="680" y="465" text-anchor="middle" font-size="24" fill="#155724">✓</text>
+            <rect x="760" y="430" width="140" height="60" rx="4" fill="#f8d7da"/>
+            <text x="830" y="465" text-anchor="middle" font-size="24" fill="#721c24">✗</text>
+
+            <!-- Legend -->
+            <text x="600" y="540" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">Key Skew Policy Rules</text>
+
+            <rect x="150" y="560" width="330" height="100" rx="6" fill="#d4edda" stroke="#28a745" stroke-width="2"/>
+            <text x="315" y="585" text-anchor="middle" font-size="13" font-weight="bold" fill="#155724">✓ Supported Combinations</text>
+            <text x="170" y="608" font-size="11" fill="#155724">• kubelet: N to N-2 (2 versions behind)</text>
+            <text x="170" y="625" font-size="11" fill="#155724">• kubectl: N+1 to N-1 (±1 version)</text>
+            <text x="170" y="642" font-size="11" fill="#155724">• controller/scheduler: N to N-1</text>
+
+            <rect x="520" y="560" width="330" height="100" rx="6" fill="#f8d7da" stroke="#dc3545" stroke-width="2"/>
+            <text x="685" y="585" text-anchor="middle" font-size="13" font-weight="bold" fill="#721c24">✗ Unsupported Combinations</text>
+            <text x="540" y="608" font-size="11" fill="#721c24">• kubelet ahead of API server</text>
+            <text x="540" y="625" font-size="11" fill="#721c24">• Any component >2 versions behind</text>
+            <text x="540" y="642" font-size="11" fill="#721c24">• kubectl >1 version difference</text>
+
+            <!-- Important note -->
+            <text x="600" y="685" text-anchor="middle" font-size="12" font-weight="bold" fill="#667eea">Click table cells above for detailed explanations</text>
+        </svg>
+
         <!-- Examples -->
         <div class="matrix-section">
             <h2 class="section-title">Version Combination Examples</h2>

@@ -753,6 +753,60 @@ sudo systemctl enable --now kubelet</code></pre>
                 </div>
             </div>
 
+            <svg viewBox="0 0 1200 500" style="width: 100%; height: auto; margin-bottom: 24px; background: white; border: 1px solid var(--line); border-radius: 16px; padding: 20px;">
+                <text x="10" y="25" font-size="16" font-weight="bold" fill="#326CE5">Kubernetes Relevant Directory Structure</text>
+
+                <!-- /etc/kubernetes -->
+                <g transform="translate(50, 50)">
+                    <rect width="500" height="180" rx="8" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="10" y="25" font-size="14" font-weight="bold" fill="#1d4ed8">/etc/kubernetes/</text>
+                    <text x="20" y="50" font-size="12" fill="#475569">├── manifests/</text>
+                    <text x="40" y="70" font-size="11" fill="#64748b">│   ├── kube-apiserver.yaml</text>
+                    <text x="40" y="87" font-size="11" fill="#64748b">│   ├── kube-controller-manager.yaml</text>
+                    <text x="40" y="104" font-size="11" fill="#64748b">│   ├── kube-scheduler.yaml</text>
+                    <text x="40" y="121" font-size="11" fill="#64748b">│   └── etcd.yaml</text>
+                    <text x="20" y="141" font-size="12" fill="#475569">├── admin.conf</text>
+                    <text x="20" y="158" font-size="12" fill="#475569">└── kubelet.conf</text>
+                </g>
+
+                <!-- /var/lib -->
+                <g transform="translate(600, 50)">
+                    <rect width="550" height="180" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                    <text x="10" y="25" font-size="14" font-weight="bold" fill="#166534">/var/lib/</text>
+                    <text x="20" y="50" font-size="12" fill="#475569">├── kubelet/</text>
+                    <text x="40" y="70" font-size="11" fill="#64748b">│   ├── config.yaml</text>
+                    <text x="40" y="87" font-size="11" fill="#64748b">│   ├── pods/</text>
+                    <text x="40" y="104" font-size="11" fill="#64748b">│   └── pki/</text>
+                    <text x="20" y="124" font-size="12" fill="#475569">└── containerd/</text>
+                    <text x="40" y="144" font-size="11" fill="#64748b">    ├── io.containerd.content.v1.content/</text>
+                    <text x="40" y="161" font-size="11" fill="#64748b">    └── io.containerd.snapshotter.v1.overlayfs/</text>
+                </g>
+
+                <!-- /var/log -->
+                <g transform="translate(50, 270)">
+                    <rect width="500" height="180" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                    <text x="10" y="25" font-size="14" font-weight="bold" fill="#92400e">/var/log/</text>
+                    <text x="20" y="50" font-size="12" fill="#475569">├── syslog</text>
+                    <text x="20" y="70" font-size="12" fill="#475569">├── pods/</text>
+                    <text x="40" y="90" font-size="11" fill="#64748b">│   └── {namespace}_{pod}_{uid}/</text>
+                    <text x="20" y="110" font-size="12" fill="#475569">└── containers/</text>
+                    <text x="40" y="130" font-size="11" fill="#64748b">    └── {container-logs}.log</text>
+                    <text x="10" y="165" font-size="10" fill="#64748b" font-style="italic">Note: Use journalctl for systemd services</text>
+                </g>
+
+                <!-- /etc/containerd -->
+                <g transform="translate(600, 270)">
+                    <rect width="550" height="180" rx="8" fill="#ffe4e6" stroke="#be123c" stroke-width="2"/>
+                    <text x="10" y="25" font-size="14" font-weight="bold" fill="#be123c">/etc/containerd/</text>
+                    <text x="20" y="50" font-size="12" fill="#475569">└── config.toml</text>
+                    <text x="40" y="75" font-size="11" fill="#64748b">Key settings:</text>
+                    <text x="40" y="95" font-size="10" fill="#64748b">• SystemdCgroup = true</text>
+                    <text x="40" y="112" font-size="10" fill="#64748b">• sandbox_image = "registry.k8s.io/pause:3.9"</text>
+                    <text x="40" y="129" font-size="10" fill="#64748b">• endpoint = ["/var/run/containerd/containerd.sock"]</text>
+                    <text x="10" y="165" font-size="10" fill="#64748b" font-style="italic">Modified during kubeadm setup</text>
+                </g>
+            </svg>
+
             <div class="grid-3">
                 <article class="card">
                     <div class="badge blue">Static Pods</div>

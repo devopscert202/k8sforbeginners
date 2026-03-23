@@ -328,28 +328,125 @@
                     <h2>Admission and Enforcement Flow</h2>
                 </div>
             </div>
-            <div class="flow-track">
-            <article class="flow-step">
-                <div class="step-number">1</div>
-                <h3>Define namespace quota</h3>
-                <p>Administrators assign a resource budget to a namespace.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">2</div>
-                <h3>Submit workload</h3>
-                <p>A Pod or controller specifies resource requests and limits.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">3</div>
-                <h3>Validate against quota</h3>
-                <p>Admission checks whether enough quota remains.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">4</div>
-                <h3>Admit or reject</h3>
-                <p>The workload is accepted only if namespace constraints are satisfied.</p>
-            </article>
-</div>
+            <!-- Request vs Limit Visualization -->
+            <svg viewBox="0 0 900 500" style="width: 100%; max-width: 900px; margin: 20px auto; display: block;">
+                <!-- Title -->
+                <text x="450" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">Request vs Limit: CPU and Memory</text>
+
+                <!-- CPU Section -->
+                <rect x="50" y="60" width="380" height="180" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+                <text x="240" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#0c4a6e">CPU Resources</text>
+
+                <!-- CPU Request -->
+                <rect x="70" y="100" width="150" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="2"/>
+                <text x="145" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Request: 500m</text>
+                <text x="145" y="138" text-anchor="middle" font-size="10" fill="white">Guaranteed minimum</text>
+
+                <!-- CPU Limit -->
+                <rect x="70" y="100" width="340" height="50" rx="4" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4"/>
+                <text x="390" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">Limit: 1000m</text>
+                <text x="390" y="138" text-anchor="middle" font-size="10" fill="#7f1d1d">Maximum allowed</text>
+
+                <!-- CPU Bar Labels -->
+                <text x="70" y="168" font-size="10" fill="#0c4a6e">0m</text>
+                <text x="145" y="168" font-size="10" fill="#166534" font-weight="bold">500m (Request)</text>
+                <text x="390" y="168" font-size="10" fill="#991b1b" font-weight="bold">1000m (Limit)</text>
+
+                <!-- CPU Explanation -->
+                <rect x="70" y="180" width="340" height="50" rx="4" fill="white" stroke="#0284c7" stroke-width="1"/>
+                <text x="240" y="198" text-anchor="middle" font-size="10" fill="#0c4a6e" font-weight="bold">CPU: Throttled at Limit</text>
+                <text x="240" y="214" text-anchor="middle" font-size="9" fill="#475569">Container gets 500m guaranteed</text>
+                <text x="240" y="227" text-anchor="middle" font-size="9" fill="#475569">Can burst up to 1000m if node has capacity</text>
+
+                <!-- Memory Section -->
+                <rect x="470" y="60" width="380" height="180" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="660" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#92400e">Memory Resources</text>
+
+                <!-- Memory Request -->
+                <rect x="490" y="100" width="120" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="2"/>
+                <text x="550" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Request: 256Mi</text>
+                <text x="550" y="138" text-anchor="middle" font-size="10" fill="white">Guaranteed</text>
+
+                <!-- Memory Limit -->
+                <rect x="490" y="100" width="340" height="50" rx="4" fill="none" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4"/>
+                <text x="810" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">Limit: 512Mi</text>
+                <text x="810" y="138" text-anchor="middle" font-size="10" fill="#7f1d1d">OOMKilled if exceeded</text>
+
+                <!-- Memory Bar Labels -->
+                <text x="490" y="168" font-size="10" fill="#92400e">0Mi</text>
+                <text x="550" y="168" font-size="10" fill="#166534" font-weight="bold">256Mi (Request)</text>
+                <text x="810" y="168" font-size="10" fill="#991b1b" font-weight="bold">512Mi (Limit)</text>
+
+                <!-- Memory Explanation -->
+                <rect x="490" y="180" width="340" height="50" rx="4" fill="white" stroke="#f59e0b" stroke-width="1"/>
+                <text x="660" y="198" text-anchor="middle" font-size="10" fill="#92400e" font-weight="bold">Memory: OOMKilled at Limit</text>
+                <text x="660" y="214" text-anchor="middle" font-size="9" fill="#475569">Container gets 256Mi guaranteed</text>
+                <text x="660" y="227" text-anchor="middle" font-size="9" fill="#475569">Killed if it tries to use more than 512Mi</text>
+
+                <!-- Namespace Quota Flow -->
+                <rect x="50" y="270" width="800" height="210" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+                <text x="450" y="295" text-anchor="middle" font-size="18" font-weight="bold" fill="#166534">Namespace Quota Enforcement</text>
+
+                <!-- Quota Definition -->
+                <rect x="80" y="310" width="220" height="150" rx="6" fill="white" stroke="#22c55e" stroke-width="2"/>
+                <text x="190" y="330" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">ResourceQuota</text>
+                <text x="190" y="348" text-anchor="middle" font-size="11" fill="#14532d">namespace: dev-team</text>
+                <rect x="95" y="360" width="190" height="105" rx="4" fill="#dcfce7"/>
+                <text x="190" y="378" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">requests.cpu: 4</text>
+                <text x="190" y="395" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">requests.memory: 8Gi</text>
+                <text x="190" y="412" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">limits.cpu: 8</text>
+                <text x="190" y="429" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">limits.memory: 16Gi</text>
+                <text x="190" y="446" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">pods: 20</text>
+
+                <!-- Pod Request -->
+                <rect x="340" y="310" width="200" height="150" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="440" y="330" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">Pod Submitted</text>
+                <rect x="355" y="340" width="170" height="115" rx="4" fill="white"/>
+                <text x="440" y="360" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">resources:</text>
+                <text x="440" y="377" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">  requests:</text>
+                <text x="440" y="394" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">    cpu: 1</text>
+                <text x="440" y="411" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">    memory: 2Gi</text>
+                <text x="440" y="428" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">  limits:</text>
+                <text x="440" y="445" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">    memory: 4Gi</text>
+
+                <!-- Admission Check -->
+                <path d="M 570 385 L 610 385 L 630 360 L 650 385 L 650 410 L 630 435 L 610 410 L 570 410 Z" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="610" y="395" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">Quota</text>
+                <text x="610" y="410" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">Check?</text>
+
+                <!-- ALLOW -->
+                <rect x="690" y="310" width="140" height="65" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="760" y="335" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">✓ ALLOWED</text>
+                <text x="760" y="355" text-anchor="middle" font-size="9" fill="#14532d">Quota available</text>
+                <text x="760" y="368" text-anchor="middle" font-size="9" fill="#14532d">Pod created</text>
+
+                <!-- DENY -->
+                <rect x="690" y="395" width="140" height="65" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+                <text x="760" y="420" text-anchor="middle" font-size="14" font-weight="bold" fill="#991b1b">✗ DENIED</text>
+                <text x="760" y="440" text-anchor="middle" font-size="9" fill="#7f1d1d">Quota exceeded</text>
+                <text x="760" y="453" text-anchor="middle" font-size="9" fill="#7f1d1d">Admission rejected</text>
+
+                <!-- Arrows -->
+                <line x1="300" y1="385" x2="340" y2="385" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-pod)"/>
+                <line x1="540" y1="385" x2="570" y2="385" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-check)"/>
+                <line x1="650" y1="360" x2="690" y2="340" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-allow2)"/>
+                <line x1="650" y1="410" x2="690" y2="425" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-deny2)"/>
+
+                <defs>
+                    <marker id="arrow-pod" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/>
+                    </marker>
+                    <marker id="arrow-check" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/>
+                    </marker>
+                    <marker id="arrow-allow2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#22c55e"/>
+                    </marker>
+                    <marker id="arrow-deny2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#ef4444"/>
+                    </marker>
+                </defs>
+            </svg>
 
             <div class="section-note">Requests influence scheduling, limits influence runtime behavior, and quotas influence namespace admission decisions.</div>
         </section>
@@ -361,14 +458,81 @@
                     <h2>Examples You Can Recognize Quickly</h2>
                 </div>
             </div>
+            <!-- Quota Exceeded Alternatives -->
+            <svg viewBox="0 0 850 450" style="width: 100%; max-width: 850px; margin: 20px auto; display: block;">
+                <!-- Title -->
+                <text x="425" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">Quota Exceeded: What Are Your Options?</text>
+
+                <!-- Problem Statement -->
+                <rect x="50" y="60" width="750" height="80" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/>
+                <text x="425" y="85" text-anchor="middle" font-size="16" font-weight="bold" fill="#991b1b">✗ Error: ResourceQuota "compute-quota" exceeded</text>
+                <text x="425" y="108" text-anchor="middle" font-size="12" fill="#7f1d1d">Requested: cpu=2, memory=4Gi</text>
+                <text x="425" y="128" text-anchor="middle" font-size="12" fill="#7f1d1d">Available: cpu=0.5, memory=1Gi (already used 3.5 CPU, 7Gi memory)</text>
+
+                <!-- Arrow Down -->
+                <line x1="425" y1="150" x2="425" y2="180" stroke="#64748b" stroke-width="2" marker-end="url(#arrow-down)"/>
+
+                <!-- Solutions -->
+                <text x="425" y="205" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">Choose Your Solution:</text>
+
+                <!-- Solution 1 -->
+                <rect x="50" y="220" width="230" height="200" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="165" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">1. Reduce Pod Requests</text>
+                <rect x="70" y="255" width="190" height="150" rx="4" fill="white"/>
+                <text x="165" y="275" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">resources:</text>
+                <text x="165" y="292" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">  requests:</text>
+                <text x="165" y="309" text-anchor="middle" font-size="10" fill="#ef4444" font-family="monospace" text-decoration="line-through">    cpu: 2</text>
+                <text x="165" y="326" text-anchor="middle" font-size="10" fill="#22c55e" font-family="monospace">    cpu: 500m</text>
+                <text x="165" y="343" text-anchor="middle" font-size="10" fill="#ef4444" font-family="monospace" text-decoration="line-through">    memory: 4Gi</text>
+                <text x="165" y="360" text-anchor="middle" font-size="10" fill="#22c55e" font-family="monospace">    memory: 1Gi</text>
+                <text x="165" y="385" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">Fits within quota</text>
+                <text x="165" y="400" text-anchor="middle" font-size="9" fill="#166534" font-weight="bold">✓ Quick fix</text>
+
+                <!-- Solution 2 -->
+                <rect x="310" y="220" width="230" height="200" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="425" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">2. Delete Unused Pods</text>
+                <rect x="330" y="255" width="190" height="150" rx="4" fill="white"/>
+                <text x="425" y="275" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">$ kubectl get pods -n dev</text>
+                <text x="425" y="295" text-anchor="middle" font-size="9" fill="#475569">old-app-1 (not needed)</text>
+                <text x="425" y="310" text-anchor="middle" font-size="9" fill="#475569">old-app-2 (not needed)</text>
+                <text x="425" y="325" text-anchor="middle" font-size="9" fill="#475569">test-pod (completed)</text>
+                <text x="425" y="345" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">$ kubectl delete pod</text>
+                <text x="425" y="362" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">  old-app-1 test-pod</text>
+                <text x="425" y="385" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">Free up quota</text>
+                <text x="425" y="400" text-anchor="middle" font-size="9" fill="#1e40af" font-weight="bold">✓ Reclaim resources</text>
+
+                <!-- Solution 3 -->
+                <rect x="570" y="220" width="230" height="200" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="685" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">3. Increase Quota</text>
+                <rect x="590" y="255" width="190" height="150" rx="4" fill="white"/>
+                <text x="685" y="275" text-anchor="middle" font-size="10" fill="#78350f" font-family="monospace">$ kubectl edit</text>
+                <text x="685" y="292" text-anchor="middle" font-size="10" fill="#78350f" font-family="monospace">  resourcequota</text>
+                <text x="685" y="309" text-anchor="middle" font-size="10" fill="#78350f" font-family="monospace">  -n dev</text>
+                <text x="685" y="330" text-anchor="middle" font-size="10" fill="#ef4444" font-family="monospace" text-decoration="line-through">requests.cpu: "4"</text>
+                <text x="685" y="347" text-anchor="middle" font-size="10" fill="#22c55e" font-family="monospace">requests.cpu: "8"</text>
+                <text x="685" y="370" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">Requires admin approval</text>
+                <text x="685" y="385" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">May have budget implications</text>
+                <text x="685" y="400" text-anchor="middle" font-size="9" fill="#92400e" font-weight="bold">⚠ Last resort</text>
+
+                <defs>
+                    <marker id="arrow-down" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto">
+                        <polygon points="0 0, 8 0, 4 8" fill="#64748b"/>
+                    </marker>
+                </defs>
+            </svg>
+
             <div class="example-stack">
             <section class="example-card">
                 <div class="section-kicker">ResourceQuota Example</div>
                 <pre><code>apiVersion: v1<br>kind: ResourceQuota<br>metadata:<br>  name: mem-cpu-demo<br>  namespace: quotaz<br>spec:<br>  hard:<br>    requests.cpu: &quot;1&quot;<br>    requests.memory: 1Gi<br>    limits.cpu: &quot;2&quot;<br>    limits.memory: 2Gi</code></pre>
             </section>
             <section class="example-card">
+                <div class="section-kicker">Pod with Resource Specs</div>
+                <pre><code>apiVersion: v1<br>kind: Pod<br>metadata:<br>  name: resource-demo<br>spec:<br>  containers:<br>  - name: app<br>    image: nginx<br>    resources:<br>      requests:<br>        cpu: 500m        # Scheduler reserves 500m<br>        memory: 256Mi    # Scheduler reserves 256Mi<br>      limits:<br>        cpu: 1000m       # Throttled if exceeding<br>        memory: 512Mi    # OOMKilled if exceeding</code></pre>
+            </section>
+            <section class="example-card">
                 <div class="section-kicker">Useful Commands</div>
-                <pre><code>kubectl get resourcequota -n quotaz<br>kubectl describe resourcequota mem-cpu-demo -n quotaz</code></pre>
+                <pre><code># Check namespace quota<br>kubectl get resourcequota -n quotaz<br>kubectl describe resourcequota mem-cpu-demo -n quotaz<br><br># Check current usage<br>kubectl describe namespace quotaz<br><br># View pod resource requests/limits<br>kubectl describe pod resource-demo</code></pre>
             </section>
 </div>
 
@@ -432,7 +596,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>

@@ -328,6 +328,91 @@
                     <h2>API Extension Flow</h2>
                 </div>
             </div>
+
+            <svg viewBox="0 0 1200 500" style="width: 100%; height: auto; margin-bottom: 24px;">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                    </marker>
+                </defs>
+
+                <!-- CRD Creation -->
+                <g class="interactive-step" style="cursor: pointer;" data-tooltip="Define your custom resource schema">
+                    <rect x="50" y="50" width="180" height="120" rx="12" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="140" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">1. Define CRD YAML</text>
+                    <text x="140" y="110" text-anchor="middle" font-size="12" fill="#475569">apiextensions.k8s.io/v1</text>
+                    <text x="140" y="130" text-anchor="middle" font-size="12" fill="#475569">Schema + Validation</text>
+                    <text x="140" y="150" text-anchor="middle" font-size="12" fill="#475569">Names + Versions</text>
+                </g>
+
+                <!-- Arrow -->
+                <line x1="230" y1="110" x2="290" y2="110" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- Apply CRD -->
+                <g class="interactive-step" style="cursor: pointer;" data-tooltip="Register the new resource type">
+                    <rect x="290" y="50" width="180" height="120" rx="12" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="380" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">2. Apply to Cluster</text>
+                    <text x="380" y="110" text-anchor="middle" font-size="12" fill="#475569">kubectl apply -f</text>
+                    <text x="380" y="130" text-anchor="middle" font-size="12" fill="#475569">API Server Registers</text>
+                    <text x="380" y="150" text-anchor="middle" font-size="12" fill="#475569">New Resource Type</text>
+                </g>
+
+                <!-- Arrow -->
+                <line x1="470" y1="110" x2="530" y2="110" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- Create CR Instances -->
+                <g class="interactive-step" style="cursor: pointer;" data-tooltip="Create actual custom resource objects">
+                    <rect x="530" y="50" width="180" height="120" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                    <text x="620" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#166534">3. Create CR Instance</text>
+                    <text x="620" y="110" text-anchor="middle" font-size="12" fill="#475569">kind: Website</text>
+                    <text x="620" y="130" text-anchor="middle" font-size="12" fill="#475569">Stored in etcd</text>
+                    <text x="620" y="150" text-anchor="middle" font-size="12" fill="#475569">Validated by Schema</text>
+                </g>
+
+                <!-- Arrow down -->
+                <line x1="620" y1="170" x2="620" y2="230" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- Controller Pattern -->
+                <g class="interactive-step" style="cursor: pointer;" data-tooltip="Operator implements the behavior">
+                    <rect x="430" y="230" width="380" height="200" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                    <text x="620" y="260" text-anchor="middle" font-size="16" font-weight="bold" fill="#92400e">4. Controller Pattern (Operator)</text>
+
+                    <!-- Watch -->
+                    <circle cx="470" cy="300" r="30" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="470" y="307" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">WATCH</text>
+
+                    <!-- Arrow to Reconcile -->
+                    <line x1="500" y1="300" x2="560" y2="300" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- Reconcile -->
+                    <circle cx="620" cy="300" r="40" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="620" y="300" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">RECONCILE</text>
+                    <text x="620" y="315" text-anchor="middle" font-size="10" fill="#475569">Desired → Actual</text>
+
+                    <!-- Arrow to Update -->
+                    <line x1="660" y1="300" x2="720" y2="300" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- Update Status -->
+                    <circle cx="770" cy="300" r="30" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="770" y="307" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">UPDATE</text>
+
+                    <!-- Feedback loop -->
+                    <path d="M 470 330 Q 620 370 770 330" stroke="#64748b" stroke-width="1" fill="none" stroke-dasharray="5,5"/>
+                    <text x="620" y="380" text-anchor="middle" font-size="11" fill="#64748b">Continuous Reconciliation Loop</text>
+                </g>
+
+                <!-- Legend -->
+                <g transform="translate(900, 80)">
+                    <text x="0" y="0" font-size="14" font-weight="bold" fill="#1a1a2e">Legend</text>
+                    <rect x="0" y="10" width="40" height="20" rx="4" fill="#eff6ff" stroke="#326CE5" stroke-width="1"/>
+                    <text x="45" y="25" font-size="11" fill="#475569">API Extension</text>
+                    <rect x="0" y="35" width="40" height="20" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+                    <text x="45" y="50" font-size="11" fill="#475569">Resource Instance</text>
+                    <rect x="0" y="60" width="40" height="20" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+                    <text x="45" y="75" font-size="11" fill="#475569">Controller Logic</text>
+                </g>
+            </svg>
+
             <div class="flow-track">
             <article class="flow-step">
                 <div class="step-number">1</div>
@@ -442,7 +527,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>

@@ -1,0 +1,15 @@
+# Lab 46 — minimal Pod (valid). Namespace yaml-lab must exist first.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: yaml-lab-pod
+  namespace: yaml-lab
+  labels:
+    app: yaml-lab-learn
+    tier: demo
+spec:
+  containers:
+    - name: web
+      image: nginx:1.25-alpine
+      ports:
+        - containerPort: 80

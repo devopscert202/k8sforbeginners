@@ -328,28 +328,137 @@
                     <h2>Administrative Control Flow</h2>
                 </div>
             </div>
-            <div class="flow-track">
-            <article class="flow-step">
-                <div class="step-number">1</div>
-                <h3>Manage trust</h3>
-                <p>Create, inspect, distribute, or revoke join tokens as needed.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">2</div>
-                <h3>Check certificates</h3>
-                <p>Review certificate expiration and plan renewals before failures occur.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">3</div>
-                <h3>Inspect config and access</h3>
-                <p>Validate kubeconfig and kubeadm-derived cluster configuration.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">4</div>
-                <h3>Maintain cluster health</h3>
-                <p>Use node, API, and certificate insight to keep the cluster healthy.</p>
-            </article>
-</div>
+
+            <svg viewBox="0 0 1200 900" style="max-width: 100%; height: auto; margin-bottom: 24px;">
+                <defs>
+                    <linearGradient id="certGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+                    </linearGradient>
+                    <marker id="arrow2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#326CE5" />
+                    </marker>
+                </defs>
+
+                <!-- Certificate renewal flow -->
+                <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#326CE5">Certificate Renewal Flow and Timeline</text>
+
+                <!-- Timeline -->
+                <line x1="100" y1="100" x2="1100" y2="100" stroke="#326CE5" stroke-width="4"/>
+                <text x="100" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#326CE5">Day 0</text>
+                <text x="1100" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#326CE5">Day 365</text>
+
+                <!-- Installation -->
+                <circle cx="100" cy="100" r="8" fill="#22c55e"/>
+                <text x="100" y="130" text-anchor="middle" font-size="11" fill="#1a1a2e">Cluster Init</text>
+                <text x="100" y="145" text-anchor="middle" font-size="10" fill="#64748b">Certs generated</text>
+
+                <!-- 30 days warning -->
+                <circle cx="900" cy="100" r="8" fill="#fbbf24"/>
+                <text x="900" y="130" text-anchor="middle" font-size="11" font-weight="bold" fill="#d97706">Day 335</text>
+                <text x="900" y="145" text-anchor="middle" font-size="10" fill="#64748b">30-day warning</text>
+
+                <!-- Expiration -->
+                <circle cx="1100" cy="100" r="8" fill="#ef4444"/>
+                <text x="1100" y="130" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Day 365</text>
+                <text x="1100" y="145" text-anchor="middle" font-size="10" fill="#64748b">Cert expires</text>
+
+                <!-- Safe renewal window -->
+                <rect x="850" y="60" width="250" height="20" rx="4" fill="#dcfce7" opacity="0.6"/>
+                <text x="975" y="55" text-anchor="middle" font-size="10" font-weight="bold" fill="#166534">Safe Renewal Window</text>
+
+                <!-- Node maintenance flow -->
+                <text x="600" y="220" text-anchor="middle" font-size="24" font-weight="bold" fill="#326CE5">Node Maintenance: Cordon → Drain → Upgrade → Uncordon</text>
+
+                <!-- Cordon -->
+                <rect x="50" y="260" width="240" height="100" rx="8" fill="#dbeafe" stroke="#326CE5" stroke-width="3"/>
+                <text x="170" y="290" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">1. Cordon</text>
+                <text x="170" y="315" text-anchor="middle" font-size="12" fill="#1a1a2e">kubectl cordon node1</text>
+                <text x="170" y="335" text-anchor="middle" font-size="11" fill="#64748b">Mark node unschedulable</text>
+                <text x="170" y="350" text-anchor="middle" font-size="11" fill="#64748b">New pods won't start here</text>
+                <line x1="290" y1="310" x2="340" y2="310" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow2)"/>
+
+                <!-- Drain -->
+                <rect x="350" y="260" width="240" height="100" rx="8" fill="#dbeafe" stroke="#326CE5" stroke-width="3"/>
+                <text x="470" y="290" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">2. Drain</text>
+                <text x="470" y="315" text-anchor="middle" font-size="12" fill="#1a1a2e">kubectl drain node1</text>
+                <text x="470" y="335" text-anchor="middle" font-size="11" fill="#64748b">Evict all pods gracefully</text>
+                <text x="470" y="350" text-anchor="middle" font-size="11" fill="#64748b">Pods reschedule elsewhere</text>
+                <line x1="590" y1="310" x2="640" y2="310" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow2)"/>
+
+                <!-- Upgrade -->
+                <rect x="650" y="260" width="240" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+                <text x="770" y="290" text-anchor="middle" font-size="16" font-weight="bold" fill="#d97706">3. Upgrade</text>
+                <text x="770" y="315" text-anchor="middle" font-size="12" fill="#1a1a2e">apt install kubelet</text>
+                <text x="770" y="335" text-anchor="middle" font-size="11" fill="#64748b">Update packages,</text>
+                <text x="770" y="350" text-anchor="middle" font-size="11" fill="#64748b">restart kubelet</text>
+                <line x1="890" y1="310" x2="940" y2="310" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow2)"/>
+
+                <!-- Uncordon -->
+                <rect x="950" y="260" width="240" height="100" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="3"/>
+                <text x="1070" y="290" text-anchor="middle" font-size="16" font-weight="bold" fill="#166534">4. Uncordon</text>
+                <text x="1070" y="315" text-anchor="middle" font-size="12" fill="#1a1a2e">kubectl uncordon node1</text>
+                <text x="1070" y="335" text-anchor="middle" font-size="11" fill="#64748b">Mark node schedulable</text>
+                <text x="1070" y="350" text-anchor="middle" font-size="11" fill="#64748b">Ready for new workloads</text>
+
+                <!-- Cluster health check dashboard -->
+                <text x="600" y="440" text-anchor="middle" font-size="24" font-weight="bold" fill="#326CE5">Cluster Health Check Dashboard</text>
+
+                <!-- Health checks grid -->
+                <rect x="50" y="480" width="280" height="120" rx="8" fill="#f0fdfa" stroke="#14b8a6" stroke-width="2"/>
+                <text x="190" y="510" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f766e">Component Status</text>
+                <text x="190" y="535" text-anchor="middle" font-size="11" fill="#1a1a2e">kubectl get cs</text>
+                <text x="70" y="560" font-size="10" fill="#64748b">✓ scheduler: Healthy</text>
+                <text x="70" y="575" font-size="10" fill="#64748b">✓ controller-manager: Healthy</text>
+                <text x="70" y="590" font-size="10" fill="#64748b">✓ etcd: Healthy</text>
+
+                <rect x="360" y="480" width="280" height="120" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="500" y="510" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">Certificate Status</text>
+                <text x="500" y="535" text-anchor="middle" font-size="11" fill="#1a1a2e">kubeadm certs check-expiration</text>
+                <text x="380" y="560" font-size="10" fill="#64748b">apiserver: 350 days</text>
+                <text x="380" y="575" font-size="10" fill="#64748b">front-proxy-client: 350 days</text>
+                <text x="380" y="590" font-size="10" fill="#64748b">scheduler.conf: 350 days</text>
+
+                <rect x="670" y="480" width="280" height="120" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="810" y="510" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">Node Status</text>
+                <text x="810" y="535" text-anchor="middle" font-size="11" fill="#1a1a2e">kubectl get nodes</text>
+                <text x="690" y="560" font-size="10" fill="#64748b">control-plane: Ready (v1.28.0)</text>
+                <text x="690" y="575" font-size="10" fill="#64748b">worker1: Ready (v1.28.0)</text>
+                <text x="690" y="590" font-size="10" fill="#64748b">worker2: Ready (v1.28.0)</text>
+
+                <rect x="980" y="480" width="200" height="120" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="1080" y="510" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Pod Health</text>
+                <text x="1080" y="535" text-anchor="middle" font-size="11" fill="#1a1a2e">kubectl get pods -A</text>
+                <text x="1000" y="560" font-size="10" fill="#64748b">kube-system: 12/12</text>
+                <text x="1000" y="575" font-size="10" fill="#64748b">All pods running</text>
+                <text x="1000" y="590" font-size="10" fill="#64748b">No restarts</text>
+
+                <!-- Certificate renewal commands -->
+                <text x="600" y="680" text-anchor="middle" font-size="20" font-weight="bold" fill="#326CE5">Certificate Renewal Commands</text>
+
+                <rect x="100" y="710" width="480" height="120" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+                <text x="340" y="735" text-anchor="middle" font-size="14" font-weight="bold" fill="#991b1b">Manual Renewal</text>
+                <text x="120" y="760" font-size="11" font-family="monospace" fill="#1a1a2e">sudo kubeadm certs renew all</text>
+                <text x="120" y="780" font-size="11" font-family="monospace" fill="#1a1a2e">sudo systemctl restart kubelet</text>
+                <text x="120" y="800" font-size="10" fill="#64748b">Renews all certificates immediately</text>
+                <text x="120" y="815" font-size="10" fill="#64748b">Requires control plane component restart</text>
+
+                <rect x="620" y="710" width="480" height="120" rx="8" fill="#f0fdfa" stroke="#14b8a6" stroke-width="2"/>
+                <text x="860" y="735" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f766e">Automatic Renewal</text>
+                <text x="640" y="760" font-size="11" font-family="monospace" fill="#1a1a2e">kubelet auto-renews certs</text>
+                <text x="640" y="780" font-size="10" fill="#64748b">kubelet automatically renews its own</text>
+                <text x="640" y="795" font-size="10" fill="#64748b">client certificate before expiration</text>
+                <text x="640" y="810" font-size="10" fill="#64748b">(enabled by default since K8s 1.8)</text>
+
+                <!-- Legend -->
+                <text x="600" y="870" text-anchor="middle" font-size="14" font-weight="bold" fill="#64748b">Component Status Legend</text>
+                <circle cx="350" cy="885" r="6" fill="#22c55e"/>
+                <text x="365" y="890" font-size="11" fill="#64748b">Healthy</text>
+                <circle cx="480" cy="885" r="6" fill="#fbbf24"/>
+                <text x="495" y="890" font-size="11" fill="#64748b">Warning (30 days)</text>
+                <circle cx="650" cy="885" r="6" fill="#ef4444"/>
+                <text x="665" y="890" font-size="11" fill="#64748b">Critical (expired)</text>
+            </svg>
 
             <div class="section-note">The thread connecting these tasks is trust and continuity: cluster admins keep the platform joinable, secure, and operational.</div>
         </section>

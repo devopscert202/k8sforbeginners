@@ -9,8 +9,8 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 56 HTML pages total in this folder
-- 55 concept explainers plus the home page
+- 61 HTML pages total in this folder
+- 60 concept explainers plus the home page
 - All pages are self-contained and work offline
 
 ## Diagram Catalog
@@ -19,6 +19,9 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 - `k8s-architecture-interactive.html` - Control plane and worker node overview
 - `k8s-objects-reference.html` - Kubernetes object quick reference
+- `yaml-k8s-part1-syntax.html` - YAML syntax and indentation for Kubernetes manifests (Part 1 of 3)
+- `yaml-k8s-part2-objects-editing.html` - Kubernetes object YAML, labels, Deployments, lab edit workflows (Part 2)
+- `yaml-k8s-part3-tools-troubleshooting.html` - VS Code and online YAML tools, kubectl validation, troubleshooting (Part 3)
 - `pod-lifecycle.html` - Pod phases, restarts, and lifecycle transitions
 - `pods-vs-deployments.html` - Beginner path from direct Pods to Deployments
 - `deployment-hierarchy.html` - Deployment to ReplicaSet to Pod hierarchy

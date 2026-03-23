@@ -328,30 +328,115 @@
                     <h2>Configuration Delivery Flow</h2>
                 </div>
             </div>
-            <div class="flow-track">
-            <article class="flow-step">
-                <div class="step-number">1</div>
-                <h3>Create ConfigMap</h3>
-                <p>Store key-value data in a ConfigMap resource instead of baking it into the image.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">2</div>
-                <h3>Reference it in a Pod</h3>
-                <p>The Pod spec consumes the ConfigMap through envFrom, valueFrom, or a mounted volume.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">3</div>
-                <h3>Kubernetes injects data</h3>
-                <p>At runtime, the data becomes environment variables or files inside the container.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">4</div>
-                <h3>Application starts with the right settings</h3>
-                <p>The same container image behaves differently based on externalized config.</p>
-            </article>
-</div>
+            <!-- ConfigMap Consumption Patterns -->
+            <svg viewBox="0 0 950 600" style="width: 100%; max-width: 950px; margin: 20px auto; display: block;">
+                <!-- Title -->
+                <text x="475" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">ConfigMap Consumption Patterns</text>
 
-            <div class="section-note">The biggest practical choice is whether the application expects configuration as environment variables or as files.</div>
+                <!-- ConfigMap Source -->
+                <rect x="350" y="60" width="250" height="110" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="3"/>
+                <text x="475" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#0c4a6e">ConfigMap</text>
+                <text x="475" y="110" text-anchor="middle" font-size="12" fill="#075985">app-config</text>
+                <rect x="370" y="120" width="210" height="40" rx="4" fill="white"/>
+                <text x="475" y="138" text-anchor="middle" font-size="10" fill="#075985" font-family="monospace">database: mongodb</text>
+                <text x="475" y="153" text-anchor="middle" font-size="10" fill="#075985" font-family="monospace">log.level: INFO</text>
+
+                <!-- Pattern 1: envFrom -->
+                <line x1="350" y1="115" x2="210" y2="220" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-cm1)"/>
+                <text x="270" y="160" font-size="10" fill="#22c55e" font-weight="bold">envFrom</text>
+
+                <rect x="50" y="230" width="250" height="160" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="175" y="255" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Pattern 1: All Keys as Env Vars</text>
+                <text x="175" y="275" text-anchor="middle" font-size="11" fill="#14532d" font-family="monospace">envFrom:</text>
+                <text x="175" y="292" text-anchor="middle" font-size="11" fill="#14532d" font-family="monospace">- configMapRef:</text>
+                <text x="175" y="309" text-anchor="middle" font-size="11" fill="#14532d" font-family="monospace">    name: app-config</text>
+
+                <rect x="70" y="325" width="210" height="55" rx="4" fill="white" stroke="#22c55e" stroke-width="1"/>
+                <text x="175" y="340" text-anchor="middle" font-size="10" fill="#166534" font-weight="bold">Container sees:</text>
+                <text x="175" y="357" text-anchor="middle" font-size="9" fill="#14532d" font-family="monospace">$database = "mongodb"</text>
+                <text x="175" y="372" text-anchor="middle" font-size="9" fill="#14532d" font-family="monospace">$log.level = "INFO"</text>
+
+                <!-- Pattern 2: valueFrom -->
+                <line x1="475" y1="170" x2="475" y2="220" stroke="#3b82f6" stroke-width="3" marker-end="url(#arrow-cm2)"/>
+                <text x="495" y="200" font-size="10" fill="#3b82f6" font-weight="bold">valueFrom</text>
+
+                <rect x="350" y="230" width="250" height="160" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="475" y="255" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">Pattern 2: Selective Keys</text>
+                <text x="475" y="275" text-anchor="middle" font-size="11" fill="#1e3a8a" font-family="monospace">env:</text>
+                <text x="475" y="292" text-anchor="middle" font-size="11" fill="#1e3a8a" font-family="monospace">- name: DB_TYPE</text>
+                <text x="475" y="309" text-anchor="middle" font-size="11" fill="#1e3a8a" font-family="monospace">  valueFrom:</text>
+                <text x="475" y="326" text-anchor="middle" font-size="11" fill="#1e3a8a" font-family="monospace">    configMapKeyRef:</text>
+                <text x="475" y="343" text-anchor="middle" font-size="11" fill="#1e3a8a" font-family="monospace">      name: app-config</text>
+                <text x="475" y="360" text-anchor="middle" font-size="11" fill="#1e3a8a" font-family="monospace">      key: database</text>
+
+                <rect x="370" y="370" width="210" height="15" rx="3" fill="white" stroke="#3b82f6" stroke-width="1"/>
+                <text x="475" y="381" text-anchor="middle" font-size="9" fill="#1e3a8a" font-family="monospace">$DB_TYPE = "mongodb"</text>
+
+                <!-- Pattern 3: Volume Mount -->
+                <line x1="600" y1="115" x2="740" y2="220" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-cm3)"/>
+                <text x="680" y="160" font-size="10" fill="#f59e0b" font-weight="bold">volumeMount</text>
+
+                <rect x="650" y="230" width="250" height="160" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="775" y="255" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">Pattern 3: Files in Volume</text>
+                <text x="775" y="275" text-anchor="middle" font-size="11" fill="#78350f" font-family="monospace">volumes:</text>
+                <text x="775" y="292" text-anchor="middle" font-size="11" fill="#78350f" font-family="monospace">- name: config</text>
+                <text x="775" y="309" text-anchor="middle" font-size="11" fill="#78350f" font-family="monospace">  configMap:</text>
+                <text x="775" y="326" text-anchor="middle" font-size="11" fill="#78350f" font-family="monospace">    name: app-config</text>
+
+                <rect x="670" y="340" width="210" height="40" rx="4" fill="white" stroke="#f59e0b" stroke-width="1"/>
+                <text x="775" y="355" text-anchor="middle" font-size="10" fill="#92400e" font-weight="bold">Files created:</text>
+                <text x="775" y="370" text-anchor="middle" font-size="9" fill="#78350f" font-family="monospace">/config/database</text>
+                <text x="775" y="383" text-anchor="middle" font-size="9" fill="#78350f" font-family="monospace">/config/log.level</text>
+
+                <!-- Update Propagation -->
+                <rect x="50" y="420" width="850" height="160" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+                <text x="475" y="445" text-anchor="middle" font-size="16" font-weight="bold" fill="#166534">Update Propagation Flow</text>
+
+                <!-- Original ConfigMap -->
+                <rect x="80" y="460" width="180" height="100" rx="6" fill="white" stroke="#22c55e" stroke-width="1"/>
+                <text x="170" y="480" text-anchor="middle" font-size="11" font-weight="bold" fill="#166534">ConfigMap Updated</text>
+                <text x="170" y="500" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">log.level: DEBUG</text>
+                <text x="170" y="518" text-anchor="middle" font-size="9" fill="#64748b">(was INFO)</text>
+                <text x="170" y="545" text-anchor="middle" font-size="10" fill="#166534" font-weight="bold">kubectl edit cm</text>
+
+                <!-- Arrow -->
+                <line x1="260" y1="510" x2="350" y2="510" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-cm4)"/>
+                <text x="305" y="500" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="bold">Sync (kubelet)</text>
+                <text x="305" y="530" text-anchor="middle" font-size="9" fill="#64748b">~1 minute</text>
+
+                <!-- Volume Mount Update -->
+                <rect x="360" y="460" width="200" height="100" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="460" y="480" text-anchor="middle" font-size="11" font-weight="bold" fill="#166534">Volume Mount</text>
+                <text x="460" y="500" text-anchor="middle" font-size="10" fill="#14532d">✓ Auto-updates</text>
+                <text x="460" y="518" text-anchor="middle" font-size="9" fill="#14532d">/config/log.level</text>
+                <text x="460" y="533" text-anchor="middle" font-size="9" fill="#14532d">reflects new value</text>
+                <text x="460" y="550" text-anchor="middle" font-size="8" fill="#64748b">App must reload config</text>
+
+                <!-- Env Vars NO Update -->
+                <rect x="590" y="460" width="280" height="100" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+                <text x="730" y="480" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">Environment Variables</text>
+                <text x="730" y="500" text-anchor="middle" font-size="10" fill="#7f1d1d">✗ NO auto-update</text>
+                <text x="730" y="518" text-anchor="middle" font-size="9" fill="#7f1d1d">Env vars set at Pod creation</text>
+                <text x="730" y="533" text-anchor="middle" font-size="9" fill="#7f1d1d">Immutable during Pod lifetime</text>
+                <text x="730" y="550" text-anchor="middle" font-size="8" fill="#64748b">Must recreate Pod for updates</text>
+
+                <defs>
+                    <marker id="arrow-cm1" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#22c55e"/>
+                    </marker>
+                    <marker id="arrow-cm2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#3b82f6"/>
+                    </marker>
+                    <marker id="arrow-cm3" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#f59e0b"/>
+                    </marker>
+                    <marker id="arrow-cm4" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#22c55e"/>
+                    </marker>
+                </defs>
+            </svg>
+
+            <div class="section-note">The biggest practical choice is whether the application expects configuration as environment variables or as files. Volume mounts support dynamic updates; environment variables do not.</div>
         </section>
 
         <section id="examples" class="view">
@@ -361,6 +446,66 @@
                     <h2>Examples You Can Recognize Quickly</h2>
                 </div>
             </div>
+
+            <!-- Multi-Container Sharing -->
+            <svg viewBox="0 0 800 350" style="width: 100%; max-width: 800px; margin: 20px auto; display: block;">
+                <!-- Title -->
+                <text x="400" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e293b">Multi-Container ConfigMap Sharing</text>
+
+                <!-- Pod Boundary -->
+                <rect x="50" y="50" width="700" height="280" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="3" stroke-dasharray="8,4"/>
+                <text x="400" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#475569">Pod: multi-container-app</text>
+
+                <!-- ConfigMap (external) -->
+                <rect x="300" y="90" width="200" height="70" rx="6" fill="#f0f9ff" stroke="#0284c7" stroke-width="2"/>
+                <text x="400" y="112" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">ConfigMap: shared-config</text>
+                <text x="400" y="132" text-anchor="middle" font-size="10" fill="#075985" font-family="monospace">api.url: https://api.example.com</text>
+                <text x="400" y="148" text-anchor="middle" font-size="10" fill="#075985" font-family="monospace">timeout: 30</text>
+
+                <!-- Arrow to Volume -->
+                <line x1="400" y1="160" x2="400" y2="195" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow-vol)"/>
+
+                <!-- Shared Volume -->
+                <rect x="320" y="200" width="160" height="50" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                <text x="400" y="220" text-anchor="middle" font-size="11" font-weight="bold" fill="#3730a3">Volume: config-vol</text>
+                <text x="400" y="238" text-anchor="middle" font-size="9" fill="#4338ca">Mounted from ConfigMap</text>
+
+                <!-- Container 1 -->
+                <rect x="80" y="260" width="200" height="50" rx="6" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="180" y="278" text-anchor="middle" font-size="11" font-weight="bold" fill="#166534">Container: web-app</text>
+                <text x="180" y="295" text-anchor="middle" font-size="9" fill="#14532d">Mount: /app/config</text>
+
+                <!-- Container 2 -->
+                <rect x="320" y="260" width="160" height="50" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="400" y="278" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">Container: sidecar</text>
+                <text x="400" y="295" text-anchor="middle" font-size="9" fill="#1e3a8a">Mount: /etc/config</text>
+
+                <!-- Container 3 -->
+                <rect x="520" y="260" width="200" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="620" y="278" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">Container: init-db</text>
+                <text x="620" y="295" text-anchor="middle" font-size="9" fill="#78350f">Mount: /config</text>
+
+                <!-- Arrows from volume to containers -->
+                <line x1="350" y1="250" x2="180" y2="260" stroke="#22c55e" stroke-width="2" marker-end="url(#arrow-c1)"/>
+                <line x1="400" y1="250" x2="400" y2="260" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-c2)"/>
+                <line x1="450" y1="250" x2="620" y2="260" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-c3)"/>
+
+                <defs>
+                    <marker id="arrow-vol" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#6366f1"/>
+                    </marker>
+                    <marker id="arrow-c1" markerWidth="6" markerHeight="6" refX="5" refY="2" orient="auto">
+                        <polygon points="0 0, 6 2, 0 4" fill="#22c55e"/>
+                    </marker>
+                    <marker id="arrow-c2" markerWidth="6" markerHeight="6" refX="5" refY="2" orient="auto">
+                        <polygon points="0 0, 6 2, 0 4" fill="#3b82f6"/>
+                    </marker>
+                    <marker id="arrow-c3" markerWidth="6" markerHeight="6" refX="5" refY="2" orient="auto">
+                        <polygon points="0 0, 6 2, 0 4" fill="#f59e0b"/>
+                    </marker>
+                </defs>
+            </svg>
+
             <div class="example-stack">
             <section class="example-card">
                 <div class="section-kicker">ConfigMap YAML</div>
@@ -436,7 +581,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>

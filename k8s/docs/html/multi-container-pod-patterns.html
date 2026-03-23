@@ -271,6 +271,12 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        .diagram-view {
+            display: none;
+        }
+        .diagram-view.active {
+            display: block;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
@@ -292,6 +298,7 @@
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
             <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="diagrams">Diagrams</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
             <button class="btn" data-view="practice">Practice</button>
@@ -352,6 +359,207 @@
 </div>
 
             <div class="section-note">A multi-container Pod makes sense only when the containers are truly operationally coupled and benefit from sharing the same Pod boundary.</div>
+        </section>
+
+        <section id="diagrams" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Diagrams</div>
+                    <h2>Multi-Container Pod Patterns</h2>
+                </div>
+            </div>
+
+            <div class="controls" style="margin-bottom: 20px;">
+                <button class="btn active" data-diagram="sidecar">Sidecar Pattern</button>
+                <button class="btn" data-diagram="ambassador">Ambassador Pattern</button>
+                <button class="btn" data-diagram="adapter">Adapter Pattern</button>
+            </div>
+
+            <div id="diagram-sidecar" class="diagram-view active">
+                <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Sidecar Pattern: Log Shipping</h3>
+                <svg viewBox="0 0 900 400" style="width: 100%; max-width: 900px; height: auto;">
+                    <defs>
+                        <marker id="arrow-side" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+
+                    <!-- Pod boundary -->
+                    <rect x="50" y="50" width="800" height="300" rx="12" fill="#f8fbff" stroke="#326CE5" stroke-width="3" stroke-dasharray="10,5"/>
+                    <text x="450" y="30" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="16">Pod (Shared Network + Storage)</text>
+
+                    <!-- Main App Container -->
+                    <rect x="100" y="100" width="280" height="200" rx="8" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
+                    <text x="240" y="130" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Main Container</text>
+                    <text x="240" y="150" text-anchor="middle" fill="white" font-size="12">nginx web server</text>
+                    <text x="240" y="180" text-anchor="middle" fill="#dbeafe" font-size="11">Writes access logs to</text>
+                    <text x="240" y="200" text-anchor="middle" fill="#dbeafe" font-size="11">/var/log/nginx/</text>
+                    <text x="240" y="230" text-anchor="middle" fill="white" font-size="10">Shared Volume:</text>
+                    <text x="240" y="250" text-anchor="middle" fill="white" font-size="10">logs-volume</text>
+                    <title>Main application container</title>
+
+                    <!-- Shared Volume indicator -->
+                    <rect x="120" y="260" width="240" height="20" rx="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="240" y="275" text-anchor="middle" fill="white" font-weight="bold" font-size="10">📁 Shared emptyDir Volume</text>
+
+                    <!-- Arrow -->
+                    <line x1="380" y1="200" x2="460" y2="200" stroke="#fbbf24" stroke-width="3" marker-end="url(#arrow-side)"/>
+                    <text x="420" y="190" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="bold">Shares</text>
+                    <text x="420" y="220" text-anchor="middle" fill="#f59e0b" font-size="10">logs volume</text>
+
+                    <!-- Sidecar Container -->
+                    <rect x="460" y="100" width="280" height="200" rx="8" fill="#22c55e" stroke="#16a34a" stroke-width="3"/>
+                    <text x="600" y="130" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Sidecar Container</text>
+                    <text x="600" y="150" text-anchor="middle" fill="white" font-size="12">fluentd log shipper</text>
+                    <text x="600" y="180" text-anchor="middle" fill="#dcfce7" font-size="11">Reads logs from</text>
+                    <text x="600" y="200" text-anchor="middle" fill="#dcfce7" font-size="11">/var/log/nginx/</text>
+                    <text x="600" y="230" text-anchor="middle" fill="white" font-size="10">Shared Volume:</text>
+                    <text x="600" y="250" text-anchor="middle" fill="white" font-size="10">logs-volume</text>
+                    <title>Sidecar collects and ships logs</title>
+
+                    <rect x="480" y="260" width="240" height="20" rx="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="600" y="275" text-anchor="middle" fill="white" font-weight="bold" font-size="10">📁 Shared emptyDir Volume</text>
+
+                    <!-- Arrow to external -->
+                    <line x1="740" y1="150" x2="820" y2="150" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow-side)"/>
+                    <text x="780" y="140" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="bold">Ships to</text>
+
+                    <!-- External System -->
+                    <rect x="820" y="120" width="60" height="60" rx="6" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
+                    <text x="850" y="145" text-anchor="middle" fill="white" font-weight="bold" font-size="11">☁️</text>
+                    <text x="850" y="165" text-anchor="middle" fill="white" font-size="9">Logs</text>
+                    <text x="850" y="178" text-anchor="middle" fill="white" font-size="9">System</text>
+
+                    <!-- Info box -->
+                    <rect x="150" y="360" width="600" height="25" rx="6" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="450" y="378" text-anchor="middle" fill="#1e3a8a" font-size="11">Sidecar runs continuously alongside main app, sharing localhost network & storage</text>
+                </svg>
+            </div>
+
+            <div id="diagram-ambassador" class="diagram-view">
+                <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Ambassador Pattern: Database Proxy</h3>
+                <svg viewBox="0 0 900 400" style="width: 100%; max-width: 900px; height: auto;">
+                    <defs>
+                        <marker id="arrow-amb" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+
+                    <!-- Pod boundary -->
+                    <rect x="50" y="50" width="600" height="300" rx="12" fill="#f8fbff" stroke="#326CE5" stroke-width="3" stroke-dasharray="10,5"/>
+                    <text x="350" y="30" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="16">Pod (Shared localhost network)</text>
+
+                    <!-- Main App Container -->
+                    <rect x="100" y="100" width="220" height="200" rx="8" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
+                    <text x="210" y="130" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Main Container</text>
+                    <text x="210" y="150" text-anchor="middle" fill="white" font-size="12">Application</text>
+                    <text x="210" y="180" text-anchor="middle" fill="#dbeafe" font-size="11">Connects to:</text>
+                    <text x="210" y="200" text-anchor="middle" fill="#dbeafe" font-size="12" font-weight="bold">localhost:5432</text>
+                    <text x="210" y="230" text-anchor="middle" fill="white" font-size="10">(thinks DB is local)</text>
+                    <text x="210" y="260" text-anchor="middle" fill="#dbeafe" font-size="9">No complex routing</text>
+                    <text x="210" y="275" text-anchor="middle" fill="#dbeafe" font-size="9">configuration needed</text>
+                    <title>Application connects to localhost</title>
+
+                    <!-- Arrow -->
+                    <line x1="320" y1="200" x2="380" y2="200" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-amb)"/>
+                    <text x="350" y="190" text-anchor="middle" fill="#326CE5" font-size="10" font-weight="bold">TCP</text>
+                    <text x="350" y="220" text-anchor="middle" fill="#326CE5" font-size="10">localhost</text>
+
+                    <!-- Ambassador Container -->
+                    <rect x="380" y="100" width="220" height="200" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="3"/>
+                    <text x="490" y="130" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Ambassador</text>
+                    <text x="490" y="150" text-anchor="middle" fill="white" font-size="12">DB Proxy</text>
+                    <text x="490" y="180" text-anchor="middle" fill="#e9d5ff" font-size="11">Listens on:</text>
+                    <text x="490" y="200" text-anchor="middle" fill="#e9d5ff" font-size="12" font-weight="bold">localhost:5432</text>
+                    <text x="490" y="230" text-anchor="middle" fill="white" font-size="10">Forwards to real DB</text>
+                    <text x="490" y="250" text-anchor="middle" fill="white" font-size="10">with connection pooling,</text>
+                    <text x="490" y="265" text-anchor="middle" fill="white" font-size="10">TLS, retry logic</text>
+                    <title>Ambassador proxies external services</title>
+
+                    <!-- Arrow to external -->
+                    <line x1="650" y1="200" x2="720" y2="200" stroke="#8b5cf6" stroke-width="3" marker-end="url(#arrow-amb)"/>
+                    <text x="685" y="190" text-anchor="middle" fill="#8b5cf6" font-size="10" font-weight="bold">Proxies</text>
+
+                    <!-- External Database -->
+                    <rect x="720" y="140" width="140" height="120" rx="8" fill="#ef4444" stroke="#dc2626" stroke-width="3"/>
+                    <text x="790" y="170" text-anchor="middle" fill="white" font-weight="bold" font-size="13">External DB</text>
+                    <text x="790" y="195" text-anchor="middle" fill="white" font-size="11">postgres.example.com</text>
+                    <text x="790" y="215" text-anchor="middle" fill="white" font-size="11">:5432</text>
+                    <text x="790" y="240" text-anchor="middle" fill="#ffe4e6" font-size="9">Real database</text>
+                    <title>External database service</title>
+
+                    <!-- Info box -->
+                    <rect x="150" y="360" width="600" height="25" rx="6" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="450" y="378" text-anchor="middle" fill="#1e3a8a" font-size="11">Ambassador mediates traffic to external services, adding features like retries and pooling</text>
+                </svg>
+            </div>
+
+            <div id="diagram-adapter" class="diagram-view">
+                <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Adapter Pattern: Metrics Format Transformation</h3>
+                <svg viewBox="0 0 900 400" style="width: 100%; max-width: 900px; height: auto;">
+                    <defs>
+                        <marker id="arrow-adpt" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+
+                    <!-- Pod boundary -->
+                    <rect x="50" y="50" width="800" height="300" rx="12" fill="#f8fbff" stroke="#326CE5" stroke-width="3" stroke-dasharray="10,5"/>
+                    <text x="450" y="30" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="16">Pod (Shared Network + Storage)</text>
+
+                    <!-- Main App Container -->
+                    <rect x="100" y="100" width="240" height="200" rx="8" fill="#6366f1" stroke="#4f46e5" stroke-width="3"/>
+                    <text x="220" y="130" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Main Container</text>
+                    <text x="220" y="150" text-anchor="middle" fill="white" font-size="12">Legacy App</text>
+                    <text x="220" y="180" text-anchor="middle" fill="#dbeafe" font-size="11">Writes custom metrics</text>
+                    <text x="220" y="200" text-anchor="middle" fill="#dbeafe" font-size="11">to /metrics/app.log</text>
+                    <text x="220" y="230" text-anchor="middle" fill="white" font-size="10">Format:</text>
+                    <text x="220" y="250" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="monospace">req_count:42|time:1.2s</text>
+                    <text x="220" y="265" text-anchor="middle" fill="#fbbf24" font-size="9" font-family="monospace">errors:3|latency:450ms</text>
+                    <title>App writes custom format metrics</title>
+
+                    <!-- Shared Volume -->
+                    <rect x="120" y="270" width="200" height="20" rx="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="220" y="285" text-anchor="middle" fill="white" font-weight="bold" font-size="10">📁 Shared metrics volume</text>
+
+                    <!-- Arrow -->
+                    <line x1="340" y1="200" x2="420" y2="200" stroke="#fbbf24" stroke-width="3" marker-end="url(#arrow-adpt)"/>
+                    <text x="380" y="190" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="bold">Reads</text>
+
+                    <!-- Adapter Container -->
+                    <rect x="420" y="100" width="240" height="200" rx="8" fill="#f59e0b" stroke="#d97706" stroke-width="3"/>
+                    <text x="540" y="130" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Adapter Container</text>
+                    <text x="540" y="150" text-anchor="middle" fill="white" font-size="12">Metrics Transformer</text>
+                    <text x="540" y="180" text-anchor="middle" fill="#fef3c7" font-size="11">Reads custom format</text>
+                    <text x="540" y="200" text-anchor="middle" fill="#fef3c7" font-size="11">Transforms to</text>
+                    <text x="540" y="220" text-anchor="middle" fill="#fef3c7" font-size="11">Prometheus format</text>
+                    <text x="540" y="250" text-anchor="middle" fill="white" font-size="9" font-family="monospace">requests_total 42</text>
+                    <text x="540" y="265" text-anchor="middle" fill="white" font-size="9" font-family="monospace">errors_total 3</text>
+                    <title>Adapter transforms metrics format</title>
+
+                    <rect x="440" y="270" width="200" height="20" rx="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="540" y="285" text-anchor="middle" fill="white" font-weight="bold" font-size="10">📁 Shared metrics volume</text>
+
+                    <!-- Arrow to monitoring -->
+                    <line x1="660" y1="200" x2="740" y2="200" stroke="#10b981" stroke-width="3" marker-end="url(#arrow-adpt)"/>
+                    <text x="700" y="190" text-anchor="middle" fill="#10b981" font-size="10" font-weight="bold">Exposes</text>
+
+                    <!-- Monitoring System -->
+                    <rect x="740" y="140" width="100" height="120" rx="8" fill="#10b981" stroke="#059669" stroke-width="3"/>
+                    <text x="790" y="170" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Prometheus</text>
+                    <text x="790" y="195" text-anchor="middle" fill="white" font-size="11">Scrapes</text>
+                    <text x="790" y="215" text-anchor="middle" fill="white" font-size="11">:9090/metrics</text>
+                    <text x="790" y="240" text-anchor="middle" fill="#dcfce7" font-size="9">Standard</text>
+                    <text x="790" y="253" text-anchor="middle" fill="#dcfce7" font-size="9">format</text>
+                    <title>Monitoring system gets standard format</title>
+
+                    <!-- Info box -->
+                    <rect x="150" y="360" width="600" height="25" rx="6" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="450" y="378" text-anchor="middle" fill="#1e3a8a" font-size="11">Adapter transforms app output to match standard interfaces without modifying the app</text>
+                </svg>
+            </div>
+
+            <div class="section-note" style="margin-top: 20px;">All three patterns share the key principle: containers in the same Pod share network namespace (localhost) and can share volumes. Click the buttons above to explore each pattern.</div>
         </section>
 
         <section id="examples" class="view">
@@ -432,11 +640,10 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>
-        const buttons = document.querySelectorAll('.btn');
+        const buttons = document.querySelectorAll('.btn[data-view]');
         const views = document.querySelectorAll('.view');
 
         buttons.forEach((button) => {
@@ -446,6 +653,20 @@
                 views.forEach((view) => view.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Diagram switching
+        const diagramButtons = document.querySelectorAll('.btn[data-diagram]');
+        const diagramViews = document.querySelectorAll('.diagram-view');
+
+        diagramButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const diagramId = button.dataset.diagram;
+                diagramButtons.forEach((item) => item.classList.remove('active'));
+                diagramViews.forEach((view) => view.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById('diagram-' + diagramId).classList.add('active');
             });
         });
     </script>

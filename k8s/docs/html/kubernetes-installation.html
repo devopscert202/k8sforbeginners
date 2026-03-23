@@ -328,38 +328,126 @@
                     <h2>Cluster Installation Sequence</h2>
                 </div>
             </div>
-            <div class="flow-track">
-            <article class="flow-step">
-                <div class="step-number">1</div>
-                <h3>Prepare all nodes</h3>
-                <p>Update packages, disable swap, load modules, and configure kernel parameters.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">2</div>
-                <h3>Install container runtime</h3>
-                <p>Set up and configure containerd for kubelet.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">3</div>
-                <h3>Install kubeadm toolchain</h3>
-                <p>Install kubeadm, kubelet, and kubectl.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">4</div>
-                <h3>Initialize control plane</h3>
-                <p>Run kubeadm init and configure kubectl access.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">5</div>
-                <h3>Install CNI</h3>
-                <p>Apply a network plugin such as Calico so Pods can communicate.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">6</div>
-                <h3>Join workers and verify</h3>
-                <p>Run kubeadm join on workers, then confirm node and Pod health.</p>
-            </article>
-</div>
+
+            <svg viewBox="0 0 1200 800" style="max-width: 100%; height: auto; margin-bottom: 24px;">
+                <!-- kubeadm init flow -->
+                <defs>
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#326CE5;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+                    </linearGradient>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#326CE5" />
+                    </marker>
+                </defs>
+
+                <!-- Title -->
+                <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#326CE5">kubeadm init Flow</text>
+
+                <!-- Pre-flight checks -->
+                <rect x="50" y="60" width="200" height="80" rx="8" fill="url(#grad1)" opacity="0.9"/>
+                <text x="150" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="white">1. Pre-flight Checks</text>
+                <text x="150" y="110" text-anchor="middle" font-size="12" fill="white">Verify swap, ports,</text>
+                <text x="150" y="125" text-anchor="middle" font-size="12" fill="white">kernel modules</text>
+                <line x1="250" y1="100" x2="330" y2="100" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                <!-- Certificate generation -->
+                <rect x="340" y="60" width="200" height="80" rx="8" fill="url(#grad1)" opacity="0.9"/>
+                <text x="440" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="white">2. Certificates</text>
+                <text x="440" y="110" text-anchor="middle" font-size="12" fill="white">Generate CA and</text>
+                <text x="440" y="125" text-anchor="middle" font-size="12" fill="white">component certs</text>
+                <line x1="540" y1="100" x2="620" y2="100" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                <!-- Control plane pods -->
+                <rect x="630" y="60" width="200" height="80" rx="8" fill="url(#grad1)" opacity="0.9"/>
+                <text x="730" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="white">3. Control Plane Pods</text>
+                <text x="730" y="110" text-anchor="middle" font-size="12" fill="white">etcd, API server,</text>
+                <text x="730" y="125" text-anchor="middle" font-size="12" fill="white">scheduler, controller</text>
+                <line x1="830" y1="100" x2="910" y2="100" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                <!-- kubeconfig -->
+                <rect x="920" y="60" width="200" height="80" rx="8" fill="url(#grad1)" opacity="0.9"/>
+                <text x="1020" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="white">4. kubeconfig</text>
+                <text x="1020" y="110" text-anchor="middle" font-size="12" fill="white">Admin config at</text>
+                <text x="1020" y="125" text-anchor="middle" font-size="12" fill="white">/etc/kubernetes/admin.conf</text>
+
+                <!-- Arrow down -->
+                <line x1="1020" y1="140" x2="1020" y2="190" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                <!-- Network plugin -->
+                <rect x="920" y="200" width="200" height="80" rx="8" fill="#22c55e" opacity="0.9"/>
+                <text x="1020" y="230" text-anchor="middle" font-size="16" font-weight="bold" fill="white">5. Network Plugin</text>
+                <text x="1020" y="250" text-anchor="middle" font-size="12" fill="white">Deploy CNI</text>
+                <text x="1020" y="265" text-anchor="middle" font-size="12" fill="white">(Calico, Flannel, etc.)</text>
+
+                <!-- Component bootstrapping -->
+                <text x="600" y="350" text-anchor="middle" font-size="20" font-weight="bold" fill="#326CE5">Component Bootstrapping Sequence</text>
+
+                <!-- etcd -->
+                <rect x="50" y="380" width="180" height="70" rx="8" fill="#fbbf24" opacity="0.9"/>
+                <text x="140" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a2e">etcd</text>
+                <text x="140" y="425" text-anchor="middle" font-size="11" fill="#1a1a2e">Key-value store</text>
+                <text x="140" y="440" text-anchor="middle" font-size="11" fill="#1a1a2e">starts first</text>
+                <line x1="230" y1="415" x2="290" y2="415" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- API server -->
+                <rect x="300" y="380" width="180" height="70" rx="8" fill="#fbbf24" opacity="0.9"/>
+                <text x="390" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a2e">kube-apiserver</text>
+                <text x="390" y="425" text-anchor="middle" font-size="11" fill="#1a1a2e">Connects to etcd,</text>
+                <text x="390" y="440" text-anchor="middle" font-size="11" fill="#1a1a2e">serves API</text>
+                <line x1="480" y1="415" x2="540" y2="415" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- Controller manager -->
+                <rect x="550" y="380" width="180" height="70" rx="8" fill="#fbbf24" opacity="0.9"/>
+                <text x="640" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a2e">controller-manager</text>
+                <text x="640" y="425" text-anchor="middle" font-size="11" fill="#1a1a2e">Watches API,</text>
+                <text x="640" y="440" text-anchor="middle" font-size="11" fill="#1a1a2e">reconciles state</text>
+                <line x1="730" y1="415" x2="790" y2="415" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- Scheduler -->
+                <rect x="800" y="380" width="180" height="70" rx="8" fill="#fbbf24" opacity="0.9"/>
+                <text x="890" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a1a2e">kube-scheduler</text>
+                <text x="890" y="425" text-anchor="middle" font-size="11" fill="#1a1a2e">Assigns pods</text>
+                <text x="890" y="440" text-anchor="middle" font-size="11" fill="#1a1a2e">to nodes</text>
+
+                <!-- Worker join flow -->
+                <text x="600" y="520" text-anchor="middle" font-size="20" font-weight="bold" fill="#326CE5">Worker Node Join Flow</text>
+
+                <!-- Join command -->
+                <rect x="50" y="550" width="240" height="80" rx="8" fill="#8b5cf6" opacity="0.9"/>
+                <text x="170" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">1. kubeadm join</text>
+                <text x="170" y="595" text-anchor="middle" font-size="11" fill="white">Worker executes join command</text>
+                <text x="170" y="610" text-anchor="middle" font-size="11" fill="white">with token from control plane</text>
+                <line x1="290" y1="590" x2="360" y2="590" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                <!-- TLS bootstrap -->
+                <rect x="370" y="550" width="240" height="80" rx="8" fill="#8b5cf6" opacity="0.9"/>
+                <text x="490" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">2. TLS Bootstrap</text>
+                <text x="490" y="595" text-anchor="middle" font-size="11" fill="white">kubelet requests certificate</text>
+                <text x="490" y="610" text-anchor="middle" font-size="11" fill="white">from API server</text>
+                <line x1="610" y1="590" x2="680" y2="590" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                <!-- Node registration -->
+                <rect x="690" y="550" width="240" height="80" rx="8" fill="#8b5cf6" opacity="0.9"/>
+                <text x="810" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="white">3. Node Registration</text>
+                <text x="810" y="595" text-anchor="middle" font-size="11" fill="white">Node object created in API,</text>
+                <text x="810" y="610" text-anchor="middle" font-size="11" fill="white">kubelet starts reporting</text>
+                <line x1="930" y1="590" x2="950" y2="590" stroke="#326CE5" stroke-width="3" marker-end="url(#arrowhead)"/>
+
+                <!-- Ready state -->
+                <ellipse cx="1040" cy="590" rx="90" ry="40" fill="#22c55e" opacity="0.9"/>
+                <text x="1040" y="590" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Node Ready</text>
+                <text x="1040" y="605" text-anchor="middle" font-size="11" fill="white">Can schedule pods</text>
+
+                <!-- Legend -->
+                <text x="600" y="710" text-anchor="middle" font-size="14" font-weight="bold" fill="#64748b">Legend</text>
+                <rect x="400" y="720" width="20" height="20" rx="4" fill="#326CE5"/>
+                <text x="430" y="735" font-size="12" fill="#64748b">Control Plane Init</text>
+                <rect x="600" y="720" width="20" height="20" rx="4" fill="#fbbf24"/>
+                <text x="630" y="735" font-size="12" fill="#64748b">Component Bootstrap</text>
+                <rect x="800" y="720" width="20" height="20" rx="4" fill="#8b5cf6"/>
+                <text x="830" y="735" font-size="12" fill="#64748b">Worker Join</text>
+            </svg>
 
             <div class="section-note">CNI installation is the transition point between a bootstrapped control plane and a functional cluster that can run networked workloads cleanly.</div>
         </section>

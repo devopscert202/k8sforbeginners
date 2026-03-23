@@ -271,6 +271,12 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        .diagram-view {
+            display: none;
+        }
+        .diagram-view.active {
+            display: block;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
@@ -292,6 +298,7 @@
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
             <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="diagrams">Diagrams</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
             <button class="btn" data-view="practice">Practice</button>
@@ -352,6 +359,164 @@
 </div>
 
             <div class="section-note">The API server shows status, but the kubelet remains the authoritative lifecycle manager for the Static Pod itself.</div>
+        </section>
+
+        <section id="diagrams" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Diagrams</div>
+                    <h2>Static Pod Architecture</h2>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Static Pod vs API-Managed Pod Comparison</h3>
+            <svg viewBox="0 0 900 500" style="width: 100%; max-width: 900px; height: auto; margin-bottom: 30px;">
+                <defs>
+                    <marker id="arrow-static" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                    </marker>
+                    <marker id="arrow-api" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#8b5cf6" />
+                    </marker>
+                </defs>
+
+                <!-- Static Pod Side -->
+                <text x="200" y="30" text-anchor="middle" fill="#326CE5" font-weight="bold" font-size="16">Static Pod</text>
+                <rect x="50" y="40" width="300" height="400" rx="8" fill="none" stroke="#326CE5" stroke-width="2" stroke-dasharray="5,5"/>
+
+                <!-- Manifest File -->
+                <rect x="80" y="70" width="240" height="60" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="200" y="92" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="13">/etc/kubernetes/manifests/</text>
+                <text x="200" y="112" text-anchor="middle" fill="#92400e" font-size="11">etcd.yaml (manifest file)</text>
+                <title>Static pod manifest on disk</title>
+
+                <!-- Arrow down -->
+                <line x1="200" y1="130" x2="200" y2="180" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-static)"/>
+                <text x="230" y="160" fill="#326CE5" font-size="11" font-weight="bold">Watches</text>
+
+                <!-- Kubelet -->
+                <rect x="80" y="180" width="240" height="70" rx="6" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                <text x="200" y="205" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Kubelet</text>
+                <text x="200" y="225" text-anchor="middle" fill="white" font-size="11">Node: control-plane-1</text>
+                <text x="200" y="240" text-anchor="middle" fill="white" font-size="10">Primary lifecycle manager</text>
+                <title>Kubelet directly manages static pod</title>
+
+                <!-- Arrow down -->
+                <line x1="200" y1="250" x2="200" y2="300" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-static)"/>
+                <text x="230" y="280" fill="#326CE5" font-size="11" font-weight="bold">Creates</text>
+
+                <!-- Static Pod -->
+                <rect x="80" y="300" width="240" height="70" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="200" y="325" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Static Pod</text>
+                <text x="200" y="345" text-anchor="middle" fill="white" font-size="11">etcd-control-plane-1</text>
+                <text x="200" y="360" text-anchor="middle" fill="white" font-size="10">Running on node</text>
+                <title>Static pod running on node</title>
+
+                <!-- Mirror arrow to API -->
+                <line x1="320" y1="335" x2="550" y2="335" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-api)"/>
+                <text x="435" y="325" text-anchor="middle" fill="#64748b" font-size="10">Mirror (read-only)</text>
+
+                <!-- API-Managed Pod Side -->
+                <text x="700" y="30" text-anchor="middle" fill="#8b5cf6" font-weight="bold" font-size="16">API-Managed Pod</text>
+                <rect x="550" y="40" width="300" height="400" rx="8" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5,5"/>
+
+                <!-- API Server -->
+                <rect x="580" y="70" width="240" height="70" rx="6" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                <text x="700" y="95" text-anchor="middle" fill="white" font-weight="bold" font-size="14">API Server</text>
+                <text x="700" y="115" text-anchor="middle" fill="white" font-size="11">kubectl apply deployment.yaml</text>
+                <text x="700" y="130" text-anchor="middle" fill="white" font-size="10">Primary source of truth</text>
+                <title>API server manages regular pods</title>
+
+                <!-- Arrow down -->
+                <line x1="700" y1="140" x2="700" y2="180" stroke="#8b5cf6" stroke-width="3" marker-end="url(#arrow-api)"/>
+                <text x="730" y="165" fill="#8b5cf6" font-size="11" font-weight="bold">Schedules</text>
+
+                <!-- Scheduler + Controller -->
+                <rect x="580" y="180" width="240" height="70" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="700" y="205" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Scheduler + Controllers</text>
+                <text x="700" y="225" text-anchor="middle" fill="white" font-size="11">Deployment controller</text>
+                <text x="700" y="240" text-anchor="middle" fill="white" font-size="10">Manages desired state</text>
+                <title>Scheduler and controllers manage placement</title>
+
+                <!-- Arrow down -->
+                <line x1="700" y1="250" x2="700" y2="300" stroke="#8b5cf6" stroke-width="3" marker-end="url(#arrow-api)"/>
+                <text x="730" y="280" fill="#8b5cf6" font-size="11" font-weight="bold">Creates</text>
+
+                <!-- Regular Pod -->
+                <rect x="580" y="300" width="240" height="70" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="700" y="325" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Regular Pod</text>
+                <text x="700" y="345" text-anchor="middle" fill="white" font-size="11">nginx-deployment-xyz</text>
+                <text x="700" y="360" text-anchor="middle" fill="white" font-size="10">Scheduled by API</text>
+                <title>Regular pod managed through API</title>
+
+                <!-- API Server Mirror View -->
+                <rect x="580" y="390" width="240" height="40" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+                <text x="700" y="410" text-anchor="middle" fill="#475569" font-weight="bold" font-size="12">Mirror Pod View</text>
+                <text x="700" y="425" text-anchor="middle" fill="#64748b" font-size="10">(from static pods)</text>
+            </svg>
+
+            <h3 style="margin-bottom: 15px; margin-top: 30px; color: var(--kube-blue);">Control Plane Components as Static Pods</h3>
+            <svg viewBox="0 0 900 450" style="width: 100%; max-width: 900px; height: auto;">
+                <defs>
+                    <marker id="arrow-cp" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                    </marker>
+                </defs>
+
+                <!-- Node Box -->
+                <rect x="50" y="50" width="800" height="350" rx="8" fill="#f8fafc" stroke="#cbd5e0" stroke-width="2"/>
+                <text x="450" y="30" text-anchor="middle" fill="#1e293b" font-weight="bold" font-size="15">Control Plane Node</text>
+
+                <!-- /etc/kubernetes/manifests/ -->
+                <rect x="80" y="80" width="740" height="80" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="450" y="105" text-anchor="middle" fill="#92400e" font-weight="bold" font-size="14">/etc/kubernetes/manifests/</text>
+                <text x="200" y="135" text-anchor="middle" fill="#92400e" font-size="11">etcd.yaml</text>
+                <text x="380" y="135" text-anchor="middle" fill="#92400e" font-size="11">kube-apiserver.yaml</text>
+                <text x="580" y="135" text-anchor="middle" fill="#92400e" font-size="11">kube-controller.yaml</text>
+                <text x="740" y="135" text-anchor="middle" fill="#92400e" font-size="11">kube-scheduler.yaml</text>
+
+                <!-- Kubelet watches -->
+                <rect x="320" y="190" width="260" height="50" rx="6" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                <text x="450" y="212" text-anchor="middle" fill="white" font-weight="bold" font-size="13">Kubelet</text>
+                <text x="450" y="230" text-anchor="middle" fill="white" font-size="11">Monitors manifest directory</text>
+
+                <!-- Arrows from kubelet to components -->
+                <line x1="350" y1="240" x2="150" y2="280" stroke="#326CE5" stroke-width="2" marker-end="url(#arrow-cp)"/>
+                <line x1="420" y1="240" x2="350" y2="280" stroke="#326CE5" stroke-width="2" marker-end="url(#arrow-cp)"/>
+                <line x1="480" y1="240" x2="550" y2="280" stroke="#326CE5" stroke-width="2" marker-end="url(#arrow-cp)"/>
+                <line x1="550" y1="240" x2="750" y2="280" stroke="#326CE5" stroke-width="2" marker-end="url(#arrow-cp)"/>
+
+                <!-- Static Pod Components -->
+                <rect x="80" y="280" width="140" height="90" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="150" y="305" text-anchor="middle" fill="white" font-weight="bold" font-size="12">etcd</text>
+                <text x="150" y="325" text-anchor="middle" fill="white" font-size="10">Static Pod</text>
+                <text x="150" y="340" text-anchor="middle" fill="white" font-size="10">Port: 2379</text>
+                <text x="150" y="355" text-anchor="middle" fill="#dbeafe" font-size="9">Key-value store</text>
+                <title>etcd data store as static pod</title>
+
+                <rect x="250" y="280" width="140" height="90" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="320" y="305" text-anchor="middle" fill="white" font-weight="bold" font-size="12">API Server</text>
+                <text x="320" y="325" text-anchor="middle" fill="white" font-size="10">Static Pod</text>
+                <text x="320" y="340" text-anchor="middle" fill="white" font-size="10">Port: 6443</text>
+                <text x="320" y="355" text-anchor="middle" fill="#dbeafe" font-size="9">Control plane API</text>
+                <title>Kubernetes API server as static pod</title>
+
+                <rect x="420" y="280" width="140" height="90" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="490" y="305" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Controller</text>
+                <text x="490" y="325" text-anchor="middle" fill="white" font-size="10">Static Pod</text>
+                <text x="490" y="340" text-anchor="middle" fill="white" font-size="10">Manager</text>
+                <text x="490" y="355" text-anchor="middle" fill="#dbeafe" font-size="9">Reconciliation loops</text>
+                <title>Controller manager as static pod</title>
+
+                <rect x="590" y="280" width="140" height="90" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="660" y="305" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Scheduler</text>
+                <text x="660" y="325" text-anchor="middle" fill="white" font-size="10">Static Pod</text>
+                <text x="660" y="340" text-anchor="middle" fill="white" font-size="10">Port: 10259</text>
+                <text x="660" y="355" text-anchor="middle" fill="#dbeafe" font-size="9">Pod placement</text>
+                <title>Scheduler as static pod</title>
+            </svg>
+
+            <div class="section-note" style="margin-top: 20px;">Static pods are essential for control plane components because they don't depend on the API server being available—the kubelet manages them directly from local files. This allows the control plane to bootstrap itself.</div>
         </section>
 
         <section id="examples" class="view">
@@ -437,7 +602,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>

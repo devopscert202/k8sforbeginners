@@ -271,6 +271,12 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        .diagram-view {
+            display: none;
+        }
+        .diagram-view.active {
+            display: block;
+        }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
@@ -292,6 +298,7 @@
         <div class="controls">
             <button class="btn active" data-view="concept">Concept</button>
             <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="diagrams">Diagrams</button>
             <button class="btn" data-view="examples">Examples</button>
             <button class="btn" data-view="comparison">Compare</button>
             <button class="btn" data-view="practice">Practice</button>
@@ -357,6 +364,136 @@
 </div>
 
             <div class="section-note">Metrics Server provides current operational resource data, not long historical monitoring data.</div>
+        </section>
+
+        <section id="diagrams" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Diagrams</div>
+                    <h2>Metrics Pipeline Architecture</h2>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 15px; color: var(--kube-blue);">Complete Metrics Flow (15s Scraping Interval)</h3>
+            <svg viewBox="0 0 900 550" style="width: 100%; max-width: 900px; height: auto; margin-bottom: 30px;">
+                <defs>
+                    <marker id="arrow-metrics" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                    </marker>
+                    <marker id="arrow-query" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#8b5cf6" />
+                    </marker>
+                </defs>
+
+                <!-- Nodes with Kubelets -->
+                <text x="120" y="30" text-anchor="middle" fill="#1e293b" font-weight="bold" font-size="14">Cluster Nodes</text>
+                <rect x="20" y="40" width="200" height="260" rx="8" fill="#f8fafc" stroke="#cbd5e0" stroke-width="2"/>
+
+                <!-- Node 1 -->
+                <rect x="40" y="60" width="160" height="70" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="120" y="82" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Node-1 Kubelet</text>
+                <text x="120" y="100" text-anchor="middle" fill="white" font-size="10">cAdvisor embedded</text>
+                <text x="120" y="118" text-anchor="middle" fill="#dbeafe" font-size="9">CPU: 45% | Mem: 2.1GB</text>
+                <title>Kubelet collects metrics via cAdvisor</title>
+
+                <!-- Node 2 -->
+                <rect x="40" y="145" width="160" height="70" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="120" y="167" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Node-2 Kubelet</text>
+                <text x="120" y="185" text-anchor="middle" fill="white" font-size="10">cAdvisor embedded</text>
+                <text x="120" y="203" text-anchor="middle" fill="#dbeafe" font-size="9">CPU: 62% | Mem: 3.4GB</text>
+
+                <!-- Node 3 -->
+                <rect x="40" y="230" width="160" height="70" rx="6" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
+                <text x="120" y="252" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Node-3 Kubelet</text>
+                <text x="120" y="270" text-anchor="middle" fill="white" font-size="10">cAdvisor embedded</text>
+                <text x="120" y="288" text-anchor="middle" fill="#dbeafe" font-size="9">CPU: 38% | Mem: 1.8GB</text>
+
+                <!-- Arrows to Metrics Server -->
+                <line x1="220" y1="95" x2="280" y2="150" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-metrics)"/>
+                <line x1="220" y1="180" x2="280" y2="170" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-metrics)"/>
+                <line x1="220" y1="265" x2="280" y2="190" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-metrics)"/>
+
+                <text x="240" y="140" fill="#326CE5" font-size="10" font-weight="bold">Scrape</text>
+                <text x="240" y="155" fill="#326CE5" font-size="9">Every 15s</text>
+
+                <!-- Metrics Server -->
+                <rect x="280" y="130" width="180" height="90" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="3"/>
+                <text x="370" y="155" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Metrics Server</text>
+                <text x="370" y="175" text-anchor="middle" fill="white" font-size="11">Aggregates &amp; Stores</text>
+                <text x="370" y="193" text-anchor="middle" fill="#dbeafe" font-size="10">In-memory (short-term)</text>
+                <text x="370" y="210" text-anchor="middle" fill="#dbeafe" font-size="9">kube-system namespace</text>
+                <title>Metrics Server aggregates data from all kubelets</title>
+
+                <!-- Arrow to API Aggregation -->
+                <line x1="460" y1="175" x2="520" y2="175" stroke="#326CE5" stroke-width="3" marker-end="url(#arrow-metrics)"/>
+                <text x="490" y="165" text-anchor="middle" fill="#326CE5" font-size="10" font-weight="bold">Exposes</text>
+
+                <!-- API Aggregation Layer -->
+                <rect x="520" y="130" width="180" height="90" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="3"/>
+                <text x="610" y="155" text-anchor="middle" fill="white" font-weight="bold" font-size="14">API Server</text>
+                <text x="610" y="175" text-anchor="middle" fill="white" font-size="11">Aggregation Layer</text>
+                <text x="610" y="193" text-anchor="middle" fill="#e9d5ff" font-size="10">/apis/metrics.k8s.io</text>
+                <title>API Server exposes metrics via aggregation layer</title>
+
+                <!-- Consumers -->
+                <text x="780" y="30" text-anchor="middle" fill="#1e293b" font-weight="bold" font-size="14">Consumers</text>
+
+                <!-- kubectl top -->
+                <rect x="720" y="50" width="120" height="50" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="780" y="72" text-anchor="middle" fill="white" font-weight="bold" font-size="12">kubectl top</text>
+                <text x="780" y="90" text-anchor="middle" fill="white" font-size="10">CLI inspection</text>
+                <line x1="700" y1="145" x2="750" y2="95" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-query)"/>
+
+                <!-- HPA -->
+                <rect x="720" y="120" width="120" height="50" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="780" y="142" text-anchor="middle" fill="white" font-weight="bold" font-size="12">HPA</text>
+                <text x="780" y="160" text-anchor="middle" fill="white" font-size="10">Autoscaling</text>
+                <line x1="700" y1="160" x2="720" y2="145" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-query)"/>
+
+                <!-- VPA -->
+                <rect x="720" y="190" width="120" height="50" rx="6" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+                <text x="780" y="212" text-anchor="middle" fill="white" font-weight="bold" font-size="12">VPA</text>
+                <text x="780" y="230" text-anchor="middle" fill="white" font-size="10">Vertical scaling</text>
+                <line x1="700" y1="190" x2="750" y2="215" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-query)"/>
+
+                <!-- Query label -->
+                <text x="760" y="110" fill="#8b5cf6" font-size="10" font-weight="bold">Query</text>
+
+                <!-- Timeline visualization -->
+                <rect x="50" y="350" width="800" height="150" rx="8" fill="#eff6ff" stroke="#326CE5" stroke-width="2"/>
+                <text x="450" y="375" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="13">Scraping Timeline (15-second intervals)</text>
+
+                <!-- Time markers -->
+                <text x="100" y="405" text-anchor="middle" fill="#64748b" font-size="10">t=0s</text>
+                <rect x="80" y="415" width="40" height="30" rx="4" fill="#326CE5" stroke="#1d4ed8" stroke-width="1"/>
+                <text x="100" y="435" text-anchor="middle" fill="white" font-size="9">Scrape</text>
+
+                <text x="200" y="405" text-anchor="middle" fill="#64748b" font-size="10">t=15s</text>
+                <rect x="180" y="415" width="40" height="30" rx="4" fill="#326CE5" stroke="#1d4ed8" stroke-width="1"/>
+                <text x="200" y="435" text-anchor="middle" fill="white" font-size="9">Scrape</text>
+
+                <text x="300" y="405" text-anchor="middle" fill="#64748b" font-size="10">t=30s</text>
+                <rect x="280" y="415" width="40" height="30" rx="4" fill="#326CE5" stroke="#1d4ed8" stroke-width="1"/>
+                <text x="300" y="435" text-anchor="middle" fill="white" font-size="9">Scrape</text>
+
+                <text x="400" y="405" text-anchor="middle" fill="#64748b" font-size="10">t=45s</text>
+                <rect x="380" y="415" width="40" height="30" rx="4" fill="#326CE5" stroke="#1d4ed8" stroke-width="1"/>
+                <text x="400" y="435" text-anchor="middle" fill="white" font-size="9">Scrape</text>
+
+                <text x="500" y="405" text-anchor="middle" fill="#64748b" font-size="10">t=60s</text>
+                <rect x="480" y="415" width="40" height="30" rx="4" fill="#326CE5" stroke="#1d4ed8" stroke-width="1"/>
+                <text x="500" y="435" text-anchor="middle" fill="white" font-size="9">Scrape</text>
+
+                <!-- Continuous indicator -->
+                <line x1="520" y1="430" x2="600" y2="430" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,5"/>
+                <text x="560" y="425" text-anchor="middle" fill="#64748b" font-size="10">Continues...</text>
+
+                <!-- Data freshness -->
+                <text x="450" y="470" text-anchor="middle" fill="#475569" font-size="11">✓ Data freshness: Maximum 15 seconds old</text>
+                <text x="450" y="488" text-anchor="middle" fill="#475569" font-size="11">✓ No historical data stored (in-memory only)</text>
+            </svg>
+
+            <div class="section-note" style="margin-top: 20px;">The Metrics Server scrapes kubelet APIs every 15 seconds by default. This provides near-real-time resource metrics without persistent storage overhead.</div>
         </section>
 
         <section id="examples" class="view">
@@ -432,7 +569,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>

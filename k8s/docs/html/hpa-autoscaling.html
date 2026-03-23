@@ -328,33 +328,289 @@
                     <h2>Autoscaling Control Loop</h2>
                 </div>
             </div>
-            <div class="flow-track">
-            <article class="flow-step">
-                <div class="step-number">1</div>
-                <h3>Collect metrics</h3>
-                <p>Pod CPU or memory usage is gathered from the cluster metrics pipeline.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">2</div>
-                <h3>Compare to target</h3>
-                <p>Observed values are compared to the HPA target threshold.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">3</div>
-                <h3>Calculate desired replicas</h3>
-                <p>The controller determines whether more or fewer Pods are needed.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">4</div>
-                <h3>Update workload</h3>
-                <p>Replica count is changed on the target Deployment, ReplicaSet, or StatefulSet.</p>
-            </article>
-            <article class="flow-step">
-                <div class="step-number">5</div>
-                <h3>Stabilize behavior</h3>
-                <p>Scaling policies and timing prevent rapid oscillation in many setups.</p>
-            </article>
-</div>
+
+            <!-- Interactive Scenario Controls -->
+            <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap;">
+                <button class="btn" style="border-color: #22c55e; color: #166534;" onclick="showScenario('scale-up')">Scale Up Scenario</button>
+                <button class="btn" style="border-color: #f59e0b; color: #92400e;" onclick="showScenario('scale-down')">Scale Down Scenario</button>
+                <button class="btn" style="border-color: #326CE5;" onclick="showScenario('metrics-flow')">Metrics Flow</button>
+                <button class="btn" style="border-color: #8b5cf6; color: #6b21a8;" onclick="showScenario('cooldown')">Cooldown Timeline</button>
+            </div>
+
+            <!-- SVG Flow Diagram Container -->
+            <div id="svg-container" style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 24px; border: 1px solid #dbe3f1; min-height: 400px;">
+                <svg id="flow-diagram" width="100%" height="400" viewBox="0 0 1200 400" style="max-width: 100%;">
+                    <!-- Definitions for markers and gradients -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                        <marker id="arrowhead-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#22c55e" />
+                        </marker>
+                        <marker id="arrowhead-amber" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#f59e0b" />
+                        </marker>
+                        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#326CE5;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="greenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="amberGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Base Control Loop (shown in metrics-flow scenario) -->
+                    <g id="metrics-flow-diagram" style="display: none;">
+                        <!-- Metrics Server -->
+                        <g class="diagram-component" data-tooltip="Metrics Server collects resource metrics from kubelets">
+                            <rect x="50" y="50" width="180" height="80" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="140" y="85" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Metrics Server</text>
+                            <text x="140" y="105" text-anchor="middle" fill="white" font-size="13">CPU/Memory Data</text>
+                        </g>
+
+                        <!-- Arrow 1 -->
+                        <path d="M 230 90 L 340 90" stroke="#326CE5" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="285" y="85" text-anchor="middle" fill="#326CE5" font-size="12" font-weight="600">Query</text>
+
+                        <!-- HPA Controller -->
+                        <g class="diagram-component" data-tooltip="HPA Controller evaluates metrics every 15 seconds">
+                            <rect x="340" y="50" width="180" height="80" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="430" y="85" text-anchor="middle" fill="white" font-size="16" font-weight="bold">HPA Controller</text>
+                            <text x="430" y="105" text-anchor="middle" fill="white" font-size="13">Evaluate Target</text>
+                        </g>
+
+                        <!-- Arrow 2 -->
+                        <path d="M 520 90 L 630 90" stroke="#326CE5" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="575" y="85" text-anchor="middle" fill="#326CE5" font-size="12" font-weight="600">Calculate</text>
+
+                        <!-- Calculate Replicas -->
+                        <g class="diagram-component" data-tooltip="Uses formula: desiredReplicas = ceil(currentReplicas * currentMetric / targetMetric)">
+                            <rect x="630" y="50" width="180" height="80" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="720" y="85" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Calculate</text>
+                            <text x="720" y="105" text-anchor="middle" fill="white" font-size="13">Target Replicas</text>
+                        </g>
+
+                        <!-- Arrow 3 -->
+                        <path d="M 720 130 L 720 200" stroke="#326CE5" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="735" y="170" fill="#326CE5" font-size="12" font-weight="600">Scale</text>
+
+                        <!-- Deployment -->
+                        <g class="diagram-component" data-tooltip="Target workload gets updated replica count">
+                            <rect x="630" y="200" width="180" height="80" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="720" y="235" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Deployment</text>
+                            <text x="720" y="255" text-anchor="middle" fill="white" font-size="13">Update Replicas</text>
+                        </g>
+
+                        <!-- Feedback loop -->
+                        <path d="M 630 240 L 230 240 L 230 130" stroke="#326CE5" stroke-width="2" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="5,5"/>
+                        <text x="430" y="260" text-anchor="middle" fill="#326CE5" font-size="12" font-style="italic">Continuous Loop</text>
+                    </g>
+
+                    <!-- Scale-Up Scenario -->
+                    <g id="scale-up-diagram" style="display: block;">
+                        <text x="600" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#22c55e">Scale-Up Scenario: CPU 50% → 80%</text>
+
+                        <!-- Current State -->
+                        <g class="diagram-component" data-tooltip="Current: 3 replicas at 80% CPU (target: 50%)">
+                            <rect x="100" y="80" width="200" height="100" rx="12" fill="#fff" stroke="#f59e0b" stroke-width="3"/>
+                            <text x="200" y="110" text-anchor="middle" font-size="15" font-weight="bold">Current State</text>
+                            <text x="200" y="135" text-anchor="middle" font-size="13" fill="#92400e">3 Pods</text>
+                            <text x="200" y="155" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="bold">80% CPU</text>
+                            <rect x="150" y="160" width="100" height="8" rx="4" fill="#fef3c7"/>
+                            <rect x="150" y="160" width="80" height="8" rx="4" fill="#f59e0b"/>
+                        </g>
+
+                        <!-- Detection -->
+                        <path d="M 300 130 L 390 130" stroke="#f59e0b" stroke-width="3" fill="none" marker-end="url(#arrowhead-amber)"/>
+                        <text x="345" y="120" text-anchor="middle" fill="#f59e0b" font-size="12" font-weight="600">Detect High Load</text>
+
+                        <g class="diagram-component" data-tooltip="HPA detects CPU above target threshold">
+                            <rect x="390" y="80" width="200" height="100" rx="12" fill="url(#amberGradient)" stroke="#f59e0b" stroke-width="2"/>
+                            <text x="490" y="110" text-anchor="middle" fill="white" font-size="15" font-weight="bold">HPA Triggered</text>
+                            <text x="490" y="135" text-anchor="middle" fill="white" font-size="13">Target: 50% CPU</text>
+                            <text x="490" y="155" text-anchor="middle" fill="white" font-size="13">Observed: 80% CPU</text>
+                        </g>
+
+                        <!-- Calculation -->
+                        <path d="M 590 130 L 680 130" stroke="#22c55e" stroke-width="3" fill="none" marker-end="url(#arrowhead-green)"/>
+                        <text x="635" y="120" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="600">Calculate</text>
+
+                        <g class="diagram-component" data-tooltip="Formula: ceil(3 * (80/50)) = 5 replicas">
+                            <rect x="680" y="80" width="200" height="100" rx="12" fill="#fff" stroke="#22c55e" stroke-width="3"/>
+                            <text x="780" y="110" text-anchor="middle" font-size="15" font-weight="bold">Calculate Replicas</text>
+                            <text x="780" y="135" text-anchor="middle" font-size="13">ceil(3 × 80/50)</text>
+                            <text x="780" y="155" text-anchor="middle" font-size="16" fill="#22c55e" font-weight="bold">= 5 Pods</text>
+                        </g>
+
+                        <!-- Result -->
+                        <path d="M 780 180 L 780 250" stroke="#22c55e" stroke-width="3" fill="none" marker-end="url(#arrowhead-green)"/>
+                        <text x="800" y="220" fill="#22c55e" font-size="12" font-weight="600">Scale Up</text>
+
+                        <g class="diagram-component" data-tooltip="New state: 5 replicas, CPU normalized to ~48%">
+                            <rect x="680" y="250" width="200" height="100" rx="12" fill="url(#greenGradient)" stroke="#22c55e" stroke-width="2"/>
+                            <text x="780" y="280" text-anchor="middle" fill="white" font-size="15" font-weight="bold">New State</text>
+                            <text x="780" y="305" text-anchor="middle" fill="white" font-size="13">5 Pods (+2)</text>
+                            <text x="780" y="325" text-anchor="middle" fill="white" font-size="13" font-weight="bold">~48% CPU ✓</text>
+                            <rect x="730" y="330" width="100" height="8" rx="4" fill="#dcfce7"/>
+                            <rect x="730" y="330" width="48" height="8" rx="4" fill="#22c55e"/>
+                        </g>
+
+                        <!-- Threshold visualization -->
+                        <g transform="translate(100, 250)">
+                            <text x="0" y="0" font-size="14" font-weight="bold">CPU Threshold</text>
+                            <line x1="0" y1="20" x2="200" y2="20" stroke="#ddd" stroke-width="2"/>
+                            <line x1="0" y1="20" x2="0" y2="80" stroke="#ddd" stroke-width="2"/>
+
+                            <!-- Target line -->
+                            <line x1="0" y1="50" x2="200" y2="50" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5"/>
+                            <text x="210" y="55" font-size="12" fill="#22c55e" font-weight="600">50% Target</text>
+
+                            <!-- Before bar -->
+                            <rect x="30" y="36" width="30" height="44" fill="#f59e0b" rx="4"/>
+                            <text x="45" y="30" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">80%</text>
+                            <text x="45" y="95" text-anchor="middle" font-size="10">Before</text>
+
+                            <!-- After bar -->
+                            <rect x="120" y="52" width="30" height="28" fill="#22c55e" rx="4"/>
+                            <text x="135" y="45" text-anchor="middle" font-size="11" fill="#166534" font-weight="600">48%</text>
+                            <text x="135" y="95" text-anchor="middle" font-size="10">After</text>
+                        </g>
+                    </g>
+
+                    <!-- Scale-Down Scenario -->
+                    <g id="scale-down-diagram" style="display: none;">
+                        <text x="600" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#326CE5">Scale-Down Scenario: CPU 80% → 30%</text>
+
+                        <!-- Current State -->
+                        <g class="diagram-component" data-tooltip="Current: 5 replicas at 30% CPU (target: 50%)">
+                            <rect x="100" y="80" width="200" height="100" rx="12" fill="#fff" stroke="#3b82f6" stroke-width="3"/>
+                            <text x="200" y="110" text-anchor="middle" font-size="15" font-weight="bold">Current State</text>
+                            <text x="200" y="135" text-anchor="middle" font-size="13" fill="#1e40af">5 Pods</text>
+                            <text x="200" y="155" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="bold">30% CPU</text>
+                            <rect x="150" y="160" width="100" height="8" rx="4" fill="#dbeafe"/>
+                            <rect x="150" y="160" width="30" height="8" rx="4" fill="#3b82f6"/>
+                        </g>
+
+                        <!-- Detection -->
+                        <path d="M 300 130 L 390 130" stroke="#3b82f6" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="345" y="120" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="600">Detect Low Load</text>
+
+                        <g class="diagram-component" data-tooltip="HPA detects CPU below target - wait for scale-down cooldown">
+                            <rect x="390" y="80" width="200" height="100" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="490" y="110" text-anchor="middle" fill="white" font-size="15" font-weight="bold">HPA Evaluation</text>
+                            <text x="490" y="135" text-anchor="middle" fill="white" font-size="13">Target: 50% CPU</text>
+                            <text x="490" y="155" text-anchor="middle" fill="white" font-size="13">Observed: 30% CPU</text>
+                        </g>
+
+                        <!-- Cooldown wait -->
+                        <path d="M 590 130 L 680 130" stroke="#6b7280" stroke-width="3" fill="none" marker-end="url(#arrowhead)" stroke-dasharray="8,4"/>
+                        <text x="635" y="120" text-anchor="middle" fill="#6b7280" font-size="12" font-weight="600">Wait 5min</text>
+
+                        <g class="diagram-component" data-tooltip="Scale-down cooldown: 5 minutes default">
+                            <rect x="680" y="80" width="200" height="100" rx="12" fill="#fff" stroke="#6b7280" stroke-width="3"/>
+                            <text x="780" y="110" text-anchor="middle" font-size="15" font-weight="bold">Cooldown Period</text>
+                            <text x="780" y="135" text-anchor="middle" font-size="13">Scale-down delay:</text>
+                            <text x="780" y="155" text-anchor="middle" font-size="16" fill="#6b7280" font-weight="bold">5 minutes</text>
+                        </g>
+
+                        <!-- Result -->
+                        <path d="M 780 180 L 780 250" stroke="#326CE5" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="800" y="220" fill="#326CE5" font-size="12" font-weight="600">Scale Down</text>
+
+                        <g class="diagram-component" data-tooltip="New state: 3 replicas, CPU normalized to ~50%">
+                            <rect x="680" y="250" width="200" height="100" rx="12" fill="url(#blueGradient)" stroke="#326CE5" stroke-width="2"/>
+                            <text x="780" y="280" text-anchor="middle" fill="white" font-size="15" font-weight="bold">New State</text>
+                            <text x="780" y="305" text-anchor="middle" fill="white" font-size="13">3 Pods (-2)</text>
+                            <text x="780" y="325" text-anchor="middle" fill="white" font-size="13" font-weight="bold">~50% CPU ✓</text>
+                            <rect x="730" y="330" width="100" height="8" rx="4" fill="#dbeafe"/>
+                            <rect x="730" y="330" width="50" height="8" rx="4" fill="#326CE5"/>
+                        </g>
+
+                        <!-- Threshold visualization -->
+                        <g transform="translate(100, 250)">
+                            <text x="0" y="0" font-size="14" font-weight="bold">CPU Threshold</text>
+                            <line x1="0" y1="20" x2="200" y2="20" stroke="#ddd" stroke-width="2"/>
+                            <line x1="0" y1="20" x2="0" y2="80" stroke="#ddd" stroke-width="2"/>
+
+                            <!-- Target line -->
+                            <line x1="0" y1="50" x2="200" y2="50" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5"/>
+                            <text x="210" y="55" font-size="12" fill="#22c55e" font-weight="600">50% Target</text>
+
+                            <!-- Before bar -->
+                            <rect x="30" y="62" width="30" height="18" fill="#3b82f6" rx="4"/>
+                            <text x="45" y="58" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">30%</text>
+                            <text x="45" y="95" text-anchor="middle" font-size="10">Before</text>
+
+                            <!-- After bar -->
+                            <rect x="120" y="50" width="30" height="30" fill="#326CE5" rx="4"/>
+                            <text x="135" y="45" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="600">50%</text>
+                            <text x="135" y="95" text-anchor="middle" font-size="10">After</text>
+                        </g>
+                    </g>
+
+                    <!-- Cooldown Timeline -->
+                    <g id="cooldown-diagram" style="display: none;">
+                        <text x="600" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#8b5cf6">Scale-Up vs Scale-Down Cooldown</text>
+
+                        <!-- Timeline -->
+                        <line x1="100" y1="100" x2="1100" y2="100" stroke="#326CE5" stroke-width="4"/>
+
+                        <!-- Scale-Up Event -->
+                        <g class="diagram-component" data-tooltip="Scale-up happens quickly (default: 3 min stabilization)">
+                            <circle cx="200" cy="100" r="15" fill="#22c55e" stroke="white" stroke-width="3"/>
+                            <text x="200" y="140" text-anchor="middle" font-size="14" font-weight="bold" fill="#22c55e">Scale-Up</text>
+                            <text x="200" y="160" text-anchor="middle" font-size="12">Event Detected</text>
+                            <rect x="130" y="180" width="140" height="60" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                            <text x="200" y="205" text-anchor="middle" font-size="12" font-weight="600" fill="#166534">Cooldown: 3 min</text>
+                            <text x="200" y="225" text-anchor="middle" font-size="11" fill="#166534">(default)</text>
+                        </g>
+
+                        <!-- Scale-Up Stabilization -->
+                        <path d="M 215 100 L 385 100" stroke="#22c55e" stroke-width="4" fill="none"/>
+                        <text x="300" y="85" text-anchor="middle" font-size="11" fill="#22c55e">Stabilization Window</text>
+
+                        <circle cx="400" cy="100" r="12" fill="#22c55e" stroke="white" stroke-width="2"/>
+                        <text x="400" y="140" text-anchor="middle" font-size="12" fill="#166534">Can scale again</text>
+
+                        <!-- Scale-Down Event -->
+                        <g class="diagram-component" data-tooltip="Scale-down waits longer (default: 5 min stabilization)">
+                            <circle cx="700" cy="100" r="15" fill="#3b82f6" stroke="white" stroke-width="3"/>
+                            <text x="700" y="140" text-anchor="middle" font-size="14" font-weight="bold" fill="#3b82f6">Scale-Down</text>
+                            <text x="700" y="160" text-anchor="middle" font-size="12">Event Detected</text>
+                            <rect x="610" y="180" width="180" height="60" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                            <text x="700" y="205" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">Cooldown: 5 min</text>
+                            <text x="700" y="225" text-anchor="middle" font-size="11" fill="#1e40af">(default - configurable)</text>
+                        </g>
+
+                        <!-- Scale-Down Stabilization -->
+                        <path d="M 715 100 L 985 100" stroke="#3b82f6" stroke-width="4" fill="none"/>
+                        <text x="850" y="85" text-anchor="middle" font-size="11" fill="#3b82f6">Longer Stabilization Window</text>
+
+                        <circle cx="1000" cy="100" r="12" fill="#3b82f6" stroke="white" stroke-width="2"/>
+                        <text x="1000" y="140" text-anchor="middle" font-size="12" fill="#1e40af">Can scale again</text>
+
+                        <!-- Time markers -->
+                        <text x="100" y="320" font-size="12" fill="#6b7280">T=0</text>
+                        <text x="400" y="320" font-size="12" fill="#6b7280">T+3min</text>
+                        <text x="700" y="320" font-size="12" fill="#6b7280">T+5min</text>
+                        <text x="1000" y="320" font-size="12" fill="#6b7280">T+10min</text>
+
+                        <!-- Legend -->
+                        <g transform="translate(350, 280)">
+                            <rect x="0" y="0" width="500" height="80" rx="12" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+                            <text x="250" y="25" text-anchor="middle" font-size="13" font-weight="bold">Why Different Cooldowns?</text>
+                            <text x="250" y="45" text-anchor="middle" font-size="11">Scale-up: React quickly to handle load spikes</text>
+                            <text x="250" y="62" text-anchor="middle" font-size="11">Scale-down: Wait longer to avoid thrashing on fluctuating metrics</text>
+                        </g>
+                    </g>
+                </svg>
+            </div>
 
             <div class="section-note">HPA is not a one-time action. It continuously re-evaluates the workload against the current metrics picture.</div>
         </section>
@@ -442,7 +698,6 @@
 
         </section>
 
-        <p class="footer-note">Designed as a quick-grasp companion for the markdown lab content in this repository.</p>
     </div>
 
     <script>
@@ -456,6 +711,56 @@
                 views.forEach((view) => view.classList.remove('active'));
                 button.classList.add('active');
                 document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Scenario switching for flow diagrams
+        function showScenario(scenario) {
+            const diagrams = ['scale-up-diagram', 'scale-down-diagram', 'metrics-flow-diagram', 'cooldown-diagram'];
+            diagrams.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+
+            const scenarioMap = {
+                'scale-up': 'scale-up-diagram',
+                'scale-down': 'scale-down-diagram',
+                'metrics-flow': 'metrics-flow-diagram',
+                'cooldown': 'cooldown-diagram'
+            };
+
+            document.getElementById(scenarioMap[scenario]).style.display = 'block';
+        }
+
+        // Add hover tooltips to diagram components
+        document.addEventListener('DOMContentLoaded', () => {
+            const components = document.querySelectorAll('.diagram-component');
+            components.forEach(comp => {
+                comp.style.cursor = 'pointer';
+                comp.addEventListener('mouseenter', function(e) {
+                    const tooltip = this.getAttribute('data-tooltip');
+                    if (tooltip) {
+                        const tooltipEl = document.createElement('div');
+                        tooltipEl.id = 'svg-tooltip';
+                        tooltipEl.style.cssText = 'position: absolute; background: #1a1a2e; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; pointer-events: none; z-index: 1000; max-width: 250px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                        tooltipEl.textContent = tooltip;
+                        document.body.appendChild(tooltipEl);
+                    }
+                });
+
+                comp.addEventListener('mousemove', function(e) {
+                    const tooltip = document.getElementById('svg-tooltip');
+                    if (tooltip) {
+                        tooltip.style.left = (e.pageX + 15) + 'px';
+                        tooltip.style.top = (e.pageY + 15) + 'px';
+                    }
+                });
+
+                comp.addEventListener('mouseleave', function() {
+                    const tooltip = document.getElementById('svg-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                });
             });
         });
     </script>
