@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **46 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **48 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -50,7 +50,7 @@ Every lab follows a consistent format:
 
 ## Complete Lab Index
 
-Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–46)**.
+Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–48)**.
 
 | S. No | Category | Lab Name | Description | Link |
 |-------|----------|----------|-------------|------|
@@ -100,6 +100,8 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 44 | Networking | Gateway API (Next-Gen Ingress) | Configure Gateway API for advanced HTTP/HTTPS routing with domain workarounds for local development (K8s 1.26+). | [lab44-net-gateway-api.md](lab44-net-gateway-api.md) |
 | 45 | Networking | DNS Configuration | Configure and customize DNS resolution in Kubernetes clusters. | [lab45-net-dns-configuration.md](lab45-net-dns-configuration.md) |
 | 46 | Basics | YAML Manifests Deep Dive | Read, write, validate, and troubleshoot Kubernetes YAML (Pod, Deployment, Service, ConfigMap, Secrets); intentional break-and-fix exercises. | [lab46-basics-yaml-manifests.md](lab46-basics-yaml-manifests.md) |
+| 47 | Workloads | Kubernetes Secrets | Create, consume, and secure Secrets (Opaque, TLS, docker-registry) as env vars and volume mounts. | [lab47-workload-secrets.md](lab47-workload-secrets.md) |
+| 48 | Tools | Helm Charts | Install Helm, add repositories, deploy/upgrade/rollback releases, create your own chart, and master the essential command set. | [lab48-tools-helm-charts.md](lab48-tools-helm-charts.md) |
 
 ---
 
@@ -332,8 +334,8 @@ kubectl delete namespace <namespace-name>
 
 ## Summary
 
-- **46 comprehensive labs** covering Kubernetes from basics to advanced topics
-- **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced
+- **48 comprehensive labs** covering Kubernetes from basics to advanced topics
+- **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced, Tools
 - **7 curated learning paths** for different goals and experience levels
 - **Complete cross-references** between related labs
 - **Production-ready skills** with real-world examples
@@ -346,7 +348,7 @@ kubectl delete namespace <namespace-name>
 **Happy Learning!**
 
 *Last Updated: March 21, 2026*
-*Total Labs: 46*
+*Total Labs: 48*
 *Kubernetes Compatibility: 1.24+ (with K8s 1.25-1.28+ advanced features)*
 
 For questions, issues, or contributions, please submit a Pull Request or open an issue in the repository.

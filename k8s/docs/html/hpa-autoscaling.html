@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -701,16 +701,18 @@
     </div>
 
     <script>
-        const buttons = document.querySelectorAll('.btn');
+        const buttons = document.querySelectorAll('.controls .btn');
         const views = document.querySelectorAll('.view');
 
         buttons.forEach((button) => {
             button.addEventListener('click', () => {
                 const viewId = button.dataset.view;
+                if (!viewId) return;
                 buttons.forEach((item) => item.classList.remove('active'));
                 views.forEach((view) => view.classList.remove('active'));
                 button.classList.add('active');
-                document.getElementById(viewId).classList.add('active');
+                const target = document.getElementById(viewId);
+                if (target) target.classList.add('active');
             });
         });
 

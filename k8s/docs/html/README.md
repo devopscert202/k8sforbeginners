@@ -9,8 +9,8 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 61 HTML pages total in this folder
-- 60 concept explainers plus the home page
+- 63 HTML pages total in this folder
+- 62 concept explainers plus the home page
 - All pages are self-contained and work offline
 
 ## Diagram Catalog
@@ -55,6 +55,7 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 ### Configuration, Security, and Placement
 
 - `configmaps-patterns.html` - ConfigMap creation and consumption patterns
+- `secrets-management.html` - Secret types, consumption patterns, and security best practices
 - `volume-types.html` - Kubernetes volume type comparison
 - `pv-pvc-binding.html` - PersistentVolume and PersistentVolumeClaim binding
 - `rbac-flow.html` - RBAC authorization flow
@@ -85,6 +86,7 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `kubectl-essentials.html` - kubectl command-line mental model
 - `cluster-administration.html` - Core administration responsibilities and flows
 - `kubernetes-installation.html` - Cluster installation and bootstrap flow
+- `helm-charts-overview.html` - Helm chart overview, architecture, rendering pipeline, and command reference
 
 ## Technical Notes
 

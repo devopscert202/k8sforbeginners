@@ -22,26 +22,51 @@ By the end of this lab, you will be able to:
 
 ## Understanding Affinity and Anti-Affinity
 
+Kubernetes provides **three affinity mechanisms** that give you fine-grained control over Pod placement. Think of it like choosing seats at a conference:
+
+| Mechanism | One-Liner | Real-World Analogy |
+|-----------|-----------|-------------------|
+| **Node Affinity** | "Run me on *this kind* of node" | "I want a seat in the VIP section" — choose by room characteristics |
+| **Pod Affinity** | "Run me *next to* that Pod" | "Seat me next to my colleague" — co-locate with a specific person |
+| **Pod Anti-Affinity** | "Keep me *away from* that Pod" | "Don't seat two managers at the same table" — spread across tables |
+
 ### What is Node Affinity?
-**Node Affinity** is like NodeSelector but more expressive. It allows you to:
-- Use complex matching operators (In, NotIn, Exists, DoesNotExist, Gt, Lt)
-- Specify soft preferences (preferred) vs hard requirements (required)
-- Combine multiple rules with OR logic
+**Node Affinity** matches against **node labels** (characteristics of the machine). It's NodeSelector's more expressive cousin:
+- Six operators: `In`, `NotIn`, `Exists`, `DoesNotExist`, `Gt`, `Lt`
+- Soft preferences (preferred) vs hard requirements (required)
+- OR logic across terms, AND logic within a term
+- **Use when:** you need GPU nodes, SSD storage, specific zones, or environment isolation
 
 ### What is Pod Affinity?
-**Pod Affinity** allows you to constrain which nodes your pod can be scheduled on based on labels of pods already running on the node, rather than node labels.
+**Pod Affinity** matches against **labels of other Pods** already running in the cluster. It schedules your Pod on the same node (or topology domain) as matching Pods.
+- **Use when:** you want low-latency access (cache next to app), data locality, or tightly coupled services
+- Requires a **topologyKey** to define "same location" (hostname, zone, region)
 
 ### What is Pod Anti-Affinity?
-**Pod Anti-Affinity** allows you to prevent pods from being scheduled on the same node (or topology domain) as certain other pods.
+**Pod Anti-Affinity** is the opposite of Pod Affinity — it prevents your Pod from landing on a node (or topology domain) that already has matching Pods.
+- **Use when:** you need HA (spread database replicas), fault tolerance, or to prevent resource contention
+- Requires a **topologyKey** to define "different location"
 
 ### Scheduling Types
 
 | Type | Description | Behavior if Not Satisfied |
 |------|-------------|---------------------------|
-| **requiredDuringSchedulingIgnoredDuringExecution** | Hard requirement | Pod stays Pending |
-| **preferredDuringSchedulingIgnoredDuringExecution** | Soft preference | Pod schedules anyway |
+| **requiredDuringSchedulingIgnoredDuringExecution** | Hard requirement — must satisfy | Pod stays **Pending** indefinitely |
+| **preferredDuringSchedulingIgnoredDuringExecution** | Soft preference — try but don't block | Pod schedules on best available node |
 
-**Note:** "IgnoredDuringExecution" means if labels change after pod is running, the pod is not evicted.
+**Note:** "IgnoredDuringExecution" means if labels change after the Pod is running, the Pod is **not** evicted. Affinity rules only affect the initial scheduling decision.
+
+### Topology Key Explained
+
+The **topologyKey** defines the scope boundary for Pod Affinity / Anti-Affinity:
+
+| Topology Key | Scope | Meaning |
+|-------------|-------|---------|
+| `kubernetes.io/hostname` | Per node | "Same node" or "different node" — most common |
+| `topology.kubernetes.io/zone` | Per AZ | "Same zone" or "different zone" — for zone-level HA |
+| `topology.kubernetes.io/region` | Per region | "Same region" or "different region" |
+
+> **Interactive HTML**: See [Affinity and Anti-Affinity](../html/affinity-antiaffinity.html) for visual diagrams showing how each type works.
 
 ---
 
@@ -915,7 +940,9 @@ podAntiAffinity:
 
 ## Next Steps
 
-Proceed to [Lab 19: Pod Scheduling with PriorityClass](lab19-sched-priorityclass.md) to learn how to prioritize pod scheduling during resource contention.
+- **Lab 19: PriorityClass** — [Pod Scheduling with PriorityClass](lab19-sched-priorityclass.md) — learn how to prioritize pod scheduling during resource contention
+- **Lab 20: Taints and Tolerations** — [Taints and Tolerations](lab20-sched-taints-tolerations.md) — the complementary mechanism that repels Pods from nodes
+- **Interactive HTML**: [Affinity and Anti-Affinity](../html/affinity-antiaffinity.html) — visual diagrams, operator reference, and comparison tables
 
 ---
 

@@ -3,11 +3,11 @@
 <div align="center">
 
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.24--1.32-326CE5?logo=kubernetes&logoColor=white)
-![Labs](https://img.shields.io/badge/Labs-46-blueviolet)
+![Labs](https://img.shields.io/badge/Labs-48-blueviolet)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-**Learn Kubernetes through hands-on practice with 46 comprehensive lab manuals**
+**Learn Kubernetes through hands-on practice with 48 comprehensive lab manuals**
 
 </div>
 
@@ -17,7 +17,7 @@
 
 This is a **complete, hands-on learning resource** for mastering Kubernetes from absolute basics to production-ready advanced concepts. Whether you're preparing for CKA/CKAD certification or building production skills, this repository provides:
 
-- **46 step-by-step lab manuals** covering every major Kubernetes topic
+- **48 step-by-step lab manuals** covering every major Kubernetes topic
 - **100+ working YAML examples** ready to deploy
 - **Real-world patterns** used in production environments
 - **Modern features** including Kubernetes 1.25-1.28+ capabilities
@@ -146,19 +146,20 @@ graph TB
 
 **Location**: `k8s/docs/labmanuals/`
 
-**46 comprehensive lab manuals** organized into 9 categories:
+**48 comprehensive lab manuals** organized into 10 categories:
 
 | Category | Labs | What You'll Learn |
 |----------|------|-------------------|
 | **🔰 Foundation** | 8 labs | Cluster setup, Pods, Services, kubectl, RBAC, Docker basics |
 | **🔒 Security** | 5 labs | Security contexts, Network Policies, OPA, Image scanning, Pod Security Standards |
 | **💾 Storage** | 2 labs | Volumes, Persistent Volumes, PVCs, NFS, StatefulSets |
-| **⚙️ Workloads** | 9 labs | Deployments, DaemonSets, Jobs, CronJobs, HPA, Init containers, Multi-container patterns |
+| **⚙️ Workloads** | 10 labs | Deployments, DaemonSets, Jobs, CronJobs, HPA, Init containers, Multi-container patterns, Secrets |
 | **🌐 Networking** | 4 labs | Services, Ingress, DNS, Gateway API |
 | **📅 Scheduling** | 4 labs | NodeSelector, Affinity, Priority, Taints & Tolerations |
 | **👁️ Observability** | 2 labs | Health probes, Metrics Server |
 | **📊 Resource Mgmt** | 3 labs | Quotas, Limits, Deployment rollouts, Dashboard |
 | **🚀 Advanced** | 6 labs | Static Pods, Real apps (WordPress), Cluster upgrades, HA setup, CRDs |
+| **🛠️ Tools** | 1 lab | Helm Charts — install, upgrade, rollback, create charts |
 
 **Each lab includes**:
 - Clear learning objectives
@@ -475,9 +476,9 @@ This is a **hands-on learning resource**, not a copy-paste tutorial:
 
 ## 📊 Repository Statistics
 
-- **46** comprehensive lab manuals with step-by-step instructions
+- **48** comprehensive lab manuals with step-by-step instructions
 - **100+** working YAML manifests covering all K8s concepts
-- **9** logical categories from basics to advanced
+- **10** logical categories from basics to advanced
 - **7** curated learning paths for different goals
 - **~47,500** lines of educational content
 - **v1.24-1.32** Kubernetes compatibility
@@ -530,6 +531,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Master Kubernetes one lab at a time* 🎯
 
-**Last Updated**: March 2026 | **Total Labs**: 46 | **K8s Versions**: v1.24-1.32
+**Last Updated**: March 2026 | **Total Labs**: 48 | **K8s Versions**: v1.24-1.32
 
 </div>

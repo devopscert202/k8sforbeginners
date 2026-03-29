@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helm Charts - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --helm-blue: #0f1689;
+            --helm-sky: #e0e7ff;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f5f6fa;
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+        .hero {
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f1ff;
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 1.03rem;
+            color: var(--muted);
+            max-width: 980px;
+            margin-bottom: 18px;
+        }
+        .lead-panel {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            border: 1px solid rgba(50,108,229,0.12);
+            border-radius: 14px;
+            padding: 18px 20px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .lead-panel p { color: #334155; font-size: 0.98rem; }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0 0 24px;
+        }
+        .btn {
+            border: 2px solid #326CE5;
+            background: white;
+            color: var(--kube-blue-deep);
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+        }
+        .btn:hover, .btn.active {
+            background: var(--kube-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(50,108,229,0.3);
+            transform: translateY(-2px);
+        }
+        .view {
+            display: none;
+            background: var(--panel);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 26px;
+            border: 1px solid rgba(15,23,42,0.04);
+        }
+        .view.active { display: block; }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .section-head h2 { color: var(--ink); font-size: 1.45rem; }
+        .section-kicker {
+            color: var(--kube-blue-deep);
+            text-transform: uppercase;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+        .section-note {
+            border-left: 4px solid var(--kube-blue);
+            background: #eff6ff;
+            color: #1e3a8a;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 18px;
+        }
+        .concept-grid, .practice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-top: 4px solid #326CE5;
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 170px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover, .flow-step:hover, .example-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(15,23,42,0.1);
+        }
+        .card-badge {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .practice-card .card-badge { background: var(--mint); color: #166534; }
+        .practice-card { border-top-color: #22c55e; }
+        .card p { color: #475569; }
+        .flow-track {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 18px;
+        }
+        .flow-step {
+            position: relative;
+            border-radius: 16px;
+            padding: 22px 18px 18px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-number {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--kube-blue);
+            color: white;
+            font-weight: 800;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 20px rgba(50,108,229,0.22);
+        }
+        .flow-step h3 { font-size: 1rem; margin-bottom: 10px; color: #0f172a; }
+        .flow-step p { color: #475569; font-size: 0.95rem; }
+        .example-stack { display: grid; gap: 18px; }
+        .example-card {
+            border: 1px solid rgba(15,23,42,0.08);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        pre {
+            margin-top: 10px;
+            background: #0f172a;
+            color: #dbeafe;
+            border-radius: 16px;
+            padding: 18px;
+            overflow-x: auto;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            border: 1px solid rgba(148,163,184,0.18);
+        }
+        code { font-family: Consolas, 'Cascadia Code', monospace; }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: white;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        th {
+            background: linear-gradient(180deg, #326CE5, #2557be);
+            color: white;
+            font-weight: 700;
+        }
+        tbody tr:nth-child(even) { background: #f8fbff; }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        @media (max-width: 900px) {
+            body { padding: 14px; }
+            .hero, .view { padding: 22px; }
+            .controls { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <div class="eyebrow">Interactive Kubernetes Explainer</div>
+            <h1>Helm Charts Overview</h1>
+            <p class="subtitle">The Kubernetes package manager — install, upgrade, rollback, and share complex applications with a single command.</p>
+            <div class="lead-panel">
+                <p>Helm packages Kubernetes manifests into reusable <strong>charts</strong>. A chart bundles templates, default values, and metadata so that deploying a multi-resource application is as simple as <code>helm install</code>.</p>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" data-view="concept">Concept</button>
+            <button class="btn" data-view="architecture">Architecture</button>
+            <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="install">Install Helm</button>
+            <button class="btn" data-view="commands">Commands</button>
+            <button class="btn" data-view="examples">Examples</button>
+            <button class="btn" data-view="comparison">Compare</button>
+            <button class="btn" data-view="practice">Practice</button>
+        </div>
+
+        <!-- CONCEPT -->
+        <section id="concept" class="view active">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Core Model</div>
+                    <h2>What Is Helm?</h2>
+                </div>
+            </div>
+            <div class="concept-grid">
+                <article class="card">
+                    <div class="card-badge">Package manager for K8s</div>
+                    <p>Helm is to Kubernetes what <code>apt</code> is to Ubuntu or <code>yum</code> is to RHEL — it packages, versions, and distributes application definitions.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Charts</div>
+                    <p>A chart is a directory of templated YAML, a <code>values.yaml</code> with defaults, and a <code>Chart.yaml</code> with metadata (name, version, dependencies).</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Releases</div>
+                    <p>Every <code>helm install</code> creates a <strong>release</strong> — a named, versioned instance of a chart running in a namespace. You can have multiple releases of the same chart.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Repositories</div>
+                    <p>Chart repositories are HTTP servers hosting packaged charts. Public hubs like <strong>ArtifactHub</strong> aggregate thousands of community charts.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Values override</div>
+                    <p>Override defaults at install time with <code>--set</code> flags or a custom <code>-f values-prod.yaml</code> file — same chart, different environments.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Rollback built-in</div>
+                    <p>Helm tracks every release revision. <code>helm rollback</code> reverts to any previous revision instantly — safer than manually undoing <code>kubectl apply</code> changes.</p>
+                </article>
+            </div>
+            <div class="section-note">Helm 3 (current) is a client-only tool — it talks directly to the Kubernetes API server. The server-side Tiller component from Helm 2 is gone.</div>
+        </section>
+
+        <!-- ARCHITECTURE -->
+        <section id="architecture" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Chart Structure</div>
+                    <h2>Anatomy of a Helm Chart</h2>
+                </div>
+            </div>
+            <div class="example-card" style="margin-bottom: 18px;">
+                <div class="section-kicker">Directory Layout</div>
+                <pre><code>mychart/
+├── Chart.yaml          # Chart metadata (name, version, appVersion, dependencies)
+├── values.yaml         # Default configuration values
+├── charts/             # Sub-charts (dependencies)
+├── templates/          # Go-template YAML manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── ingress.yaml
+│   ├── configmap.yaml
+│   ├── secret.yaml
+│   ├── _helpers.tpl    # Reusable template snippets
+│   ├── NOTES.txt       # Post-install usage instructions
+│   └── tests/
+│       └── test-connection.yaml
+├── .helmignore         # Files to exclude from packaging
+└── README.md           # Chart documentation</code></pre>
+            </div>
+
+            <svg viewBox="0 0 950 420" style="width: 100%; max-width: 950px; margin: 20px auto; display: block;">
+                <text x="475" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">Helm Rendering Pipeline</text>
+
+                <!-- values.yaml -->
+                <rect x="30" y="70" width="200" height="90" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="130" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">values.yaml</text>
+                <text x="130" y="115" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">replicas: 3</text>
+                <text x="130" y="132" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">image: nginx:1.25</text>
+                <text x="130" y="149" text-anchor="middle" font-size="10" fill="#1e3a8a" font-family="monospace">port: 80</text>
+
+                <!-- --set / -f overrides -->
+                <rect x="30" y="185" width="200" height="60" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="130" y="210" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">--set / -f overrides</text>
+                <text x="130" y="232" text-anchor="middle" font-size="10" fill="#78350f" font-family="monospace">replicas: 5</text>
+
+                <!-- Arrow: values + overrides → Template Engine -->
+                <line x1="230" y1="115" x2="340" y2="180" stroke="#3b82f6" stroke-width="2" marker-end="url(#ha1)"/>
+                <line x1="230" y1="215" x2="340" y2="195" stroke="#f59e0b" stroke-width="2" marker-end="url(#ha2)"/>
+
+                <!-- Template Engine -->
+                <rect x="340" y="140" width="220" height="100" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-width="3"/>
+                <text x="450" y="170" text-anchor="middle" font-size="16" font-weight="bold" fill="#0c4a6e">Helm Template</text>
+                <text x="450" y="190" text-anchor="middle" font-size="11" fill="#075985">Go template engine</text>
+                <text x="450" y="210" text-anchor="middle" font-size="10" fill="#075985">Merges values + templates</text>
+                <text x="450" y="228" text-anchor="middle" font-size="10" fill="#075985">Produces final K8s YAML</text>
+
+                <!-- templates/ -->
+                <rect x="340" y="55" width="220" height="65" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                <text x="450" y="78" text-anchor="middle" font-size="12" font-weight="bold" fill="#4338ca">templates/*.yaml</text>
+                <text x="450" y="98" text-anchor="middle" font-size="10" fill="#4338ca" font-family="monospace">{{ .Values.replicas }}</text>
+                <text x="450" y="113" text-anchor="middle" font-size="10" fill="#4338ca" font-family="monospace">{{ .Values.image }}</text>
+
+                <line x1="450" y1="120" x2="450" y2="140" stroke="#6366f1" stroke-width="2" marker-end="url(#ha3)"/>
+
+                <!-- Arrow: Engine → Output -->
+                <line x1="560" y1="190" x2="670" y2="190" stroke="#0284c7" stroke-width="3" marker-end="url(#ha4)"/>
+                <text x="615" y="180" text-anchor="middle" font-size="10" fill="#0284c7" font-weight="bold">render</text>
+
+                <!-- Output K8s manifests -->
+                <rect x="670" y="100" width="240" height="190" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="790" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Rendered Manifests</text>
+                <text x="790" y="150" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">Deployment (replicas: 5)</text>
+                <text x="790" y="168" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">Service (port: 80)</text>
+                <text x="790" y="186" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">Ingress</text>
+                <text x="790" y="204" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">ConfigMap</text>
+                <text x="790" y="222" text-anchor="middle" font-size="10" fill="#14532d" font-family="monospace">Secret</text>
+
+                <!-- Arrow to K8s API -->
+                <line x1="790" y1="290" x2="790" y2="330" stroke="#22c55e" stroke-width="3" marker-end="url(#ha5)"/>
+                <text x="790" y="318" text-anchor="middle" font-size="10" fill="#22c55e" font-weight="bold">kubectl apply</text>
+
+                <rect x="670" y="340" width="240" height="60" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="3"/>
+                <text x="790" y="365" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">Kubernetes API</text>
+                <text x="790" y="385" text-anchor="middle" font-size="11" fill="#14532d">Resources created in cluster</text>
+
+                <!-- Release history note -->
+                <rect x="30" y="290" width="530" height="100" rx="8" fill="#faf5ff" stroke="#a855f7" stroke-width="2"/>
+                <text x="295" y="318" text-anchor="middle" font-size="14" font-weight="bold" fill="#7e22ce">Release History (stored as Secrets in namespace)</text>
+                <text x="295" y="340" text-anchor="middle" font-size="11" fill="#6b21a8">Revision 1 → helm install  |  Revision 2 → helm upgrade  |  Revision 3 → helm upgrade</text>
+                <text x="295" y="362" text-anchor="middle" font-size="10" fill="#6b21a8">helm rollback myrelease 1   ←   revert to any previous revision</text>
+                <text x="295" y="380" text-anchor="middle" font-size="10" fill="#64748b">helm history myrelease   ←   view all revisions</text>
+
+                <defs>
+                    <marker id="ha1" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3b82f6"/></marker>
+                    <marker id="ha2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f59e0b"/></marker>
+                    <marker id="ha3" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6366f1"/></marker>
+                    <marker id="ha4" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#0284c7"/></marker>
+                    <marker id="ha5" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22c55e"/></marker>
+                </defs>
+            </svg>
+        </section>
+
+        <!-- FLOW -->
+        <section id="flow" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Lifecycle</div>
+                    <h2>Helm Release Lifecycle</h2>
+                </div>
+            </div>
+            <div class="flow-track">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <h3>Add Repository</h3>
+                    <p><code>helm repo add bitnami https://charts.bitnami.com/bitnami</code> — register a chart repository locally.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <h3>Search Charts</h3>
+                    <p><code>helm search repo nginx</code> — find available charts and versions in your added repositories.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <h3>Inspect Values</h3>
+                    <p><code>helm show values bitnami/nginx</code> — review configurable parameters before installing.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <h3>Install Release</h3>
+                    <p><code>helm install my-nginx bitnami/nginx -f values-prod.yaml</code> — deploy the chart as a named release.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">5</div>
+                    <h3>Upgrade Release</h3>
+                    <p><code>helm upgrade my-nginx bitnami/nginx --set replicas=5</code> — apply config changes or new chart versions.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">6</div>
+                    <h3>Rollback</h3>
+                    <p><code>helm rollback my-nginx 1</code> — revert to a previous revision when something breaks.</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">7</div>
+                    <h3>Uninstall</h3>
+                    <p><code>helm uninstall my-nginx</code> — remove the release and all its Kubernetes resources.</p>
+                </div>
+            </div>
+            <div class="section-note">Every <code>helm upgrade</code> creates a new revision. Use <code>helm history my-nginx</code> to list all revisions and their statuses.</div>
+        </section>
+
+        <!-- INSTALL HELM -->
+        <section id="install" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Setup</div>
+                    <h2>Installing Helm on Ubuntu / Linux</h2>
+                </div>
+            </div>
+            <div class="example-stack">
+                <section class="example-card">
+                    <div class="section-kicker">Option 1 — Official Install Script (recommended)</div>
+                    <pre><code>curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# Verify
+helm version</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Option 2 — APT Package Manager (Debian / Ubuntu)</div>
+                    <pre><code>curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | \
+  sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+
+echo "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/usr/share/keyrings/helm.gpg] \
+  https://baltocdn.com/helm/stable/debian/ all main" | \
+  sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+
+sudo apt-get update
+sudo apt-get install helm
+
+helm version</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Option 3 — Snap</div>
+                    <pre><code>sudo snap install helm --classic
+helm version</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Option 4 — Download Binary Manually</div>
+                    <pre><code># Check latest version at https://github.com/helm/helm/releases
+HELM_VERSION="v3.16.3"
+wget https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz
+tar -zxvf helm-${HELM_VERSION}-linux-amd64.tar.gz
+sudo mv linux-amd64/helm /usr/local/bin/helm
+rm -rf linux-amd64 helm-${HELM_VERSION}-linux-amd64.tar.gz
+
+helm version</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">macOS (Homebrew)</div>
+                    <pre><code>brew install helm
+helm version</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Post-Install — Add Popular Repos</div>
+                    <pre><code># Bitnami (extensive collection of production charts)
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+# Prometheus Community
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+# Ingress-NGINX
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+
+# Update local cache
+helm repo update
+
+# Verify
+helm repo list</code></pre>
+                </section>
+            </div>
+        </section>
+
+        <!-- COMMANDS -->
+        <section id="commands" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Quick Reference</div>
+                    <h2>Essential Helm Commands</h2>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Category</th><th>Command</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td rowspan="4"><strong>Repository</strong></td><td><code>helm repo add NAME URL</code></td><td>Register a chart repository</td></tr>
+                        <tr><td><code>helm repo update</code></td><td>Refresh local repo index cache</td></tr>
+                        <tr><td><code>helm repo list</code></td><td>List added repositories</td></tr>
+                        <tr><td><code>helm repo remove NAME</code></td><td>Remove a repository</td></tr>
+                        <tr><td rowspan="3"><strong>Search</strong></td><td><code>helm search repo KEYWORD</code></td><td>Search local repos for charts</td></tr>
+                        <tr><td><code>helm search hub KEYWORD</code></td><td>Search ArtifactHub</td></tr>
+                        <tr><td><code>helm show values CHART</code></td><td>Display configurable values</td></tr>
+                        <tr><td rowspan="4"><strong>Install / Upgrade</strong></td><td><code>helm install RELEASE CHART</code></td><td>Deploy a chart as a new release</td></tr>
+                        <tr><td><code>helm install RELEASE CHART -f values.yaml</code></td><td>Install with custom values file</td></tr>
+                        <tr><td><code>helm install RELEASE CHART --set key=val</code></td><td>Install with inline override</td></tr>
+                        <tr><td><code>helm upgrade RELEASE CHART</code></td><td>Upgrade to new values or chart version</td></tr>
+                        <tr><td rowspan="2"><strong>Rollback</strong></td><td><code>helm rollback RELEASE REVISION</code></td><td>Revert to a previous revision</td></tr>
+                        <tr><td><code>helm history RELEASE</code></td><td>List all release revisions</td></tr>
+                        <tr><td rowspan="3"><strong>Status</strong></td><td><code>helm list</code></td><td>List installed releases</td></tr>
+                        <tr><td><code>helm status RELEASE</code></td><td>Show release status and notes</td></tr>
+                        <tr><td><code>helm get values RELEASE</code></td><td>Show user-supplied values</td></tr>
+                        <tr><td rowspan="2"><strong>Debug</strong></td><td><code>helm template RELEASE CHART</code></td><td>Render templates locally (no install)</td></tr>
+                        <tr><td><code>helm install --dry-run --debug RELEASE CHART</code></td><td>Dry run with server-side validation</td></tr>
+                        <tr><td rowspan="2"><strong>Cleanup</strong></td><td><code>helm uninstall RELEASE</code></td><td>Delete release and its resources</td></tr>
+                        <tr><td><code>helm uninstall RELEASE --keep-history</code></td><td>Delete resources but keep release history</td></tr>
+                        <tr><td rowspan="3"><strong>Create / Package</strong></td><td><code>helm create CHARTNAME</code></td><td>Scaffold a new chart directory</td></tr>
+                        <tr><td><code>helm package CHARTDIR</code></td><td>Package chart into .tgz archive</td></tr>
+                        <tr><td><code>helm lint CHARTDIR</code></td><td>Validate chart for errors</td></tr>
+                        <tr><td><strong>Pull</strong></td><td><code>helm pull CHART --untar</code></td><td>Download chart archive and extract</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- EXAMPLES -->
+        <section id="examples" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Hands-On</div>
+                    <h2>Real-World Helm Examples</h2>
+                </div>
+            </div>
+            <div class="example-stack">
+                <section class="example-card">
+                    <div class="section-kicker">Deploy NGINX with Bitnami Chart</div>
+                    <pre><code># Add repo and install
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm install my-nginx bitnami/nginx --namespace web --create-namespace
+
+# Check release
+helm list -n web
+kubectl get pods -n web
+
+# Upgrade with custom values
+helm upgrade my-nginx bitnami/nginx -n web --set replicaCount=3
+
+# Rollback to revision 1
+helm rollback my-nginx 1 -n web
+
+# Cleanup
+helm uninstall my-nginx -n web</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Install Prometheus Monitoring Stack</div>
+                    <pre><code>helm repo add prometheus-community \
+  https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Install with values override file
+helm install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring --create-namespace \
+  -f monitoring-values.yaml
+
+# View what was deployed
+helm status monitoring -n monitoring
+kubectl get pods -n monitoring</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Custom values.yaml Override</div>
+                    <pre><code># values-prod.yaml
+replicaCount: 5
+
+image:
+  repository: myapp
+  tag: "2.1.0"
+
+service:
+  type: LoadBalancer
+  port: 443
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+ingress:
+  enabled: true
+  hosts:
+    - host: myapp.example.com
+      paths:
+        - path: /
+          pathType: Prefix</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Create Your Own Chart</div>
+                    <pre><code># Scaffold a new chart
+helm create myapp
+
+# Edit templates and values
+# templates/deployment.yaml, templates/service.yaml, values.yaml
+
+# Lint for errors
+helm lint myapp/
+
+# Test render locally
+helm template my-release myapp/
+
+# Package for distribution
+helm package myapp/
+
+# Install from local chart
+helm install my-release ./myapp</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Pull and Inspect a Chart</div>
+                    <pre><code># Download chart to local directory
+helm pull bitnami/nginx --untar
+
+# Explore the chart structure
+ls nginx/
+cat nginx/Chart.yaml
+cat nginx/values.yaml
+
+# Install from local copy with modifications
+helm install my-nginx ./nginx -f my-overrides.yaml</code></pre>
+                </section>
+            </div>
+        </section>
+
+        <!-- COMPARISON -->
+        <section id="comparison" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Decision Guide</div>
+                    <h2>Helm vs Other Deployment Approaches</h2>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Aspect</th><th>Helm</th><th>Kustomize</th><th>Plain kubectl apply</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Templating</strong></td><td>Go templates with conditionals, loops, functions</td><td>Overlay patches — no templating</td><td>None — raw YAML</td></tr>
+                        <tr><td><strong>Packaging</strong></td><td>Versioned .tgz archives, shareable via repos</td><td>Directory-based, no packaging</td><td>Raw files</td></tr>
+                        <tr><td><strong>Release tracking</strong></td><td>Built-in revision history and rollback</td><td>None (rely on Git)</td><td>None</td></tr>
+                        <tr><td><strong>Dependencies</strong></td><td>Chart dependencies in Chart.yaml</td><td>Components via bases</td><td>Manual ordering</td></tr>
+                        <tr><td><strong>Ecosystem</strong></td><td>Thousands of community charts on ArtifactHub</td><td>Growing but smaller</td><td>N/A</td></tr>
+                        <tr><td><strong>Learning curve</strong></td><td>Medium — Go template syntax</td><td>Low — patches and overlays</td><td>Low — plain YAML</td></tr>
+                        <tr><td><strong>Best fit</strong></td><td>Distributing apps, complex multi-resource installs</td><td>Environment-specific overlays, GitOps</td><td>Simple, one-off deploys</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="section-note">Helm and Kustomize are not mutually exclusive. Many teams use <code>helm template</code> to render charts, then apply Kustomize overlays on top.</div>
+        </section>
+
+        <!-- PRACTICE -->
+        <section id="practice" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Use It Well</div>
+                    <h2>Practice and Real-World Thinking</h2>
+                </div>
+            </div>
+            <div class="practice-grid">
+                <article class="card practice-card">
+                    <div class="card-badge">Install from public repo</div>
+                    <p>Add the Bitnami repo, search for WordPress, inspect its values, install it with a custom admin password, then uninstall.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Upgrade and rollback</div>
+                    <p>Install NGINX, upgrade to 5 replicas, verify, then rollback to revision 1. Check <code>helm history</code> output.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Create your own chart</div>
+                    <p>Run <code>helm create</code>, customize the templates for a simple app, lint, template-render locally, then install.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Multi-environment values</div>
+                    <p>Write <code>values-dev.yaml</code> and <code>values-prod.yaml</code> for the same chart — different replica counts, resource limits, and image tags.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Namespace isolation</div>
+                    <p>Install the same chart twice in different namespaces (<code>--namespace staging</code> vs <code>--namespace production</code>) and observe independent releases.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Dry-run debugging</div>
+                    <p>Use <code>helm template</code> and <code>helm install --dry-run --debug</code> to spot rendering issues before deploying anything.</p>
+                </article>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const buttons = document.querySelectorAll('.btn');
+        const views = document.querySelectorAll('.view');
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const viewId = button.dataset.view;
+                buttons.forEach((b) => b.classList.remove('active'));
+                views.forEach((v) => v.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(viewId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
