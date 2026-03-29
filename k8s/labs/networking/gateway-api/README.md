@@ -198,7 +198,7 @@ gateway-api/
 
 ## Learn More
 
-See the full lab manual: `k8s/docs/labmanuals/lab44-net-gateway-api.md`
+See the full lab manual: `k8s/labmanuals/lab44-net-gateway-api.md`
 
 ## Support
 

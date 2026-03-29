@@ -6,7 +6,7 @@ This hands-on lab is a **single, end-to-end YAML practice module** aligned with 
 
 **Companion material (read alongside or afterward):**
 
-- Markdown: [YAML 101 for Kubernetes Labs](../basics/yaml-basics.md)
+- Markdown: [YAML 101 for Kubernetes Labs](../docs/basics/yaml-basics.md)
 - HTML (visual walkthrough): [Part 1 — Syntax](../html/yaml-k8s-part1-syntax.html), [Part 2 — Objects & editing](../html/yaml-k8s-part2-objects-editing.html), [Part 3 — Tools & troubleshooting](../html/yaml-k8s-part3-tools-troubleshooting.html)
 
 **Scope:** **Lab 46** is dedicated entirely to **YAML for Kubernetes**—syntax, object structure, applying safe manifests, validating with `kubectl`, and deliberate break-and-fix practice. Use it **before** complex labs if you want a solid base, **alongside** early Pod and Deployment work, or **any time** you need to untangle manifest errors without redoing a whole topic lab.

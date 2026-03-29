@@ -48,7 +48,7 @@ git clone https://github.com/devopscert202/k8sforbeginners.git
 cd k8sforbeginners
 
 # 2. Start with Lab 01
-cd k8s/docs/labmanuals
+cd k8s/labmanuals
 cat lab01-basics-creating-pods.md
 
 # 3. Follow the exercises and apply manifests
@@ -144,7 +144,7 @@ graph TB
 
 ### 1. 📖 Lab Manuals (Your Primary Learning Resource)
 
-**Location**: `k8s/docs/labmanuals/`
+**Location**: `k8s/labmanuals/`
 
 **48 comprehensive lab manuals** organized into 10 categories:
 
@@ -170,9 +170,9 @@ graph TB
 - Key takeaways
 - Links to related labs
 
-**Start here**: [Lab Manuals Index](k8s/docs/labmanuals/README.md) - includes learning paths for different goals.
+**Start here**: [Lab Manuals Index](k8s/labmanuals/README.md) - includes learning paths for different goals.
 
-**YAML focus:** [Lab 46: YAML Manifests Deep Dive](k8s/docs/labmanuals/lab46-basics-yaml-manifests.md) and [YAML 101](k8s/docs/basics/yaml-basics.md).
+**YAML focus:** [Lab 46: YAML Manifests Deep Dive](k8s/labmanuals/lab46-basics-yaml-manifests.md) and [YAML 101](k8s/docs/basics/yaml-basics.md).
 
 ---
 
@@ -212,7 +212,7 @@ k8s/labs/
 
 #### Quick References
 - **[kubectl Command Reference](k8s/docs/kubectl-reference.md)** - Complete cheat sheet for kubectl
-- **[YAML 101 for Kubernetes Labs](k8s/docs/basics/yaml-basics.md)** - Markdown primer; hands-on [Lab 46](k8s/docs/labmanuals/lab46-basics-yaml-manifests.md); interactive HTML: [Part 1](k8s/docs/html/yaml-k8s-part1-syntax.html), [Part 2](k8s/docs/html/yaml-k8s-part2-objects-editing.html), [Part 3](k8s/docs/html/yaml-k8s-part3-tools-troubleshooting.html); [all HTML guides](k8s/docs/html/index.html)
+- **[YAML 101 for Kubernetes Labs](k8s/docs/basics/yaml-basics.md)** - Markdown primer; hands-on [Lab 46](k8s/labmanuals/lab46-basics-yaml-manifests.md); interactive HTML: [Part 1](k8s/html/yaml-k8s-part1-syntax.html), [Part 2](k8s/html/yaml-k8s-part2-objects-editing.html), [Part 3](k8s/html/yaml-k8s-part3-tools-troubleshooting.html); [all HTML guides](k8s/html/index.html)
 - **[Kubernetes Objects Guide](k8s/docs/basics/k8s-objects-complete.md)** - All K8s objects explained (basics → advanced)
 
 #### Conceptual Deep Dives
@@ -262,7 +262,7 @@ Lab 20 (HPA) → Lab 32 (Quotas) → Lab 39 (StatefulSets) →
 Lab 40 (Upgrades) → Lab 42 (HA Cluster)
 ```
 
-📖 **See all 7 learning paths**: [Lab Manuals README](k8s/docs/labmanuals/README.md)
+📖 **See all 7 learning paths**: [Lab Manuals README](k8s/labmanuals/README.md)
 
 ---
 
@@ -291,7 +291,7 @@ You need a **3-node Kubernetes cluster** (1 control plane + 2 workers).
 - Install Kubernetes using kubeadm
 - Gives you full control plane access
 - Best for understanding K8s internals and CKA preparation
-- **Follow**: [Lab 06: Kubernetes Installation](k8s/docs/labmanuals/lab06-install-kubernetes-kubeadm.md)
+- **Follow**: [Lab 06: Kubernetes Installation](k8s/labmanuals/lab06-install-kubernetes-kubeadm.md)
 
 **Why kubeadm?**
 - ✅ Learn cluster internals (etcd, certificates, control plane components)
@@ -310,7 +310,7 @@ See [Learning Paths](#-learning-paths) above.
 
 ### Step 3: Work Through Labs
 
-1. Open a lab manual: `k8s/docs/labmanuals/lab01-basics-creating-pods.md`
+1. Open a lab manual: `k8s/labmanuals/lab01-basics-creating-pods.md`
 2. Read the overview and learning objectives
 3. Follow the exercises step-by-step
 4. Apply the YAML manifests: `kubectl apply -f k8s/labs/basics/apache1.yaml`
@@ -321,7 +321,7 @@ See [Learning Paths](#-learning-paths) above.
 ### Step 4: Reference Documentation as Needed
 
 When you need deeper understanding:
-- **YAML syntax or manifest structure?** → Read [yaml-basics.md](k8s/docs/basics/yaml-basics.md), run [Lab 46](k8s/docs/labmanuals/lab46-basics-yaml-manifests.md), or open the [HTML YAML series](k8s/docs/html/yaml-k8s-part1-syntax.html)
+- **YAML syntax or manifest structure?** → Read [yaml-basics.md](k8s/docs/basics/yaml-basics.md), run [Lab 46](k8s/labmanuals/lab46-basics-yaml-manifests.md), or open the [HTML YAML series](k8s/html/yaml-k8s-part1-syntax.html)
 - **kubectl commands?** → Check [kubectl-reference.md](k8s/docs/kubectl-reference.md)
 - **How storage works?** → Read [k8s-storage-complete.md](k8s/docs/storage/k8s-storage-complete.md)
 - **Observability concepts?** → See [observability-basics.md](k8s/docs/workloads/observability-basics.md)
@@ -517,7 +517,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Begin your Kubernetes journey with Lab 01**
 
-[📖 Go to Lab Manuals →](k8s/docs/labmanuals/README.md)
+[📖 Go to Lab Manuals →](k8s/labmanuals/README.md)
 
 ---
 

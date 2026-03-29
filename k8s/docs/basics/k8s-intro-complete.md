@@ -425,7 +425,7 @@ kubeadm join <control-plane>:6443 --token <token>
 
 ## Kubernetes Dashboard
 
-Note: Kubernetes Dashboard should now be treated as a legacy UI reference. The upstream repository is archived and no longer maintained. For the current UI path in this repo, use [Headlamp UI overview](../workloads/k8s-headlamp-ui.md) or [Headlamp HTML guide](../html/k8s-ui-headlamp.html).
+Note: Kubernetes Dashboard should now be treated as a legacy UI reference. The upstream repository is archived and no longer maintained. For the current UI path in this repo, use [Headlamp UI overview](../workloads/k8s-headlamp-ui.md) or [Headlamp HTML guide](../../html/k8s-ui-headlamp.html).
 
 Web-based UI to monitor, deploy, and manage workloads.
 

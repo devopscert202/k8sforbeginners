@@ -2,14 +2,14 @@
 
 A practical introduction to YAML for learners who are new to the format and need to read, write, and fix manifests used in this repository’s labs.
 
-**Hands-on lab:** [Lab 46: YAML Manifests Deep Dive](../labmanuals/lab46-basics-yaml-manifests.md) (uses `k8s/labs/yaml-lab/` manifests and break-and-fix exercises).
+**Hands-on lab:** [Lab 46: YAML Manifests Deep Dive](../../labmanuals/lab46-basics-yaml-manifests.md) (uses `k8s/labs/yaml-lab/` manifests and break-and-fix exercises).
 
 **Interactive HTML (same content, visual layout):**
 
-- [Part 1 — Syntax and structure](../html/yaml-k8s-part1-syntax.html)
-- [Part 2 — Kubernetes objects, editing, and workflows](../html/yaml-k8s-part2-objects-editing.html)
-- [Part 3 — Editors, validation, and troubleshooting](../html/yaml-k8s-part3-tools-troubleshooting.html)
-- [Catalog home (all HTML guides)](../html/index.html)
+- [Part 1 — Syntax and structure](../../html/yaml-k8s-part1-syntax.html)
+- [Part 2 — Kubernetes objects, editing, and workflows](../../html/yaml-k8s-part2-objects-editing.html)
+- [Part 3 — Editors, validation, and troubleshooting](../../html/yaml-k8s-part3-tools-troubleshooting.html)
+- [Catalog home (all HTML guides)](../../html/index.html)
 
 ---
 
@@ -402,4 +402,4 @@ Paste **sanitized** manifests only (no real Secret contents).
 
 ---
 
-*Last updated: March 2026 — aligned with this repo’s lab manifests and HTML guides in `k8s/docs/html/`.*
+*Last updated: March 2026 — aligned with this repo’s lab manifests and HTML guides in `k8s/html/`.*

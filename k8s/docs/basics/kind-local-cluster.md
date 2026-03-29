@@ -210,8 +210,8 @@ If your goal is **learning Kubernetes**, Kind is one of the best starting points
 
 ## Related Content
 
-- Lab manual: [../labmanuals/lab05-install-kind-local-kubernetes.md](../labmanuals/lab05-install-kind-local-kubernetes.md)
-- HTML guide: [../html/kind-local-kubernetes.html](../html/kind-local-kubernetes.html)
+- Lab manual: [../../labmanuals/lab05-install-kind-local-kubernetes.md](../../labmanuals/lab05-install-kind-local-kubernetes.md)
+- HTML guide: [../../html/kind-local-kubernetes.html](../../html/kind-local-kubernetes.html)
 
 ## Sources
 

@@ -276,7 +276,7 @@ To contribute directly:
 
 - [Kubernetes Official Documentation](https://kubernetes.io/docs/)
 - [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-- **[YAML 101 for Kubernetes Labs](../basics/yaml-basics.md)** (repo) — start here before editing lab manifests; interactive HTML: [Part 1](../html/yaml-k8s-part1-syntax.html), [Part 2](../html/yaml-k8s-part2-objects-editing.html), [Part 3](../html/yaml-k8s-part3-tools-troubleshooting.html); hands-on: [Lab 46: YAML Manifests](lab46-basics-yaml-manifests.md)
+- **[YAML 101 for Kubernetes Labs](../docs/basics/yaml-basics.md)** (repo) — start here before editing lab manifests; interactive HTML: [Part 1](../html/yaml-k8s-part1-syntax.html), [Part 2](../html/yaml-k8s-part2-objects-editing.html), [Part 3](../html/yaml-k8s-part3-tools-troubleshooting.html); hands-on: [Lab 46: YAML Manifests](lab46-basics-yaml-manifests.md)
 - [YAML language spec](https://yaml.org/) (reference)
 - [Docker Documentation](https://docs.docker.com/)
 - [Kubernetes Patterns Book](https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/)

@@ -30,7 +30,7 @@ To complete this project successfully, ensure familiarity with:
 3. Kubernetes storage concepts (e.g., NFS setup and usage).
 4. Basic Linux commands and Docker basics.
 5. Kubernetes dashboard and RBAC.
-   Note: Kubernetes Dashboard is now a legacy UI path. Prefer Headlamp for current learning and new setups. See `k8s/docs/workloads/k8s-headlamp-ui.md` and `k8s/docs/html/k8s-ui-headlamp.html`.
+   Note: Kubernetes Dashboard is now a legacy UI path. Prefer Headlamp for current learning and new setups. See `k8s/docs/workloads/k8s-headlamp-ui.md` and `k8s/html/k8s-ui-headlamp.html`.
 
 ---
 
@@ -163,7 +163,7 @@ Expose the WordPress and MySQL deployments using Kubernetes Services.
 #### **Task 3: Creating a Token and Working on the Dashboard**
 ##### Description:
 Enable the Kubernetes dashboard and create a token for accessing it.
-Note: This is a legacy workflow retained for historical context. For current UI-based access, refer to `k8s/docs/workloads/k8s-headlamp-ui.md` and `k8s/docs/labmanuals/lab32-workload-headlamp-kubernetes-ui.md`.
+Note: This is a legacy workflow retained for historical context. For current UI-based access, refer to `k8s/docs/workloads/k8s-headlamp-ui.md` and `k8s/labmanuals/lab32-workload-headlamp-kubernetes-ui.md`.
 
 ##### Steps:
 1. Install the Kubernetes dashboard:

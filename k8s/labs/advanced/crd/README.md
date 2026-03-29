@@ -56,4 +56,4 @@ kubectl delete crd websites.example.com
 
 ## Documentation
 
-Refer to the main lab manual: `k8s/docs/labmanuals/lab43-adv-custom-resource-definitions.md`
+Refer to the main lab manual: `k8s/labmanuals/lab43-adv-custom-resource-definitions.md`

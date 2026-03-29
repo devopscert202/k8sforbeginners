@@ -9,7 +9,7 @@ The Kubernetes Dashboard project was officially retired and archived on **Januar
 For the current UI path in this repository, use:
 
 - Markdown overview: [k8s-headlamp-ui.md](./k8s-headlamp-ui.md)
-- HTML walkthrough: [../html/k8s-ui-headlamp.html](../html/k8s-ui-headlamp.html)
+- HTML walkthrough: [../../html/k8s-ui-headlamp.html](../../html/k8s-ui-headlamp.html)
 
 ---
 
@@ -95,8 +95,8 @@ Use **Headlamp** instead for current UI-based Kubernetes learning and labs.
 ### Headlamp references in this repo
 
 - Markdown overview: [k8s-headlamp-ui.md](./k8s-headlamp-ui.md)
-- Lab manual: [../labmanuals/lab32-workload-headlamp-kubernetes-ui.md](../labmanuals/lab32-workload-headlamp-kubernetes-ui.md)
-- HTML reference: [../html/k8s-ui-headlamp.html](../html/k8s-ui-headlamp.html)
+- Lab manual: [../../labmanuals/lab32-workload-headlamp-kubernetes-ui.md](../../labmanuals/lab32-workload-headlamp-kubernetes-ui.md)
+- HTML reference: [../../html/k8s-ui-headlamp.html](../../html/k8s-ui-headlamp.html)
 
 ---
 

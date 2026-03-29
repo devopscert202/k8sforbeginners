@@ -51,8 +51,9 @@ exclude:
 include:
   - k8s/docs
   - k8s/labs
-  - k8s/docs/html
+  - k8s/html
+  - k8s/labmanuals
 
 # HTML files handling
 keep_files:
-  - k8s/docs/html
+  - k8s/html
