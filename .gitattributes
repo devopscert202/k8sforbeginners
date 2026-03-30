@@ -1,0 +1,19 @@
+# Normalize all text files to LF on commit
+* text=auto eol=lf
+
+# Ensure these stay LF even on Windows checkouts
+*.md text eol=lf
+*.html text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
