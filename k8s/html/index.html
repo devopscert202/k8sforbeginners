@@ -426,58 +426,64 @@
                             </td>
                             <td class="category-copy">Use these for SRE-style walkthroughs, admin training, autoscaling labs, and end-to-end cluster lifecycle sessions.</td>
                         </tr>
+                        <tr>
+                            <td>
+                                <span class="tag foundation">Storage</span>
+                                <span class="tag ops">Data</span>
+                                <div class="category-name">Storage</div>
+                                <div class="category-copy">Persistent data, projected configuration, in-Pod file sharing, storage backends, and cloud CSI flows grouped in one dedicated learning row.</div>
+                            </td>
+                            <td>
+                                <div class="storage-catalog">
+                                    <div class="storage-grid">
+                                        <article class="storage-panel">
+                                            <div class="storage-badge">Foundation</div>
+                                            <h3>Core Storage Concepts</h3>
+                                            <p>Start with the big-picture model of ephemeral versus persistent data, volume choices, claims, and how Kubernetes separates application need from backend implementation.</p>
+                                            <div class="storage-links">
+                                                <a href="./k8s-storage-complete.html">Storage Overview<span>Ephemeral, persistent, CSI, StorageClasses, and design thinking</span></a>
+                                                <a href="./volume-types.html">Volume Types<span>Compare temporary, projected, local, and persistent volume styles</span></a>
+                                                <a href="./pv-pvc-binding.html">PV / PVC Binding<span>Understand how claims bind to actual persistent storage</span></a>
+                                                <a href="./accessmode-storageclasses.html">Access Modes and StorageClasses<span>RWO, ROX, RWX, RWOP, and provisioning policy</span></a>
+                                            </div>
+                                        </article>
+                                        <article class="storage-panel">
+                                            <div class="storage-badge">Config and Secrets</div>
+                                            <h3>Projected Data Into Pods</h3>
+                                            <p>Use these pages when the lesson is about mounting runtime configuration or credentials into a container as files instead of baking them into an image.</p>
+                                            <div class="storage-links">
+                                                <a href="./configmaps-patterns.html">ConfigMaps Patterns<span>Broader configuration injection approaches</span></a>
+                                                <a href="./configmap-volume.html">ConfigMap Volume<span>Mount configuration keys as files inside Pods</span></a>
+                                                <a href="./secrets-management.html">Secrets<span>Secret concepts, types, and safe handling patterns</span></a>
+                                                <a href="./secret-volume.html">Secret Volume<span>Mount sensitive values as read-only files</span></a>
+                                            </div>
+                                        </article>
+                                        <article class="storage-panel">
+                                            <div class="storage-badge">Sharing</div>
+                                            <h3>Data Sharing Patterns</h3>
+                                            <p>These pages fit the transition from temporary in-Pod collaboration to shared persistent data across tightly coupled containers and Pods.</p>
+                                            <div class="storage-links">
+                                                <a href="./sharingdata.html">Sharing Data Between Containers<span>Use shared Pod volumes such as emptyDir for local collaboration</span></a>
+                                                <a href="./readwrite-pod.html">RWX Multi-Container Pod<span>Share one persistent claim across multiple containers in one Pod</span></a>
+                                            </div>
+                                        </article>
+                                        <article class="storage-panel">
+                                            <div class="storage-badge">Backends and Cloud</div>
+                                            <h3>Backend Examples</h3>
+                                            <p>Use these when moving from concept into implementation with local persistence, shared network filesystems, and cloud CSI-backed storage.</p>
+                                            <div class="storage-links">
+                                                <a href="./hostpath-pv-pvc.html">HostPath PV / PVC<span>Node-local persistent storage for labs and development</span></a>
+                                                <a href="./nfs-pv-pvc-complete.html">NFS PV / PVC<span>Shared storage across Pods and nodes</span></a>
+                                                <a href="./csi-aws-ebs-efs.html">CSI, AWS EBS, and EFS<span>How Kubernetes provisions cloud storage through CSI drivers</span></a>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="category-copy">Best for teaching the full storage path: temporary files, persistent claims, shared backends, projected config and secrets, plus cloud volume provisioning through CSI.</td>
+                        </tr>
                     </tbody>
                 </table>
-            </div>
-        </section>
-
-        <section class="section">
-            <div class="section-title">Storage</div>
-            <div class="section-note">Storage topics are grouped here as a dedicated learning section after cluster operations, so the main category catalog keeps its original structure while storage gets its own concept-first navigation.</div>
-            <div class="storage-catalog">
-                <div class="storage-grid">
-                    <article class="storage-panel">
-                        <div class="storage-badge">Foundation</div>
-                        <h3>Core Storage Concepts</h3>
-                        <p>Start with the big-picture model of ephemeral versus persistent data, volume choices, claims, and how Kubernetes separates application need from backend implementation.</p>
-                        <div class="storage-links">
-                            <a href="./k8s-storage-complete.html">Storage Overview<span>Ephemeral, persistent, CSI, StorageClasses, and design thinking</span></a>
-                            <a href="./volume-types.html">Volume Types<span>Compare temporary, projected, local, and persistent volume styles</span></a>
-                            <a href="./pv-pvc-binding.html">PV / PVC Binding<span>Understand how claims bind to actual persistent storage</span></a>
-                            <a href="./accessmode-storageclasses.html">Access Modes and StorageClasses<span>RWO, ROX, RWX, RWOP, and provisioning policy</span></a>
-                        </div>
-                    </article>
-                    <article class="storage-panel">
-                        <div class="storage-badge">Config and Secrets</div>
-                        <h3>Projected Data Into Pods</h3>
-                        <p>Use these pages when the lesson is about mounting runtime configuration or credentials into a container as files instead of baking them into an image.</p>
-                        <div class="storage-links">
-                            <a href="./configmaps-patterns.html">ConfigMaps Patterns<span>Broader configuration injection approaches</span></a>
-                            <a href="./configmap-volume.html">ConfigMap Volume<span>Mount configuration keys as files inside Pods</span></a>
-                            <a href="./secrets-management.html">Secrets<span>Secret concepts, types, and safe handling patterns</span></a>
-                            <a href="./secret-volume.html">Secret Volume<span>Mount sensitive values as read-only files</span></a>
-                        </div>
-                    </article>
-                    <article class="storage-panel">
-                        <div class="storage-badge">Sharing</div>
-                        <h3>Data Sharing Patterns</h3>
-                        <p>These pages fit the transition from temporary in-Pod collaboration to shared persistent data across tightly coupled containers and Pods.</p>
-                        <div class="storage-links">
-                            <a href="./sharingdata.html">Sharing Data Between Containers<span>Use shared Pod volumes such as emptyDir for local collaboration</span></a>
-                            <a href="./readwrite-pod.html">RWX Multi-Container Pod<span>Share one persistent claim across multiple containers in one Pod</span></a>
-                        </div>
-                    </article>
-                    <article class="storage-panel">
-                        <div class="storage-badge">Backends and Cloud</div>
-                        <h3>Backend Examples</h3>
-                        <p>Use these when moving from concept into implementation with local persistence, shared network filesystems, and cloud CSI-backed storage.</p>
-                        <div class="storage-links">
-                            <a href="./hostpath-pv-pvc.html">HostPath PV / PVC<span>Node-local persistent storage for labs and development</span></a>
-                            <a href="./nfs-pv-pvc-complete.html">NFS PV / PVC<span>Shared storage across Pods and nodes</span></a>
-                            <a href="./csi-aws-ebs-efs.html">CSI, AWS EBS, and EFS<span>How Kubernetes provisions cloud storage through CSI drivers</span></a>
-                        </div>
-                    </article>
-                </div>
             </div>
         </section>
 
