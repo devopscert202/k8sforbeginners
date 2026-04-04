@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Container Pod with RWX Storage - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: "Segoe UI", system-ui, sans-serif; background: #f5f7fb; color: #0f172a; line-height: 1.6; padding: 20px; }
+        .container { max-width: 1320px; margin: 0 auto; } .hero, .view { background: #fff; border: 1px solid rgba(50,108,229,.12); border-radius: 18px; box-shadow: 0 8px 28px rgba(15,23,42,.08); }
+        .hero { padding: 32px; text-align: center; margin-bottom: 24px; } .eyebrow { display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 6px 12px; border-radius: 999px; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
+        h1 { color: #326ce5; margin-bottom: 10px; font-size: clamp(2rem, 4vw, 2.8rem); } .subtitle { max-width: 960px; margin: 0 auto 18px; color: #64748b; } .lead, .note { background: #eff6ff; border-left: 4px solid #326ce5; color: #1e3a8a; border-radius: 12px; padding: 14px 16px; } .lead { max-width: 960px; margin: 0 auto; }
+        .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 0 0 24px; } .btn { border: 2px solid #326ce5; background: #fff; color: #1d4ed8; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; } .btn.active, .btn:hover { background: #326ce5; color: #fff; }
+        .view { display: none; padding: 28px; margin-bottom: 22px; } .view.active { display: block; } h2 { margin-bottom: 16px; font-size: 1.4rem; } .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .card, .step { border: 1px solid #dbe3f1; border-radius: 16px; padding: 18px; background: linear-gradient(180deg,#fff,#f8fbff); } .card h3, .step h3 { margin-bottom: 8px; } .card p, .step p { color: #475569; }
+        .steps { display: grid; gap: 14px; } .num { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: #326ce5; color: #fff; font-weight: 800; margin-bottom: 10px; }
+        pre { margin-top: 12px; background: #0f172a; color: #dbeafe; border-radius: 16px; padding: 18px; overflow-x: auto; font-size: .86rem; } .example { margin-bottom: 18px; } table { width: 100%; border-collapse: collapse; } th, td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; } th { background: #326ce5; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero"><div class="eyebrow">Shared Persistent Data</div><h1>Multi-Container Pod with RWX Storage</h1><p class="subtitle">Use one persistent claim so multiple containers in the same Pod can read and write shared data.</p><div class="lead">Containers in the same Pod already share the Pod boundary. Shared persistent storage adds a common filesystem path that can survive container restarts and simplify tight cooperation.</div></section>
+        <div class="controls"><button class="btn active" onclick="showView('concept', this)">Concept</button><button class="btn" onclick="showView('flow', this)">Flow</button><button class="btn" onclick="showView('yaml', this)">YAML</button><button class="btn" onclick="showView('compare', this)">Compare</button><button class="btn" onclick="showView('practice', this)">Practice</button></div>
+        <section id="concept-view" class="view active"><h2>Core Concepts</h2><div class="grid">
+            <article class="card"><h3>Shared mounted path</h3><p>Two containers can mount the same claim and see the same files from inside the Pod.</p></article>
+            <article class="card"><h3>ReadWriteMany intent</h3><p>RWX asks for a backend that supports concurrent read and write access instead of exclusive node ownership.</p></article>
+            <article class="card"><h3>Tightly coupled design</h3><p>This pattern works best when one container produces files and another container reads, serves, or transforms them.</p></article>
+        </div></section>
+        <section id="flow-view" class="view"><h2>Shared PVC Pod Flow</h2><div class="steps">
+            <article class="step"><div class="num">1</div><h3>Provision RWX-capable storage</h3><p>Create or choose a backend that supports shared writable access.</p></article>
+            <article class="step"><div class="num">2</div><h3>Bind with a PVC</h3><p>The claim requests RWX so the Pod can mount it with shared intent.</p></article>
+            <article class="step"><div class="num">3</div><h3>Mount into multiple containers</h3><p>Each container mounts the same claim as a shared volume path.</p></article>
+            <article class="step"><div class="num">4</div><h3>Exchange data through files</h3><p>One container writes content and the other consumes it without extra networking.</p></article>
+        </div><div class="note"><strong>Key point:</strong> Use this pattern when the containers are operationally one unit and should stay together in the same Pod.</div></section>
+        <section id="yaml-view" class="view"><h2>Representative YAML</h2>
+            <div class="example"><h3>PV and PVC</h3><pre><code>apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: multi-container-pv
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual
+  hostPath:
+    path: /mnt/data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: multi-container-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi</code></pre></div>
+            <div class="example"><h3>Multi-Container Pod</h3><pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-container-pod
+spec:
+  containers:
+  - name: app-container-1
+    image: nginx
+    volumeMounts:
+    - name: shared-storage
+      mountPath: /usr/share/nginx/html
+  - name: app-container-2
+    image: busybox
+    command: ["sh", "-c", "while true; do echo Logging data > /usr/share/nginx/html/log.txt; sleep 5; done"]
+    volumeMounts:
+    - name: shared-storage
+      mountPath: /usr/share/nginx/html
+  volumes:
+  - name: shared-storage
+    persistentVolumeClaim:
+      claimName: multi-container-pvc</code></pre></div>
+        </section>
+        <section id="compare-view" class="view"><h2>Shared Volume Patterns</h2><table>
+            <tr><th>Pattern</th><th>Lifecycle</th><th>Best Fit</th></tr>
+            <tr><td>emptyDir in one Pod</td><td>Ephemeral for the Pod lifecycle</td><td>Temporary sharing and scratch data</td></tr>
+            <tr><td>PVC in one Pod</td><td>Persistent beyond container restarts</td><td>Shared state or logs that must survive</td></tr>
+            <tr><td>PVC across many Pods</td><td>Persistent and potentially multi-node</td><td>Shared data across replicas or workers</td></tr>
+        </table><div class="note"><strong>Design hint:</strong> Start with <code>emptyDir</code> for temporary collaboration and move to a PVC only when the data itself needs durability.</div></section>
+        <section id="practice-view" class="view"><h2>How To Use It In Practice</h2><div class="grid">
+            <article class="card"><h3>Producer and consumer sidecars</h3><p>One container writes files while another container serves, ships, or transforms them.</p></article>
+            <article class="card"><h3>Persistent shared state</h3><p>Keep content available even if one of the collaborating containers restarts.</p></article>
+            <article class="card"><h3>Backend validation</h3><p>Use the pattern to prove whether the chosen backend truly behaves like shared writable storage.</p></article>
+        </div></section>
+    </div>
+    <script>function showView(view, button){document.querySelectorAll('.view').forEach((s)=>s.classList.remove('active'));document.querySelectorAll('.btn').forEach((b)=>b.classList.remove('active'));document.getElementById(view+'-view').classList.add('active');button.classList.add('active');}</script>
+</body>
+</html>

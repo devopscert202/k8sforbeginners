@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConfigMap as a Volume - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: "Segoe UI", system-ui, sans-serif; background: #f5f7fb; color: #0f172a; line-height: 1.6; padding: 20px; }
+        .container { max-width: 1320px; margin: 0 auto; } .hero, .view { background: #fff; border: 1px solid rgba(50,108,229,.12); border-radius: 18px; box-shadow: 0 8px 28px rgba(15,23,42,.08); }
+        .hero { padding: 32px; text-align: center; margin-bottom: 24px; } .eyebrow { display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 6px 12px; border-radius: 999px; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
+        h1 { color: #326ce5; margin-bottom: 10px; font-size: clamp(2rem, 4vw, 2.8rem); } .subtitle { max-width: 960px; margin: 0 auto 18px; color: #64748b; } .lead, .note { background: #eff6ff; border-left: 4px solid #326ce5; color: #1e3a8a; border-radius: 12px; padding: 14px 16px; } .lead { max-width: 960px; margin: 0 auto; }
+        .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 0 0 24px; } .btn { border: 2px solid #326ce5; background: #fff; color: #1d4ed8; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; } .btn.active, .btn:hover { background: #326ce5; color: #fff; }
+        .view { display: none; padding: 28px; margin-bottom: 22px; } .view.active { display: block; } h2 { margin-bottom: 16px; font-size: 1.4rem; } .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .card, .step { border: 1px solid #dbe3f1; border-radius: 16px; padding: 18px; background: linear-gradient(180deg,#fff,#f8fbff); } .card h3, .step h3 { margin-bottom: 8px; } .card p, .step p { color: #475569; }
+        .steps { display: grid; gap: 14px; } .num { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: #326ce5; color: #fff; font-weight: 800; margin-bottom: 10px; }
+        pre { margin-top: 12px; background: #0f172a; color: #dbeafe; border-radius: 16px; padding: 18px; overflow-x: auto; font-size: .86rem; } .example { margin-bottom: 18px; } table { width: 100%; border-collapse: collapse; } th, td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; } th { background: #326ce5; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero"><div class="eyebrow">Configuration Volume</div><h1>ConfigMap as a Volume</h1><p class="subtitle">Mount ConfigMap keys as files so applications can read runtime configuration from the filesystem.</p><div class="lead">A ConfigMap volume turns each key into a file and each value into file content. This fits applications that expect configuration files instead of environment variables.</div></section>
+        <div class="controls"><button class="btn active" onclick="showView('concept', this)">Concept</button><button class="btn" onclick="showView('flow', this)">Flow</button><button class="btn" onclick="showView('yaml', this)">YAML</button><button class="btn" onclick="showView('compare', this)">Compare</button><button class="btn" onclick="showView('practice', this)">Practice</button></div>
+        <section id="concept-view" class="view active"><h2>Core Concepts</h2><div class="grid">
+            <article class="card"><h3>Filesystem projection</h3><p>Keys become files inside a mounted directory such as <code>/etc/config</code>.</p></article>
+            <article class="card"><h3>Externalized settings</h3><p>The image stays the same while the runtime configuration changes per environment.</p></article>
+            <article class="card"><h3>Config, not secrets</h3><p>Use ConfigMaps for non-sensitive data and Secrets for passwords, tokens, and certificates.</p></article>
+        </div></section>
+        <section id="flow-view" class="view"><h2>ConfigMap Volume Flow</h2><div class="steps">
+            <article class="step"><div class="num">1</div><h3>Create the ConfigMap</h3><p>Store settings as named keys in a ConfigMap resource.</p></article>
+            <article class="step"><div class="num">2</div><h3>Mount it as a volume</h3><p>The Deployment or Pod references the ConfigMap in the <code>volumes</code> section.</p></article>
+            <article class="step"><div class="num">3</div><h3>Expose files in the container</h3><p>Kubernetes projects the ConfigMap into a mount path as regular files.</p></article>
+            <article class="step"><div class="num">4</div><h3>Application reads files</h3><p>The process loads its configuration from the mounted path rather than from baked-in defaults.</p></article>
+        </div><div class="note"><strong>Key point:</strong> ConfigMap volumes feel most natural when the app already knows how to consume config files.</div></section>
+        <section id="yaml-view" class="view"><h2>Representative YAML</h2>
+            <div class="example"><h3>ConfigMap</h3><pre><code>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  database_url: jdbc:mysql://localhost:3306/mydb
+  api_key: your-api-key-here</code></pre></div>
+            <div class="example"><h3>Deployment</h3><pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configmap-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: nginx
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: app-config</code></pre></div>
+        </section>
+        <section id="compare-view" class="view"><h2>Config Consumption Choices</h2><table>
+            <tr><th>Pattern</th><th>How Data Appears</th><th>Best Fit</th></tr>
+            <tr><td>Environment variables</td><td>Process environment entries</td><td>Simple startup settings</td></tr>
+            <tr><td>ConfigMap volume</td><td>Files in a mounted directory</td><td>Apps expecting config files or templates</td></tr>
+            <tr><td>Secret volume</td><td>Sensitive files in a mounted directory</td><td>Credentials and keys</td></tr>
+        </table><div class="note"><strong>Design hint:</strong> If the app reads a config file already, do not force everything through environment variables.</div></section>
+        <section id="practice-view" class="view"><h2>How To Use It In Practice</h2><div class="grid">
+            <article class="card"><h3>Web server config</h3><p>Project NGINX or Apache config snippets without rebuilding the image.</p></article>
+            <article class="card"><h3>Environment-specific settings</h3><p>Mount different data for dev, test, and prod while keeping the same container image.</p></article>
+            <article class="card"><h3>Runtime inspection</h3><p>Mounted files make it easy to confirm what configuration the container can actually see.</p></article>
+        </div></section>
+    </div>
+    <script>function showView(view, button){document.querySelectorAll('.view').forEach((s)=>s.classList.remove('active'));document.querySelectorAll('.btn').forEach((b)=>b.classList.remove('active'));document.getElementById(view+'-view').classList.add('active');button.classList.add('active');}</script>
+</body>
+</html>

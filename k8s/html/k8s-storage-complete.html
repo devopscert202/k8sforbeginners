@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Storage Overview - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #326ce5;
+            --blue-deep: #1d4ed8;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #dbe3f1;
+            --surface: #ffffff;
+            --bg: #f5f7fb;
+            --soft: #eff6ff;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1360px; margin: 0 auto; }
+        .hero, .view {
+            background: var(--surface);
+            border: 1px solid rgba(50,108,229,0.12);
+            border-radius: 18px;
+            box-shadow: 0 8px 28px rgba(15,23,42,0.08);
+        }
+        .hero { padding: 32px; margin-bottom: 24px; text-align: center; }
+        .eyebrow {
+            display: inline-block;
+            background: #dbeafe;
+            color: var(--blue-deep);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        h1 { font-size: clamp(2rem, 4vw, 3rem); color: var(--blue); margin-bottom: 10px; }
+        .subtitle { max-width: 980px; margin: 0 auto 18px; color: var(--muted); }
+        .lead {
+            max-width: 980px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            border: 1px solid rgba(50,108,229,0.14);
+            border-radius: 14px;
+            padding: 18px 20px;
+            color: #334155;
+        }
+        .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
+        .btn {
+            border: 2px solid var(--blue);
+            background: #fff;
+            color: var(--blue-deep);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn.active, .btn:hover { background: var(--blue); color: #fff; }
+        .view { display: none; padding: 28px; margin-bottom: 22px; }
+        .view.active { display: block; }
+        h2 { font-size: 1.4rem; margin-bottom: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .card, .step, .practice {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+        }
+        .card h3, .practice h3 { margin-bottom: 8px; font-size: 1rem; }
+        .card p, .practice p, .step p { color: #475569; }
+        .steps { display: grid; gap: 14px; }
+        .step-num {
+            width: 36px; height: 36px; border-radius: 50%; background: var(--blue);
+            color: #fff; display: grid; place-items: center; font-weight: 800; margin-bottom: 10px;
+        }
+        pre {
+            background: #0f172a;
+            color: #dbeafe;
+            padding: 18px;
+            border-radius: 16px;
+            overflow-x: auto;
+            font-size: 0.86rem;
+            border: 1px solid rgba(148,163,184,0.2);
+            margin-top: 12px;
+        }
+        .example { margin-bottom: 18px; }
+        .example h3 { margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border-bottom: 1px solid #e2e8f0; padding: 12px 14px; text-align: left; vertical-align: top; }
+        th { background: var(--blue); color: #fff; }
+        .note {
+            margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: var(--soft);
+            border-left: 4px solid var(--blue); color: #1e3a8a;
+        }
+        @media (max-width: 768px) { body { padding: 14px; } .hero, .view { padding: 20px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <div class="eyebrow">Storage Fundamentals</div>
+            <h1>Kubernetes Storage Overview</h1>
+            <p class="subtitle">Interactive summary of ephemeral and persistent storage, PV and PVC binding, StorageClasses, CSI, snapshots, and shared-storage design choices.</p>
+            <div class="lead">Kubernetes storage is a layered model: Pod-scoped volumes, cluster-scoped persistent resources, and backend-specific provisioning. The best storage choice starts with workload lifecycle and access requirements rather than vendor preference.</div>
+        </section>
+
+        <div class="controls">
+            <button class="btn active" onclick="showView('concept', this)">Concept</button>
+            <button class="btn" onclick="showView('flow', this)">Flow</button>
+            <button class="btn" onclick="showView('yaml', this)">YAML</button>
+            <button class="btn" onclick="showView('compare', this)">Compare</button>
+            <button class="btn" onclick="showView('practice', this)">Practice</button>
+        </div>
+
+        <section id="concept-view" class="view active">
+            <h2>Core Concepts</h2>
+            <div class="grid">
+                <article class="card"><h3>Ephemeral Storage</h3><p>Use volumes like <code>emptyDir</code>, <code>configMap</code>, and <code>secret</code> when data only needs to live with the Pod lifecycle or deliver runtime data into a container.</p></article>
+                <article class="card"><h3>Persistent Storage</h3><p>Use <code>PersistentVolume</code> and <code>PersistentVolumeClaim</code> when data must survive Pod deletion, controller rollouts, and rescheduling events.</p></article>
+                <article class="card"><h3>Provisioning Policy</h3><p><code>StorageClass</code> describes how storage should be created and bound. CSI drivers make that policy real on cloud or on-premises backends.</p></article>
+                <article class="card"><h3>Operational Guardrails</h3><p>Reclaim policy, snapshots, backup, performance, security, and capacity planning matter just as much as the initial volume declaration.</p></article>
+            </div>
+        </section>
+
+        <section id="flow-view" class="view">
+            <h2>Storage Decision Flow</h2>
+            <div class="steps">
+                <article class="step"><div class="step-num">1</div><h3>Start with the workload</h3><p>Decide if the app needs scratch space, durable state, or shared writable files across nodes.</p></article>
+                <article class="step"><div class="step-num">2</div><h3>Choose the storage model</h3><p>Use direct Pod volumes for simple runtime needs or PV and PVC resources when the data must outlive the Pod.</p></article>
+                <article class="step"><div class="step-num">3</div><h3>Match backend to access mode</h3><p>ReadWriteOnce, ReadOnlyMany, and ReadWriteMany only work when the chosen backend truly supports them.</p></article>
+                <article class="step"><div class="step-num">4</div><h3>Provision and bind</h3><p>Kubernetes binds a PVC to a compatible PV or provisions one through a StorageClass and CSI driver.</p></article>
+                <article class="step"><div class="step-num">5</div><h3>Operate for the long term</h3><p>Use reclaim policy, snapshots, and backup strategy so the storage design remains safe after day one.</p></article>
+            </div>
+            <div class="note"><strong>Key point:</strong> Storage design goes wrong when teams optimize for convenience before checking lifecycle, access pattern, and recovery expectations.</div>
+        </section>
+
+        <section id="yaml-view" class="view">
+            <h2>Representative YAML</h2>
+            <div class="example">
+                <h3>StorageClass</h3>
+                <pre><code>apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer</code></pre>
+            </div>
+            <div class="example">
+                <h3>PersistentVolumeClaim</h3>
+                <pre><code>apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi</code></pre>
+            </div>
+            <div class="example">
+                <h3>VolumeSnapshot</h3>
+                <pre><code>apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: app-data-snap
+spec:
+  volumeSnapshotClassName: csi-snapclass
+  source:
+    persistentVolumeClaimName: app-data</code></pre>
+            </div>
+        </section>
+
+        <section id="compare-view" class="view">
+            <h2>Storage Building Blocks</h2>
+            <table>
+                <tr><th>Component</th><th>Role</th><th>Main Question</th></tr>
+                <tr><td>Volume</td><td>Pod-level mount</td><td>What storage does this Pod use now?</td></tr>
+                <tr><td>PersistentVolume</td><td>Cluster storage resource</td><td>What storage supply exists?</td></tr>
+                <tr><td>PersistentVolumeClaim</td><td>Workload request</td><td>What storage does the app need?</td></tr>
+                <tr><td>StorageClass</td><td>Provisioning template</td><td>How should the volume be created and bound?</td></tr>
+                <tr><td>CSI Driver</td><td>Backend integration</td><td>Which platform implements the request?</td></tr>
+            </table>
+            <div class="note"><strong>Design hint:</strong> Keep application intent, cluster resources, and backend implementation as separate mental layers.</div>
+        </section>
+
+        <section id="practice-view" class="view">
+            <h2>How To Use It In Practice</h2>
+            <div class="grid">
+                <article class="practice"><h3>Stateful workloads</h3><p>Use persistent storage for databases, queues, and any service whose value depends on durable data.</p></article>
+                <article class="practice"><h3>Shared storage</h3><p>Use file-oriented backends such as NFS or CephFS when multiple Pods need coordinated file access.</p></article>
+                <article class="practice"><h3>Recovery planning</h3><p>Decide on reclaim, cleanup, backup, and snapshot strategy before the first application depends on the volume.</p></article>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function showView(view, button) {
+            document.querySelectorAll('.view').forEach((section) => section.classList.remove('active'));
+            document.querySelectorAll('.btn').forEach((btn) => btn.classList.remove('active'));
+            document.getElementById(view + '-view').classList.add('active');
+            button.classList.add('active');
+        }
+    </script>
+</body>
+</html>

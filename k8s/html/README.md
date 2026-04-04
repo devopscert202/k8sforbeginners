@@ -9,8 +9,8 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 63 HTML pages total in this folder
-- 62 concept explainers plus the home page
+- 72 HTML pages total in this folder
+- 71 concept explainers plus the home page
 - All pages are self-contained and work offline
 
 ## Diagram Catalog
@@ -58,6 +58,15 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `secrets-management.html` - Secret types, consumption patterns, and security best practices
 - `volume-types.html` - Kubernetes volume type comparison
 - `pv-pvc-binding.html` - PersistentVolume and PersistentVolumeClaim binding
+- `k8s-storage-complete.html` - Storage overview across ephemeral, persistent, CSI, and shared storage topics
+- `accessmode-storageclasses.html` - Access modes and manual StorageClass guidance
+- `configmap-volume.html` - Mounting ConfigMaps as files
+- `hostpath-pv-pvc.html` - HostPath-backed PV and PVC flow
+- `nfs-pv-pvc-complete.html` - NFS-backed PV and PVC workflow
+- `csi-aws-ebs-efs.html` - CSI flow and AWS EBS versus EFS explainer
+- `readwrite-pod.html` - Multi-container Pod sharing a persistent claim
+- `secret-volume.html` - Mounting Secrets as files
+- `sharingdata.html` - Sharing data between containers in one Pod
 - `rbac-flow.html` - RBAC authorization flow
 - `rbac-user-certificate-flow.html` - User certificate, kubeconfig, context, and RBAC lab journey
 - `ldap-k8s-rbac-poc.html` - LDAP or Active Directory to OIDC to Kubernetes RBAC POC architecture
