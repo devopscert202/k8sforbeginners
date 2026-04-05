@@ -401,6 +401,7 @@ spec:
             <li><strong>3. Intermittent failures</strong> — Inspect CoreDNS logs for errors; <code>loop</code> plugin detects mis-forwarding. Check CoreDNS replica count and node resource pressure.</li>
             <li><strong>4. Slow DNS</strong> — Review <code>cache</code> TTLs; reduce excessive lookups by fixing <code>ndots</code> or using FQDNs; on some systems <code>options single-request-reopen</code> in <code>dnsConfig</code> helps glibc dual-stack timeouts.</li>
             <li><strong>5. Cross-namespace names</strong> — Use FQDN or correct search order; ensure NetworkPolicy allows UDP/TCP 53 to DNS Service.</li>
+            <li><strong>6. NetworkPolicy blocking DNS</strong> — If using deny-all egress, add a DNS allow rule. See <code>k8s/labs/security/deny-all-ingress.yaml</code> and <a href="network-policy.html">network-policy.html</a> for ready-made patterns.</li>
         </ul>
         <h3 style="font-size:1rem;color:var(--blue);margin:16px 0 8px">Decision tree: DNS not working?</h3>
         <div class="diagram-wrap">

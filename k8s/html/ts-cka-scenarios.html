@@ -425,6 +425,7 @@ kubectl delete pods -n kube-system -l k8s-app=kube-dns</pre>
 kubectl describe networkpolicy deny-all-ingress -n app
 kubectl exec -n app deploy/frontend -- curl -sS -m 2 http://backend.app.svc.cluster.local</pre>
               <p>Remember: some CNI implementations enforce default-deny once an ingress policy selects pods, unless another policy explicitly allows traffic.</p>
+              <p style="font-size:0.88rem;color:#64748b;margin-top:8px;">&#128194; <strong>Repo reference:</strong> See <code>k8s/labs/security/deny-all-ingress.yaml</code> and <code>allow-ingress.yaml</code> for ready-made deny/allow policy examples. Also see <code>deny-from-other-namespaces.yaml</code> for namespace isolation.</p>
             </div>
           </div>
         </div>
@@ -432,7 +433,7 @@ kubectl exec -n app deploy/frontend -- curl -sS -m 2 http://backend.app.svc.clus
           <div class="collapsible-inner">
             <div class="panel-section">
               <p><span class="label-rc">Root cause:</span> A default-deny ingress NetworkPolicy was added, but no policy allows traffic from the frontend pods to the backend pods.</p>
-              <p><span class="label-fix">Fix:</span> Add an allow rule with matching labels (and namespace if cross-namespace). Example:</p>
+              <p><span class="label-fix">Fix:</span> Add an allow rule with matching labels (and namespace if cross-namespace). Example based on <code>k8s/labs/security/allow-ingress.yaml</code>:</p>
               <pre>apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

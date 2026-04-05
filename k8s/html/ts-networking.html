@@ -338,6 +338,15 @@ kubectl logs -n kube-system POD_NAME_OF_KUBE_PROXY</pre>
         <!-- Tab 5 -->
         <section id="netpol-view" class="view" aria-labelledby="netpol-heading">
             <h2 id="netpol-heading">NetworkPolicy</h2>
+            <div class="card" style="background:#eff6ff;border-left:4px solid #2563eb;">
+                <h3 style="margin-top:0;">Repository YAML files</h3>
+                <p style="font-size:0.9rem;margin-bottom:6px;">Pre-built NetworkPolicy manifests in <code>k8s/labs/security/</code> — apply directly or use as templates:</p>
+                <ul style="font-size:0.88rem;margin:0;">
+                    <li><code>deny-all-ingress.yaml</code> — deny all ingress to pods labeled <code>app: k8slearning</code></li>
+                    <li><code>allow-ingress.yaml</code> — allow ingress only from pods with matching <code>app: k8slearning</code> label</li>
+                    <li><code>deny-from-other-namespaces.yaml</code> — deny cross-namespace ingress in the <code>prod</code> namespace</li>
+                </ul>
+            </div>
             <div class="card">
                 <h3>Policy blocking legitimate traffic</h3>
                 <p>NetworkPolicy is additive only when you allow; a deny-by-default namespace or a tight policy can block traffic that used to work.</p>
