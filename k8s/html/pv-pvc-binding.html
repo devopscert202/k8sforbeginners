@@ -346,7 +346,7 @@
                     </div>
                     <div class="lifecycle-state reclaim">
                         <h4>4. Reclaim</h4>
-                        <p>Reclaim policy executed: Retain, Delete, or Recycle.</p>
+                        <p>Reclaim policy executed: Retain, Delete, or Recycle (Deprecated).</p>
                     </div>
                 </div>
             </div>
@@ -526,9 +526,9 @@ spec:
 kind: StorageClass
 metadata:
   name: standard
-provisioner: kubernetes.io/aws-ebs
+provisioner: ebs.csi.aws.com
 parameters:
-  type: gp2
+  type: gp3
   fsType: ext4
 volumeBindingMode: WaitForFirstConsumer</pre>
                 </div>

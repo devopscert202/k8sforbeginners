@@ -55,18 +55,9 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 ### Configuration, Security, and Placement
 
 - `configmaps-patterns.html` - ConfigMap creation and consumption patterns
+- `configmap-volume.html` - Mounting ConfigMap keys as files inside Pods
 - `secrets-management.html` - Secret types, consumption patterns, and security best practices
-- `volume-types.html` - Kubernetes volume type comparison
-- `pv-pvc-binding.html` - PersistentVolume and PersistentVolumeClaim binding
-- `k8s-storage-complete.html` - Storage overview across ephemeral, persistent, CSI, and shared storage topics
-- `accessmode-storageclasses.html` - Access modes and manual StorageClass guidance
-- `configmap-volume.html` - Mounting ConfigMaps as files
-- `hostpath-pv-pvc.html` - HostPath-backed PV and PVC flow
-- `nfs-pv-pvc-complete.html` - NFS-backed PV and PVC workflow
-- `csi-aws-ebs-efs.html` - CSI flow and AWS EBS versus EFS explainer
-- `readwrite-pod.html` - Multi-container Pod sharing a persistent claim
-- `secret-volume.html` - Mounting Secrets as files
-- `sharingdata.html` - Sharing data between containers in one Pod
+- `secret-volume.html` - Mounting Secrets as read-only files inside Pods
 - `rbac-flow.html` - RBAC authorization flow
 - `rbac-user-certificate-flow.html` - User certificate, kubeconfig, context, and RBAC lab journey
 - `ldap-k8s-rbac-poc.html` - LDAP or Active Directory to OIDC to Kubernetes RBAC POC architecture
@@ -96,6 +87,18 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `cluster-administration.html` - Core administration responsibilities and flows
 - `kubernetes-installation.html` - Cluster installation and bootstrap flow
 - `helm-charts-overview.html` - Helm chart overview, architecture, rendering pipeline, and command reference
+
+### Storage
+
+- `k8s-storage-complete.html` - Ephemeral, persistent, CSI, StorageClasses, and design thinking
+- `volume-types.html` - Kubernetes volume type comparison (temporary, projected, local, persistent)
+- `pv-pvc-binding.html` - PersistentVolume and PersistentVolumeClaim lifecycle and binding flow
+- `accessmode-storageclasses.html` - Access modes (RWO, ROX, RWX, RWOP) and StorageClass guidance
+- `hostpath-pv-pvc.html` - HostPath-backed PV and PVC for labs and development
+- `nfs-pv-pvc-complete.html` - NFS-backed PV and PVC for shared multi-node storage
+- `csi-aws-ebs-efs.html` - CSI driver flow with AWS EBS and EFS examples
+- `sharingdata.html` - Sharing data between containers in one Pod using emptyDir
+- `readwrite-pod.html` - Multi-container Pod sharing a persistent NFS claim
 
 ## Technical Notes
 

@@ -182,76 +182,6 @@
             font-size: 0.8rem;
             margin-top: 4px;
         }
-        .storage-catalog {
-            background:
-                radial-gradient(circle at top left, rgba(37, 99, 235, 0.09), transparent 28%),
-                radial-gradient(circle at bottom right, rgba(6, 182, 212, 0.08), transparent 30%),
-                linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(239,246,255,0.96) 100%);
-            border: 1px solid rgba(37, 99, 235, 0.12);
-            border-radius: 22px;
-            padding: 22px;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
-        }
-        .storage-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-        }
-        .storage-panel {
-            background: rgba(255,255,255,0.96);
-            border: 1px solid #dbeafe;
-            border-radius: 18px;
-            padding: 18px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-        }
-        .storage-panel h3 {
-            font-size: 1rem;
-            margin-bottom: 8px;
-        }
-        .storage-panel p {
-            color: var(--slate-500);
-            font-size: 0.9rem;
-            margin-bottom: 12px;
-        }
-        .storage-badge {
-            display: inline-block;
-            margin-bottom: 10px;
-            padding: 5px 10px;
-            border-radius: 999px;
-            background: #dbeafe;
-            color: #1d4ed8;
-            font-size: 0.74rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .storage-links {
-            display: grid;
-            gap: 10px;
-        }
-        .storage-links a {
-            display: block;
-            text-decoration: none;
-            color: var(--blue);
-            font-weight: 800;
-            padding: 10px 12px;
-            border: 1px solid var(--slate-200);
-            border-radius: 12px;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-        .storage-links a:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
-            border-color: #bfdbfe;
-        }
-        .storage-links a span {
-            display: block;
-            color: var(--slate-500);
-            font-size: 0.82rem;
-            font-weight: 500;
-            margin-top: 3px;
-        }
         .footer {
             margin-top: 34px;
             text-align: center;
@@ -380,9 +310,9 @@
                             <td>
                                 <div class="link-grid">
                                     <div class="link-item"><a href="./configmaps-patterns.html">ConfigMaps</a><p>Config injection patterns</p></div>
+                                    <div class="link-item"><a href="./configmap-volume.html">ConfigMap Volume</a><p>Mount config keys as files</p></div>
                                     <div class="link-item"><a href="./secrets-management.html">Secrets</a><p>Sensitive data management</p></div>
-                                    <div class="link-item"><a href="./volume-types.html">Volume Types</a><p>Storage mount comparison</p></div>
-                                    <div class="link-item"><a href="./pv-pvc-binding.html">PV / PVC Binding</a><p>Persistent storage binding</p></div>
+                                    <div class="link-item"><a href="./secret-volume.html">Secret Volume</a><p>Mount secrets as read-only files</p></div>
                                     <div class="link-item"><a href="./rbac-flow.html">RBAC Flow</a><p>Authorization model</p></div>
                                     <div class="link-item"><a href="./rbac-user-certificate-flow.html">RBAC User Cert Flow</a><p>Certificate to kubeconfig to testing</p></div>
                                     <div class="link-item"><a href="./ldap-k8s-rbac-poc.html">LDAP RBAC POC</a><p>Enterprise identity to namespace access</p></div>
@@ -428,59 +358,25 @@
                         </tr>
                         <tr>
                             <td>
-                                <span class="tag foundation">Storage</span>
-                                <span class="tag ops">Data</span>
+                                <span class="tag foundation">Foundation</span>
+                                <span class="tag ops">Ops</span>
                                 <div class="category-name">Storage</div>
-                                <div class="category-copy">Persistent data, projected configuration, in-Pod file sharing, storage backends, and cloud CSI flows grouped in one dedicated learning row.</div>
+                                <div class="category-copy">Volume types, persistent claims, StorageClasses, CSI drivers, backend examples, and data sharing patterns inside Pods.</div>
                             </td>
                             <td>
-                                <div class="storage-catalog">
-                                    <div class="storage-grid">
-                                        <article class="storage-panel">
-                                            <div class="storage-badge">Foundation</div>
-                                            <h3>Core Storage Concepts</h3>
-                                            <p>Start with the big-picture model of ephemeral versus persistent data, volume choices, claims, and how Kubernetes separates application need from backend implementation.</p>
-                                            <div class="storage-links">
-                                                <a href="./k8s-storage-complete.html">Storage Overview<span>Ephemeral, persistent, CSI, StorageClasses, and design thinking</span></a>
-                                                <a href="./volume-types.html">Volume Types<span>Compare temporary, projected, local, and persistent volume styles</span></a>
-                                                <a href="./pv-pvc-binding.html">PV / PVC Binding<span>Understand how claims bind to actual persistent storage</span></a>
-                                                <a href="./accessmode-storageclasses.html">Access Modes and StorageClasses<span>RWO, ROX, RWX, RWOP, and provisioning policy</span></a>
-                                            </div>
-                                        </article>
-                                        <article class="storage-panel">
-                                            <div class="storage-badge">Config and Secrets</div>
-                                            <h3>Projected Data Into Pods</h3>
-                                            <p>Use these pages when the lesson is about mounting runtime configuration or credentials into a container as files instead of baking them into an image.</p>
-                                            <div class="storage-links">
-                                                <a href="./configmaps-patterns.html">ConfigMaps Patterns<span>Broader configuration injection approaches</span></a>
-                                                <a href="./configmap-volume.html">ConfigMap Volume<span>Mount configuration keys as files inside Pods</span></a>
-                                                <a href="./secrets-management.html">Secrets<span>Secret concepts, types, and safe handling patterns</span></a>
-                                                <a href="./secret-volume.html">Secret Volume<span>Mount sensitive values as read-only files</span></a>
-                                            </div>
-                                        </article>
-                                        <article class="storage-panel">
-                                            <div class="storage-badge">Sharing</div>
-                                            <h3>Data Sharing Patterns</h3>
-                                            <p>These pages fit the transition from temporary in-Pod collaboration to shared persistent data across tightly coupled containers and Pods.</p>
-                                            <div class="storage-links">
-                                                <a href="./sharingdata.html">Sharing Data Between Containers<span>Use shared Pod volumes such as emptyDir for local collaboration</span></a>
-                                                <a href="./readwrite-pod.html">RWX Multi-Container Pod<span>Share one persistent claim across multiple containers in one Pod</span></a>
-                                            </div>
-                                        </article>
-                                        <article class="storage-panel">
-                                            <div class="storage-badge">Backends and Cloud</div>
-                                            <h3>Backend Examples</h3>
-                                            <p>Use these when moving from concept into implementation with local persistence, shared network filesystems, and cloud CSI-backed storage.</p>
-                                            <div class="storage-links">
-                                                <a href="./hostpath-pv-pvc.html">HostPath PV / PVC<span>Node-local persistent storage for labs and development</span></a>
-                                                <a href="./nfs-pv-pvc-complete.html">NFS PV / PVC<span>Shared storage across Pods and nodes</span></a>
-                                                <a href="./csi-aws-ebs-efs.html">CSI, AWS EBS, and EFS<span>How Kubernetes provisions cloud storage through CSI drivers</span></a>
-                                            </div>
-                                        </article>
-                                    </div>
+                                <div class="link-grid">
+                                    <div class="link-item"><a href="./k8s-storage-complete.html">Storage Overview</a><p>Ephemeral, persistent, CSI, and design thinking</p></div>
+                                    <div class="link-item"><a href="./volume-types.html">Volume Types</a><p>Temporary, projected, local, persistent</p></div>
+                                    <div class="link-item"><a href="./pv-pvc-binding.html">PV / PVC Binding</a><p>Claim lifecycle and binding flow</p></div>
+                                    <div class="link-item"><a href="./accessmode-storageclasses.html">Access Modes</a><p>RWO, ROX, RWX, RWOP, StorageClasses</p></div>
+                                    <div class="link-item"><a href="./hostpath-pv-pvc.html">HostPath PV / PVC</a><p>Node-local storage for labs</p></div>
+                                    <div class="link-item"><a href="./nfs-pv-pvc-complete.html">NFS PV / PVC</a><p>Shared storage across nodes</p></div>
+                                    <div class="link-item"><a href="./csi-aws-ebs-efs.html">CSI, EBS, and EFS</a><p>Cloud storage through CSI drivers</p></div>
+                                    <div class="link-item"><a href="./sharingdata.html">Data Sharing</a><p>emptyDir between containers</p></div>
+                                    <div class="link-item"><a href="./readwrite-pod.html">RWX Pod</a><p>Shared persistent claim in one Pod</p></div>
                                 </div>
                             </td>
-                            <td class="category-copy">Best for teaching the full storage path: temporary files, persistent claims, shared backends, projected config and secrets, plus cloud volume provisioning through CSI.</td>
+                            <td class="category-copy">Use for teaching the full storage path: volume types, persistent claims, backend provisioning, access modes, and in-Pod data sharing.</td>
                         </tr>
                     </tbody>
                 </table>
