@@ -474,6 +474,20 @@ kubectl rollout restart deployment/coredns -n kube-system
 
 ## Exercise 6: Per-Pod DNS Configuration
 
+> **Repository YAML files:** The `k8s/labs/networking/` directory contains ready-made manifests for each DNS policy. You can apply these directly instead of writing YAML from scratch:
+>
+> | File | dnsPolicy | Key feature |
+> |------|-----------|-------------|
+> | [`dnsdefault.yaml`](../../labs/networking/dnsdefault.yaml) | `Default` | Uses node's DNS, not cluster DNS |
+> | [`dnspolicy.yaml`](../../labs/networking/dnspolicy.yaml) | `ClusterFirstWithHostNet` | `hostNetwork: true` with cluster DNS |
+> | [`dnsconfig.yaml`](../../labs/networking/dnsconfig.yaml) | `None` | Fully custom nameservers, searches, ndots |
+>
+> ```bash
+> kubectl apply -f k8s/labs/networking/dnsdefault.yaml
+> kubectl apply -f k8s/labs/networking/dnspolicy.yaml
+> kubectl apply -f k8s/labs/networking/dnsconfig.yaml
+> ```
+
 ### Step 1: Baseline — `ClusterFirst` (default)
 
 ```yaml

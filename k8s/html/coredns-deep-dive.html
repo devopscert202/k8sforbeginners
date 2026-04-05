@@ -352,6 +352,14 @@ table.data th { background: #f1f5f9; color: var(--slate-900); }
     file /etc/coredns/zones/lab.db
 }</pre>
         <h3 style="font-size:1rem;color:var(--slate-700);margin:14px 0 8px">Per-Pod dnsConfig / dnsPolicy</h3>
+        <div style="background:#eff6ff;border-left:4px solid #2563eb;padding:10px 14px;border-radius:4px;margin-bottom:12px;font-size:0.88rem;">
+            <strong>Repository YAML files</strong> (ready to apply from <code>k8s/labs/networking/</code>):
+            <ul style="margin:4px 0 0 1.2rem;">
+                <li><code>dnsdefault.yaml</code> — Pod with <code>dnsPolicy: Default</code> (uses node DNS)</li>
+                <li><code>dnspolicy.yaml</code> — Pod with <code>hostNetwork: true</code> + <code>dnsPolicy: ClusterFirstWithHostNet</code></li>
+                <li><code>dnsconfig.yaml</code> — Pod with <code>dnsPolicy: None</code> + custom <code>dnsConfig</code> (nameservers, searches, ndots)</li>
+            </ul>
+        </div>
         <pre>apiVersion: v1
 kind: Pod
 spec:

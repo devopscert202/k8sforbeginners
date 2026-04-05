@@ -932,6 +932,14 @@ busybox-1.busybox-subdomain.default.svc.cluster.local
         <!-- Tab 3: dnsPolicy Modes -->
         <div id="dns-policy" class="tab-content">
             <h2>DNS Policy Modes in Kubernetes</h2>
+            <div style="background:#eff6ff;border-left:4px solid #2563eb;padding:10px 14px;border-radius:6px;margin-bottom:20px;font-size:0.9rem;">
+                <strong>Repository YAML files</strong> — apply directly from <code>k8s/labs/networking/</code>:
+                <ul style="margin:6px 0 0 1.2rem;">
+                    <li><code>dnsdefault.yaml</code> — <code>dnsPolicy: Default</code> (uses node's DNS, not cluster DNS)</li>
+                    <li><code>dnspolicy.yaml</code> — <code>hostNetwork: true</code> + <code>dnsPolicy: ClusterFirstWithHostNet</code></li>
+                    <li><code>dnsconfig.yaml</code> — <code>dnsPolicy: None</code> with custom nameservers, searches, and ndots</li>
+                </ul>
+            </div>
             <p style="color: #5a6c7d; margin-bottom: 30px;">
                 The <code>dnsPolicy</code> field in Pod spec determines how DNS resolution is configured. Choose the appropriate policy based on your networking requirements.
             </p>
