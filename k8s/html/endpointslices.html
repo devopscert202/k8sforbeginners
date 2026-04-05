@@ -371,9 +371,9 @@
         <header class="hero">
             <div class="eyebrow">Interactive Kubernetes Explainer</div>
             <h1>EndpointSlices</h1>
-            <p class="subtitle">How Kubernetes tracks Service backends at scale: smaller objects, partial updates, and topology hints for smarter traffic distribution.</p>
+            <p class="subtitle">Every Service needs to know which Pods are healthy and ready to receive traffic. EndpointSlices are the directory that maps a Service name to real Pod IP addresses.</p>
             <div class="lead-panel">
-                <p>EndpointSlices replace the legacy Endpoints object for most Services, splitting backend lists into manageable chunks and enabling efficient partial updates on the API server. <strong>See also:</strong> <a href="ingress.html">Ingress controllers</a> for HTTP routing at the cluster edge.</p>
+                <p>When you create a Service with a selector, Kubernetes automatically creates <strong>EndpointSlice</strong> objects that list the IP addresses and ports of every matching, ready Pod. Components like <strong>kube-proxy</strong> read these slices to program iptables/IPVS rules so traffic reaching the Service ClusterIP gets forwarded to healthy backends. EndpointSlices replaced the older, monolithic Endpoints object — they split large lists into chunks of 100, support partial updates, and carry topology metadata (zone, node) for smarter routing. <strong>See also:</strong> <a href="ingress.html" style="color:#1d4ed8;font-weight:600;">Ingress controllers</a> for HTTP routing at the cluster edge.</p>
             </div>
         </header>
 
@@ -394,9 +394,17 @@
                 </div>
             </div>
             <div class="concept-grid">
+            <article class="card" style="border-top-color:#10b981;">
+                <div class="card-badge" style="background:#dcfce7;color:#166534;">What is an EndpointSlice?</div>
+                <p>A Kubernetes API object (<code>discovery.k8s.io/v1</code>) that stores the <strong>IP addresses and ports</strong> of Pods backing a Service. Think of a Service as the published name and EndpointSlices as the phone book of healthy backends behind it. kube-proxy reads these to route traffic.</p>
+            </article>
+            <article class="card" style="border-top-color:#10b981;">
+                <div class="card-badge" style="background:#dcfce7;color:#166534;">Who creates them?</div>
+                <p>For any Service with a <strong>selector</strong>, the EndpointSlice controller (in kube-controller-manager) creates and updates slices automatically as Pods start, stop, or fail probes. You can also create <strong>custom</strong> slices for external backends.</p>
+            </article>
             <article class="card">
-                <div class="card-badge">Replace legacy Endpoints</div>
-                <p>EndpointSlices split large endpoint lists into manageable chunks of up to 100 endpoints per slice, avoiding one giant object for big Services.</p>
+                <div class="card-badge">Chunked for scale (max 100)</div>
+                <p>Instead of one giant Endpoints object, backends are split into slices of up to 100 entries each. A Service with 350 Pods gets 4 slices — updates touch only the changed slice.</p>
             </article>
             <article class="card">
                 <div class="card-badge">Efficient partial updates</div>
@@ -404,7 +412,11 @@
             </article>
             <article class="card">
                 <div class="card-badge">Topology-aware routing</div>
-                <p>Zone and node metadata on endpoints helps components prefer same-zone traffic and build smarter load-balancing decisions.</p>
+                <p>Each endpoint carries <code>zone</code>, <code>nodeName</code>, and optional <code>hints</code> so kube-proxy and service meshes can prefer same-zone traffic for lower latency.</p>
+            </article>
+            <article class="card">
+                <div class="card-badge">Dual-stack native</div>
+                <p>IPv4 and IPv6 addresses get separate EndpointSlices per address family, enabling clean dual-stack networking without workarounds.</p>
             </article>
             </div>
         </section>

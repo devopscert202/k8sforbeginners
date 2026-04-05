@@ -157,11 +157,21 @@ Clients can use `example.default.svc.cluster.local` to connect.
 ## **5. Advanced Networking Components**
 
 ### **5.1 EndpointSlices**
-EndpointSlices enhance the scalability of network endpoints. They divide a Service's endpoints into smaller groups.
 
-#### Features:
-- Scalability for large clusters.
-- Lower API server load.
+When you create a Service with a selector, Kubernetes needs to track which Pods are healthy and ready to receive traffic. **EndpointSlices** (`discovery.k8s.io/v1`) are the API objects that store those backend addresses — the IP:port pairs of every matching Pod. Think of the Service as a published phone number and EndpointSlices as the directory of actual phones that ring.
+
+The **EndpointSlice controller** (part of kube-controller-manager) creates and updates slices automatically. **kube-proxy** reads them to program iptables/IPVS rules on every node.
+
+EndpointSlices replaced the older, monolithic **Endpoints** object which stored all backends in a single resource. For large Services (100+ Pods), that single object caused full-replacement updates on every Pod change, creating API churn and "watch storms."
+
+#### Key features:
+- **Chunked for scale** — max 100 endpoints per slice; additional slices created automatically.
+- **Partial updates** — only the changed slice is transmitted, reducing API server and network load.
+- **Topology metadata** — each endpoint carries `zone`, `nodeName`, and `hints` for topology-aware routing.
+- **Dual-stack** — separate slices per address family (IPv4 / IPv6).
+- **Custom slices** — manually create EndpointSlices for Services without selectors (external databases, legacy APIs).
+
+For a deeper dive, see [EndpointSlices](endpointslices.md).
 
 ---
 
