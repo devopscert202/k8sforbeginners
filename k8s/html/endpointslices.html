@@ -68,7 +68,7 @@
             font-size: 1.03rem;
             color: var(--muted);
             max-width: 980px;
-            margin-bottom: 18px;
+            margin: 0 auto 18px;
         }
         .lead-panel {
             background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
@@ -373,7 +373,7 @@
             <h1>EndpointSlices</h1>
             <p class="subtitle">Every Service needs to know which Pods are healthy and ready to receive traffic. EndpointSlices are the directory that maps a Service name to real Pod IP addresses.</p>
             <div class="lead-panel">
-                <p>When you create a Service with a selector, Kubernetes automatically creates <strong>EndpointSlice</strong> objects that list the IP addresses and ports of every matching, ready Pod. Components like <strong>kube-proxy</strong> read these slices to program iptables/IPVS rules so traffic reaching the Service ClusterIP gets forwarded to healthy backends. EndpointSlices replaced the older, monolithic Endpoints object — they split large lists into chunks of 100, support partial updates, and carry topology metadata (zone, node) for smarter routing. <strong>See also:</strong> <a href="ingress.html" style="color:#1d4ed8;font-weight:600;">Ingress controllers</a> for HTTP routing at the cluster edge.</p>
+                <p>When you create a Service with a selector, Kubernetes automatically creates <strong>EndpointSlice</strong> objects that list the IP addresses and ports of every matching, ready Pod. Components like <strong>kube-proxy</strong> read these slices to program iptables/IPVS rules so traffic reaching the Service ClusterIP gets forwarded to healthy backends. EndpointSlices replaced the older, monolithic Endpoints object — they split large lists into chunks of 100, support partial updates, and carry topology metadata (zone, node) for smarter routing.</p>
             </div>
         </header>
 
