@@ -20,6 +20,24 @@ By the end of this lab, you will be able to:
 - Troubleshoot failed CronJobs
 - Implement best practices for scheduled tasks
 
+## Repository YAML Files
+
+Under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `cronjob.yaml` | CronJob `hello-cronjob` (every 5 minutes, busybox). |
+| `cronjob-timezone.yaml` | Timezone-aware CronJob `timezone-cronjob` (`America/New_York`). |
+| `one-time-job.yaml` | Single-run Job `one-time-job` for comparison with CronJobs. |
+| `backup-cronjob.yaml` | CronJob `daily-backup` (2 AM UTC). |
+| `cleanup-cronjob.yaml` | CronJob `hourly-cleanup`. |
+| `report-cronjob.yaml` | CronJob `weekday-report`. |
+| `failing-cronjob.yaml` | CronJob `failing-job` (intentional failure + backoff). |
+| `sequential-cronjob.yaml` | CronJob `sequential-job` with `concurrencyPolicy: Forbid`. |
+| `configured-cronjob.yaml` | CronJob `configured-job` (requires ConfigMap `cronjob-config` and Secret `cronjob-secret` as in the lab). |
+| `london-cronjob.yaml` / `tokyo-cronjob.yaml` | Same schedule, different `timeZone`. |
+| `test-timezone.yaml` | Frequent test CronJob (`America/Los_Angeles`). |
+
 ---
 
 ## What is a CronJob?

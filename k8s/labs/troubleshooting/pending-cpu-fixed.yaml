@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pending-huge-cpu
+  labels:
+    lab: "50"
+    exercise: "pending-cpu"
+spec:
+  containers:
+    - name: app
+      image: nginx:1.25-alpine
+      resources:
+        requests:
+          cpu: "100m"
+        limits:
+          cpu: "500m"

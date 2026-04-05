@@ -24,6 +24,23 @@ Use a **scratch directory** for manifests; do not commit intentionally broken YA
 
 ---
 
+## Repository YAML Files
+
+> Matching manifests are committed under [`k8s/labs/troubleshooting/`](../labs/troubleshooting/). Create each exercise namespace as documented, then apply from the repository root (example: `kubectl apply -f k8s/labs/troubleshooting/web-deployment.yaml`). The client Pod in `lab52-ex3.yaml` uses `curlimages/curl:8.5.0` (pinned).
+>
+> | File | Exercise |
+> |------|----------|
+> | `web-deployment.yaml`, `web-svc-wrong.yaml` | Exercise 1 |
+> | `lab52-ex3.yaml` | Exercise 3 |
+> | `lab52-ex4-workloads.yaml`, `default-deny-ingress.yaml`, `allow-frontend-to-backend.yaml`, `frontend-default-deny-egress.yaml`, `frontend-egress.yaml` | Exercise 4 |
+> | `lab52-ex5.yaml` | Exercise 5 |
+> | `lab52-ex6.yaml` | Exercise 6 |
+> | `lab52-broken.yaml` | Exercise 7 |
+>
+> **Lab 55 (CKA)** also reuses `k8s/labs/troubleshooting/allow-frontend-backend.yaml`, `storageclass-fast.yaml`, and `role-pod-reader.yaml`.
+
+---
+
 ## Prerequisites
 
 - Running cluster (Kind, Minikube, k3s, or cloud) and `kubectl` with rights for Namespaces, Workloads, Services, and NetworkPolicies

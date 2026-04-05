@@ -51,6 +51,17 @@ By the end of this lab, you will be able to:
 
 ---
 
+## Repository YAML Files
+
+> The `k8s/labs/installation/` directory contains Kind cluster configs used in this lab:
+>
+> | File | Description | Exercise |
+> |------|-------------|----------|
+> | [`kind-multinode.yaml`](../labs/installation/kind-multinode.yaml) | One control-plane and two worker nodes | Exercise 5 |
+> | [`kind-portmap.yaml`](../labs/installation/kind-portmap.yaml) | Control-plane with `extraPortMappings` (host 8080 → container 30080) | Exercise 8 |
+
+---
+
 ## What is Kind?
 
 **Kind** is a local Kubernetes environment that runs Kubernetes nodes as containers. Instead of creating full virtual machines, it creates Docker containers that act like Kubernetes nodes.
@@ -254,9 +265,15 @@ This makes Kind lightweight, fast, and perfect for repeatable local labs.
 
 A multi-node setup is better for learning scheduling and more realistic cluster behavior.
 
-### Step 1: Create a config file
+### Step 1: Use the multi-node cluster config
 
-Create `kind-multinode.yaml`:
+From your repository root, go to the installation manifests directory:
+
+```bash
+cd k8s/labs/installation
+```
+
+Use the provided `kind-multinode.yaml` (see [Repository YAML Files](#repository-yaml-files)). It defines one control-plane and two workers:
 
 ```yaml
 kind: Cluster
@@ -363,9 +380,9 @@ If your image is only local and already loaded into Kind, this is a convenient w
 
 Kind supports host-to-cluster port mappings through the cluster config file.
 
-### Step 1: Create a config with extra port mappings
+### Step 1: Use the port-mapping cluster config
 
-Create `kind-portmap.yaml`:
+From `k8s/labs/installation`, use the provided `kind-portmap.yaml` (see [Repository YAML Files](#repository-yaml-files)):
 
 ```yaml
 kind: Cluster
@@ -377,6 +394,12 @@ nodes:
     hostPort: 8080
     protocol: TCP
 - role: worker
+```
+
+If you are not already in that directory:
+
+```bash
+cd k8s/labs/installation
 ```
 
 ### Step 2: Recreate the cluster with the new config

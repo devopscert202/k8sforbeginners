@@ -1216,11 +1216,15 @@ The following pre-built YAML manifests are available in the repository for this 
 | File | Description |
 |------|-------------|
 | `k8s/labs/workloads/podlifecycle.yaml` | Simple nginx Pod named `webserver` in namespace `test` with labels `app`, `tier`, `version`, and `env`; exposes container port 80. Use as a starting point for lifecycle, labeling, or namespace-scoped exercises (create namespace `test` if needed). |
+| `k8s/labs/workloads/multi-pod.yaml` | Two-container Pod `multicontainer-pod` (nginx + redis) for localhost networking exercises. |
+| `k8s/labs/workloads/sidecar-container-spec.yaml` | Pod `modern-sidecar-demo` using initContainer sidecar with `restartPolicy: Always` (Kubernetes 1.28+). |
 
-You can apply this directly:
+You can apply these directly (from repo root):
 
 ```bash
 kubectl apply -f k8s/labs/workloads/podlifecycle.yaml
+kubectl apply -f k8s/labs/workloads/multi-pod.yaml
+kubectl apply -f k8s/labs/workloads/sidecar-container-spec.yaml
 ```
 
 ---

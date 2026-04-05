@@ -17,6 +17,20 @@ Work through scenarios in order or jump using the index. Treat each scenario lik
 
 > **Safety:** Several scenarios intentionally describe destructive or disruptive states. Use a **lab cluster** only. Do not run certificate renewals or manifest surgery on production without change control.
 
+---
+
+## Repository YAML Files
+
+> Sample policies and objects referenced by **kubectl apply -f** in this lab are in [`k8s/labs/troubleshooting/`](../labs/troubleshooting/):
+
+| File | Scenario |
+|------|----------|
+| [`allow-frontend-backend.yaml`](../labs/troubleshooting/allow-frontend-backend.yaml) | Scenario 5 (NetworkPolicy allow; namespace `app`) |
+| [`storageclass-fast.yaml`](../labs/troubleshooting/storageclass-fast.yaml) | Scenario 6 (illustrative `StorageClass`; adjust provisioner for your cluster) |
+| [`role-pod-reader.yaml`](../labs/troubleshooting/role-pod-reader.yaml) | Scenario 10 (`Role` in namespace `dev`) |
+
+---
+
 ## Learning Objectives
 
 - Practice a repeatable troubleshooting loop: symptoms → `kubectl get` / `describe` → events → logs → node-level checks

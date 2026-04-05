@@ -35,6 +35,25 @@ By the end of this lab, you will be able to:
 
 ---
 
+## Repository YAML Files
+
+> Canonical manifests matching each exercise are in [`k8s/labs/troubleshooting/`](../labs/troubleshooting/). Create the lab namespace and set your context as shown in Exercise 1, then apply from the repository root, for example:
+>
+> `kubectl apply -f k8s/labs/troubleshooting/pending-cpu.yaml`
+>
+> | File | Exercise |
+> |------|----------|
+> | `pending-cpu.yaml`, `pending-cpu-fixed.yaml` | Exercise 1 |
+> | `pending-nodeselector.yaml` | Exercise 2 |
+> | `deploy-bad-image.yaml` | Exercise 3 |
+> | `crash-cmd.yaml`, `crash-cmd-fixed.yaml` | Exercise 4 |
+> | `missing-cm-pod.yaml` | Exercise 5 |
+> | `oom-demo.yaml`, `oom-demo-fixed.yaml` | Exercise 6 |
+> | `missing-secret-pod.yaml` | Exercise 7 |
+> | `ts-quiz-all.yaml` | Exercise 8 |
+
+---
+
 ## Exercise 1: Pod Stuck in Pending (Insufficient Resources)
 
 **Goal:** See how an impossible CPU request prevents scheduling and how reducing the request fixes the Pod.

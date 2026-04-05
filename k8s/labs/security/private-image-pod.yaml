@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-image-pod
+spec:
+  containers:
+  - name: app
+    image: myuser/private-app:1.0.0
+  imagePullSecrets:
+  - name: regcred
+  restartPolicy: Never

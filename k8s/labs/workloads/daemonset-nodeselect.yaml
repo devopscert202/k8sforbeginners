@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-ssd-only
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: nginx-ssd
+  template:
+    metadata:
+      labels:
+        app: nginx-ssd
+    spec:
+      nodeSelector:
+        disktype: ssd
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80

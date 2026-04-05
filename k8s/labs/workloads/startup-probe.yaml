@@ -1,23 +1,41 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: startup-check
   labels:
     test: startup
+  name: startup-demo
 spec:
   containers:
-  - name: slow-start-app
-    image: registry.k8s.io/e2e-test-images/agnhost:2.40
+  - name: slow-app
+    image: busybox:1.36
     args:
-    - liveness
+    - /bin/sh
+    - -c
+    - |
+      echo "Starting slow initialization..."
+      sleep 60
+      echo "Initialization complete"
+      touch /tmp/ready
+      sleep 3600
     startupProbe:
-      httpGet:
-        path: /healthz
-        port: 8080
-      failureThreshold: 30
-      periodSeconds: 10
+      exec:
+        command:
+        - cat
+        - /tmp/ready
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      failureThreshold: 30  # 30 * 5 = 150s maximum startup time
     livenessProbe:
-      httpGet:
-        path: /healthz
-        port: 8080
+      exec:
+        command:
+        - cat
+        - /tmp/ready
+      initialDelaySeconds: 0
       periodSeconds: 10
+    readinessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/ready
+      initialDelaySeconds: 0
+      periodSeconds: 5

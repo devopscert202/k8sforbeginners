@@ -20,6 +20,18 @@ By the end of this lab, you will be able to:
 - Implement different deployment strategies
 - Troubleshoot failed rollouts
 
+## Repository YAML Files
+
+Pre-built manifests under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `alpine-rollout.yaml` | Deployment `mydep` (Alpine 3.19) with change-cause annotation for rollout history exercises. |
+| `nginx-deploy.yaml` | Two-replica nginx Deployment (`app: nginx`) with pinned `nginx:1.25-alpine`. |
+| `nginx-service.yaml` | ClusterIP Service `nginx-service` on port 8084 → targetPort 80, selector `app: nginx`. |
+| `nginx-deployment.yaml` | Four-replica Deployment with label `app: httpd` (alternate rollout scenario). |
+| `nginx-service-httpd.yaml` | NodePort Service `nginx-service` selector `app: httpd` (use with `nginx-deployment.yaml` in Exercise 8). |
+
 ---
 
 ## What are Deployment Rollouts?
@@ -810,7 +822,7 @@ spec:
 - Replicas: 4 (instead of 2)
 - This demonstrates label mismatch scenarios
 
-And `nginx-service.yaml`:
+The same Service name (`nginx-service`) is used, but the selector must match `app: httpd`. In the repository this variant is stored as `nginx-service-httpd.yaml` so it does not overwrite the ClusterIP manifest used in Exercise 4.
 
 ```yaml
 apiVersion: v1
@@ -842,7 +854,7 @@ kubectl delete -f nginx-service.yaml
 
 ```bash
 kubectl apply -f nginx-deployment.yaml
-kubectl apply -f nginx-service.yaml
+kubectl apply -f nginx-service-httpd.yaml
 ```
 
 ### Step 4: Access via NodePort
@@ -881,11 +893,11 @@ Remove all resources created in this lab:
 # Delete Alpine deployment
 kubectl delete -f alpine-rollout.yaml
 
-# Delete Nginx resources
+# Delete Nginx resources (Exercise 8 alternate Service manifest)
 kubectl delete -f nginx-deployment.yaml
-kubectl delete -f nginx-service.yaml
+kubectl delete -f nginx-service-httpd.yaml
 
-# Or if using the other nginx files
+# Or if using the Exercise 4 nginx ClusterIP setup
 kubectl delete -f nginx-deploy.yaml
 kubectl delete -f nginx-service.yaml
 

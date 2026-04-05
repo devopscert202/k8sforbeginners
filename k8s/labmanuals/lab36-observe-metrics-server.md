@@ -588,11 +588,34 @@ kubectl get --raw "/apis/metrics.k8s.io/v1beta1/namespaces/default/pods/frontend
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/workloads/metricsserver.yaml` | Sample `Deployment` `frontend` (guestbook-style) used with `kubectl top` exercises. |
+| `k8s/labs/workloads/k8s-metrics-server.patch.yaml` | Patch fragment for `kubectl patch deployment metrics-server` with `--kubelet-insecure-tls` and `--kubelet-preferred-address-types=InternalIP` for local clusters. |
+| `k8s/labs/workloads/vpa.yaml` | `VerticalPodAutoscaler` targeting `Deployment` `frontend` with `updateMode: Off` (recommendations only); apply after the [Vertical Pod Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) components are installed. |
+
+From the repo root you can apply:
+
+```bash
+kubectl apply -f k8s/labs/workloads/metricsserver.yaml
+kubectl patch deployment metrics-server -n kube-system --patch-file k8s/labs/workloads/k8s-metrics-server.patch.yaml
+kubectl apply -f k8s/labs/workloads/vpa.yaml
+```
+
+---
+
 ## Lab Cleanup
 
 Remove the sample application:
 
 ```bash
+# Remove VPA if you applied it (optional)
+kubectl delete -f k8s/labs/workloads/vpa.yaml --ignore-not-found
+
 # Delete deployment
 kubectl delete deployment frontend
 
@@ -794,8 +817,8 @@ kubectl autoscale deployment frontend --cpu-percent=50 --min=1 --max=10
 ### Vertical Pod Autoscaler (VPA)
 
 ```bash
-# VPA uses Metrics Server for recommendations
-kubectl apply -f vpa.yaml
+# VPA uses Metrics Server for recommendations (requires the VPA controller installed in the cluster)
+kubectl apply -f k8s/labs/workloads/vpa.yaml
 ```
 
 ### Kubectl Commands

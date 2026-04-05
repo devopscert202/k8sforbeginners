@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: one-time-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: hello
+        image: busybox:1.36
+        args:
+        - /bin/sh
+        - -c
+        - date; echo "This is a one-time Job!"
+      restartPolicy: OnFailure
+  backoffLimit: 4

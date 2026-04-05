@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom-demo
+  labels:
+    lab: "50"
+    exercise: "oom"
+spec:
+  containers:
+    - name: hog
+      image: busybox:1.36
+      resources:
+        limits:
+          memory: "256Mi"
+        requests:
+          memory: "64Mi"
+      command: ["/bin/sh", "-c", "tail -f /dev/zero"]

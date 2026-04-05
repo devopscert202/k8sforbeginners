@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: test-timezone
+spec:
+  schedule: "*/5 * * * *"  # Every 5 minutes
+  timeZone: "America/Los_Angeles"  # Pacific Time
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: test
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Current UTC time: $(date -u)"
+              echo "Scheduled timezone: America/Los_Angeles"
+              echo "This job runs every 5 minutes in Pacific Time"
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 1

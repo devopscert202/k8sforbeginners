@@ -19,6 +19,14 @@ By the end of this lab, you will be able to:
 - Troubleshoot static pod issues
 - Identify which control plane components run as static pods
 
+## Repository YAML Files
+
+Under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `staticapache.yaml` | Example static Pod manifest (`Pod` `staticapache`, httpd) to copy to the node `staticPodPath` (e.g. Minikube `/etc/kubernetes/manifests/`). |
+
 ---
 
 ## What are Static Pods?

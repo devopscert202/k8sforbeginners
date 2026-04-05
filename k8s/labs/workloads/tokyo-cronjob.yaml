@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tokyo-cronjob
+spec:
+  schedule: "0 9 * * 1-5"  # 9 AM weekdays
+  timeZone: "Asia/Tokyo"  # Japan Time
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox:1.36
+            command:
+            - /bin/sh
+            - -c
+            - date; echo "Good morning from Tokyo!"
+          restartPolicy: OnFailure

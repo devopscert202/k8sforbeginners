@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: weekday-report
+spec:
+  schedule: "0 9 * * 1-5"  # Weekdays at 9 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: report
+            image: busybox:1.36
+            args:
+            - /bin/sh
+            - -c
+            - echo "Generating report at $(date)"
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 3

@@ -18,6 +18,21 @@ By the end of this lab, you will be able to:
 - Understand deployment strategies (RollingUpdate, Recreate)
 - Troubleshoot common deployment issues
 
+## Repository YAML Files
+
+Manifests for this lab live under `k8s/labs/deployment/`:
+
+| File | Description |
+|------|-------------|
+| `apache_deploy.yaml` | Deployment `apache-deployment` (2 replicas) using `karthickponcloud/k8slabs:apache_v1`. |
+| `apache_service.yaml` | NodePort Service `apache-service` for selector `app: apache` on port 80. |
+
+```bash
+cd k8s/labs/deployment
+kubectl apply -f apache_deploy.yaml
+kubectl apply -f apache_service.yaml
+```
+
 ---
 
 ## What is a Kubernetes Deployment?

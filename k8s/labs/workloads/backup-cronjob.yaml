@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-backup
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: busybox:1.36
+            args:
+            - /bin/sh
+            - -c
+            - echo "Running backup at $(date)"
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 7  # Keep one week of backups
+  failedJobsHistoryLimit: 3

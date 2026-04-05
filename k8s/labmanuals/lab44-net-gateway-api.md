@@ -1414,13 +1414,27 @@ If you have existing Ingress resources:
 
 ## Repository YAML Files
 
-The following pre-built YAML manifests are available in the repository for this lab:
+The following pre-built YAML manifests are available in the repository for this lab (under `k8s/labs/networking/gateway-api/` unless noted):
 
 | File | Description |
 |------|-------------|
-| `k8s/labs/networking/gateway-api/tls-example.yaml` | Multi-document Gateway API TLS examples: HTTPS listener with cert `Secret` termination, HTTPRoute on the HTTPS listener, HTTP→HTTPS redirect, multi-cert/SNI Gateway, and TLS passthrough Gateway plus `TLSRoute` (v1alpha2). Requires a TLS `Secret` (e.g. `gateway-tls-cert`) and a compatible Gateway controller before apply. |
+| `backend-services.yaml` | Deployments and ClusterIP Services for app1 blue/green, app2, and app3 (Exercise 3). |
+| `gateway.yaml` | Sample `Gateway` bound to the nginx GatewayClass (Exercise 4). |
+| `httproute-paths.yaml` | Path-based `HTTPRoute` rules (Exercise 6). |
+| `httproute-hosts.yaml` | Host-based routes, wildcard, combined host+path, and nip.io placeholder route (Exercise 7). |
+| `traffic-splitting.yaml` | Weighted canary, blue-green, progressive canary, header-based, and multi-backend routes (Exercise 8). |
+| `tls-example.yaml` | Multi-document Gateway API TLS examples: HTTPS listener with cert `Secret` termination, HTTPRoute on the HTTPS listener, HTTP→HTTPS redirect, multi-cert/SNI Gateway, and TLS passthrough Gateway plus `TLSRoute` (v1alpha2). Requires a TLS `Secret` (e.g. `gateway-tls-cert`) and a compatible Gateway controller before apply. |
 
-You can apply these directly (after creating the TLS secret and backends as documented in the file comments):
+From the gateway-api directory (after installing CRDs and a Gateway controller):
+
+```bash
+cd k8s/labs/networking/gateway-api
+kubectl apply -f backend-services.yaml
+kubectl apply -f gateway.yaml
+# Then apply httproute-paths.yaml, httproute-hosts.yaml, traffic-splitting.yaml as each exercise directs.
+```
+
+TLS bundle (after creating the TLS secret and backends as documented in the file comments):
 
 ```bash
 kubectl apply -f k8s/labs/networking/gateway-api/tls-example.yaml

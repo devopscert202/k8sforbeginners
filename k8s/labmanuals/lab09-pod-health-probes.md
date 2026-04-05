@@ -21,6 +21,21 @@ By the end of this lab, you will be able to:
 
 ---
 
+## Repository YAML Files
+
+> Probe examples for this lab live in `k8s/labs/workloads/`. Run `cd k8s/labs/workloads` before `kubectl apply -f …`.
+>
+> | File | Description | Exercise |
+> |------|-------------|----------|
+> | [`exec-liveness.yaml`](../labs/workloads/exec-liveness.yaml) | Liveness probe via `exec` (`cat /tmp/healthy`) | Exercise 1 |
+> | [`http-liveness.yaml`](../labs/workloads/http-liveness.yaml) | Liveness probe via `httpGet` (agnhost-based demo) | Exercise 2 |
+> | [`tcp-liveness.yaml`](../labs/workloads/tcp-liveness.yaml) | Liveness probe via `tcpSocket` on nginx | Exercise 3 |
+> | [`readiness-demo.yaml`](../labs/workloads/readiness-demo.yaml) | Deployment + ClusterIP Service with readiness and liveness | Exercise 4 |
+> | [`startup-probe.yaml`](../labs/workloads/startup-probe.yaml) | Startup / liveness / readiness with slow `busybox` init | Exercise 5 |
+> | [`tuned-probes.yaml`](../labs/workloads/tuned-probes.yaml) | Fine-tuned probe timings on nginx | Exercise 6 |
+
+---
+
 ## What are Kubernetes Health Probes?
 
 **Health Probes** are diagnostic mechanisms that allow Kubernetes to check the health of your containers and take automatic actions based on the results.
@@ -198,11 +213,11 @@ kubectl logs liveness-exec --previous
 
 ## Exercise 2: HTTP Liveness Probe
 
-### Step 1: Create HTTP Liveness Probe Pod
+### Step 1: Review the HTTP Liveness Probe manifest
 
-Since we only have the exec example in the workloads folder, let's create an HTTP liveness probe example.
+Ensure you are in `k8s/labs/workloads`. The repository provides `http-liveness.yaml` (see [Repository YAML Files](#repository-yaml-files)). It uses a pinned Kubernetes e2e test image that mimics the classic liveness demo (HTTP 200, then errors after startup).
 
-Create `http-liveness.yaml`:
+Equivalent manifest (for reading — apply the file in the repo):
 
 ```yaml
 apiVersion: v1
@@ -214,9 +229,9 @@ metadata:
 spec:
   containers:
   - name: liveness
-    image: k8s.gcr.io/liveness
+    image: registry.k8s.io/e2e-test-images/agnhost:2.40
     args:
-    - /server
+    - liveness
     livenessProbe:
       httpGet:
         path: /healthz
@@ -258,7 +273,7 @@ Monitor the Pod:
 kubectl get pod liveness-http -w
 ```
 
-The `k8s.gcr.io/liveness` image returns:
+The agnhost `liveness` mode returns:
 - HTTP 200 for first 10 seconds
 - HTTP 500 after 10 seconds
 - Container will be restarted
@@ -273,9 +288,9 @@ kubectl describe pod liveness-http | grep -A 10 Events
 
 ## Exercise 3: TCP Liveness Probe
 
-### Step 1: Create TCP Liveness Probe Pod
+### Step 1: Review the TCP Liveness Probe manifest
 
-Create `tcp-liveness.yaml`:
+From `k8s/labs/workloads`, open `tcp-liveness.yaml` (see [Repository YAML Files](#repository-yaml-files)). It runs `nginx:1.25-alpine` with a TCP liveness check on port 80.
 
 ```yaml
 apiVersion: v1
@@ -287,7 +302,7 @@ metadata:
 spec:
   containers:
   - name: nginx
-    image: nginx:1.25
+    image: nginx:1.25-alpine
     ports:
     - containerPort: 80
     livenessProbe:
@@ -355,9 +370,9 @@ The container will be restarted after ~30 seconds (failureThreshold * periodSeco
 | **Liveness** | Restart container | Detect hung applications |
 | **Readiness** | Remove from Service | Prevent traffic to not-ready Pods |
 
-### Step 1: Create Deployment with Readiness Probe
+### Step 1: Review the readiness Deployment and Service
 
-Create `readiness-demo.yaml`:
+From `k8s/labs/workloads`, use `readiness-demo.yaml` (see [Repository YAML Files](#repository-yaml-files)): three nginx replicas, HTTP readiness and liveness probes, and a ClusterIP Service.
 
 ```yaml
 apiVersion: apps/v1
@@ -376,7 +391,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:1.25
+        image: nginx:1.25-alpine
         ports:
         - containerPort: 80
         readinessProbe:
@@ -502,9 +517,9 @@ After liveness probe failures, the container will be restarted and become ready 
 - Prevents premature liveness probe failures
 - Disables liveness/readiness checks until startup succeeds
 
-### Step 1: Create Slow-Starting Application
+### Step 1: Review the startup probe manifest
 
-Create `startup-probe.yaml`:
+From `k8s/labs/workloads`, use `startup-probe.yaml` (see [Repository YAML Files](#repository-yaml-files)). It models a slow start with `busybox:1.36`, a file-based startup gate, and matching liveness/readiness exec probes.
 
 ```yaml
 apiVersion: v1
@@ -516,7 +531,7 @@ metadata:
 spec:
   containers:
   - name: slow-app
-    image: busybox
+    image: busybox:1.36
     args:
     - /bin/sh
     - -c
@@ -609,7 +624,7 @@ livenessProbe:
 
 ### Example: Fine-Tuned Probes
 
-Create `tuned-probes.yaml`:
+From `k8s/labs/workloads`, use `tuned-probes.yaml` (see [Repository YAML Files](#repository-yaml-files)):
 
 ```yaml
 apiVersion: v1
@@ -619,7 +634,7 @@ metadata:
 spec:
   containers:
   - name: app
-    image: nginx:1.25
+    image: nginx:1.25-alpine
     ports:
     - containerPort: 80
     startupProbe:

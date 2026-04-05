@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+  namespace: lab52-ex1
+spec:
+  selector:
+    app: webapp
+  ports:
+    - port: 80
+      targetPort: 80
