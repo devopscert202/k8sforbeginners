@@ -347,7 +347,7 @@ require-pod-labels   deny                 0
 
 ### Step 3: Test with Non-Compliant Pod
 
-Let's examine the `uncomplaint-pod.yaml` file:
+Let's examine the `noncompliant-pod.yaml` file:
 
 ```yaml
 apiVersion: v1
@@ -365,12 +365,12 @@ Notice: This Pod has NO labels!
 Try to create this Pod:
 
 ```bash
-kubectl apply -f uncomplaint-pod.yaml
+kubectl apply -f noncompliant-pod.yaml
 ```
 
 Expected output (SHOULD BE DENIED):
 ```
-Error from server (Forbidden): error when creating "uncomplaint-pod.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-pod-labels] Missing required labels: {"businessOwner", "costApprover", "environment", "name"}
+Error from server (Forbidden): error when creating "noncompliant-pod.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [require-pod-labels] Missing required labels: {"businessOwner", "costApprover", "environment", "name"}
 ```
 
 **Success!** Gatekeeper blocked the non-compliant Pod and provided a clear error message.

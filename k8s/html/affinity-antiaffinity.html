@@ -192,6 +192,15 @@
                 <div class="section-kicker">Core Mental Model</div>
                 <h2>Why Do You Need Affinity Rules?</h2>
             </div></div>
+            <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+                <strong>Repository YAML Files:</strong>
+                <ul style="margin: 8px 0 0 0;">
+                    <li><code>k8s/labs/scheduling/affinity/node-affinity.yaml</code> — Pod with required node affinity matching node labels (e.g. <code>env=production</code>).</li>
+                    <li><code>k8s/labs/scheduling/affinity/node-affinity-2.yaml</code> — Pod with required node affinity targeting nodes labeled <code>env=staging</code>.</li>
+                    <li><code>k8s/labs/scheduling/affinity/pod-anti-affinity.yaml</code> — Pod anti-affinity to spread Pods across nodes or topology domains.</li>
+                    <li><code>k8s/labs/scheduling/affinity/pod-anti-affinity-2.yaml</code> — Second anti-affinity example with different constraints.</li>
+                </ul>
+            </div>
             <div class="concept-grid">
                 <article class="card">
                     <div class="card-badge">The problem</div>

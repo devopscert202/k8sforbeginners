@@ -309,6 +309,15 @@
                     <h2>Understand the Concept First</h2>
                 </div>
             </div>
+            <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+                <strong>Repository YAML Files:</strong>
+                <ul style="margin: 8px 0 0 0;">
+                    <li><code>k8s/labs/security/gatekeeper/constraint-template.yaml</code> — Gatekeeper ConstraintTemplate defining reusable Rego policy logic.</li>
+                    <li><code>k8s/labs/security/gatekeeper/constraint.yaml</code> — Constraint CR that instantiates and scopes the template.</li>
+                    <li><code>k8s/labs/security/gatekeeper/compliant-pod.yaml</code> — Sample Pod that satisfies the constraint.</li>
+                    <li><code>k8s/labs/security/gatekeeper/noncompliant-pod.yaml</code> — Sample Pod expected to be denied by admission (policy violation demo).</li>
+                </ul>
+            </div>
             <div class="concept-grid">
             <article class="card ">
                 <div class="card-badge">ConstraintTemplate</div>

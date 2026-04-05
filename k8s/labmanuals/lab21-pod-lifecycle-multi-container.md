@@ -1209,6 +1209,22 @@ Need to handle external communication?
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/workloads/podlifecycle.yaml` | Simple nginx Pod named `webserver` in namespace `test` with labels `app`, `tier`, `version`, and `env`; exposes container port 80. Use as a starting point for lifecycle, labeling, or namespace-scoped exercises (create namespace `test` if needed). |
+
+You can apply this directly:
+
+```bash
+kubectl apply -f k8s/labs/workloads/podlifecycle.yaml
+```
+
+---
+
 ## Lab Cleanup
 
 Remove all resources created in this lab:

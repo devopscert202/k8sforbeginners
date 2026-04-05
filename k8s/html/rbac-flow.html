@@ -230,6 +230,14 @@
     <div class="container">
         <h1>🔐 Kubernetes RBAC Authorization Flow</h1>
 
+        <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+            <strong>Repository YAML Files:</strong>
+            <ul style="margin: 8px 0 0 0;">
+                <li><code>k8s/labs/security/role.yaml</code> — Namespace-scoped Role with rules granting API permissions.</li>
+                <li><code>k8s/labs/security/rolebinding.yaml</code> — RoleBinding linking subjects (users, groups, or ServiceAccounts) to a Role.</li>
+            </ul>
+        </div>
+
         <!-- Authorization Flow -->
         <div class="flow-section">
             <div class="section-title">1. Authorization Flow</div>

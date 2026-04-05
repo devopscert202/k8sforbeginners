@@ -150,6 +150,12 @@
             <div class="card">
                 <h2 class="section-title">What Init Containers Do</h2>
                 <p class="section-lead">Init containers are specialized containers that run to completion before the regular application containers in a Pod are allowed to start.</p>
+                <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+                    <strong>Repository YAML Files:</strong>
+                    <ul style="margin: 8px 0 0 0;">
+                        <li><code>k8s/labs/workloads/init2-container.yaml</code> — Pod with multiple init containers and a main app container for ordered startup labs.</li>
+                    </ul>
+                </div>
                 <div class="stats">
                     <div class="stat blue"><div class="label">Execution</div><div class="value">Sequential</div><div>They run one by one in the order written in the manifest.</div></div>
                     <div class="stat green"><div class="label">Success Rule</div><div class="value">Required</div><div>Every init container must succeed before the app can start.</div></div>

@@ -1,14 +1,13 @@
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1 
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: role-test 
-  namespace: role 
+  name: role-test
+  namespace: role
 subjects:
-- kind: User 
-  name: user3 
-  apiGroup: "" 
+- kind: User
+  name: user3
+  apiGroup: ""
 roleRef:
   kind: Role
-  name: user3-role 
+  name: user3-role
   apiGroup: ""
-

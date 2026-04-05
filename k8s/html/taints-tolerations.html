@@ -403,6 +403,14 @@
         <h1>Kubernetes Taints & Tolerations</h1>
         <p class="subtitle">Node Access Control: Checkpoint System for Pod Scheduling</p>
 
+        <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+            <strong>Repository YAML Files:</strong>
+            <ul style="margin: 8px 0 0 0;">
+                <li><code>k8s/labs/scheduling/tolerations/tolerations-pod.yaml</code> — Pod declaring tolerations so it can schedule onto tainted nodes.</li>
+                <li><code>k8s/labs/scheduling/tolerations/no-tolerations-pod.yaml</code> — Pod without tolerations (illustrates blocking on tainted nodes).</li>
+            </ul>
+        </div>
+
         <!-- How It Works -->
         <div class="section">
             <h2>How It Works: Police Checkpoint Analogy</h2>

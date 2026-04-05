@@ -103,5 +103,21 @@ map them to the Headlamp content in this repo:
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/workloads/k8s-dashboard.yaml` | Legacy RBAC helper: `ServiceAccount` `admin-user` in namespace `kubernetes-dashboard` and a `ClusterRoleBinding` to `cluster-admin`. Apply only after the Dashboard namespace exists (e.g. after Helm install); then use `kubectl create token admin-user -n kubernetes-dashboard` for UI login. |
+
+You can apply this directly (ensure the `kubernetes-dashboard` namespace exists first):
+
+```bash
+kubectl apply -f k8s/labs/workloads/k8s-dashboard.yaml
+```
+
+---
+
 **Lab Status**: Legacy reference  
 **Preferred replacement**: Lab 32 Headlamp Kubernetes UI

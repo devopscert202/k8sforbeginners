@@ -177,7 +177,7 @@ kubectl describe pod production-pod | grep -A 3 "Node-Selectors"
 
 ### Step 1: Review Staging Pod Manifest
 
-Examine `node-affinity_2.yaml`:
+Examine `node-affinity-2.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -206,7 +206,7 @@ This is similar to the production pod but requires `env=staging`.
 Apply the manifest:
 
 ```bash
-kubectl apply -f node-affinity_2.yaml
+kubectl apply -f node-affinity-2.yaml
 ```
 
 ### Step 3: Verify Both Pods

@@ -1,19 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-app
+  name: apache-deployment
+  labels:
+    app: apache
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      run: frontend-app
+      app: apache
   template:
     metadata:
       labels:
-        run: frontend-app
+        app: apache
     spec:
       containers:
-      - name: frontend-app
-        image: nginx:1.25-alpine
+      - name: apache-container
+        image: karthickponcloud/k8slabs:apache_v1
         ports:
         - containerPort: 80

@@ -405,6 +405,24 @@ kubectl auth can-i get pods --as=system:serviceaccount:kube-system:headlamp-admi
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/k8s-headlamp/headlamp-values.yaml` | Sample Helm values: single replica, ClusterIP Service on port 80, and `config.watchPlugins: false` for a minimal in-cluster Headlamp install (`helm install ... -f` this file). |
+| `k8s/labs/k8s-headlamp/headlamp-viewer.yaml` | Read-only UI identity: `ServiceAccount` `headlamp-viewer`, `ClusterRole` with get/list/watch on core workloads and batch resources, and `ClusterRoleBinding`—use for token login with narrower RBAC than cluster-admin. |
+
+You can apply or reference these directly:
+
+```bash
+helm upgrade --install my-headlamp headlamp/headlamp --namespace kube-system -f k8s/labs/k8s-headlamp/headlamp-values.yaml
+kubectl apply -f k8s/labs/k8s-headlamp/headlamp-viewer.yaml
+```
+
+---
+
 ## Cleanup
 
 ### Option 1: Stop access only

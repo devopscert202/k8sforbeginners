@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: app
-    image: httpd:latest
+    image: httpd:2.4-alpine
     volumeMounts:
     - mountPath: "/data"
       name: cache-volume

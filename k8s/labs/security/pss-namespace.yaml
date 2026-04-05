@@ -1,0 +1,39 @@
+# Pod Security Standards - Namespace-level enforcement
+# Applies PSS labels to a namespace to control what Pods can run
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pss-restricted
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+---
+# A compliant Pod under the "restricted" profile
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pss-compliant-pod
+  namespace: pss-restricted
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - name: app
+    image: busybox:1.36
+    command: ["sh", "-c", "echo Running as non-root && sleep 3600"]
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi

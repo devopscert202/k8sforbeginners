@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: netflix-app
+  name: nginx-deployment
   labels:
-    app: netflix-app
+    app: nginx
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: netflix-app
+      app: nginx
   template:
     metadata:
       labels:
-        app: netflix-app
+        app: nginx
     spec:
       containers:
-      - name: netflix-app
-        image: nasi101/netflix:latest
+      - name: nginx
+        image: nginx:1.25-alpine
         ports:
         - containerPort: 80

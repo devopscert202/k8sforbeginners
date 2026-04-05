@@ -250,6 +250,14 @@
     <div class="container">
         <h1>🎯 Kubernetes Node Selection Process</h1>
 
+        <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+            <strong>Repository YAML Files:</strong>
+            <ul style="margin: 8px 0 0 0;">
+                <li><code>k8s/labs/scheduling/nodeselector/nodeselector.yaml</code> — Pod using <code>nodeSelector</code> to target nodes by labels.</li>
+                <li><code>k8s/labs/scheduling/nodeselector/notin-nodeselector.yaml</code> — Pod with <strong>preferred</strong> node affinity using <code>NotIn</code> to avoid nodes labeled <code>env=staging</code>.</li>
+            </ul>
+        </div>
+
         <!-- Scheduler Phases -->
         <div class="process-flow">
             <div class="phase" onclick="highlightPhase(0)">

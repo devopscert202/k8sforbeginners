@@ -64,7 +64,7 @@ cd k8s/labs/workloads
 
 ### Step 2: Review the Alpine Deployment Manifest
 
-Let's examine `alpine_rollout.yaml`:
+Let's examine `alpine-rollout.yaml`:
 
 ```yaml
 apiVersion: apps/v1
@@ -106,7 +106,7 @@ spec:
 Apply the deployment:
 
 ```bash
-kubectl apply -f alpine_rollout.yaml
+kubectl apply -f alpine-rollout.yaml
 ```
 
 Expected output:
@@ -407,7 +407,7 @@ Output:
 
 ### Step 1: Review Nginx Deployment Manifests
 
-Let's examine `nginx_deploy.yaml`:
+Let's examine `nginx-deploy.yaml`:
 
 ```yaml
 apiVersion: apps/v1
@@ -433,7 +433,7 @@ spec:
         - containerPort: 80
 ```
 
-And `nginx_service.yaml`:
+And `nginx-service.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -459,8 +459,8 @@ spec:
 Apply both manifests:
 
 ```bash
-kubectl apply -f nginx_deploy.yaml
-kubectl apply -f nginx_service.yaml
+kubectl apply -f nginx-deploy.yaml
+kubectl apply -f nginx-service.yaml
 ```
 
 Expected output:
@@ -781,7 +781,7 @@ kubectl rollout undo deployment/nginx-deployment
 
 ### Step 1: Review Alternative Manifests
 
-Examine `nginx-deployment.yaml` (different from nginx_deploy.yaml):
+Examine `nginx-deployment.yaml` (different from nginx-deploy.yaml):
 
 ```yaml
 apiVersion: apps/v1
@@ -834,8 +834,8 @@ spec:
 ### Step 2: Clean Up Previous Deployment
 
 ```bash
-kubectl delete -f nginx_deploy.yaml
-kubectl delete -f nginx_service.yaml
+kubectl delete -f nginx-deploy.yaml
+kubectl delete -f nginx-service.yaml
 ```
 
 ### Step 3: Deploy Alternative Configuration
@@ -879,15 +879,15 @@ Remove all resources created in this lab:
 
 ```bash
 # Delete Alpine deployment
-kubectl delete -f alpine_rollout.yaml
+kubectl delete -f alpine-rollout.yaml
 
 # Delete Nginx resources
 kubectl delete -f nginx-deployment.yaml
 kubectl delete -f nginx-service.yaml
 
 # Or if using the other nginx files
-kubectl delete -f nginx_deploy.yaml
-kubectl delete -f nginx_service.yaml
+kubectl delete -f nginx-deploy.yaml
+kubectl delete -f nginx-service.yaml
 
 # Delete any test pods
 kubectl delete pod test-pod --ignore-not-found

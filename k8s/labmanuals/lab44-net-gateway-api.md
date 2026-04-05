@@ -1412,6 +1412,22 @@ If you have existing Ingress resources:
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/networking/gateway-api/tls-example.yaml` | Multi-document Gateway API TLS examples: HTTPS listener with cert `Secret` termination, HTTPRoute on the HTTPS listener, HTTP→HTTPS redirect, multi-cert/SNI Gateway, and TLS passthrough Gateway plus `TLSRoute` (v1alpha2). Requires a TLS `Secret` (e.g. `gateway-tls-cert`) and a compatible Gateway controller before apply. |
+
+You can apply these directly (after creating the TLS secret and backends as documented in the file comments):
+
+```bash
+kubectl apply -f k8s/labs/networking/gateway-api/tls-example.yaml
+```
+
+---
+
 ## Lab Cleanup
 
 Remove all resources created in this lab:

@@ -822,6 +822,22 @@ CRDs appear in the CKA exam under "Cluster Architecture, Installation & Configur
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/advanced/crd/website-production-grade.yaml` | Full `Website` CRD (`websites.example.com`) with OpenAPI validation, `status` and `scale` subresources, `additionalPrinterColumns`, optional `tlsEnabled` in spec, and a `status.conditions` array schema—matches the lab appendix “production-grade” example as a single apply-ready file. |
+
+You can apply this directly:
+
+```bash
+kubectl apply -f k8s/labs/advanced/crd/website-production-grade.yaml
+```
+
+---
+
 ## Lab Cleanup
 
 Remove all resources created in this lab:
