@@ -1,0 +1,80 @@
+# Lab 57 Exercise 4: Dual-port backend + monitoring deployment
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-dual-port
+  namespace: netpol-lab
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server { listen 8080; default_type text/plain; return 200 "app-8080\n"; }
+      server { listen 9090; default_type text/plain; return 200 "metrics-9090\n"; }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: netpol-lab
+spec:
+  selector:
+    app: backend
+  ports:
+    - name: app
+      port: 8080
+      targetPort: 8080
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: netpol-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 8080
+            - containerPort: 9090
+          volumeMounts:
+            - name: cfg
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: cfg
+          configMap:
+            name: backend-dual-port
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring
+  namespace: netpol-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring
+  template:
+    metadata:
+      labels:
+        app: monitoring
+    spec:
+      containers:
+        - name: toolbox
+          image: busybox:1.36
+          command: ["sleep", "3600"]

@@ -1,0 +1,70 @@
+# Lab 57 Exercise 7: Full 3-tier network policies
+# fe accepts :80 from anywhere; fe -> be:8080; be from fe only; be -> db:5432; db from be only
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tier-default-deny
+  namespace: netpol-lab
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fe-ingress-any
+  namespace: netpol-lab
+spec:
+  podSelector: { matchLabels: { tier: frontend } }
+  policyTypes: [Ingress]
+  ingress:
+    - ports: [{ protocol: TCP, port: 80 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fe-egress-to-be
+  namespace: netpol-lab
+spec:
+  podSelector: { matchLabels: { tier: frontend } }
+  policyTypes: [Egress]
+  egress:
+    - to: [{ podSelector: { matchLabels: { tier: backend } } }]
+      ports: [{ protocol: TCP, port: 8080 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: be-ingress-from-fe
+  namespace: netpol-lab
+spec:
+  podSelector: { matchLabels: { tier: backend } }
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{ podSelector: { matchLabels: { tier: frontend } } }]
+      ports: [{ protocol: TCP, port: 8080 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: be-egress-to-db
+  namespace: netpol-lab
+spec:
+  podSelector: { matchLabels: { tier: backend } }
+  policyTypes: [Egress]
+  egress:
+    - to: [{ podSelector: { matchLabels: { tier: database } } }]
+      ports: [{ protocol: TCP, port: 5432 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-ingress-from-be
+  namespace: netpol-lab
+spec:
+  podSelector: { matchLabels: { tier: database } }
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{ podSelector: { matchLabels: { tier: backend } } }]
+      ports: [{ protocol: TCP, port: 5432 }]

@@ -1,0 +1,30 @@
+# Lab 57 Exercise 5: AND pattern - cross-namespace selective allow
+# team-a client -> team-b api (both namespace AND pod must match)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-from-team-a-clients
+  namespace: team-b
+spec:
+  podSelector: { matchLabels: { app: api } }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: team-a } }
+          podSelector: { matchLabels: { app: client } }
+      ports: [{ protocol: TCP, port: 80 }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: client-egress-to-team-b-api
+  namespace: team-a
+spec:
+  podSelector: { matchLabels: { app: client } }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: team-b } }
+          podSelector: { matchLabels: { app: api } }
+      ports: [{ protocol: TCP, port: 80 }]
