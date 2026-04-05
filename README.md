@@ -3,11 +3,11 @@
 <div align="center">
 
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.24--1.32-326CE5?logo=kubernetes&logoColor=white)
-![Labs](https://img.shields.io/badge/Labs-48-blueviolet)
+![Labs](https://img.shields.io/badge/Labs-55-blueviolet)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-**Learn Kubernetes through hands-on practice with 48 comprehensive lab manuals**
+**Learn Kubernetes through hands-on practice with 55 comprehensive lab manuals**
 
 </div>
 
@@ -146,7 +146,7 @@ graph TB
 
 **Location**: `k8s/labmanuals/`
 
-**48 comprehensive lab manuals** organized into 10 categories:
+**55 comprehensive lab manuals** organized into 11 categories:
 
 | Category | Labs | What You'll Learn |
 |----------|------|-------------------|
@@ -160,6 +160,7 @@ graph TB
 | **📊 Resource Mgmt** | 3 labs | Quotas, Limits, Deployment rollouts, Dashboard |
 | **🚀 Advanced** | 6 labs | Static Pods, Real apps (WordPress), Cluster upgrades, HA setup, CRDs |
 | **🛠️ Tools** | 1 lab | Helm Charts — install, upgrade, rollback, create charts |
+| **🔧 Troubleshooting** | 7 labs | Control plane, Pod failures, Kubelet/Node, Networking, Workload debugging, Commands, CKA scenarios |
 
 **Each lab includes**:
 - Clear learning objectives
@@ -531,6 +532,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Master Kubernetes one lab at a time* 🎯
 
-**Last Updated**: March 2026 | **Total Labs**: 48 | **K8s Versions**: v1.24-1.32
+**Last Updated**: March 2026 | **Total Labs**: 55 | **K8s Versions**: v1.24-1.32
 
 </div>

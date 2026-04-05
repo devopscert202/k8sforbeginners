@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **48 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **55 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -50,7 +50,7 @@ Every lab follows a consistent format:
 
 ## Complete Lab Index
 
-Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–48)**.
+Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–55)**.
 
 | S. No | Category | Lab Name | Description | Link |
 |-------|----------|----------|-------------|------|
@@ -102,12 +102,19 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 46 | Basics | YAML Manifests Deep Dive | Read, write, validate, and troubleshoot Kubernetes YAML (Pod, Deployment, Service, ConfigMap, Secrets); intentional break-and-fix exercises. | [lab46-basics-yaml-manifests.md](lab46-basics-yaml-manifests.md) |
 | 47 | Workloads | Kubernetes Secrets | Create, consume, and secure Secrets (Opaque, TLS, docker-registry) as env vars and volume mounts. | [lab47-workload-secrets.md](lab47-workload-secrets.md) |
 | 48 | Tools | Helm Charts | Install Helm, add repositories, deploy/upgrade/rollback releases, create your own chart, and master the essential command set. | [lab48-tools-helm-charts.md](lab48-tools-helm-charts.md) |
+| 49 | Troubleshooting | Cluster and Control Plane | Diagnose and fix API Server, Scheduler, Controller Manager, and etcd issues. | [lab49-ts-cluster-control-plane.md](lab49-ts-cluster-control-plane.md) |
+| 50 | Troubleshooting | Pod Failures | Troubleshoot Pending, ImagePullBackOff, CrashLoopBackOff, OOMKilled, and other pod failures. | [lab50-ts-pod-failures.md](lab50-ts-pod-failures.md) |
+| 51 | Troubleshooting | Kubelet and Node | Fix Node NotReady, kubelet failures, container runtime issues, and resource pressure. | [lab51-ts-kubelet-node.md](lab51-ts-kubelet-node.md) |
+| 52 | Troubleshooting | Networking | Debug Service connectivity, DNS resolution, NetworkPolicy, and Ingress routing issues. | [lab52-ts-networking.md](lab52-ts-networking.md) |
+| 53 | Troubleshooting | Workload Debugging | Master kubectl logs, exec, port-forward, debug containers, and event analysis. | [lab53-ts-workload-debugging.md](lab53-ts-workload-debugging.md) |
+| 54 | Troubleshooting | Commands Reference | Practice every essential troubleshooting command organized by category. | [lab54-ts-commands-reference.md](lab54-ts-commands-reference.md) |
+| 55 | Troubleshooting | CKA Scenarios | CKA exam-style break-fix scenarios covering the 30% troubleshooting domain. | [lab55-ts-cka-scenarios.md](lab55-ts-cka-scenarios.md) |
 
 ---
 
 ## Learning Paths
 
-Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–46**):
+Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–55**):
 
 ### Path 1: Complete Beginner
 Start here if you're new to Kubernetes:
@@ -156,6 +163,14 @@ Build production-grade deployments:
 ```
 Labs 01–08 (Basics → Kind → Cluster admin) → Lab 09 (Probes) → Lab 36 (Metrics) →
 Lab 30 (HPA) → Lab 37 (Quotas) → Lab 23 (Rollouts) → Lab 41 (WordPress)
+```
+
+### Path 8: Troubleshooting and CKA Prep
+Master Kubernetes troubleshooting (CKA 30% domain):
+```
+Lab 54 (Commands Reference) → Lab 49 (Control Plane) → Lab 50 (Pod Failures) →
+Lab 51 (Kubelet/Node) → Lab 52 (Networking) → Lab 53 (Workload Debugging) →
+Lab 55 (CKA Scenarios)
 ```
 
 ---
@@ -334,9 +349,9 @@ kubectl delete namespace <namespace-name>
 
 ## Summary
 
-- **48 comprehensive labs** covering Kubernetes from basics to advanced topics
-- **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced, Tools
-- **7 curated learning paths** for different goals and experience levels
+- **55 comprehensive labs** covering Kubernetes from basics to advanced topics
+- **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced, Tools, Troubleshooting
+- **8 curated learning paths** for different goals and experience levels
 - **Complete cross-references** between related labs
 - **Production-ready skills** with real-world examples
 - **Modern K8s features**: Includes K8s 1.25-1.28+ features (PSS/PSA, Gateway API, CronJob timezones, native sidecar spec, CEL validation)
@@ -347,8 +362,8 @@ kubectl delete namespace <namespace-name>
 
 **Happy Learning!**
 
-*Last Updated: March 21, 2026*
-*Total Labs: 48*
+*Last Updated: March 29, 2026*
+*Total Labs: 55*
 *Kubernetes Compatibility: 1.24+ (with K8s 1.25-1.28+ advanced features)*
 
 For questions, issues, or contributions, please submit a Pull Request or open an issue in the repository.
