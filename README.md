@@ -3,11 +3,11 @@
 <div align="center">
 
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.24--1.32-326CE5?logo=kubernetes&logoColor=white)
-![Labs](https://img.shields.io/badge/Labs-55-blueviolet)
+![Labs](https://img.shields.io/badge/Labs-57-blueviolet)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
-**Learn Kubernetes through hands-on practice with 55 comprehensive lab manuals**
+**Learn Kubernetes through hands-on practice with 57 comprehensive lab manuals**
 
 </div>
 
@@ -146,15 +146,15 @@ graph TB
 
 **Location**: `k8s/labmanuals/`
 
-**55 comprehensive lab manuals** organized into 11 categories:
+**57 comprehensive lab manuals** organized into 11 categories:
 
 | Category | Labs | What You'll Learn |
 |----------|------|-------------------|
 | **🔰 Foundation** | 8 labs | Cluster setup, Pods, Services, kubectl, RBAC, Docker basics |
-| **🔒 Security** | 5 labs | Security contexts, Network Policies, OPA, Image scanning, Pod Security Standards |
+| **🔒 Security** | 6 labs | Security contexts, Network Policies, OPA, Image scanning, Pod Security Standards, Advanced NetworkPolicy |
 | **💾 Storage** | 2 labs | Volumes, Persistent Volumes, PVCs, NFS, StatefulSets |
 | **⚙️ Workloads** | 10 labs | Deployments, DaemonSets, Jobs, CronJobs, HPA, Init containers, Multi-container patterns, Secrets |
-| **🌐 Networking** | 4 labs | Services, Ingress, DNS, Gateway API |
+| **🌐 Networking** | 5 labs | Services, Ingress, DNS, Gateway API, CoreDNS Deep Dive |
 | **📅 Scheduling** | 4 labs | NodeSelector, Affinity, Priority, Taints & Tolerations |
 | **👁️ Observability** | 2 labs | Health probes, Metrics Server |
 | **📊 Resource Mgmt** | 3 labs | Quotas, Limits, Deployment rollouts, Dashboard |
@@ -532,6 +532,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Master Kubernetes one lab at a time* 🎯
 
-**Last Updated**: March 2026 | **Total Labs**: 55 | **K8s Versions**: v1.24-1.32
+**Last Updated**: March 2026 | **Total Labs**: 57 | **K8s Versions**: v1.24-1.32
 
 </div>

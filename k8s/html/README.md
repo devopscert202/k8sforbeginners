@@ -9,8 +9,8 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 79 HTML pages total in this folder
-- 78 concept explainers plus the home page
+- 80 HTML pages total in this folder
+- 79 concept explainers plus the home page
 - All pages are self-contained and work offline
 
 ## Diagram Catalog (12 Categories)
@@ -49,13 +49,14 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `cronjobs-scheduling.html` - CronJob scheduling flow
 - `static-pods.html` - Kubelet-managed static Pod model
 
-### 4. Networking (9 pages)
+### 4. Networking (10 pages)
 
 - `service-types-comparison.html` - ClusterIP, NodePort, LoadBalancer
 - `services-networking-deep-dive.html` - Services, selectors, endpoints, and ports
 - `multi-port-services.html` - Multi-port Services and named-port mapping
 - `pod-communication.html` - Pod-to-Pod and Service communication
 - `dns-resolution.html` - Kubernetes DNS lookup flow
+- `coredns-deep-dive.html` - CoreDNS architecture, Corefile, plugins, and troubleshooting
 - `service-lb-rollout.html` - Service load balancing during rollouts
 - `ingress-endpointslices.html` - Ingress routing and EndpointSlice scaling
 - `gateway-api-routing.html` - GatewayClass, Gateway, and HTTPRoute model

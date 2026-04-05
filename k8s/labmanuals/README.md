@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **55 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **57 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -50,7 +50,7 @@ Every lab follows a consistent format:
 
 ## Complete Lab Index
 
-Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–55)**.
+Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–57)**.
 
 | S. No | Category | Lab Name | Description | Link |
 |-------|----------|----------|-------------|------|
@@ -109,12 +109,14 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 53 | Troubleshooting | Workload Debugging | Master kubectl logs, exec, port-forward, debug containers, and event analysis. | [lab53-ts-workload-debugging.md](lab53-ts-workload-debugging.md) |
 | 54 | Troubleshooting | Commands Reference | Practice every essential troubleshooting command organized by category. | [lab54-ts-commands-reference.md](lab54-ts-commands-reference.md) |
 | 55 | Troubleshooting | CKA Scenarios | CKA exam-style break-fix scenarios covering the 30% troubleshooting domain. | [lab55-ts-cka-scenarios.md](lab55-ts-cka-scenarios.md) |
+| 56 | Networking | CoreDNS Deep Dive | CoreDNS architecture, Corefile, plugins, DNS records, ndots, customization, and troubleshooting. | [lab56-net-coredns.md](lab56-net-coredns.md) |
+| 57 | Security | Network Policy Advanced | Pod-to-pod traffic control, ingress/egress rules, 3-tier isolation, CIDR blocks, AND vs OR logic. | [lab57-sec-network-policy-advanced.md](lab57-sec-network-policy-advanced.md) |
 
 ---
 
 ## Learning Paths
 
-Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–55**):
+Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–57**):
 
 ### Path 1: Complete Beginner
 Start here if you're new to Kubernetes:
@@ -349,7 +351,7 @@ kubectl delete namespace <namespace-name>
 
 ## Summary
 
-- **55 comprehensive labs** covering Kubernetes from basics to advanced topics
+- **57 comprehensive labs** covering Kubernetes from basics to advanced topics
 - **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced, Tools, Troubleshooting
 - **8 curated learning paths** for different goals and experience levels
 - **Complete cross-references** between related labs
@@ -363,7 +365,7 @@ kubectl delete namespace <namespace-name>
 **Happy Learning!**
 
 *Last Updated: March 29, 2026*
-*Total Labs: 55*
+*Total Labs: 57*
 *Kubernetes Compatibility: 1.24+ (with K8s 1.25-1.28+ advanced features)*
 
 For questions, issues, or contributions, please submit a Pull Request or open an issue in the repository.
