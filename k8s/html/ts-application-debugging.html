@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Application Debugging — Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #2563eb;
+            --blue-deep: #1d4ed8;
+            --sky: #dbeafe;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --green: #16a34a;
+            --amber: #d97706;
+            --rose: #e11d48;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--slate-900);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+
+        .header-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+            padding: 22px 24px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid var(--slate-200);
+        }
+        .header-card h1 {
+            font-size: 1.6rem;
+            color: var(--blue);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .header-card .subtitle {
+            color: var(--slate-500);
+            font-size: 0.95rem;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .btn {
+            border: 2px solid var(--blue);
+            background: #fff;
+            color: var(--blue-deep);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+        }
+        .btn:hover,
+        .btn.active {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .view {
+            display: none;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.07);
+            padding: 24px 22px;
+            margin-bottom: 18px;
+            border: 1px solid var(--slate-200);
+        }
+        .view.active { display: block; }
+
+        .view h2 {
+            font-size: 1.25rem;
+            color: var(--blue-deep);
+            margin-bottom: 14px;
+            border-bottom: 2px solid var(--sky);
+            padding-bottom: 8px;
+        }
+        .view h3 {
+            font-size: 1.05rem;
+            color: var(--slate-700);
+            margin: 18px 0 10px;
+        }
+        .view p, .view li { color: var(--slate-700); font-size: 0.94rem; margin-bottom: 8px; }
+        .view ul { margin: 8px 0 12px 1.25rem; }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            padding: 16px 18px;
+            margin: 14px 0;
+            border: 1px solid var(--slate-200);
+        }
+        .card h3 { margin-top: 0; }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin: 10px 0 14px;
+            border: 1px solid #334155;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin: 12px 0 16px;
+        }
+        th, td {
+            border: 1px solid var(--slate-200);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background: var(--sky); color: var(--blue-deep); font-weight: 700; }
+        tr:nth-child(even) td { background: #f8fafc; }
+
+        .flow-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px 6px;
+            margin: 16px 0;
+            padding: 18px 14px;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border: 1px dashed var(--slate-200);
+        }
+        .flow-step {
+            background: #fff;
+            border: 2px solid var(--blue);
+            color: var(--blue-deep);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            box-shadow: 0 1px 4px rgba(37, 99, 235, 0.12);
+            text-align: center;
+            max-width: 200px;
+        }
+        .flow-arrow { color: var(--slate-500); font-weight: 700; font-size: 1rem; }
+
+        .decision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .decision-item {
+            border-left: 4px solid var(--blue);
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-radius: 0 8px 8px 0;
+        }
+        .decision-item strong { color: var(--blue-deep); display: block; margin-bottom: 4px; }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .tag-ok { background: #dcfce7; color: var(--green); }
+        .tag-warn { background: #fef3c7; color: var(--amber); }
+        .tag-bad { background: #ffe4e6; color: var(--rose); }
+
+        .checklist li {
+            list-style: none;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .checklist li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: var(--blue);
+            font-weight: 700;
+        }
+
+        .related-links a {
+            color: var(--blue-deep);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .related-links a:hover { text-decoration: underline; }
+
+        @media (max-width: 640px) {
+            .btn { flex: 1 1 calc(50% - 8px); text-align: center; }
+            .flow-step { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-card">
+            <h1>Kubernetes Application Debugging</h1>
+            <p class="subtitle">A practical flow from pod status to logs, exec, port-forward, and ephemeral debug containers—when to use each tool and how to fix common app issues.</p>
+        </header>
+
+        <nav class="tab-nav" role="tablist" aria-label="Debugging topics">
+            <button type="button" class="btn active" role="tab" aria-selected="true" data-view="v1">Workflow</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="v2">kubectl logs</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="v3">kubectl exec</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="v4">Port forward</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="v5">Debug containers</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="v6">Common issues</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="v7">Quick reference</button>
+        </nav>
+
+        <!-- Tab 1 -->
+        <section id="v1" class="view active" role="tabpanel">
+            <h2>Recommended debugging workflow</h2>
+            <p>Start broad (cluster view of the workload), then narrow to one pod, then inspect process I/O and network from inside or via a local tunnel.</p>
+
+            <div class="flow-row" aria-label="Debugging steps">
+                <span class="flow-step">1. Pod status<br><small>kubectl get pods</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">2. Events<br><small>kubectl describe pod</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">3. Logs<br><small>kubectl logs</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">4. Exec<br><small>kubectl exec</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">5. Port-forward<br><small>kubectl port-forward</small></span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-step">6. Debug pod<br><small>kubectl debug</small></span>
+            </div>
+
+            <h3>When to use which tool</h3>
+            <div class="decision-grid">
+                <div class="decision-item">
+                    <strong>kubectl get / describe</strong>
+                    Scheduling failures, image pull errors, probe failures, resource pressure, and recent Events on the pod.
+                </div>
+                <div class="decision-item">
+                    <strong>kubectl logs</strong>
+                    App stack traces, startup errors, dependency timeouts, and anything the process prints to stdout/stderr.
+                </div>
+                <div class="decision-item">
+                    <strong>kubectl exec</strong>
+                    Verify env vars, files on disk, DNS, listening ports, and connectivity to Services from inside the network namespace.
+                </div>
+                <div class="decision-item">
+                    <strong>kubectl port-forward</strong>
+                    Reproduce HTTP/TCP behavior from your laptop without exposing the app through a Service or Ingress.
+                </div>
+                <div class="decision-item">
+                    <strong>kubectl debug</strong>
+                    Distroless or minimal images with no shell, read-only root filesystems, or production pods you must not change in place.
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Quick checklist — common application issues</h3>
+                <ul class="checklist">
+                    <li>Pod phase and Ready condition make sense for your workload.</li>
+                    <li>Events show no repeated BackOff, probe failures, or quota denials.</li>
+                    <li>Logs show the app reached “listening” or completed startup without fatal errors.</li>
+                    <li>Required environment variables and mounted config exist (exec: <code>env</code>, <code>ls</code>).</li>
+                    <li>Container port matches Service <code>targetPort</code> (exec: <code>ss -tlnp</code> or app docs).</li>
+                    <li>From inside the pod, backend DNS names resolve and HTTP/TCP checks succeed.</li>
+                    <li>If still stuck, reproduce with <code>port-forward</code> or attach an ephemeral debug container.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Tab 2 -->
+        <section id="v2" class="view" role="tabpanel">
+            <h2>kubectl logs</h2>
+            <p>Logs are the fastest signal for application-level failures. Default stream is the primary container; use <code>-c</code> for sidecars.</p>
+
+            <h3>Basic — default container</h3>
+            <pre>kubectl logs &lt;pod&gt;</pre>
+            <p>Shows stdout/stderr for the default or only container. Add <code>-n &lt;namespace&gt;</code> when not using the current context namespace.</p>
+
+            <h3>Specific container</h3>
+            <pre>kubectl logs &lt;pod&gt; -c &lt;container&gt;</pre>
+            <p>Use this when the pod has init containers, sidecars, or multiple app containers so you read the right process output.</p>
+
+            <h3>Previous crashed container</h3>
+            <pre>kubectl logs &lt;pod&gt; --previous</pre>
+            <p>After a restart, retrieves logs from the last terminated instance—essential for exit code 1/OOMKill post-mortems.</p>
+
+            <h3>Follow live</h3>
+            <pre>kubectl logs &lt;pod&gt; -f</pre>
+            <p>Streams new log lines like <code>tail -f</code>. Combine with <code>-c</code> for the correct container.</p>
+
+            <h3>Tail last N lines</h3>
+            <pre>kubectl logs &lt;pod&gt; --tail=50</pre>
+            <p>Limits output to the most recent lines; pair with <code>grep</code> locally for noisy apps.</p>
+
+            <h3>Since a time window</h3>
+            <pre>kubectl logs &lt;pod&gt; --since=1h</pre>
+            <p>Accepts durations (<code>5m</code>, <code>2h</code>) or RFC3339 timestamps. Useful right after an incident window.</p>
+
+            <h3>All pods with a label</h3>
+            <pre>kubectl logs -l app=web --all-containers</pre>
+            <p>Aggregates logs from every pod matching the selector. Add <code>--prefix</code> to disambiguate pod/container names in the stream.</p>
+
+            <h3>Timestamps</h3>
+            <pre>kubectl logs &lt;pod&gt; --timestamps</pre>
+            <p>Prefixes each line with API server receive time—helps correlate with probes, HPA, or external incidents.</p>
+
+            <div class="card">
+                <h3>Patterns worth searching for</h3>
+                <p><span class="tag tag-bad">Errors</span> <code>Error</code>, <code>Exception</code>, <code>FATAL</code>, <code>panic</code></p>
+                <p><span class="tag tag-warn">Resources</span> <code>OOM</code>, <code>OutOfMemory</code>, <code>cannot allocate</code></p>
+                <p><span class="tag tag-warn">Network</span> <code>connection refused</code>, <code>timeout</code>, <code>ECONNREFUSED</code>, <code>no such host</code></p>
+                <p><span class="tag tag-warn">Permissions</span> <code>permission denied</code>, <code>EACCES</code>, <code>read-only file system</code></p>
+            </div>
+        </section>
+
+        <!-- Tab 3 -->
+        <section id="v3" class="view" role="tabpanel">
+            <h2>kubectl exec</h2>
+            <p>Run commands in the pod’s namespaces (network, mounts, env) to validate what the app actually sees at runtime.</p>
+
+            <h3>Interactive shell</h3>
+            <pre>kubectl exec -it &lt;pod&gt; -- /bin/sh
+# or, when available:
+kubectl exec -it &lt;pod&gt; -- /bin/bash</pre>
+            <p><code>-it</code> allocates a TTY for interactive use. Prefer the shell that exists in your image.</p>
+
+            <h3>Single non-interactive command</h3>
+            <pre>kubectl exec &lt;pod&gt; -- cat /etc/config/app.conf</pre>
+            <p>Good for quick file reads without opening a full shell session.</p>
+
+            <h3>Environment variables</h3>
+            <pre>kubectl exec &lt;pod&gt; -- env | sort</pre>
+            <p>Confirms ConfigMap/Secret keys were projected as expected and catches typos in variable names.</p>
+
+            <h3>Network check from inside</h3>
+            <pre>kubectl exec &lt;pod&gt; -- wget -qO- http://backend-svc:8080/health</pre>
+            <p>Uses in-cluster DNS and Service VIPs. Substitute <code>curl</code> if your image includes it instead of <code>wget</code>.</p>
+
+            <h3>Mounted secrets and configs</h3>
+            <pre>kubectl exec &lt;pod&gt; -- ls -la /var/secrets/</pre>
+            <p>Verifies mount paths, symlinks, and file permissions for volumes.</p>
+
+            <h3>Multi-container pod</h3>
+            <pre>kubectl exec -it &lt;pod&gt; -c sidecar -- /bin/sh</pre>
+            <p>Targets a specific container by name when the pod defines more than one.</p>
+
+            <div class="card">
+                <h3>Common gotchas</h3>
+                <ul>
+                    <li><strong>Distroless images</strong> often have no shell—use <code>kubectl debug</code> with <code>--target</code> instead.</li>
+                    <li><strong>Read-only root filesystem</strong> breaks ad-hoc writes; test reads and use ephemeral debug containers for writable scratch space.</li>
+                </ul>
+                <h3>What to check inside</h3>
+                <ul>
+                    <li>DNS resolution (<code>nslookup</code> / <code>getent</code> if available).</li>
+                    <li>File permissions and expected paths for config and TLS material.</li>
+                    <li>Running processes (<code>ps</code> if present).</li>
+                    <li>Disk space (<code>df</code>) when crashes mention I/O or temp directories.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Tab 4 -->
+        <section id="v4" class="view" role="tabpanel">
+            <h2>kubectl port-forward</h2>
+            <p>Creates a secure tunnel from your machine to a Pod, Service, or Deployment—ideal for local curls and browser tests without changing cluster networking.</p>
+
+            <h3>Forward to a pod</h3>
+            <pre>kubectl port-forward pod/&lt;name&gt; 8080:80</pre>
+            <p>Local port 8080 maps to container port 80 on the named pod. Use the literal prefix <code>pod/</code> followed by the pod name (for example <code>pod/my-app-7d9f8</code>).</p>
+
+            <h3>Forward to a service</h3>
+            <pre>kubectl port-forward svc/&lt;name&gt; 8080:80</pre>
+            <p>Targets the Service’s endpoints; useful when you want the same load-balancing behavior as in-cluster clients.</p>
+
+            <h3>Forward via deployment</h3>
+            <pre>kubectl port-forward deployment/&lt;name&gt; 8080:80</pre>
+            <p>Kubernetes selects a pod from the Deployment; handy when you do not know the current pod name.</p>
+
+            <h3>Background on Unix shells</h3>
+            <pre>kubectl port-forward pod/my-app 8080:8080 &amp;
+curl -sS http://127.0.0.1:8080/health</pre>
+            <p>Append <code>&amp;</code> to keep the forward in the background; then hit <code>localhost</code> with your tools.</p>
+
+            <div class="card">
+                <h3>When to use</h3>
+                <ul>
+                    <li>Smoke-test an app before publishing a Service or Ingress.</li>
+                    <li>Attach debuggers or HTTP clients to a specific pod replica.</li>
+                    <li>Reach metrics or admin ports that should not be public.</li>
+                </ul>
+                <h3>Common issues</h3>
+                <ul>
+                    <li><strong>Port already in use</strong> on your laptop—pick another local port (left side of the mapping).</li>
+                    <li><strong>Pod not running</strong>—forward fails until the pod is Ready enough to accept connections.</li>
+                    <li><strong>Wrong target port</strong>—right side must match the container’s listen port, not only the Service’s external port.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Tab 5 -->
+        <section id="v5" class="view" role="tabpanel">
+            <h2>Ephemeral debug containers (<code>kubectl debug</code>)</h2>
+            <p>Attaches a temporary container to an existing pod (or copies the pod) so you can use debugging tools without rebuilding the image.</p>
+
+            <h3>Debug a running pod (sidecar-style)</h3>
+            <pre>kubectl debug &lt;pod&gt; -it --image=busybox --target=&lt;container&gt;</pre>
+            <p><code>--target</code> names the existing container whose namespaces (PID, network, mounts) the debug container shares.</p>
+
+            <h3>Copy pod for a safer sandbox</h3>
+            <pre>kubectl debug &lt;pod&gt; -it --copy-to=debug-pod --image=busybox</pre>
+            <p>Creates a new pod cloned from the original spec so you can experiment without touching production replicas.</p>
+
+            <h3>Debug a node</h3>
+            <pre>kubectl debug node/&lt;node-name&gt; -it --image=ubuntu</pre>
+            <p>Schedules a privileged-style debug pod on the node; host filesystem is typically under <code>/host</code>.</p>
+
+            <div class="card">
+                <h3>When to use</h3>
+                <ul>
+                    <li>Minimal or distroless images with no interactive shell.</li>
+                    <li>Read-only root filesystem where you cannot install troubleshooting packages.</li>
+                    <li>Production pods you must not modify permanently—ephemeral containers attach without changing the Pod spec’s permanent container list in the same way as editing the deployment.</li>
+                </ul>
+                <h3>Useful debug images</h3>
+                <ul>
+                    <li><strong>busybox</strong> / <strong>alpine</strong> — small shells and basic utilities.</li>
+                    <li><strong>nicolaka/netshoot</strong> — networking toolbox (<code>curl</code>, <code>tcpdump</code>, <code>dig</code>, etc.).</li>
+                </ul>
+                <h3>Limitations</h3>
+                <ul>
+                    <li>Ephemeral containers <strong>cannot be removed</strong> from a pod once added; they persist in the pod spec for audit/history.</li>
+                    <li>Node debug pods mount the host under <code>/host</code>—treat them as highly sensitive and short-lived.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Tab 6 -->
+        <section id="v6" class="view" role="tabpanel">
+            <h2>Common application issues</h2>
+            <p>Each pattern below ties a symptom to concrete checks and a typical fix.</p>
+
+            <div class="card">
+                <h3>Missing environment variable</h3>
+                <p><strong>Symptom:</strong> Crash or log line like “config key not found” / “required env X”.</p>
+                <p><strong>Diagnose:</strong></p>
+                <pre>kubectl exec &lt;pod&gt; -- env | sort
+kubectl describe pod &lt;pod&gt;</pre>
+                <p><strong>Fix:</strong> Align Deployment env entries with ConfigMap/Secret keys; verify <code>configMapKeyRef</code> / <code>secretKeyRef</code> names and namespaces.</p>
+                <pre>env:
+  - name: APP_FEATURE_FLAG
+    valueFrom:
+      configMapKeyRef:
+        name: app-config
+        key: feature_flag</pre>
+            </div>
+
+            <div class="card">
+                <h3>Wrong port (app vs Service)</h3>
+                <p><strong>Symptom:</strong> Service shows endpoints but connections fail or probes never succeed.</p>
+                <p><strong>Diagnose:</strong></p>
+                <pre>kubectl exec &lt;pod&gt; -- sh -c 'ss -tlnp 2&gt;/dev/null || netstat -tlnp 2&gt;/dev/null'</pre>
+                <p><strong>Fix:</strong> Make <code>containerPort</code>, app listen port, and Service <code>targetPort</code> consistent.</p>
+                <pre>ports:
+  - containerPort: 3000
+---
+spec:
+  ports:
+    - port: 80
+      targetPort: 3000</pre>
+            </div>
+
+            <div class="card">
+                <h3>Readiness probe failing</h3>
+                <p><strong>Symptom:</strong> Pods stay Running but never Ready; Service has no endpoints.</p>
+                <p><strong>Diagnose:</strong></p>
+                <pre>kubectl describe pod &lt;pod&gt;
+kubectl logs &lt;pod&gt; --tail=100</pre>
+                <p><strong>Fix:</strong> Correct HTTP path/command, increase <code>initialDelaySeconds</code>, tune <code>timeoutSeconds</code> / <code>periodSeconds</code> so slow apps have time to become healthy.</p>
+                <pre>readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 15
+  timeoutSeconds: 2</pre>
+            </div>
+
+            <div class="card">
+                <h3>Startup too slow — restarts during boot</h3>
+                <p><strong>Symptom:</strong> CrashLoopBackOff during long migrations or JVM warmup; liveness kills the container too early.</p>
+                <p><strong>Fix:</strong> Add a <code>startupProbe</code> with a generous failure budget, or raise liveness <code>initialDelaySeconds</code>.</p>
+                <pre>startupProbe:
+  httpGet:
+    path: /health/started
+    port: 8080
+  failureThreshold: 30
+  periodSeconds: 10</pre>
+            </div>
+
+            <div class="card">
+                <h3>File permission errors on mounts</h3>
+                <p><strong>Symptom:</strong> “permission denied” reading Secret/ConfigMap files.</p>
+                <p><strong>Diagnose:</strong></p>
+                <pre>kubectl exec &lt;pod&gt; -- ls -la /path/to/mount</pre>
+                <p><strong>Fix:</strong> Set <code>defaultMode</code> on the volume so the process user can read the files (e.g. <code>0400</code> or <code>0440</code> as appropriate).</p>
+                <pre>volumes:
+  - name: secret-vol
+    secret:
+      secretName: app-tls
+      defaultMode: 0400</pre>
+            </div>
+
+            <div class="card">
+                <h3>Connection refused to a backend</h3>
+                <p><strong>Symptom:</strong> App logs show errors calling another service; exec tests fail.</p>
+                <p><strong>Diagnose:</strong></p>
+                <pre>kubectl exec &lt;pod&gt; -- wget -qO- http://backend.backend-ns.svc.cluster.local:8080/</pre>
+                <p><strong>Fix:</strong> Use FQDN or correct short name when crossing namespaces; verify Service name, port, and that the backend pods are Ready.</p>
+            </div>
+        </section>
+
+        <!-- Tab 7 -->
+        <section id="v7" class="view" role="tabpanel">
+            <h2>Quick reference</h2>
+
+            <h3>Master table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Syntax (examples)</th>
+                        <th>Best for</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>get / describe</strong></td>
+                        <td><code>kubectl get pods</code>, <code>kubectl describe pod &lt;pod&gt;</code></td>
+                        <td>Phase, conditions, Events, probe messages, volumes mounted.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>logs</strong></td>
+                        <td><code>kubectl logs &lt;pod&gt; -f --tail=100 -c &lt;c&gt;</code></td>
+                        <td>App errors, stack traces, dependency failures, historical crashes via <code>--previous</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>exec</strong></td>
+                        <td><code>kubectl exec -it &lt;pod&gt; -- /bin/sh</code></td>
+                        <td>Live environment, files, DNS, ports, in-cluster HTTP checks.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>port-forward</strong></td>
+                        <td><code>kubectl port-forward svc/web 8080:80</code></td>
+                        <td>Local browser/curl against pod or Service without new Ingress rules.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>debug</strong></td>
+                        <td><code>kubectl debug &lt;pod&gt; -it --image=netshoot --target=&lt;c&gt;</code></td>
+                        <td>No-shell images, deep network tracing, node-level inspection.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>logs vs exec vs port-forward vs debug</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Approach</th>
+                        <th>You get…</th>
+                        <th>Tradeoff</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>logs</td>
+                        <td>What the app already printed.</td>
+                        <td>No interaction if the app logs little or crashes before logging.</td>
+                    </tr>
+                    <tr>
+                        <td>exec</td>
+                        <td>Interactive inspection in the pod’s context.</td>
+                        <td>Requires a shell or binaries in the image (not true for distroless).</td>
+                    </tr>
+                    <tr>
+                        <td>port-forward</td>
+                        <td>Your laptop as a client to cluster workloads.</td>
+                        <td>Tunnel dies when the command stops; not a replacement for Ingress.</td>
+                    </tr>
+                    <tr>
+                        <td>debug</td>
+                        <td>Toolbox container sharing namespaces with production.</td>
+                        <td>Ephemeral containers stay in the API record; node debug is high privilege.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="card related-links">
+                <h3>Related pages</h3>
+                <ul>
+                    <li><a href="pod-lifecycle.html">Pod lifecycle</a> — phases, restarts, and scheduling context.</li>
+                    <li><a href="health-probes.html">Health probes</a> — readiness, liveness, and startup probes in depth.</li>
+                    <li><a href="configmaps-patterns.html">ConfigMaps patterns</a> — env vs volume wiring.</li>
+                    <li><a href="secrets-management.html">Secrets management</a> — mounting and access patterns.</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+    </div>
+
+    <script>
+        (function () {
+            var buttons = document.querySelectorAll('.tab-nav .btn');
+            var views = document.querySelectorAll('.view');
+            function show(id) {
+                views.forEach(function (v) {
+                    v.classList.toggle('active', v.id === id);
+                });
+                buttons.forEach(function (b) {
+                    var on = b.getAttribute('data-view') === id;
+                    b.classList.toggle('active', on);
+                    b.setAttribute('aria-selected', on ? 'true' : 'false');
+                });
+            }
+            buttons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    show(btn.getAttribute('data-view'));
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

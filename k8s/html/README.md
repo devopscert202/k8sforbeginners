@@ -9,11 +9,11 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 72 HTML pages total in this folder
-- 71 concept explainers plus the home page
+- 79 HTML pages total in this folder
+- 78 concept explainers plus the home page
 - All pages are self-contained and work offline
 
-## Diagram Catalog (11 Categories)
+## Diagram Catalog (12 Categories)
 
 ### 1. Foundations (9 pages)
 
@@ -118,6 +118,16 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `k8s-ui-headlamp.html` - Headlamp in-cluster installation and access
 - `k8s-ui-alternatives.html` - Headlamp, FreeLens, Portainer, K9s comparison
 - `custom-resource-definitions.html` - CRDs, custom resources, and API extension
+
+### 12. Troubleshooting (7 pages)
+
+- `ts-control-plane.html` - API Server, Scheduler, Controller Manager, etcd troubleshooting
+- `ts-pod-failures.html` - Pod failure states: Pending, ImagePullBackOff, CrashLoopBackOff, OOMKilled
+- `ts-kubelet-node.html` - Kubelet, Node NotReady, container runtime, resource pressure
+- `ts-networking.html` - Service, DNS, CNI, Ingress, and NetworkPolicy debugging
+- `ts-application-debugging.html` - kubectl logs, exec, port-forward, and debug containers
+- `ts-commands-reference.html` - Categorized troubleshooting commands cheat sheet
+- `ts-cka-scenarios.html` - CKA exam-style troubleshooting practice scenarios
 
 ## Technical Notes
 

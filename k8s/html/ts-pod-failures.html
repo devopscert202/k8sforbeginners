@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pod Failure States — Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #2563eb;
+            --blue-deep: #1d4ed8;
+            --sky: #dbeafe;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --green: #16a34a;
+            --amber: #d97706;
+            --rose: #e11d48;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--slate-900);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+
+        .header-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+            padding: 22px 24px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid var(--slate-200);
+        }
+        .header-card h1 {
+            font-size: 1.6rem;
+            color: var(--blue);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .header-card .subtitle {
+            color: var(--slate-500);
+            font-size: 0.95rem;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .btn {
+            border: 2px solid var(--blue);
+            background: #fff;
+            color: var(--blue-deep);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+        }
+        .btn:hover,
+        .btn.active {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .view {
+            display: none;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.07);
+            padding: 24px 22px;
+            margin-bottom: 18px;
+            border: 1px solid var(--slate-200);
+        }
+        .view.active { display: block; }
+
+        .view h2 {
+            font-size: 1.25rem;
+            color: var(--blue-deep);
+            margin-bottom: 14px;
+            border-bottom: 2px solid var(--sky);
+            padding-bottom: 8px;
+        }
+        .view h3 {
+            font-size: 1.05rem;
+            color: var(--slate-700);
+            margin: 18px 0 10px;
+        }
+        .view p, .view li { color: var(--slate-700); font-size: 0.94rem; margin-bottom: 8px; }
+        .view ul { margin: 8px 0 12px 1.25rem; }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+            padding: 16px 18px;
+            margin: 14px 0;
+            border: 1px solid var(--slate-200);
+        }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin: 10px 0 14px;
+            border: 1px solid #334155;
+        }
+        pre code { font-family: ui-monospace, "Cascadia Code", monospace; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin: 12px 0 16px;
+        }
+        th, td {
+            border: 1px solid var(--slate-200);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background: var(--sky); color: var(--blue-deep); font-weight: 700; }
+        tr:nth-child(even) td { background: #f8fafc; }
+
+        .sev { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .sev-info { background: #dcfce7; color: var(--green); }
+        .sev-warn { background: #fef3c7; color: var(--amber); }
+        .sev-high { background: #ffe4e6; color: var(--rose); }
+
+        .lifecycle {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px 6px;
+            margin: 16px 0;
+            padding: 16px;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border: 1px dashed var(--slate-200);
+        }
+        .lifecycle .phase {
+            background: #fff;
+            border: 2px solid var(--blue);
+            color: var(--blue-deep);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            box-shadow: 0 1px 4px rgba(37, 99, 235, 0.12);
+        }
+        .lifecycle .arrow { color: var(--slate-500); font-weight: 700; font-size: 1rem; }
+        .lifecycle .fork { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+        .lifecycle .end-ok { border-color: var(--green); color: var(--green); }
+        .lifecycle .end-bad { border-color: var(--rose); color: var(--rose); }
+
+        .jump-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .jump-btn {
+            font: inherit;
+            cursor: pointer;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--slate-200);
+            background: #f8fafc;
+            color: var(--blue-deep);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: left;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .jump-btn:hover { border-color: var(--blue); background: var(--sky); }
+
+        .flowchart {
+            font-family: ui-monospace, monospace;
+            font-size: 0.78rem;
+            line-height: 1.45;
+            background: #f8fafc;
+            color: var(--slate-700);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+            overflow-x: auto;
+            white-space: pre;
+            margin: 12px 0;
+        }
+
+        .related a {
+            color: var(--blue-deep);
+            font-weight: 600;
+            margin-right: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .tab-nav { flex-direction: column; align-items: stretch; }
+            .btn { width: 100%; text-align: center; }
+            .lifecycle { flex-direction: column; }
+            .lifecycle .arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-card">
+            <h1>Kubernetes Pod Failure States</h1>
+            <p class="subtitle">Interactive guide to common pod problems, how to read events and status, and targeted fixes—no cluster required to learn the patterns.</p>
+        </header>
+
+        <nav class="tab-nav" role="tablist" aria-label="Pod failure topics">
+            <button type="button" class="btn active" role="tab" aria-selected="true" data-view="overview">Overview</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="pending">Pending</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="imagepull">ImagePullBackOff</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="crashloop">CrashLoopBackOff</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="oom">OOMKilled</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="configerr">CreateContainerConfigError</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="runerr">RunContainerError</button>
+            <button type="button" class="btn" role="tab" aria-selected="false" data-view="quickref">Quick Ref</button>
+        </nav>
+
+        <!-- Tab 1: Overview -->
+        <section id="view-overview" class="view active" role="tabpanel">
+            <h2>Overview</h2>
+            <p>A <strong>Pod</strong> moves through phases shown below. Failures often appear as <code>Pending</code>, repeated restarts, or terminal <code>Failed</code>—each with distinct events and fixes.</p>
+
+            <h3>Pod lifecycle (simplified)</h3>
+            <div class="lifecycle" aria-label="Pod lifecycle flow">
+                <span class="phase">Pending</span>
+                <span class="arrow">→</span>
+                <span class="phase">ContainerCreating</span>
+                <span class="arrow">→</span>
+                <span class="phase">Running</span>
+                <span class="arrow">→</span>
+                <div class="fork">
+                    <span class="phase end-ok">Succeeded</span>
+                    <span class="phase end-bad">Failed</span>
+                </div>
+            </div>
+            <p style="font-size:0.88rem;color:var(--slate-500);">Init containers and multiple restarts add detail; this view highlights where scheduling, image pull, config, runtime, and OOM issues usually surface.</p>
+
+            <h3>Failure states at a glance</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>State / symptom</th>
+                        <th>One-line description</th>
+                        <th>Severity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Pending</strong></td>
+                        <td>Scheduler or kubelet prerequisites not met; pod not placed or not starting.</td>
+                        <td><span class="sev sev-warn">Warn</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>ImagePullBackOff / ErrImagePull</strong></td>
+                        <td>Registry, auth, tag, or network prevents pulling the container image.</td>
+                        <td><span class="sev sev-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>CrashLoopBackOff</strong></td>
+                        <td>Container exits repeatedly; kubelet backs off restarts.</td>
+                        <td><span class="sev sev-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>OOMKilled</strong></td>
+                        <td>Process exceeded its cgroup memory limit and was killed.</td>
+                        <td><span class="sev sev-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>CreateContainerConfigError</strong></td>
+                        <td>Env or volume references point to missing ConfigMaps, Secrets, or keys.</td>
+                        <td><span class="sev sev-warn">Warn</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>RunContainerError</strong></td>
+                        <td>Runtime could not start the container (security, mounts, binary path).</td>
+                        <td><span class="sev sev-high">High</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Which error am I seeing?</h3>
+            <p>Use <code>kubectl describe pod &lt;name&gt;</code> and match <strong>Events</strong> or <strong>State</strong> to jump to the right tab:</p>
+            <div class="jump-grid">
+                <button type="button" class="jump-btn" data-jump="pending">Events: FailedScheduling, 0/N nodes</button>
+                <button type="button" class="jump-btn" data-jump="imagepull">ErrImagePull, ImagePullBackOff</button>
+                <button type="button" class="jump-btn" data-jump="crashloop">CrashLoopBackOff, high restartCount</button>
+                <button type="button" class="jump-btn" data-jump="oom">Last state: OOMKilled</button>
+                <button type="button" class="jump-btn" data-jump="configerr">configmap/secret … not found</button>
+                <button type="button" class="jump-btn" data-jump="runerr">RunContainerError, failed to start</button>
+            </div>
+        </section>
+
+        <!-- Tab 2: Pending -->
+        <section id="view-pending" class="view" role="tabpanel">
+            <h2>Pending</h2>
+            <p><strong>Pending</strong> means the pod is accepted but not running—often scheduling, resource, or volume binding.</p>
+
+            <h3>Common causes</h3>
+            <ul>
+                <li>No schedulable node (all cordoned, NotReady, or filtered out).</li>
+                <li>Insufficient CPU or memory vs. pod <code>requests</code>.</li>
+                <li>Node <strong>taints</strong> without matching <strong>tolerations</strong>.</li>
+                <li><strong>Node affinity / selector</strong> mismatch—no node matches labels.</li>
+                <li><strong>PVC</strong> not Bound—volume cannot attach.</li>
+                <li>Too many pods on a node (kubelet max pods) or quota limits.</li>
+            </ul>
+
+            <h3>Diagnosis steps</h3>
+            <div class="card">
+                <p><strong>1.</strong> Inspect pod events:</p>
+                <pre><code>kubectl describe pod &lt;pod-name&gt; -n &lt;namespace&gt;</code></pre>
+                <p>Scroll to <strong>Events</strong>; look for <code>FailedScheduling</code> with reasons.</p>
+            </div>
+            <div class="card">
+                <p><strong>2.</strong> Filter cluster events for the pod:</p>
+                <pre><code>kubectl get events --field-selector involvedObject.name=&lt;pod-name&gt; -n &lt;namespace&gt; --sort-by='.lastTimestamp'</code></pre>
+            </div>
+            <div class="card">
+                <p><strong>3.</strong> Compare node capacity and allocation:</p>
+                <pre><code>kubectl describe nodes</code></pre>
+                <p>Check <code>Allocatable</code> vs. running pod <code>requests</code>; note taints and conditions.</p>
+            </div>
+
+            <h3>Sample events (FailedScheduling)</h3>
+            <pre><code>Events:
+  Type     Reason            Message
+  ----     ------            -------
+  Warning  FailedScheduling  0/3 nodes are available: 1 Insufficient cpu, 2 node(s) had taint {key: value}, that the pod didn't tolerate.</code></pre>
+
+            <h3>Fixes (by cause)</h3>
+            <table>
+                <thead><tr><th>Cause</th><th>Fix</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>No schedulable node</td>
+                        <td><pre><code>kubectl get nodes
+kubectl uncordon &lt;node&gt;</code></pre> Fix NotReady nodes; adjust workloads.</td>
+                    </tr>
+                    <tr>
+                        <td>Insufficient CPU/memory</td>
+                        <td>Lower <code>requests</code>/<code>limits</code>, scale cluster, or remove noisy neighbors. Edit: <pre><code>kubectl edit deployment &lt;name&gt; -n &lt;ns&gt;</code></pre></td>
+                    </tr>
+                    <tr>
+                        <td>Taints / tolerations</td>
+                        <td>Add tolerations to pod spec or remove taint: <pre><code>kubectl taint nodes &lt;node&gt; key=value:NoSchedule-</code></pre></td>
+                    </tr>
+                    <tr>
+                        <td>Affinity mismatch</td>
+                        <td>Relax <code>nodeSelector</code>, <code>affinity</code>, or label nodes correctly.</td>
+                    </tr>
+                    <tr>
+                        <td>PVC not bound</td>
+                        <td><pre><code>kubectl get pvc -n &lt;ns&gt;
+kubectl describe pvc &lt;pvc-name&gt; -n &lt;ns&gt;</code></pre> Fix StorageClass, provisioner, or capacity.</td>
+                    </tr>
+                    <tr>
+                        <td>Too many pods</td>
+                        <td>Spread across nodes, raise kubelet max pods (ops), or reduce replicas.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Tab 3: ImagePullBackOff -->
+        <section id="view-imagepull" class="view" role="tabpanel">
+            <h2>ImagePullBackOff / ErrImagePull</h2>
+            <p>The kubelet cannot pull the image; Kubernetes retries with exponential backoff (<strong>ImagePullBackOff</strong>).</p>
+
+            <h3>Common causes</h3>
+            <ul>
+                <li>Wrong image name, tag, or digest (typo or deleted tag).</li>
+                <li>Private registry without <code>imagePullSecrets</code>.</li>
+                <li>Registry <strong>rate limiting</strong> (e.g. Docker Hub anonymous pulls).</li>
+                <li>Network unreachable from the <strong>node</strong> (firewall, DNS, proxy).</li>
+            </ul>
+
+            <h3>Diagnosis</h3>
+            <pre><code>kubectl describe pod &lt;pod-name&gt; -n &lt;namespace&gt;</code></pre>
+            <p>Under <strong>Events</strong>, find <code>Failed to pull image</code> with the underlying error (404, 401, timeout, etc.).</p>
+
+            <h3>Sample output</h3>
+            <pre><code>State:          Waiting
+  Reason:       ImagePullBackOff
+Events:
+  Warning  Failed     Error: ErrImagePull
+  Warning  Failed     failed to pull image "myregistry/app:badtag": rpc error: Not Found</code></pre>
+
+            <h3>Fixes</h3>
+            <div class="card">
+                <p><strong>Correct the image</strong> — fix deployment/pod <code>image:</code> field to a valid name:tag or digest.</p>
+            </div>
+            <div class="card">
+                <p><strong>Registry credentials</strong> — create a pull secret and reference it:</p>
+                <pre><code>kubectl create secret docker-registry regcred \
+  --docker-server=&lt;registry&gt; \
+  --docker-username=&lt;user&gt; \
+  --docker-password=&lt;token&gt; \
+  --docker-email=&lt;email&gt; \
+  -n &lt;namespace&gt;</code></pre>
+            </div>
+            <div class="card">
+                <p><strong>DNS and connectivity</strong> — on a node, test: <code>crictl pull</code> or <code>nerdctl pull</code> (depending on runtime), and verify DNS resolves the registry host.</p>
+            </div>
+
+            <h3>YAML: imagePullSecrets</h3>
+            <pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  imagePullSecrets:
+    - name: regcred
+  containers:
+    - name: app
+      image: myregistry.example.com/myapp:1.2.3</code></pre>
+        </section>
+
+        <!-- Tab 4: CrashLoopBackOff -->
+        <section id="view-crashloop" class="view" role="tabpanel">
+            <h2>CrashLoopBackOff</h2>
+            <p>The container starts, exits non-zero (or is killed), and kubelet restarts it—backing off after repeated failures.</p>
+
+            <h3>Common causes</h3>
+            <ul>
+                <li>Application crash on startup (panic, missing DB, bad config file).</li>
+                <li>Wrong <code>command</code> / <code>args</code> or working directory.</li>
+                <li>Missing environment variables or wrong values.</li>
+                <li>Missing <strong>ConfigMap</strong>/<strong>Secret</strong> mount paths (may surface as config error first).</li>
+                <li><strong>Liveness probe</strong> fails too early—kubelet kills container before ready.</li>
+            </ul>
+
+            <h3>Diagnosis</h3>
+            <pre><code>kubectl logs &lt;pod-name&gt; -n &lt;namespace&gt; --previous</code></pre>
+            <pre><code>kubectl describe pod &lt;pod-name&gt; -n &lt;namespace&gt;</code></pre>
+            <p>Check <code>restartCount</code>, <code>Last State</code>, and <code>Reason</code> (e.g. <code>Error</code>, <code>OOMKilled</code>).</p>
+            <pre><code>kubectl get pod &lt;pod-name&gt; -n &lt;namespace&gt; \
+  -o jsonpath='{.status.containerStatuses[0].lastState}' | jq .</code></pre>
+
+            <h3>Sample log patterns</h3>
+            <pre><code>panic: runtime error: invalid memory address
+exit status 2
+Error: connect ECONNREFUSED 10.0.0.5:5432</code></pre>
+
+            <h3>Fixes</h3>
+            <ul>
+                <li>Read <code>--previous</code> logs; fix application code or configuration causing exit.</li>
+                <li>Align <code>command</code>/<code>args</code> with image ENTRYPOINT documentation.</li>
+                <li>Supply env vars via ConfigMap/Secret; verify keys exist.</li>
+                <li>Soften or delay liveness probes: higher <code>initialDelaySeconds</code>, separate readiness from liveness.</li>
+                <li>If restarts show <code>OOMKilled</code>, treat as memory limit issue (OOM tab).</li>
+            </ul>
+        </section>
+
+        <!-- Tab 5: OOMKilled -->
+        <section id="view-oom" class="view" role="tabpanel">
+            <h2>OOMKilled</h2>
+            <p>The Linux OOM killer terminated the container process when cgroup memory exceeded the container <strong>limit</strong>.</p>
+
+            <h3>Common causes</h3>
+            <ul>
+                <li><code>resources.limits.memory</code> set too low for real workload.</li>
+                <li>Memory leak or spike in the application.</li>
+                <li>JVM / runtime heap larger than container limit (e.g. default JVM grabs too much).</li>
+            </ul>
+
+            <h3>Diagnosis</h3>
+            <pre><code>kubectl describe pod &lt;pod-name&gt; -n &lt;namespace&gt;</code></pre>
+            <p>Under container status, <code>lastState.terminated.reason: OOMKilled</code>.</p>
+            <pre><code>kubectl top pod -n &lt;namespace&gt;</code></pre>
+            <p>On the node (if permitted):</p>
+            <pre><code>dmesg | grep -i oom</code></pre>
+
+            <h3>Fixes</h3>
+            <ul>
+                <li>Increase memory <code>limits</code> (and usually <code>requests</code>) based on profiling.</li>
+                <li>Profile the app (heap dumps, language profilers) to fix leaks.</li>
+                <li>For Java: set <code>-Xmx</code> (and related flags) <strong>below</strong> the container memory limit, leaving headroom.</li>
+            </ul>
+
+            <h3>YAML: memory limits</h3>
+            <pre><code>containers:
+  - name: app
+    image: myapp:1.0
+    resources:
+      requests:
+        memory: "256Mi"
+      limits:
+        memory: "512Mi"</code></pre>
+        </section>
+
+        <!-- Tab 6: CreateContainerConfigError -->
+        <section id="view-configerr" class="view" role="tabpanel">
+            <h2>CreateContainerConfigError</h2>
+            <p>Kubelet cannot build the container environment—usually missing ConfigMap, Secret, or a referenced key.</p>
+
+            <h3>Common causes</h3>
+            <ul>
+                <li>Referenced <strong>ConfigMap</strong> does not exist in the namespace.</li>
+                <li>Referenced <strong>Secret</strong> does not exist.</li>
+                <li><code>key</code> not found in the ConfigMap/Secret.</li>
+            </ul>
+
+            <h3>Diagnosis</h3>
+            <pre><code>kubectl describe pod &lt;pod-name&gt; -n &lt;namespace&gt;</code></pre>
+            <p>Events often show: <code>Error: configmap "app-config" not found</code> or similar for secrets/keys.</p>
+
+            <h3>Fixes</h3>
+            <ul>
+                <li>Create the missing object: <pre><code>kubectl apply -f configmap.yaml -n &lt;namespace&gt;
+kubectl apply -f secret.yaml -n &lt;namespace&gt;</code></pre></li>
+                <li>Fix <code>name</code>, <code>namespace</code>, and <code>key</code> references in the pod spec.</li>
+            </ul>
+
+            <h3>YAML: envFrom and volumes</h3>
+            <pre><code>envFrom:
+  - configMapRef:
+      name: app-config
+  - secretRef:
+      name: app-secret
+volumeMounts:
+  - name: cfg
+    mountPath: /config
+volumes:
+  - name: cfg
+    configMap:
+      name: app-config
+      items:
+        - key: app.properties
+          path: app.properties</code></pre>
+        </section>
+
+        <!-- Tab 7: RunContainerError -->
+        <section id="view-runerr" class="view" role="tabpanel">
+            <h2>RunContainerError</h2>
+            <p>Container runtime failed to <strong>start</strong> the container—distinct from in-app crashes (CrashLoop) or image pull failures.</p>
+
+            <h3>Common causes</h3>
+            <ul>
+                <li><strong>Security context</strong>: e.g. <code>runAsNonRoot: true</code> but image only runs as root.</li>
+                <li><strong>Volume mount</strong> failures (permissions, bad mount propagation, missing volume).</li>
+                <li><strong>Command path</strong> wrong—binary not found in <code>PATH</code> or <code>command</code>.</li>
+            </ul>
+
+            <h3>Diagnosis</h3>
+            <pre><code>kubectl describe pod &lt;pod-name&gt; -n &lt;namespace&gt;</code></pre>
+            <p>Container state <code>Waiting</code>, reason <code>RunContainerError</code>; message often names permission, mount, or executable issues.</p>
+
+            <h3>Fixes</h3>
+            <ul>
+                <li>Align image user with pod security: set <code>runAsUser</code>/<code>fsGroup</code> the image supports, or use a non-root image.</li>
+                <li>Remove or relax <code>runAsNonRoot</code> only if policy allows—prefer fixing the image.</li>
+                <li>Verify volume sources exist, mount paths are valid, and <code>readOnlyRootFilesystem</code> allows required writes (tmpfs/extra volume).</li>
+                <li>Correct <code>command</code> to full path if needed: <code>["/usr/local/bin/myapp"]</code>.</li>
+            </ul>
+            <div class="card">
+                <p><strong>Example security context adjustment</strong> (illustrative—match your policy):</p>
+                <pre><code>securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false</code></pre>
+            </div>
+        </section>
+
+        <!-- Tab 8: Quick Reference -->
+        <section id="view-quickref" class="view" role="tabpanel">
+            <h2>Quick Reference</h2>
+
+            <h3>Master troubleshooting table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status / hint</th>
+                        <th>First command</th>
+                        <th>Common cause</th>
+                        <th>Fix direction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Pending + FailedScheduling</td>
+                        <td><code>kubectl describe pod</code></td>
+                        <td>Resources, taints, affinity, PVC</td>
+                        <td>Adjust requests/tolerations/affinity; fix PVC</td>
+                    </tr>
+                    <tr>
+                        <td>ImagePullBackOff</td>
+                        <td><code>kubectl describe pod</code></td>
+                        <td>Bad tag, auth, rate limit, network</td>
+                        <td>Fix image; add imagePullSecret; check node DNS</td>
+                    </tr>
+                    <tr>
+                        <td>CrashLoopBackOff</td>
+                        <td><code>kubectl logs --previous</code></td>
+                        <td>App error, bad cmd, probes</td>
+                        <td>Fix app/config; tune probes</td>
+                    </tr>
+                    <tr>
+                        <td>OOMKilled</td>
+                        <td><code>kubectl describe pod</code></td>
+                        <td>Low limit, leak, JVM heap</td>
+                        <td>Raise limit; profile; set -Xmx</td>
+                    </tr>
+                    <tr>
+                        <td>CreateContainerConfigError</td>
+                        <td><code>kubectl describe pod</code></td>
+                        <td>Missing CM/Secret/key</td>
+                        <td>Create objects; fix references</td>
+                    </tr>
+                    <tr>
+                        <td>RunContainerError</td>
+                        <td><code>kubectl describe pod</code></td>
+                        <td>Security, mounts, binary</td>
+                        <td>Adjust securityContext; fix volumes/cmd</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Decision tree: “My pod isn’t running”</h3>
+            <div class="flowchart">kubectl get pod &lt;name&gt; — check PHASE / STATUS
+        |
+        v
+    Pending? ----yes----&gt; describe pod → FailedScheduling?
+        |                      |
+        no                       +-- resources / taints / PVC → Pending tab
+        |
+        v
+    ContainerWaiting? ----yes----&gt; describe → ImagePull / Config / Run error?
+        |                      |
+        |                      +-- ErrImagePull → ImagePull tab
+        |                      +-- CreateContainerConfigError → Config tab
+        |                      +-- RunContainerError → RunContainer tab
+        |
+        v
+    Running but restarts? ----yes----&gt; logs --previous
+        |                      |
+        |                      +-- OOMKilled in lastState → OOM tab
+        |                      +-- app exit / probe → CrashLoop tab
+        |
+        v
+    Succeeded / Failed (Job) — check job logs and backoffLimit</div>
+
+            <h3>Related pages</h3>
+            <p class="related">
+                <a href="health-probes.html">health-probes.html</a>
+                <a href="pod-lifecycle.html">pod-lifecycle.html</a>
+                <a href="security-context.html">security-context.html</a>
+            </p>
+        </section>
+
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+    </div>
+
+    <script>
+        (function () {
+            var tabs = document.querySelectorAll('.tab-nav .btn');
+            var views = document.querySelectorAll('.view');
+
+            function showView(id) {
+                views.forEach(function (v) {
+                    v.classList.toggle('active', v.id === 'view-' + id);
+                });
+                tabs.forEach(function (t) {
+                    var on = t.getAttribute('data-view') === id;
+                    t.classList.toggle('active', on);
+                    t.setAttribute('aria-selected', on ? 'true' : 'false');
+                });
+                if (history.replaceState) {
+                    history.replaceState(null, '', '#' + id);
+                }
+            }
+
+            tabs.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    showView(btn.getAttribute('data-view'));
+                });
+            });
+
+            document.querySelectorAll('.jump-btn').forEach(function (jb) {
+                jb.addEventListener('click', function () {
+                    showView(jb.getAttribute('data-jump'));
+                });
+            });
+
+            var hash = (location.hash || '').replace(/^#/, '');
+            var valid = ['overview', 'pending', 'imagepull', 'crashloop', 'oom', 'configerr', 'runerr', 'quickref'];
+            if (valid.indexOf(hash) !== -1) {
+                showView(hash);
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Network Troubleshooting</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #2563eb;
+            --blue-deep: #1d4ed8;
+            --sky: #dbeafe;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --green: #16a34a;
+            --amber: #d97706;
+            --rose: #e11d48;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--slate-900);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+
+        .header-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header-card h1 {
+            font-size: 1.6rem;
+            color: var(--blue);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .header-card .subtitle {
+            color: var(--slate-500);
+            font-size: 0.95rem;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .btn {
+            border: 2px solid var(--blue);
+            background: #fff;
+            color: var(--blue-deep);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .btn:hover,
+        .btn.active {
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .view {
+            display: none;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            padding: 22px 24px;
+            margin-bottom: 16px;
+        }
+        .view.active { display: block; }
+
+        .view h2 {
+            font-size: 1.25rem;
+            color: var(--slate-900);
+            margin-bottom: 14px;
+            border-bottom: 2px solid var(--sky);
+            padding-bottom: 8px;
+        }
+        .view h3 {
+            font-size: 1.05rem;
+            color: var(--slate-700);
+            margin: 18px 0 8px;
+        }
+        .view p, .view li {
+            color: var(--slate-700);
+            margin-bottom: 8px;
+        }
+        .view ul { margin-left: 1.25rem; margin-bottom: 12px; }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--slate-200);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+        .card h3 { margin-top: 0; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .tree {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 14px 0;
+        }
+        .tree-step {
+            background: var(--sky);
+            border-left: 4px solid var(--blue);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.92rem;
+            color: var(--slate-900);
+        }
+        .tree-step strong { color: var(--blue-deep); }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-right: 6px;
+        }
+        .tag-green { background: #dcfce7; color: var(--green); }
+        .tag-amber { background: #fef3c7; color: var(--amber); }
+        .tag-rose { background: #ffe4e6; color: var(--rose); }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            margin: 10px 0 16px;
+        }
+
+        table.ref {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin: 12px 0;
+        }
+        table.ref th,
+        table.ref td {
+            border: 1px solid var(--slate-200);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        table.ref th {
+            background: var(--blue);
+            color: #fff;
+        }
+        table.ref tr:nth-child(even) { background: #f8fafc; }
+
+        .links a {
+            color: var(--blue-deep);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .links a:hover { text-decoration: underline; }
+
+        @media (max-width: 640px) {
+            .nav-tabs { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 6px; }
+            .btn { flex: 0 0 auto; }
+            body { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-card">
+            <h1>Kubernetes Network Troubleshooting</h1>
+            <p class="subtitle">Interactive guide: services, DNS, pod connectivity, NetworkPolicy, Ingress, and a quick symptom-to-fix reference.</p>
+        </header>
+
+        <nav class="nav-tabs" aria-label="Section tabs">
+            <button type="button" class="btn active" onclick="showView('overview', this)">Overview</button>
+            <button type="button" class="btn" onclick="showView('service', this)">Service Issues</button>
+            <button type="button" class="btn" onclick="showView('dns', this)">DNS Failures</button>
+            <button type="button" class="btn" onclick="showView('pod', this)">Pod Connectivity</button>
+            <button type="button" class="btn" onclick="showView('netpol', this)">NetworkPolicy</button>
+            <button type="button" class="btn" onclick="showView('ingress', this)">Ingress &amp; NodePort</button>
+            <button type="button" class="btn" onclick="showView('quick', this)">Quick Reference</button>
+        </nav>
+
+        <!-- Tab 1 -->
+        <section id="overview-view" class="view active" aria-labelledby="overview-heading">
+            <h2 id="overview-heading">Overview</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Networking model</h3>
+                    <p>Every Pod gets its own IP address on a flat, cluster-wide Pod network. Pods can talk to each other directly by IP without NAT between nodes (that behavior is provided by your CNI).</p>
+                </div>
+                <div class="card">
+                    <h3>Three layers to remember</h3>
+                    <ul>
+                        <li><strong>Pod networking (CNI)</strong> — assigns routes/interfaces so Pod IPs work across nodes.</li>
+                        <li><strong>Service networking</strong> — stable virtual IP/DNS; kube-proxy (or similar) programs iptables/IPVS (or eBPF) to load-balance to Endpoints.</li>
+                        <li><strong>External access</strong> — NodePort, LoadBalancer, or Ingress (HTTP/S) in front of Services.</li>
+                    </ul>
+                </div>
+            </div>
+            <h3>“Can’t reach my app” decision tree</h3>
+            <p>Walk through in order; the first failure you find is usually where to fix.</p>
+            <div class="tree">
+                <div class="tree-step"><strong>1.</strong> Is the Pod running and ready? <code>kubectl get pods</code> — check STATUS and READY.</div>
+                <div class="tree-step"><strong>2.</strong> Does the Service selector match Pod labels? Mismatch → no Endpoints.</div>
+                <div class="tree-step"><strong>3.</strong> Are Endpoints populated? <code>kubectl get endpoints SERVICE</code> — empty list means traffic has nowhere to go.</div>
+                <div class="tree-step"><strong>4.</strong> Is cluster DNS resolving Service names? Test from a client Pod with <code>nslookup</code> or <code>getent</code>.</div>
+                <div class="tree-step"><strong>5.</strong> Is a NetworkPolicy blocking ingress/egress (including DNS on port 53)?</div>
+            </div>
+        </section>
+
+        <!-- Tab 2 -->
+        <section id="service-view" class="view" aria-labelledby="service-heading">
+            <h2 id="service-heading">Service Issues</h2>
+            <div class="card">
+                <h3>Service has no Endpoints</h3>
+                <p>The Service <code>spec.selector</code> must match labels on Pod template metadata. If labels drift after a deploy, Endpoints disappear.</p>
+            </div>
+            <div class="card">
+                <h3>Wrong port / targetPort</h3>
+                <p><code>port</code> is what clients use on the Service. <code>targetPort</code> is the container port. A typo here yields connection refused or timeouts while Endpoints still look “healthy.”</p>
+            </div>
+            <div class="card">
+                <h3>Service type confusion</h3>
+                <ul>
+                    <li><strong>ClusterIP</strong> — reachable only inside the cluster (default).</li>
+                    <li><strong>NodePort</strong> — exposes a high port on every node; still need firewall/route to nodes.</li>
+                    <li><strong>LoadBalancer</strong> — cloud LB in front; requires controller support and correct cloud integration.</li>
+                </ul>
+            </div>
+            <h3>Diagnosis commands</h3>
+<pre>kubectl get endpoints my-service
+kubectl describe svc my-service
+# Check Selector, Ports, and Endpoints sections
+
+kubectl get pods -l app=my-app --show-labels</pre>
+            <h3>Fix: align selector and labels</h3>
+            <p>Example mismatch (broken): Service selects <code>app: api</code> but Deployment labels Pods <code>app: backend</code>.</p>
+<pre># Service (corrected)
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: backend
+    tier: api
+  ports:
+    - port: 80
+      targetPort: 8080
+
+# Deployment pod template must include the same labels:
+# metadata.labels: { app: backend, tier: api }</pre>
+        </section>
+
+        <!-- Tab 3 -->
+        <section id="dns-view" class="view" aria-labelledby="dns-heading">
+            <h2 id="dns-heading">DNS Failures</h2>
+            <div class="card">
+                <h3>CoreDNS not running</h3>
+<pre>kubectl get pods -n kube-system -l k8s-app=kube-dns</pre>
+                <p>If pods are CrashLoopBackOff or missing, Service name resolution cluster-wide breaks. Check events, resources, and CoreDNS logs.</p>
+            </div>
+            <div class="card">
+                <h3>Resolution test from a Pod</h3>
+<pre>kubectl exec -it my-client-pod -n my-ns -- nslookup my-service.my-ns.svc.cluster.local</pre>
+                <p>Short name <code>my-service</code> works inside the same namespace; FQDN is safest for debugging.</p>
+            </div>
+            <div class="card">
+                <h3>ndots and search list</h3>
+                <p>Many images ship <code>resolv.conf</code> with <code>ndots:5</code> and multiple search domains. Names with fewer than five dots may be tried as relative names first, causing odd delays or wrong answers. Compare behavior with the FQDN.</p>
+            </div>
+            <div class="card">
+                <h3>CoreDNS ConfigMap</h3>
+<pre>kubectl get cm coredns -n kube-system -o yaml</pre>
+                <p>Misconfigured forwarders, hosts plugin mistakes, or broken Corefile syntax can cause partial or total DNS failure after a change.</p>
+            </div>
+            <h3>Common errors</h3>
+            <p><span class="tag tag-rose">NXDOMAIN</span> Name does not exist — wrong name, wrong namespace, or Service missing. Verify Service exists and FQDN.</p>
+            <p><span class="tag tag-amber">timeout</span> Packets to UDP/TCP 53 not reaching CoreDNS — NetworkPolicy, node firewall, or CoreDNS not listening. Check policies and kube-proxy/CNI path to the ClusterIP for kube-dns.</p>
+        </section>
+
+        <!-- Tab 4 -->
+        <section id="pod-view" class="view" aria-labelledby="pod-heading">
+            <h2 id="pod-heading">Pod Connectivity</h2>
+            <div class="card">
+                <h3>Pod-to-Pod across nodes</h3>
+                <p>If same-node works but cross-node fails, suspect CNI routing, overlay, or underlying network (security groups, VLANs).</p>
+<pre>kubectl get pods -n kube-system
+# Look for calico-node, canal, flannel, cilium, weave, etc.</pre>
+            </div>
+            <div class="card">
+                <h3>Basic reachability</h3>
+<pre>kubectl exec -it pod-a -- ping -c 3 POD_B_IP</pre>
+                <p>Some minimal images omit <code>ping</code>; use a debug image or <code>kubectl debug</code> with a toolbox image.</p>
+            </div>
+            <div class="card">
+                <h3>Plugin-specific checks</h3>
+                <ul>
+                    <li><strong>Calico</strong> — node readiness, BGP/session status, IP pools.</li>
+                    <li><strong>Flannel</strong> — flannel.1 / VXLAN interfaces, etcd/kube-api lease data.</li>
+                    <li><strong>Cilium</strong> — <code>cilium status</code> on nodes (where installed).</li>
+                </ul>
+            </div>
+            <h3>iptables NAT path</h3>
+            <p>On a node (privileged):</p>
+<pre>iptables -t nat -L KUBE-SERVICES -n</pre>
+            <p>Confirms kube-proxy (iptables mode) programmed chains; empty or stale rules can break Service VIP forwarding.</p>
+            <h3>kube-proxy logs</h3>
+<pre>kubectl get pods -n kube-system -o wide | grep kube-proxy
+kubectl logs -n kube-system POD_NAME_OF_KUBE_PROXY</pre>
+        </section>
+
+        <!-- Tab 5 -->
+        <section id="netpol-view" class="view" aria-labelledby="netpol-heading">
+            <h2 id="netpol-heading">NetworkPolicy</h2>
+            <div class="card">
+                <h3>Policy blocking legitimate traffic</h3>
+                <p>NetworkPolicy is additive only when you allow; a deny-by-default namespace or a tight policy can block traffic that used to work.</p>
+            </div>
+            <div class="card">
+                <h3>Default deny surprise</h3>
+                <p>Symptom: “Everything worked until I added a NetworkPolicy.” Often only a narrow ingress is allowed and egress (or DNS) was forgotten.</p>
+            </div>
+            <h3>Diagnosis</h3>
+<pre>kubectl get networkpolicy -A
+kubectl describe networkpolicy my-policy -n my-ns</pre>
+            <h3>Test from a throwaway Pod</h3>
+<pre>kubectl run tmp --rm -it --image=busybox:1.36 --restart=Never -n my-ns -- wget -qO- http://my-service:80</pre>
+            <h3>Common mistakes</h3>
+            <ul>
+                <li>No egress rule to kube-dns — allow UDP/TCP 53 to kube-system or to the DNS Service ClusterIP.</li>
+                <li><code>podSelector</code> does not match intended Pods (label typos).</li>
+                <li>Cross-namespace traffic needs <code>namespaceSelector</code> (and possibly pod selectors) explicitly allowed.</li>
+            </ul>
+            <h3>YAML: allow app traffic and DNS egress (illustrative)</h3>
+<pre>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web-and-dns
+  namespace: my-ns
+spec:
+  podSelector:
+    matchLabels:
+      app: my-app
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 80</pre>
+        </section>
+
+        <!-- Tab 6 -->
+        <section id="ingress-view" class="view" aria-labelledby="ingress-heading">
+            <h2 id="ingress-heading">Ingress &amp; NodePort</h2>
+            <div class="card">
+                <h3>Ingress not routing</h3>
+                <ul>
+                    <li><strong>IngressClass</strong> not set or wrong — no controller claims the object.</li>
+                    <li><strong>Ingress controller</strong> not running (nginx, traefik, etc.).</li>
+                    <li><strong>Backend Service</strong> name/port wrong — controller logs show upstream errors.</li>
+                    <li><strong>TLS</strong> — Secret missing, wrong namespace, or cert mismatch causes 404 at edge or TLS handshake errors.</li>
+                </ul>
+            </div>
+            <h3>Ingress inspection</h3>
+<pre>kubectl get ingress -A
+kubectl describe ingress my-ing -n my-ns</pre>
+            <div class="card">
+                <h3>NodePort not accessible from outside</h3>
+                <ul>
+                    <li>Cloud or host firewall blocking <strong>30000–32767</strong> (default NodePort range).</li>
+                    <li><strong>kube-proxy</strong> down on the node you are hitting — traffic never forwarded to Pods.</li>
+                    <li>Wrong <strong>node IP</strong> — use an address that actually reaches the kubelet/node (not only an internal SDN IP).</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Tab 7 -->
+        <section id="quick-view" class="view" aria-labelledby="quick-heading">
+            <h2 id="quick-heading">Quick Reference</h2>
+            <h3>Symptom → first check → likely cause → fix command</h3>
+            <table class="ref">
+                <thead>
+                    <tr>
+                        <th>Symptom</th>
+                        <th>First check</th>
+                        <th>Likely cause</th>
+                        <th>Fix / command</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Service unreachable</td>
+                        <td><code>kubectl get endpoints</code></td>
+                        <td>Selector/labels mismatch</td>
+                        <td><code>kubectl describe svc</code> + align labels</td>
+                    </tr>
+                    <tr>
+                        <td>Wrong backend port</td>
+                        <td>describe Service ports</td>
+                        <td>targetPort typo</td>
+                        <td>Edit Service <code>targetPort</code> / named port</td>
+                    </tr>
+                    <tr>
+                        <td>DNS name fails</td>
+                        <td>CoreDNS pods + test FQDN</td>
+                        <td>CoreDNS down or policy blocks 53</td>
+                        <td><code>kubectl get pods -n kube-system -l k8s-app=kube-dns</code></td>
+                    </tr>
+                    <tr>
+                        <td>Only some Pods broken</td>
+                        <td>NetworkPolicy list</td>
+                        <td>Policy egress/ingress</td>
+                        <td><code>kubectl get netpol -A</code></td>
+                    </tr>
+                    <tr>
+                        <td>External URL 502/503</td>
+                        <td>Ingress describe + controller logs</td>
+                        <td>Bad Service ref or no Endpoints</td>
+                        <td><code>kubectl describe ingress</code></td>
+                    </tr>
+                    <tr>
+                        <td>NodePort times out</td>
+                        <td>From node: <code>ss -lntp</code></td>
+                        <td>Firewall / kube-proxy</td>
+                        <td>Open 30000–32767; check kube-proxy</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>Command cheat sheet</h3>
+<pre>kubectl get svc,endpoints,pods -n NAMESPACE -o wide
+kubectl describe svc SERVICE -n NAMESPACE
+kubectl get pods --show-labels -n NAMESPACE
+kubectl exec -it POD -n NAMESPACE -- nslookup SVC.NAMESPACE.svc.cluster.local
+kubectl get networkpolicy -A
+kubectl get ingress -A
+kubectl logs -n kube-system -l k8s-app=kube-dns
+kubectl logs -n kube-system DS_OR_POD_FOR_KUBE_PROXY</pre>
+            <div class="card links">
+                <h3>Related pages</h3>
+                <ul>
+                    <li><a href="service-types-comparison.html">service-types-comparison.html</a> — ClusterIP, NodePort, LoadBalancer</li>
+                    <li><a href="dns-resolution.html">dns-resolution.html</a> — how cluster DNS works</li>
+                    <li><a href="network-policy.html">network-policy.html</a> — NetworkPolicy concepts</li>
+                    <li><a href="ingress-endpointslices.html">ingress-endpointslices.html</a> — Ingress and EndpointSlices</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+    </div>
+
+    <script>
+        function showView(name, btn) {
+            document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+            document.querySelectorAll('.btn').forEach(function (b) { b.classList.remove('active'); });
+            var el = document.getElementById(name + '-view');
+            if (el) el.classList.add('active');
+            if (btn) btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>
