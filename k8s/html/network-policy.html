@@ -192,6 +192,14 @@
         <!-- Tab 1 -->
         <div class="panel active" id="panel-1" role="tabpanel" aria-labelledby="tab-1">
             <h2>What are NetworkPolicies?</h2>
+            <div class="callout" style="background:#eff6ff;border-left-color:var(--blue);margin-bottom:1rem;">
+                <strong>Repository YAML files:</strong> Ready-to-use NetworkPolicy manifests are available in <code>k8s/labs/security/</code>:
+                <ul style="margin:6px 0 0 1.2rem;font-size:0.88rem;">
+                    <li><code>deny-all-ingress.yaml</code> — Deny all ingress to pods labeled <code>app: k8slearning</code></li>
+                    <li><code>allow-ingress.yaml</code> — Allow ingress only from pods with matching <code>app: k8slearning</code> label</li>
+                    <li><code>deny-from-other-namespaces.yaml</code> — Deny cross-namespace ingress in the <code>prod</code> namespace</li>
+                </ul>
+            </div>
             <p>NetworkPolicies are Kubernetes resources that express <strong>Layer 3 / Layer 4</strong> rules (IP, ports, protocols) for which traffic may reach your Pods. Think of them as a distributed firewall: the CNI plugin enforces the rules on the data plane.</p>
             <h3>Default cluster behavior</h3>
             <p>If <strong>no</strong> NetworkPolicy selects a Pod, <span class="ok">all traffic is allowed</span> in both directions. The cluster is “open” until you opt in to restrictions.</p>
@@ -321,6 +329,7 @@ spec:
                 <button type="button" class="scenario-toggle" aria-expanded="false"><span>1. Default deny all ingress (namespace)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
                 <div class="scenario-body">
                     <p>Applies to all Pods in the namespace (empty <code>podSelector</code>). Declaring <code>Ingress</code> with no rules denies all inbound to those Pods.</p>
+                    <p style="font-size:0.85rem;color:var(--slate-500);">📂 See also: <code>k8s/labs/security/deny-all-ingress.yaml</code> (targets pods labeled <code>app: k8slearning</code> specifically)</p>
                     <pre><code>apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -388,6 +397,7 @@ spec:
                 <button type="button" class="scenario-toggle" aria-expanded="false"><span>4. Allow specific pod-to-pod (gateway → backend)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
                 <div class="scenario-body">
                     <p>Only Pods labeled <code>role=api-gateway</code> in the same namespace may reach <code>role=backend</code> on TCP 8080.</p>
+                    <p style="font-size:0.85rem;color:var(--slate-500);">&#128194; See also: <code>k8s/labs/security/allow-ingress.yaml</code> — a simpler variant allowing ingress from pods sharing the same <code>app</code> label</p>
                     <pre><code>apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -527,6 +537,7 @@ spec:
   ingress:
     - from:
         - podSelector: {}</code></pre>
+            <p style="font-size:0.85rem;color:var(--slate-500);">&#128194; This is exactly what <code>k8s/labs/security/deny-from-other-namespaces.yaml</code> does for the <code>prod</code> namespace. Apply it directly: <code>kubectl apply -f k8s/labs/security/deny-from-other-namespaces.yaml</code></p>
             <h3>Allow a set of environments by namespace label</h3>
             <p>To allow any namespace labeled <code>env=production</code> (not only the local namespace), use <code>namespaceSelector</code>:</p>
             <pre><code>ingress:

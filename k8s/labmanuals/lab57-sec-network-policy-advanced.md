@@ -6,6 +6,16 @@ This lab is a set of hands-on exercises for controlling **pod-to-pod** traffic, 
 
 Lab 13 covers **namespace isolation**; this lab adds **pod/app paths**, **ports**, **DNS egress**, and **CIDR** controls.
 
+### Repository YAML Files
+
+This lab references pre-built manifests in the `k8s/labs/security/` directory. You can apply these directly or use them as templates:
+
+| File | Purpose |
+|------|---------|
+| [`deny-all-ingress.yaml`](../../labs/security/deny-all-ingress.yaml) | Deny all ingress to pods labeled `app: k8slearning` |
+| [`allow-ingress.yaml`](../../labs/security/allow-ingress.yaml) | Allow ingress only from pods with matching `app: k8slearning` label |
+| [`deny-from-other-namespaces.yaml`](../../labs/security/deny-from-other-namespaces.yaml) | Deny cross-namespace ingress in the `prod` namespace |
+
 ---
 
 ## Prerequisites
@@ -101,6 +111,14 @@ Expect HTML or a non-empty body (DNS + pod paths work).
 
 ### Step 3: Default deny ingress
 
+The repository includes a ready-made deny-all ingress policy. Review it first:
+
+```bash
+cat k8s/labs/security/deny-all-ingress.yaml
+```
+
+That file targets pods labeled `app: k8slearning`. For this exercise we use a broader version that targets **all** pods in the namespace:
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -115,6 +133,8 @@ spec:
 ```bash
 kubectl apply -f lab57-ex1-deny-ingress.yaml
 ```
+
+> **Tip:** Compare this with [`k8s/labs/security/deny-all-ingress.yaml`](../../labs/security/deny-all-ingress.yaml) — notice the difference: an empty `podSelector: {}` selects **all** pods, while `matchLabels: {app: k8slearning}` targets only matching pods. Choose the scope that fits your use case.
 
 Ingress to pods in `netpol-lab` is denied unless another policy allows it; egress is still open, so DNS may work.
 
@@ -203,6 +223,8 @@ Once a pod is selected by a policy that includes **`Egress`** in `policyTypes`, 
 ## Exercise 3: Pod-to-Pod Communication Control
 
 Allow **frontend → backend** and **backend → database**; block **frontend → database**. Keep **default-deny** ingress/egress and **allow-dns-egress** from Exercise 2.
+
+> **Reference:** The repository file [`k8s/labs/security/allow-ingress.yaml`](../../labs/security/allow-ingress.yaml) demonstrates the simplest allow pattern — permitting ingress only from pods sharing the same `app` label. The policies below extend this pattern with **directional, cross-app** rules (frontend → backend, backend → database).
 
 ### Step 1: Apply all path policies (single file)
 
@@ -428,6 +450,12 @@ kubectl exec -n netpol-lab deploy/monitoring -- wget -qO- --timeout=2 http://bac
 ## Exercise 5: Namespace-to-Namespace Communication
 
 Create **`team-a`** and **`team-b`**, deploy simple apps, apply **default deny** in both, then allow **team-a → team-b** for a **specific** backend using combined selectors.
+
+> **Reference:** The repository file [`k8s/labs/security/deny-from-other-namespaces.yaml`](../../labs/security/deny-from-other-namespaces.yaml) shows the classic namespace isolation pattern — allowing only same-namespace ingress in the `prod` namespace via an empty `podSelector: {}` under `from`. Try applying it directly:
+> ```bash
+> kubectl apply -f k8s/labs/security/deny-from-other-namespaces.yaml
+> ```
+> The exercises below build on this pattern with **cross-namespace selective allows** using `namespaceSelector` and `podSelector` together.
 
 ### Step 1: Namespaces and apps
 
