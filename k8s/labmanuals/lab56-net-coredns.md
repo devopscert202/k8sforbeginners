@@ -20,6 +20,23 @@ This lab is a hands-on tour of **CoreDNS** in Kubernetes: how cluster DNS is wir
 
 **Interactive companion (optional):** [coredns-deep-dive.html](../html/coredns-deep-dive.html)
 
+## Repository YAML Files
+
+> The `k8s/labs/networking/` directory contains pre-built manifests for every exercise in this lab:
+>
+> | File | Description | Exercise |
+> |------|-------------|----------|
+> | [`lab56-clusterip.yaml`](../../labs/networking/lab56-clusterip.yaml) | Deployment + ClusterIP Service (`my-svc`) | Exercise 3, Step 1 |
+> | [`lab56-headless.yaml`](../../labs/networking/lab56-headless.yaml) | Headless Service (`my-headless`) | Exercise 3, Step 2 |
+> | [`lab56-externalname.yaml`](../../labs/networking/lab56-externalname.yaml) | ExternalName Service (CNAME) | Exercise 3, Step 3 |
+> | [`lab56-clusterfirst.yaml`](../../labs/networking/lab56-clusterfirst.yaml) | Pod with `dnsPolicy: ClusterFirst` | Exercise 6, Step 1 |
+> | [`lab56-dns-none.yaml`](../../labs/networking/lab56-dns-none.yaml) | Pod with `dnsPolicy: None` (custom resolver) | Exercise 6, Step 2 |
+> | [`lab56-dns-default.yaml`](../../labs/networking/lab56-dns-default.yaml) | Pod with `dnsPolicy: Default` (node resolver) | Exercise 6, Step 3 |
+> | [`lab56-broken-client.yaml`](../../labs/networking/lab56-broken-client.yaml) | Intentionally broken DNS client for troubleshooting | Exercise 7, Step 1 |
+> | [`dnsdefault.yaml`](../../labs/networking/dnsdefault.yaml) | Pod with `dnsPolicy: Default` (shared with Lab 45) | Exercise 6 reference |
+> | [`dnspolicy.yaml`](../../labs/networking/dnspolicy.yaml) | Pod with `ClusterFirstWithHostNet` (shared with Lab 45) | Exercise 6 reference |
+> | [`dnsconfig.yaml`](../../labs/networking/dnsconfig.yaml) | Pod with `dnsPolicy: None` (shared with Lab 45) | Exercise 6 reference |
+
 ## Prerequisites
 
 - Running Kubernetes cluster (Kind, Minikube, or kubeadm) and `kubectl` configured

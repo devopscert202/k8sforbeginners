@@ -1,0 +1,15 @@
+# Lab 56 Exercise 3: Headless Service (A records per ready Pod)
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-headless
+  namespace: lab56-dns
+spec:
+  clusterIP: None
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
