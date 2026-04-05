@@ -673,7 +673,7 @@ Expected body: `capstone-fixed`.
 - **NetworkPolicy** errors look like **timeouts**; `kubectl describe networkpolicy` clarifies intent.
 - **targetPort** must match listeners (`ss -tlnp` in the workload).
 - **NodePort** failures are often **outside** the cluster (firewall, node IP, local Kind/Docker mapping).
-- **Ingress:** confirm backend **Service** and **endpoints** before chasing Ingress controller rules ([Lab 35: Ingress and EndpointSlices](lab35-net-ingress-endpointslices.md)).
+- **Ingress:** confirm backend **Service** and **endpoints** before chasing Ingress controller rules ([Lab 35: Ingress Controllers](lab35-net-ingress.md)).
 
 ---
 

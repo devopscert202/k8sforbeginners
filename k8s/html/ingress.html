@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ingress and EndpointSlices - Interactive Guide</title>
+    <title>Ingress Controllers — Interactive Guide</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -361,10 +361,11 @@
     <div class="container">
         <header class="hero">
             <div class="eyebrow">Interactive Kubernetes Explainer</div>
-            <h1>Ingress and EndpointSlices</h1>
-            <p class="subtitle">Interactive guide to HTTP routing through Ingress and how EndpointSlices help Kubernetes manage backend endpoints efficiently.</p>
+            <h1>Ingress Controllers</h1>
+            <p class="subtitle">How HTTP and HTTPS requests reach the right Service inside your cluster: host and path rules, an Ingress controller at the edge, and stable Service-backed routing.</p>
             <div class="lead-panel">
-                <p>Ingress handles HTTP and HTTPS routing decisions at the edge, while EndpointSlices help Kubernetes track backend Service membership efficiently at scale.</p>
+                <p>An Ingress resource declares Layer&nbsp;7 routing (host, path, TLS). An Ingress controller must run in the cluster to enforce those rules and forward traffic to Services.</p>
+                <p style="margin-top: 12px;">See also: <a href="endpointslices.html">EndpointSlices</a> — how Kubernetes tracks backend Pod addresses for Services at scale.</p>
             </div>
         </header>
 
@@ -394,8 +395,8 @@
                 <p>An Ingress resource needs a controller like NGINX or Traefik to become active.</p>
             </article>
             <article class="card ">
-                <div class="card-badge">EndpointSlices scale endpoint tracking</div>
-                <p>They improve how Kubernetes stores and manages backend endpoint membership.</p>
+                <div class="card-badge">TLS termination at the edge</div>
+                <p>Centralize HTTPS handling instead of per-app certificates when your controller supports it.</p>
             </article>
 </div>
 
@@ -411,7 +412,6 @@
 
             <div class="diagram-controls">
                 <button class="diagram-btn active" data-diagram="ingress-routing">Ingress Routing</button>
-                <button class="diagram-btn" data-diagram="endpointslice-scaling">EndpointSlice Scaling</button>
                 <button class="diagram-btn" data-diagram="complete-architecture">Complete Architecture</button>
             </div>
 
@@ -495,76 +495,6 @@
                     <text x="70" y="430" fill="#334155" font-size="12">1. External client sends HTTP/HTTPS request to domain</text>
                     <text x="70" y="450" fill="#334155" font-size="12">2. Ingress Controller receives and evaluates Ingress rules (host/path matching)</text>
                     <text x="70" y="470" fill="#334155" font-size="12">3. Matched rule routes traffic to corresponding Service, which load balances to backend Pods</text>
-                </svg>
-
-                <!-- EndpointSlice Scaling Diagram -->
-                <svg class="svg-diagram" id="endpointslice-scaling" viewBox="0 0 1000 550" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Title -->
-                    <text x="500" y="40" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">EndpointSlice Scaling Pattern</text>
-
-                    <!-- Small Scale Scenario -->
-                    <rect x="50" y="70" width="420" height="200" rx="8" fill="#f0f9ff" stroke="#326CE5" stroke-width="2"/>
-                    <text x="260" y="95" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Small Scale (&lt; 100 endpoints)</text>
-
-                    <g class="diagram-node" data-tooltip="Single EndpointSlice for small services">
-                        <rect x="180" y="115" width="160" height="120" rx="8" fill="#dbeafe" stroke="#326CE5" stroke-width="2"/>
-                        <text x="260" y="135" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="13">EndpointSlice</text>
-                        <text x="260" y="155" text-anchor="middle" fill="#334155" font-size="11">my-service-abc123</text>
-                        <rect x="195" y="165" width="130" height="20" rx="3" fill="white" stroke="#326CE5" stroke-width="1"/>
-                        <text x="260" y="178" text-anchor="middle" fill="#334155" font-size="10">Pod 1: 10.244.1.5:80</text>
-                        <rect x="195" y="190" width="130" height="20" rx="3" fill="white" stroke="#326CE5" stroke-width="1"/>
-                        <text x="260" y="203" text-anchor="middle" fill="#334155" font-size="10">Pod 2: 10.244.1.6:80</text>
-                        <text x="260" y="225" text-anchor="middle" fill="#64748b" font-size="10" font-style="italic">... up to 100 endpoints</text>
-                    </g>
-
-                    <!-- Large Scale Scenario -->
-                    <rect x="530" y="70" width="420" height="400" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                    <text x="740" y="95" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="14">Large Scale (100+ endpoints)</text>
-
-                    <g class="diagram-node" data-tooltip="First EndpointSlice (100 endpoints)">
-                        <rect x="570" y="115" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                        <text x="640" y="133" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice 1</text>
-                        <text x="640" y="150" text-anchor="middle" fill="#92400e" font-size="10">my-service-slice1</text>
-                        <text x="640" y="168" text-anchor="middle" fill="#92400e" font-size="10">Pods 1-100</text>
-                        <text x="640" y="183" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">100 endpoints</text>
-                        <text x="640" y="198" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">FULL</text>
-                    </g>
-
-                    <g class="diagram-node" data-tooltip="Second EndpointSlice (100 endpoints)">
-                        <rect x="730" y="115" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                        <text x="800" y="133" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice 2</text>
-                        <text x="800" y="150" text-anchor="middle" fill="#92400e" font-size="10">my-service-slice2</text>
-                        <text x="800" y="168" text-anchor="middle" fill="#92400e" font-size="10">Pods 101-200</text>
-                        <text x="800" y="183" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">100 endpoints</text>
-                        <text x="800" y="198" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">FULL</text>
-                    </g>
-
-                    <g class="diagram-node" data-tooltip="Third EndpointSlice (100 endpoints)">
-                        <rect x="570" y="225" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                        <text x="640" y="243" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice 3</text>
-                        <text x="640" y="260" text-anchor="middle" fill="#92400e" font-size="10">my-service-slice3</text>
-                        <text x="640" y="278" text-anchor="middle" fill="#92400e" font-size="10">Pods 201-300</text>
-                        <text x="640" y="293" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">100 endpoints</text>
-                        <text x="640" y="308" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">FULL</text>
-                    </g>
-
-                    <g class="diagram-node" data-tooltip="Partial EndpointSlice with remaining endpoints">
-                        <rect x="730" y="225" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                        <text x="800" y="243" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice N</text>
-                        <text x="800" y="260" text-anchor="middle" fill="#92400e" font-size="10">my-service-sliceN</text>
-                        <text x="800" y="278" text-anchor="middle" fill="#92400e" font-size="10">Pods 301-...</text>
-                        <text x="800" y="293" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">45 endpoints</text>
-                        <text x="800" y="308" text-anchor="middle" fill="#2563eb" font-size="9" font-weight="bold">PARTIAL</text>
-                    </g>
-
-                    <text x="740" y="350" text-anchor="middle" fill="#92400e" font-size="11" font-weight="600">Automatically scaled to</text>
-                    <text x="740" y="370" text-anchor="middle" fill="#92400e" font-size="11" font-weight="600">multiple slices as service grows</text>
-
-                    <!-- Benefits Box -->
-                    <rect x="570" y="390" width="300" height="65" rx="6" fill="white" stroke="#10b981" stroke-width="2"/>
-                    <text x="720" y="410" text-anchor="middle" fill="#059669" font-weight="bold" font-size="12">Benefits of EndpointSlices</text>
-                    <text x="720" y="428" text-anchor="middle" fill="#334155" font-size="10">• Reduced API server load</text>
-                    <text x="720" y="443" text-anchor="middle" fill="#334155" font-size="10">• Better scalability for large services</text>
                 </svg>
 
                 <!-- Complete Architecture Diagram -->
@@ -671,7 +601,7 @@
                 </svg>
             </div>
 
-            <div class="section-note">Hover over diagram elements for detailed tooltips. Click the buttons above to switch between different architectural views.</div>
+            <div class="section-note">Hover over diagram elements for detailed tooltips. Use the buttons above to switch between the routing view and the full edge-to-Pod architecture.</div>
         </section>
 
         <section id="flow" class="view">
@@ -702,14 +632,9 @@
                 <h3>Service resolves backend set</h3>
                 <p>The Service points to a set of eligible backend endpoints.</p>
             </article>
-            <article class="flow-step">
-                <div class="step-number">5</div>
-                <h3>EndpointSlices provide Pod addresses</h3>
-                <p>Traffic is routed to the correct Pods behind the Service.</p>
-            </article>
 </div>
 
-            <div class="section-note">Ingress decides where traffic should go. EndpointSlices help Kubernetes know which Pod addresses actually belong to that backend.</div>
+            <div class="section-note">Ingress decides which Service should receive the request; the Service (and kube-proxy or your dataplane) forwards to healthy Pods behind it.</div>
         </section>
 
         <section id="examples" class="view">
@@ -726,7 +651,7 @@
             </section>
             <section class="example-card">
                 <div class="section-kicker">Useful Inspection Commands</div>
-                <pre><code>kubectl get ingress<br>kubectl get endpointslices<br>kubectl describe ingress &lt;name&gt;</code></pre>
+                <pre><code>kubectl get ingress<br>kubectl describe ingress &lt;name&gt;</code></pre>
             </section>
 </div>
 
@@ -788,8 +713,8 @@
                 <p>Centralize HTTPS handling instead of configuring certificates in every app.</p>
             </article>
             <article class="card practice-card">
-                <div class="card-badge">Scalable backend tracking</div>
-                <p>Use EndpointSlices to support larger backend sets cleanly.</p>
+                <div class="card-badge">Annotations for fine-tuning</div>
+                <p>Use controller-specific annotations for rate limiting, redirects, timeouts, and other edge behavior.</p>
             </article>
 </div>
 
@@ -812,9 +737,8 @@
             });
         });
 
-        // Diagram switching
         const diagramButtons = document.querySelectorAll('.diagram-btn');
-        const diagrams = document.querySelectorAll('.svg-diagram');
+        const diagrams = document.querySelectorAll('#diagram .svg-diagram');
 
         diagramButtons.forEach((button) => {
             button.addEventListener('click', () => {
@@ -826,7 +750,6 @@
             });
         });
 
-        // Tooltip functionality
         const tooltip = document.createElement('div');
         tooltip.className = 'tooltip';
         document.body.appendChild(tooltip);

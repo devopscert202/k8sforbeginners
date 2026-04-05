@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **57 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **58 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -50,7 +50,7 @@ Every lab follows a consistent format:
 
 ## Complete Lab Index
 
-Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–57)**.
+Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–58)**.
 
 | S. No | Category | Lab Name | Description | Link |
 |-------|----------|----------|-------------|------|
@@ -88,7 +88,7 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 32 | Workloads | Headlamp Kubernetes UI | Install Headlamp in-cluster with Helm, access it through port-forward, and validate Kubernetes UI workflows. | [lab32-workload-headlamp-kubernetes-ui.md](lab32-workload-headlamp-kubernetes-ui.md) |
 | 33 | Workloads | Kubernetes Dashboard (Legacy) | Legacy reference for the deprecated Dashboard UI. Prefer Lab 32 (Headlamp) for a current in-cluster UI path. | [lab33-workload-kubernetes-dashboard-legacy.md](lab33-workload-kubernetes-dashboard-legacy.md) |
 | 34 | Networking | Multi-Port Services | Create Services that expose multiple ports for applications with different endpoints. | [lab34-net-multi-port-services.md](lab34-net-multi-port-services.md) |
-| 35 | Networking | Ingress and EndpointSlices | Configure Ingress controllers for HTTP/HTTPS routing and understand EndpointSlices. | [lab35-net-ingress-endpointslices.md](lab35-net-ingress-endpointslices.md) |
+| 35 | Networking | Ingress Controllers | Configure Ingress controllers for HTTP/HTTPS routing with path-based, host-based, and TLS termination. | [lab35-net-ingress.md](lab35-net-ingress.md) |
 | 36 | Observability | Metrics Server | Install and use Metrics Server for resource usage monitoring and metrics collection. | [lab36-observe-metrics-server.md](lab36-observe-metrics-server.md) |
 | 37 | Resource Management | Resource Quotas and Limits | Set resource quotas and limits at namespace and Pod levels for resource governance. | [lab37-resmgmt-resource-quotas-limits.md](lab37-resmgmt-resource-quotas-limits.md) |
 | 38 | Storage | Basic Storage Volumes | Work with emptyDir and hostPath volumes, sharing data between containers. | [lab38-storage-basic-volumes.md](lab38-storage-basic-volumes.md) |
@@ -111,6 +111,7 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 55 | Troubleshooting | CKA Scenarios | CKA exam-style break-fix scenarios covering the 30% troubleshooting domain. | [lab55-ts-cka-scenarios.md](lab55-ts-cka-scenarios.md) |
 | 56 | Networking | CoreDNS Deep Dive | CoreDNS architecture, Corefile, plugins, DNS records, ndots, customization, and troubleshooting. | [lab56-net-coredns.md](lab56-net-coredns.md) |
 | 57 | Security | Network Policy Advanced | Pod-to-pod traffic control, ingress/egress rules, 3-tier isolation, CIDR blocks, AND vs OR logic. | [lab57-sec-network-policy-advanced.md](lab57-sec-network-policy-advanced.md) |
+| 58 | Networking | EndpointSlices | Scalable endpoint management, custom EndpointSlices for external services, and topology-aware routing. | [lab58-net-endpointslices.md](lab58-net-endpointslices.md) |
 
 ---
 
@@ -157,7 +158,7 @@ Lab 19 (PriorityClass) → Lab 20 (Taints/Tolerations)
 Understand Kubernetes networking:
 ```
 Lab 02 (Services) → Lab 34 (Multi-Port) → Lab 13 (Network Policies) →
-Lab 35 (Ingress) → Lab 45 (DNS) → Lab 44 (Gateway API) → Lab 46 (YAML recap, optional)
+Lab 35 (Ingress) → Lab 58 (EndpointSlices) → Lab 45 (DNS) → Lab 44 (Gateway API) → Lab 46 (YAML recap, optional)
 ```
 
 ### Path 7: Production Readiness
@@ -226,7 +227,8 @@ k8s/labs/
 │   ├── affinity/
 │   ├── priorityclass/
 │   └── tolerations/
-└── networking/          # Labs 34-35, 44-45
+├── troubleshooting/     # Labs 49-55
+└── networking/          # Labs 34-35, 44-45, 56, 58
 ```
 
 ---
@@ -351,7 +353,7 @@ kubectl delete namespace <namespace-name>
 
 ## Summary
 
-- **57 comprehensive labs** covering Kubernetes from basics to advanced topics
+- **58 comprehensive labs** covering Kubernetes from basics to advanced topics
 - **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced, Tools, Troubleshooting
 - **8 curated learning paths** for different goals and experience levels
 - **Complete cross-references** between related labs
@@ -365,7 +367,7 @@ kubectl delete namespace <namespace-name>
 **Happy Learning!**
 
 *Last Updated: March 29, 2026*
-*Total Labs: 57*
+*Total Labs: 58*
 *Kubernetes Compatibility: 1.24+ (with K8s 1.25-1.28+ advanced features)*
 
 For questions, issues, or contributions, please submit a Pull Request or open an issue in the repository.
