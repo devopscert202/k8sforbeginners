@@ -11,27 +11,36 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             padding: 20px;
-            line-height: 1.4;
+            line-height: 1.6;
+            color: var(--slate-900);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1380px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
         }
 
         h1 {
             text-align: center;
-            color: #2d3748;
+            color: var(--blue);
             margin-bottom: 10px;
-            font-size: 28px;
+            font-size: 1.6rem;
         }
 
         .subtitle {
@@ -241,15 +250,6 @@
             color: #064e3b;
             font-size: 13px;
             line-height: 1.6;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid #e2e8f0;
-            color: #718096;
-            font-size: 12px;
         }
 
         @media print {
@@ -503,10 +503,7 @@ kubectl get nodes -o wide</code></pre>
             </ul>
         </div>
 
-        <div class="footer">
-            <p><strong>Click on the numbered circles above to toggle command details</strong></p>
-            <p>Kubernetes Component Upgrade Order Guide | For k8sforbeginners</p>
-        </div>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
 
     <script>

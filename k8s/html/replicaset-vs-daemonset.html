@@ -8,26 +8,28 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
-      --navy: #0f172a; --blue: #1d4ed8; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --navy: #0f172a; --blue: #2563eb; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
     }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(29,78,216,.1), transparent 24%),
-        radial-gradient(circle at top right, rgba(109,40,217,.08), transparent 22%),
-        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
-      color: var(--ink); line-height: 1.55; padding: 24px;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--slate-900); line-height: 1.55; padding: 20px;
     }
-    .page { max-width: 1420px; margin: 0 auto; }
+    .page { max-width: 1380px; margin: 0 auto; }
     .hero {
       background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
-      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); margin-bottom: 24px;
     }
     .eyebrow {
       display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
       font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
     }
-    h1 { font-size: 2.4rem; line-height: 1.12; margin-bottom: 12px; }
+    h1 { font-size: 1.6rem; line-height: 1.12; margin-bottom: 12px; color: var(--blue); }
+    .hero h1 { color: #fff; }
     .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
     .hero-grid, .stats, .compare-grid, .lane, .mapping-grid, .steps-grid, .command-grid, .qa-grid { display: grid; gap: 16px; }
     .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
@@ -104,7 +106,7 @@
     @media (max-width: 700px) {
       body { padding: 14px; }
       .hero, .panel { padding: 18px; }
-      h1 { font-size: 1.85rem; }
+      h1 { font-size: 1.6rem; }
     }
   </style>
 </head>
@@ -389,6 +391,7 @@ spec:
         <div class="qa-card"><h3>What is the easiest memory trick?</h3><p>ReplicaSet equals replicas of an app. DaemonSet equals daemon on each node.</p></div>
       </div>
     </section>
+    <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
   </div>
 
   <script>

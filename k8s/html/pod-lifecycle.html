@@ -11,16 +11,24 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #f5f6fa;
-            color: #1a1a2e;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--slate-900);
             padding: 20px;
             line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1380px;
             margin: 0 auto;
         }
 
@@ -30,15 +38,15 @@
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            color: #326CE5;
+            color: var(--blue);
             margin-bottom: 8px;
         }
 
         .subtitle {
             font-size: 1rem;
-            color: #64748b;
+            color: var(--slate-500);
             font-weight: 400;
             margin-bottom: 20px;
         }
@@ -1244,6 +1252,7 @@ kubectl get events --field-selector involvedObject.name=&lt;pod-name&gt;
 
         <!-- Tooltip Element -->
         <div class="tooltip" id="tooltip"></div>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
 
     <script>

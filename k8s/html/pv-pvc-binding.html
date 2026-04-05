@@ -11,28 +11,37 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
-            padding: 15px;
-            line-height: 1.4;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--slate-900);
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1380px;
             margin: 0 auto;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
             padding: 20px;
         }
 
         h1 {
             text-align: center;
-            color: #2c3e50;
+            color: var(--blue);
             margin-bottom: 15px;
-            font-size: 26px;
-            border-bottom: 3px solid #3498db;
+            font-size: 1.6rem;
+            border-bottom: 3px solid var(--blue);
             padding-bottom: 10px;
         }
 
@@ -573,6 +582,7 @@ spec:
                 <strong>Verification:</strong> Check PVC binding: <code>kubectl get pvc</code> (Status: Bound). Check PV: <code>kubectl get pv</code>. Verify Pod volume mount: <code>kubectl exec -it &lt;pod&gt; -- ls /data</code>
             </div>
         </div>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
 
     <script>

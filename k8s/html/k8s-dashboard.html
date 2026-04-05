@@ -6,19 +6,23 @@
     <title>Kubernetes Dashboard - Interactive Guide</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
         body {
             font-family: "Segoe UI", system-ui, sans-serif;
-            background:
-                radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 28%),
-                radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 26%),
-                linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-            color: #0f172a;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--slate-900);
             padding: 20px;
             line-height: 1.6;
         }
-        .container { max-width: 1320px; margin: 0 auto; }
+        .container { max-width: 1380px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 28px; }
-        h1 { font-size: 2rem; color: #2563eb; margin-bottom: 8px; }
+        h1 { font-size: 1.6rem; color: var(--blue); margin-bottom: 8px; }
         .subtitle { max-width: 850px; margin: 0 auto; color: #64748b; }
         .controls { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
         .btn {
@@ -345,6 +349,7 @@ kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy
                 </div>
             </div>
         </div>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
     <script>
         function showView(name, button) {

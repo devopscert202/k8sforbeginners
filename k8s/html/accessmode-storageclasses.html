@@ -11,7 +11,11 @@
             box-sizing: border-box;
         }
         :root {
-            --blue: #326ce5;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
             --blue-deep: #1d4ed8;
             --ink: #0f172a;
             --muted: #64748b;
@@ -22,7 +26,7 @@
         }
         body {
             font-family: "Segoe UI", system-ui, sans-serif;
-            background: var(--bg);
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             color: var(--ink);
             line-height: 1.6;
             padding: 20px;
@@ -303,6 +307,7 @@ spec:
                 </article>
             </div>
         </section>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
     <script>
         function showView(view, button) {

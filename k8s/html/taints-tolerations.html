@@ -11,27 +11,36 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px;
-            line-height: 1.4;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--slate-900);
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1380px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
         }
 
         h1 {
-            color: #2c3e50;
+            color: var(--blue);
             text-align: center;
             margin-bottom: 8px;
-            font-size: 28px;
+            font-size: 1.6rem;
         }
 
         .subtitle {
@@ -633,6 +642,7 @@ spec:
                 </div>
             </div>
         </div>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
 
     <script>

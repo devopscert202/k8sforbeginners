@@ -11,29 +11,37 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             padding: 20px;
-            line-height: 1.4;
+            line-height: 1.6;
+            color: var(--slate-900);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1380px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
             padding: 25px;
         }
 
         h1 {
             text-align: center;
-            color: #2d3748;
-            font-size: 26px;
+            color: var(--blue);
+            font-size: 1.6rem;
             margin-bottom: 8px;
             padding-bottom: 8px;
-            border-bottom: 3px solid #667eea;
         }
 
         .subtitle {
@@ -241,15 +249,6 @@
 
         .phase-content.collapsed {
             display: none;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #e2e8f0;
-            font-size: 12px;
-            color: #718096;
         }
 
         @media print {
@@ -937,12 +936,7 @@ kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</pre>
             </div>
         </div>
 
-        <div class="footer">
-            <strong>Kubernetes Upgrade Sequence</strong> |
-            Always backup before upgrading |
-            Upgrade one minor version at a time |
-            Control plane must be upgraded first
-        </div>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
 
     <script>

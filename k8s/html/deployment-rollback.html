@@ -11,38 +11,50 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8ebf0 100%);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             padding: 20px;
             line-height: 1.6;
-            color: #333;
+            color: var(--slate-900);
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1380px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #326ce5 0%, #1a4d99 100%);
-            color: white;
-            padding: 40px 30px;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 18px 24px;
             text-align: center;
+            border: 1px solid rgba(37, 99, 235, 0.10);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+            margin-bottom: 22px;
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 1.6rem;
+            color: var(--blue);
             margin-bottom: 10px;
         }
 
         .header p {
             font-size: 1.1em;
-            opacity: 0.95;
+            color: var(--slate-500);
             margin-top: 10px;
         }
 
@@ -1942,6 +1954,7 @@ apache-deployment-5d4f6b7c8d    0         0         0       10m   # v2 (inactive
                 </div>
             </div>
         </div>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
 
     <!-- Tooltip Element -->

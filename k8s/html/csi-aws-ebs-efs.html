@@ -6,13 +6,20 @@
     <title>CSI, AWS EBS, and EFS - Interactive Guide</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Segoe UI", system-ui, sans-serif; background: #f5f7fb; color: #0f172a; line-height: 1.6; padding: 20px; }
-        .container { max-width: 1360px; margin: 0 auto; }
-        .hero, .view { background: #fff; border: 1px solid rgba(50,108,229,.12); border-radius: 18px; box-shadow: 0 8px 28px rgba(15,23,42,.08); }
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+        body { font-family: "Segoe UI", system-ui, sans-serif; background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%); color: var(--slate-900); line-height: 1.6; padding: 20px; }
+        .container { max-width: 1380px; margin: 0 auto; }
+        .hero, .view { background: #fff; border: 1px solid rgba(50,108,229,.12); border-radius: 18px; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); }
         .hero { padding: 32px; text-align: center; margin-bottom: 24px; }
         .eyebrow { display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 6px 12px; border-radius: 999px; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
-        h1 { color: #326ce5; margin-bottom: 10px; font-size: clamp(2rem, 4vw, 2.8rem); }
-        .subtitle { max-width: 980px; margin: 0 auto 18px; color: #64748b; }
+        h1 { color: var(--blue); margin-bottom: 10px; font-size: 1.6rem; }
+        .subtitle { max-width: 980px; margin: 0 auto 18px; color: var(--slate-500); }
         .lead, .note { background: #eff6ff; border-left: 4px solid #326ce5; color: #1e3a8a; border-radius: 12px; padding: 14px 16px; }
         .lead { max-width: 980px; margin: 0 auto; }
         .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
@@ -144,6 +151,7 @@ spec:
                 <article class="card"><h3>Cloud storage teaching path</h3><p>Explain storage as: Pod -> PVC -> StorageClass -> CSI driver -> cloud volume -> mounted filesystem path.</p></article>
             </div>
         </section>
+        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
     </div>
 
     <script>

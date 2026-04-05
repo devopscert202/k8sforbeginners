@@ -9,25 +9,27 @@
     :root {
       --bg: #f4f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d9e2ef;
       --blue: #2563eb; --cyan: #0891b2; --teal: #0f766e; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
     }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(37,99,235,.1), transparent 26%),
-        radial-gradient(circle at top right, rgba(8,145,178,.1), transparent 26%),
-        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
-      color: var(--ink); padding: 24px; line-height: 1.55;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--slate-900); padding: 20px; line-height: 1.55;
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
       background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #0891b2 100%);
-      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); margin-bottom: 24px;
     }
     .eyebrow {
       display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
       font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
     }
-    h1 { font-size: 2.45rem; margin-bottom: 12px; line-height: 1.15; }
+    h1 { font-size: 1.6rem; margin-bottom: 12px; line-height: 1.15; color: var(--blue); }
+    .hero h1 { color: #fff; }
     .hero p { max-width: 940px; color: rgba(255,255,255,.88); font-size: 1rem; }
     .hero-grid, .stats, .layout, .artifacts, .command-grid, .test-grid, .details-grid { display: grid; gap: 16px; }
     .hero-grid { grid-template-columns: 1.3fr 1fr; margin-top: 22px; }
@@ -82,7 +84,7 @@
     .note h3, .note p { color: #8a4b08; }
     @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 1100px) { .hero-grid, .layout, .stats, .artifacts, .command-grid, .test-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.85rem; } .flow-line { margin-left: 8px; padding-left: 20px; } .step-card::before { left: -30px; } }
+    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.6rem; } .flow-line { margin-left: 8px; padding-left: 20px; } .step-card::before { left: -30px; } }
   </style>
 </head>
 <body>
@@ -342,6 +344,7 @@ kubectl create deployment test --image=docker.io/httpd -n role</pre></div>
         <p>This walkthrough demonstrates classic X.509 client-certificate authentication. In many enterprises, human users are integrated through OIDC or a webhook-backed identity layer, while certificates remain common for admin access, cluster bootstrap, or automation.</p>
       </div>
     </section>
+    <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
   </div>
 
   <script>

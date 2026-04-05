@@ -15,40 +15,32 @@
       --navy: #0f172a;
       --teal: #0f766e;
       --sky: #0284c7;
-      --blue: #1d4ed8;
+      --blue: #2563eb;
       --green: #15803d;
       --amber: #b45309;
       --rose: #be123c;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
     }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(2,132,199,.12), transparent 24%),
-        radial-gradient(circle at top right, rgba(21,128,61,.10), transparent 22%),
-        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
-      color: var(--ink);
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--slate-900);
       line-height: 1.58;
-      padding: 24px;
+      padding: 20px;
     }
-    .page { max-width: 1420px; margin: 0 auto; }
+    .page { max-width: 1380px; margin: 0 auto; }
     .hero {
       background: linear-gradient(135deg, #0f172a 0%, #0f766e 42%, #0284c7 100%);
       color: white;
       border-radius: 28px;
       padding: 32px;
-      box-shadow: 0 24px 64px rgba(15,23,42,.18);
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
       margin-bottom: 24px;
       overflow: hidden;
       position: relative;
-    }
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: auto -60px -60px auto;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,.18), rgba(255,255,255,0));
     }
     .eyebrow {
       display: inline-block;
@@ -61,7 +53,8 @@
       text-transform: uppercase;
       margin-bottom: 14px;
     }
-    h1 { font-size: 2.45rem; line-height: 1.08; margin-bottom: 12px; max-width: 860px; }
+    h1 { font-size: 1.6rem; line-height: 1.08; margin-bottom: 12px; max-width: 860px; color: var(--blue); }
+    .hero h1 { color: #fff; }
     .hero p { color: rgba(255,255,255,.9); max-width: 980px; }
     .hero-grid, .stats, .grid-3, .grid-2, .timeline, .command-grid { display: grid; gap: 16px; }
     .hero-grid { grid-template-columns: 1.15fr .95fr; margin-top: 24px; }
@@ -181,7 +174,7 @@
     @media (max-width: 700px) {
       body { padding: 14px; }
       .hero, .panel { padding: 18px; }
-      h1 { font-size: 1.85rem; }
+      h1 { font-size: 1.6rem; }
     }
   </style>
 </head>
@@ -337,7 +330,7 @@ nodes:
       </div>
     </section>
 
-    <div class="footer-note">Self-contained HTML for offline viewing, demos, and quick repository walkthroughs.</div>
+    <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
   </div>
 
   <script>
