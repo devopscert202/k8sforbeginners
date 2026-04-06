@@ -22,6 +22,7 @@
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
+            position: relative;
       text-align: center;
       background: white;
       border-radius: 16px;
@@ -111,6 +112,7 @@
 <body>
   <div class="page">
     <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Corporate LDAP / Active Directory to Kubernetes RBAC Flow</h1>
       <p>This architecture page shows a practical proof-of-concept for enterprise Kubernetes RBAC using corporate LDAP or Active Directory. The recommended pattern is LDAP-backed identity into an OIDC broker such as Keycloak or Dex, then group claims into the Kubernetes API server, then namespace-aware RBAC with `RoleBinding` and `ClusterRoleBinding`.</p>
     </section>
@@ -418,8 +420,7 @@ kubectl get pods -n prod</pre></div>
         <p>If the exercise is for human enterprise users, an OIDC bridge is usually the cleanest pattern. Direct client certificates for every employee do not scale well for joiner-mover-leaver processes, group management, or self-service governance.</p>
       </div>
     </section>
-        <p class="footer-note">k8sforbeginners — Corporate LDAP / Active Directory to Kubernetes RBAC Flow — <a href="index.html">Back to catalog</a></p>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

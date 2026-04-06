@@ -35,6 +35,7 @@
         }
         .container { max-width: 1380px; margin: 0 auto; }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -176,6 +177,7 @@
 <body>
     <div class="container">
         <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Affinity and Anti-Affinity</h1>
             <p class="subtitle">Control where Pods land in your cluster — attract them to specific nodes, co-locate them with other Pods, or spread them apart for high availability.</p>
             <div class="lead-panel">
@@ -802,8 +804,7 @@ spec:
                 </article>
             </div>
         </section>
-                <p class="footer-note">k8sforbeginners — Affinity and Anti-Affinity — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <script>
         document.getElementById('main-tabs').addEventListener('click', function(e) {

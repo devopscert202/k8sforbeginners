@@ -33,6 +33,7 @@
         }
         .container { max-width: 1380px; margin: 0 auto; }
         .hero {
+            position: relative;
             text-align: center;
             margin-bottom: 30px;
             background: white;
@@ -242,11 +243,30 @@
             .hero, .panel { padding: 22px; }
             h1 { font-size: 1.8rem; }
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Ubuntu Linux Cheat Sheet</h1>
             <p class="subtitle">An interactive quick-grasp guide for file system work, users and permissions, services and logs, package management, shell history, and the Linux skills that show up constantly in Kubernetes labs.</p>
             <div class="lead">
@@ -889,9 +909,7 @@ free -h</code></pre>
                 Linux skills do not replace Kubernetes concepts, but they remove a lot of friction. If you can comfortably inspect files, services, logs, permissions, packages, and host resources, most Kubernetes labs become far easier to debug and explain.
             </div>
         </section>
-
-        <p class="footer-note">k8sforbeginners — Ubuntu Linux Cheat Sheet — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <script>
         const buttons = document.querySelectorAll('.btn');

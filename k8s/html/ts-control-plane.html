@@ -39,6 +39,7 @@
     .container { max-width: 1380px; margin: 0 auto; }
 
     .hero {
+            position: relative;
       text-align: center;
       background: white;
       border-radius: 16px;
@@ -231,6 +232,7 @@
 <body>
   <div class="container">
     <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Kubernetes Control Plane Troubleshooting</h1>
       <p class="subtitle">Interactive guide: architecture, symptoms, checks, and recovery paths for API Server, Scheduler, Controller Manager, and etcd.</p>
     </header>
@@ -495,9 +497,7 @@ Pods Ready/Probe issues?
         </ul>
       </div>
     </section>
-
-    <p class="footer-note">k8sforbeginners — Kubernetes Control Plane Troubleshooting — <a href="index.html">Back to catalog</a></p>
-  </div>
+</div>
 
   <script>
     (function () {

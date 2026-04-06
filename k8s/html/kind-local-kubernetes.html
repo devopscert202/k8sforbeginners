@@ -36,6 +36,7 @@
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
+            position: relative;
       text-align: center;
       background: white;
       border-radius: 16px;
@@ -186,6 +187,7 @@
 <body>
   <div class="page">
     <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Run Kubernetes Locally with Kind for Learning and Fast Experimentation</h1>
       <p>Kind makes it easy to spin up a real Kubernetes cluster on a laptop by running nodes as containers. This guide focuses on the best beginner path: understand what Kind is, where it fits, how to install it, how to create a multi-node cluster, and why it should be recommended for learning rather than production.</p>
     </section>
@@ -334,9 +336,7 @@ nodes:
         <div class="tile"><h3>The environment is disposable</h3><p>You can delete and recreate the cluster without complicated teardown work.</p></div>
       </div>
     </section>
-
-    <p class="footer-note">k8sforbeginners — Local Kubernetes with Kind — <a href="index.html">Back to catalog</a></p>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

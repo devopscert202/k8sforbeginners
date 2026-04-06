@@ -22,6 +22,7 @@
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
+            position: relative;
       text-align: center;
       background: white;
       border-radius: 16px;
@@ -111,6 +112,7 @@
 <body>
   <div class="page">
     <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Headlamp UI on a 3-Node Kubernetes VM Cluster</h1>
       <p>Headlamp provides a current web UI path for Kubernetes clusters. This document covers the official in-cluster installation path from the archived Dashboard background through Helm install, service exposure, token-based access, UI validation, and the next production-ready access model.</p>
     </section>
@@ -399,8 +401,7 @@ kubectl logs deployment/headlamp -n kube-system</pre></div>
         <div class="namespace-card"><span class="token cluster">Direction</span><h3>Production next step is clear</h3><p>The temporary access model is understood, and ingress plus OIDC is identified as the better production architecture.</p></div>
       </div>
     </section>
-    <p class="footer-note">k8sforbeginners — Headlamp UI (3-node cluster) — <a href="index.html">Back to catalog</a></p>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

@@ -39,6 +39,7 @@
     .container { max-width: 1380px; margin: 0 auto; }
 
     .hero {
+            position: relative;
       text-align: center;
       background: white;
       border-radius: 16px;
@@ -258,6 +259,7 @@
 <body>
   <div class="container">
     <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>CKA Troubleshooting Scenarios</h1>
       <p class="subtitle">CKA Troubleshooting Domain — 30% of the exam</p>
     </header>
@@ -697,9 +699,7 @@ rules:
     <div class="tip-bar" role="note">
       <strong>Exam tip:</strong> For troubleshooting items, start from symptoms → <code>kubectl describe</code> / events → narrow to one component (kubelet, DNS, scheduler, storage, policy, RBAC). Write the minimal fix command or manifest edit the question asks for.
     </div>
-
-    <p class="footer-note">k8sforbeginners — CKA Troubleshooting Scenarios — <a href="index.html">Back to catalog</a></p>
-  </div>
+</div>
 
   <script>
     (function () {

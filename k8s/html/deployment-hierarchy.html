@@ -44,6 +44,7 @@
         }
 
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -588,11 +589,30 @@
         .pulse {
             animation: pulse 2s ease-in-out infinite;
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Deployment → ReplicaSet → Pod Hierarchy</h1>
             <p class="subtitle">Understanding Kubernetes workload management - Hover over components for details</p>
         </header>
@@ -1146,8 +1166,7 @@ kubectl get replicasets
 <span class="yaml-comment"># nginx-deployment-8f9d6c4b21   2         2         2     # New</span></div>
             </div>
         </div>
-        <p class="footer-note">k8sforbeginners — Deployment → ReplicaSet → Pod Hierarchy — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <script>
         function showView(view) {

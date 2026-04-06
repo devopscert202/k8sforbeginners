@@ -22,6 +22,7 @@
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
+            position: relative;
       text-align: center;
       background: white;
       border-radius: 16px;
@@ -112,6 +113,7 @@
 <body>
   <div class="page">
     <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Kubernetes User Certificate to RBAC Test Flow</h1>
       <p>This page visualizes the RBAC client-certificate flow as a lab runbook: create the namespace, generate user certificates, bind the Role, wire the certificate into kubeconfig, switch context, confirm the namespace, and test both allowed and forbidden operations. See <a href="../../docs/security/rbac-concepts.md" style="color:#1d4ed8;font-weight:600;">RBAC Concepts</a> for the full reference.</p>
     </section>
@@ -366,8 +368,7 @@ kubectl create deployment test --image=docker.io/httpd -n role</pre></div>
         <p>This walkthrough demonstrates classic X.509 client-certificate authentication. In many enterprises, human users are integrated through OIDC or a webhook-backed identity layer, while certificates remain common for admin access, cluster bootstrap, or automation.</p>
       </div>
     </section>
-        <p class="footer-note">k8sforbeginners — Kubernetes User Certificate to RBAC Test Flow — <a href="index.html">Back to catalog</a></p>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

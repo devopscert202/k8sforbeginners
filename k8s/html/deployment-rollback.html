@@ -44,6 +44,7 @@
         }
 
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -761,11 +762,30 @@
                 left: 30px;
             }
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Kubernetes Deployment Rollback</h1>
             <p class="subtitle">Understanding how Kubernetes handles rollbacks and revision history</p>
         </header>
@@ -1984,8 +2004,7 @@ apache-deployment-5d4f6b7c8d    0         0         0       10m   # v2 (inactive
                 </div>
             </div>
         </div>
-        <p class="footer-note">k8sforbeginners — Kubernetes Deployment Rollback — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <!-- Tooltip Element -->
     <div class="tooltip" id="tooltip"></div>

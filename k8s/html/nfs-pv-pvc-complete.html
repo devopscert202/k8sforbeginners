@@ -43,6 +43,7 @@
             box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
         }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -191,11 +192,30 @@
         }
         .footer-note a { color: #326CE5; text-decoration: none; }
         .footer-note a:hover { text-decoration: underline; }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>NFS with PV and PVC</h1>
             <p class="subtitle">Use an NFS server with Kubernetes persistent volumes to provide shared storage across Pods and nodes.</p>
             <div class="lead">NFS is one of the clearest ways to teach shared Kubernetes storage because many Pods can mount the same directory, even when they run on different nodes.</div>
@@ -337,8 +357,7 @@ spec:
                 </article>
             </div>
         </section>
-        <p class="footer-note">k8sforbeginners — NFS with PV and PVC — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
     <script>
         function showView(view, button) {
             document.querySelectorAll('.view').forEach((section) => section.classList.remove('active'));

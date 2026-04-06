@@ -43,6 +43,7 @@
             box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
         }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -196,6 +197,7 @@
 <body>
     <div class="container">
         <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Access Modes and StorageClasses</h1>
             <p class="subtitle">Understand RWO, ROX, RWX, RWOP, and how manual StorageClasses behave in bare-metal and non-cloud Kubernetes clusters.</p>
             <div class="lead">Access mode describes how a volume may be mounted. StorageClass describes how storage should be provisioned and bound. They complement each other, but they are not the same thing.</div>
@@ -321,8 +323,7 @@ spec:
                 </article>
             </div>
         </section>
-                <p class="footer-note">k8sforbeginners — Access Modes and StorageClasses — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
     <script>
         function showView(view, button) {
             document.querySelectorAll('.view').forEach((section) => section.classList.remove('active'));

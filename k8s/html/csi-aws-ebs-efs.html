@@ -17,6 +17,7 @@
         .container { max-width: 1380px; margin: 0 auto; }
         .hero, .view { background: #fff; border: 1px solid rgba(50,108,229,.12); border-radius: 18px; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -56,11 +57,30 @@
         }
         .footer-note a { color: #326CE5; text-decoration: none; }
         .footer-note a:hover { text-decoration: underline; }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>CSI, AWS EBS, and EFS</h1>
             <p class="subtitle">Understand how Kubernetes uses CSI drivers to provision cloud storage, how PVCs trigger AWS volumes, and when to choose EBS versus EFS.</p>
             <div class="lead">Pods do not call AWS storage APIs directly. A Pod uses a PVC, the PVC references a StorageClass, Kubernetes asks a CSI driver to create or attach real cloud storage, and the Pod finally mounts that storage as a filesystem path.</div>
@@ -166,8 +186,7 @@ spec:
                 <article class="card"><h3>Cloud storage teaching path</h3><p>Explain storage as: Pod -> PVC -> StorageClass -> CSI driver -> cloud volume -> mounted filesystem path.</p></article>
             </div>
         </section>
-        <p class="footer-note">k8sforbeginners — CSI, AWS EBS, and EFS — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <script>
         function showView(view, button) {

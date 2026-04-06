@@ -39,6 +39,7 @@
         .container { max-width: 1380px; margin: 0 auto; }
 
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -198,11 +199,30 @@
             .btn { flex: 1 1 calc(50% - 8px); text-align: center; min-width: 140px; }
             .view { padding: 18px 16px; }
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Kubernetes Troubleshooting Commands</h1>
             <p class="subtitle">Interactive cheat sheet: copy-ready <code style="background:var(--sky);padding:2px 6px;border-radius:4px;font-size:0.88em;">kubectl</code>, node, and etcd commands with quick “when to use” guidance.</p>
         </header>
@@ -688,9 +708,7 @@ journalctl -u containerd</pre>
                 <p class="when"><strong>When to use:</strong> kubectl log streaming breaks or apiserver is down—tail files directly with elevated access.</p>
             </div>
         </section>
-
-        <p class="footer-note">k8sforbeginners — Kubernetes Troubleshooting Commands — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <script>
         (function () {

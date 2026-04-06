@@ -36,6 +36,7 @@
             margin: 0 auto;
         }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -360,11 +361,30 @@
             .hero, .view { padding: 22px; }
             .controls { justify-content: flex-start; }
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Services Deep Dive</h1>
             <p class="subtitle">Interactive guide to selectors, stable service identities, endpoint membership, and NodePort / LoadBalancer exposure.</p>
             <div class="lead-panel">
@@ -841,9 +861,7 @@
 </div>
 
         </section>
-
-                <p class="footer-note">k8sforbeginners — Services Deep Dive — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <script>
         const buttons = document.querySelectorAll('.btn');

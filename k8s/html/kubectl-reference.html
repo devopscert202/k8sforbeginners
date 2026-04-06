@@ -34,6 +34,7 @@
         }
         .container { max-width: 1380px; margin: 0 auto; }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -283,11 +284,30 @@
             .controls { justify-content: flex-start; }
         }
 
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>kubectl Command Reference</h1>
             <p class="subtitle">Comprehensive, copy-ready kubectl patterns: everyday operations, output filters, ergonomics, patching, debugging, and lab cross-links.</p>
             <div class="lead-panel">
@@ -1581,10 +1601,6 @@ kubectl run shell --rm -it --image=busybox:1.36 --restart=Never -- sh</code></pr
             <div class="section-note">For complete step-by-step instructions, see <strong>Lab 62: Advanced kubectl Patterns</strong> (<code>k8s/labmanuals/lab62-basics-kubectl-advanced.md</code>) — this page is a quick reference companion.</div>
             <p style="margin-top:16px;color:#64748b;font-size:0.92rem;">Tip: keep this page beside your terminal — each <code>pre</code> block is plain text you can copy. Swap in your namespaces, object names, and file paths; double-check deletes on shared clusters.</p>
         </section>
-
-
-        <p class="footer-note">Kubernetes Interactive Learning — kubectl Reference — <a href="index.html">Back to catalog</a></p>
-        <p class="footer-note" style="margin-top:10px;">Flags and defaults change between kubectl releases — run <code>kubectl options</code> and <code>kubectl &lt;command&gt; -h</code> on your workstation for authoritative help.</p>
     </div>
 
     <script>

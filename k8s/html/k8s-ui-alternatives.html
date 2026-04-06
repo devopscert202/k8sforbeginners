@@ -22,6 +22,7 @@
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
+            position: relative;
       text-align: center;
       background: white;
       border-radius: 16px;
@@ -110,6 +111,7 @@
 <body>
   <div class="page">
     <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Kubernetes Dashboard Alternatives</h1>
       <p>Kubernetes teams do not all need the same kind of interface. Some need a shared browser-based UI, some need a local desktop application, and some prefer a terminal-first workflow. This document compares Headlamp Web, Headlamp Desktop, FreeLens, Portainer, and K9s.</p>
     </section>
@@ -428,8 +430,7 @@
         <p>Kubernetes Dashboard is now legacy context. For current Kubernetes-focused UI access, Headlamp is the strongest default path here. For desktop-first usage, Headlamp Desktop and FreeLens are strong options. For terminal-first workflows, K9s remains a strong companion. For broader container platform control, Portainer is the wider operational choice.</p>
       </div>
     </section>
-        <p class="footer-note">k8sforbeginners — Kubernetes Dashboard Alternatives — <a href="index.html">Back to catalog</a></p>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

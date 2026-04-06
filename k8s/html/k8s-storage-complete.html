@@ -35,6 +35,7 @@
             box-shadow: 0 8px 28px rgba(15,23,42,0.08);
         }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -130,6 +131,7 @@
 <body>
     <div class="container">
         <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
 <h1>Kubernetes Storage Overview</h1>
             <p class="subtitle">Interactive summary of ephemeral and persistent storage, PV and PVC binding, StorageClasses, CSI, snapshots, and shared-storage design choices.</p>
             <div class="lead">Kubernetes storage is a layered model: Pod-scoped volumes, cluster-scoped persistent resources, and backend-specific provisioning. The best storage choice starts with workload lifecycle and access requirements rather than vendor preference.</div>
@@ -223,8 +225,7 @@ spec:
                 <article class="practice"><h3>Recovery planning</h3><p>Decide on reclaim, cleanup, backup, and snapshot strategy before the first application depends on the volume.</p></article>
             </div>
         </section>
-                <p class="footer-note">k8sforbeginners — Kubernetes Storage Overview — <a href="index.html">Back to catalog</a></p>
-    </div>
+</div>
 
     <script>
         function showView(view, button) {
