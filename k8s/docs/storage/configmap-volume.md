@@ -3,6 +3,8 @@
 ## Overview
 Kubernetes ConfigMaps store configuration data as key-value pairs and decouple configuration from container images. Mounting a ConfigMap as a **volume** exposes each key as a file under a directory you choose, so applications can read settings like ordinary files. When the ConfigMap is updated, kubelet syncs projected files over time (behavior depends on kubelet sync and how the app reloads config).
 
+> **Concepts:** For ConfigMap creation, environment variable injection, and general use cases, see [ConfigMaps](../workloads/configmap.md).
+
 ## Concept
 A ConfigMap mounted as a volume maps **keys to filenames** and **values to file contents**. Multiple containers in a Pod can mount the same ConfigMap. This complements other consumption patterns (environment variables, `envFrom`, or the `subPath` field for a single file).
 

@@ -132,25 +132,9 @@ Services use **selectors** to associate with Pods dynamically. When Pods are rep
 
 ### **4.1 DNS for Services and Pods**
 
-The Kubernetes DNS system automatically creates DNS records for Services and Pods, enabling simpler and consistent connectivity.
+After Services give you stable cluster IPs, **cluster DNS** (typically CoreDNS) publishes names so clients can resolve Services (for example `service-name.namespace.svc.cluster.local`) instead of hardcoding addresses. Pod DNS naming is also available when the cluster is configured for it.
 
-#### Features:
-- **Service DNS**: `service-name.namespace.svc.cluster.local`
-- **Pod DNS**: Optional, enabled with a specific feature flag.
-
-#### Example:
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: example
-spec:
-  clusterIP: None
-  ports:
-  - port: 80
-```
-
-Clients can use `example.default.svc.cluster.local` to connect.
+For a comprehensive guide, see [DNS policy and Kubernetes DNS](./dnspolicy-k8s.md).
 
 ---
 
@@ -158,51 +142,17 @@ Clients can use `example.default.svc.cluster.local` to connect.
 
 ### **5.1 EndpointSlices**
 
-When you create a Service with a selector, Kubernetes needs to track which Pods are healthy and ready to receive traffic. **EndpointSlices** (`discovery.k8s.io/v1`) are the API objects that store those backend addresses — the IP:port pairs of every matching Pod. Think of the Service as a published phone number and EndpointSlices as the directory of actual phones that ring.
+For Services with selectors, the control plane must track which Pod backends are ready; **EndpointSlices** (`discovery.k8s.io/v1`) store those IP:port endpoints in chunks the API server and **kube-proxy** can update efficiently, replacing the older monolithic Endpoints object at scale.
 
-The **EndpointSlice controller** (part of kube-controller-manager) creates and updates slices automatically. **kube-proxy** reads them to program iptables/IPVS rules on every node.
-
-EndpointSlices replaced the older, monolithic **Endpoints** object which stored all backends in a single resource. For large Services (100+ Pods), that single object caused full-replacement updates on every Pod change, creating API churn and "watch storms."
-
-#### Key features:
-- **Chunked for scale** — max 100 endpoints per slice; additional slices created automatically.
-- **Partial updates** — only the changed slice is transmitted, reducing API server and network load.
-- **Topology metadata** — each endpoint carries `zone`, `nodeName`, and `hints` for topology-aware routing.
-- **Dual-stack** — separate slices per address family (IPv4 / IPv6).
-- **Custom slices** — manually create EndpointSlices for Services without selectors (external databases, legacy APIs).
-
-For a deeper dive, see [EndpointSlices](endpointslices.md).
+For a comprehensive guide, see [EndpointSlices](./endpointslices.md).
 
 ---
 
 ### **5.2 Ingress and Ingress Controllers**
-**Ingress**:
-- Manages HTTP and HTTPS traffic to cluster applications.
-- Rules define how traffic is routed to Services.
 
-**Ingress Controllers**:
-- Examples: NGINX, Traefik, HAProxy.
-- Required for Ingress functionality.
+**Ingress** resources describe HTTP and HTTPS routing (hostnames, paths, TLS) from outside the cluster to cluster **Services**; they only take effect when an **Ingress controller** (for example NGINX, Traefik, or HAProxy) is installed to reconcile those rules into real load balancing and proxy configuration.
 
-#### Example:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: web-ingress
-spec:
-  rules:
-  - host: example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: web-service
-            port:
-              number: 80
-```
+For a comprehensive guide, see [Ingress controllers](./ingresscontroller.md).
 
 ---
 

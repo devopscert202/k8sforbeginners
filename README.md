@@ -219,7 +219,7 @@ k8s/labs/
 #### Conceptual Deep Dives
 - **[Observability Basics](k8s/docs/workloads/observability-basics.md)** - Metrics, Logs, Traces with Prometheus/Grafana
 - **[Storage Guide](k8s/docs/storage/k8s-storage-complete.md)** - Volumes, PV/PVC, StorageClass deep-dive
-- **[Scheduling Concepts](k8s/docs/scheduling/scheduling-concepts.md)** - How the K8s scheduler works
+- **[Scheduling Guide](k8s/docs/scheduling/scheduling-practical-guide.md)** - How the K8s scheduler works (concepts and practice)
 - **[Network Policies](k8s/docs/security/networkpolicy.md)** - Securing pod communication
 
 #### Operations Guides

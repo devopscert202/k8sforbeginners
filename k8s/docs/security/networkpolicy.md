@@ -4,6 +4,8 @@ This document introduces **Kubernetes NetworkPolicy**: what it controls, when to
 
 ---
 
+> **Related:** [Namespace-Scoped Network Isolation](./networkpolicy-namespace.md) | [Kubernetes Hardening Guide](./k8s-hardening.md) (includes NetworkPolicy in the hardening checklist)
+
 ### **What is a NetworkPolicy?**
 
 A **NetworkPolicy** defines rules for **ingress** and/or **egress** for Pods that match a `podSelector` (and optional `namespaceSelector`). By default, Kubernetes does not restrict Pod-to-Pod traffic; without policies, traffic is generally allowed subject to CNI and cloud networking. Once you attach policies to selected Pods, only traffic matching the declared rules is permitted for the directions the policy covers.

@@ -1,224 +1,81 @@
-### **Kubernetes Policies**
+## Kubernetes Policies
 
-Kubernetes policies are rules and configurations that help you enforce standards, ensure compliance, and improve the security, reliability, and efficiency of your cluster. Policies are crucial in managing how resources are created, updated, accessed, and used within the Kubernetes environment.
-
----
-
-### **Importance of Kubernetes Policies**
-1. **Security**: Enforce rules to protect sensitive resources and data.
-2. **Compliance**: Ensure adherence to organizational and regulatory requirements.
-3. **Resource Management**: Optimize and limit the use of cluster resources.
-4. **Reliability**: Prevent misconfigurations that could lead to outages or performance issues.
-5. **Standardization**: Maintain consistency in configurations across the cluster.
+Kubernetes does not rely on a single “policy engine.” Instead, it combines API objects, admission-time checks, and cluster add-ons so teams can enforce networking rules, access control, workload hardening, and fair resource use. Different mechanisms apply at different scopes—namespace, cluster, or webhook—and often work best together. This page is a **catalog**: short descriptions plus links to the dedicated guides and labs for each area.
 
 ---
 
-### **Available Kubernetes Policies**
+## Policy types (catalog)
 
-#### **1. Network Policies**
-- **Purpose**: Control traffic flow between Pods and external endpoints (ingress/egress).
-- **Key Features**:
-  - Uses labels to define which Pods the policy applies to.
-  - Restricts communication at the Pod level.
-- **Example**:
-  ```yaml
-  apiVersion: networking.k8s.io/v1
-  kind: NetworkPolicy
-  metadata:
-    name: allow-web-traffic
-    namespace: default
-  spec:
-    podSelector:
-      matchLabels:
-        app: web
-    policyTypes:
-    - Ingress
-    ingress:
-    - from:
-      - podSelector:
-          matchLabels:
-            role: frontend
-      ports:
-      - protocol: TCP
-        port: 80
-  ```
+### Network policy
 
-#### **2. Pod Security Policies (Deprecated)**
-- **Purpose**: Restrict Pod configurations for enhanced security (e.g., disallow privileged Pods).
-- **Key Features**:
-  - Control over privileged containers, host namespaces, and file systems.
-  - Deprecated in Kubernetes 1.21 and replaced by Pod Security Admission (PSA).
-- **Example**:
-  ```yaml
-  apiVersion: policy/v1beta1
-  kind: PodSecurityPolicy
-  metadata:
-    name: restricted
-  spec:
-    privileged: false
-    runAsUser:
-      rule: MustRunAsNonRoot
-    seLinux:
-      rule: RunAsAny
-    fsGroup:
-      rule: MustRunAs
-      ranges:
-      - min: 1
-        max: 65535
-  ```
+**NetworkPolicy** restricts Pod-to-Pod and Pod-to-external traffic using labels and ports (ingress/egress). It only takes effect if your CNI implements it; default-allow clusters stay open until you define policies.
 
-#### **3. Resource Quotas**
-- **Purpose**: Limit resource usage in a namespace.
-- **Key Features**:
-  - Enforces constraints on CPU, memory, storage, and object count.
-  - Prevents over-provisioning.
-- **Example**:
-  ```yaml
-  apiVersion: v1
-  kind: ResourceQuota
-  metadata:
-    name: compute-resources
-    namespace: dev-team
-  spec:
-    hard:
-      requests.cpu: "10"
-      requests.memory: "20Gi"
-      limits.cpu: "20"
-      limits.memory: "40Gi"
-  ```
+→ [Network policies](../security/networkpolicy.md)
 
-#### **4. Limit Ranges**
-- **Purpose**: Set default and maximum resource requests/limits for Pods and containers.
-- **Key Features**:
-  - Prevents resource exhaustion.
-  - Helps define sane defaults for resource allocations.
-- **Example**:
-  ```yaml
-  apiVersion: v1
-  kind: LimitRange
-  metadata:
-    name: resource-limits
-    namespace: default
-  spec:
-    limits:
-    - type: Container
-      max:
-        memory: "1Gi"
-        cpu: "1"
-      min:
-        memory: "100Mi"
-        cpu: "100m"
-      default:
-        memory: "512Mi"
-        cpu: "500m"
-  ```
+### RBAC
 
-#### **5. PodDisruptionBudgets**
-- **Purpose**: Ensure a minimum number of Pods remain available during disruptions (e.g., rolling updates).
-- **Key Features**:
-  - Defines thresholds for voluntary disruptions.
-- **Example**:
-  ```yaml
-  apiVersion: policy/v1
-  kind: PodDisruptionBudget
-  metadata:
-    name: my-app-pdb
-    namespace: default
-  spec:
-    minAvailable: 2
-    selector:
-      matchLabels:
-        app: my-app
-  ```
+**Role-Based Access Control** binds users, groups, or service accounts to Roles and ClusterRoles so the API server allows only the verbs and resources you intend. It is the foundation for who can create workloads and secrets—not a substitute for network or Pod hardening.
 
-#### **6. Admission Controllers**
-- **Purpose**: Validate and modify requests to the Kubernetes API.
-- **Key Features**:
-  - Includes Pod Security Admission (PSA), MutatingAdmissionWebhook, and ValidatingAdmissionWebhook.
-  - Enforces or auto-adjusts configuration during resource creation.
-- **Example (Pod Security Admission)**:
-  ```yaml
-  apiVersion: v1
-  kind: Namespace
-  metadata:
-    name: restricted-namespace
-    labels:
-      pod-security.kubernetes.io/enforce: "restricted"
-  ```
+→ [RBAC concepts](../security/rbac-concepts.md)
 
-#### **7. Custom Policies (OPA/Gatekeeper)**
-- **Purpose**: Define fine-grained custom policies using tools like Open Policy Agent (OPA) and Gatekeeper.
-- **Key Features**:
-  - Flexible, user-defined policies for API validations.
-  - Replaces the need for complex Admission Controller configurations.
-- **Example (Gatekeeper)**:
-  ```yaml
-  apiVersion: constraints.gatekeeper.sh/v1beta1
-  kind: K8sRequiredLabels
-  metadata:
-    name: ns-must-have-owner
-  spec:
-    match:
-      kinds:
-      - apiGroups: [""]
-        kinds: ["Namespace"]
-    parameters:
-      labels: ["owner"]
-  ```
+### Security context
+
+**Security context** fields on Pods and containers control user/group IDs, capabilities, read-only root filesystem, privilege escalation, and similar runtime settings. Tightening these settings reduces the impact of a compromised container.
+
+→ [Security context](../security/securitycontext.md)
+
+### Pod Security Standards (admission)
+
+**Pod Security Admission** enforces the *privileged*, *baseline*, and *restricted* [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) per namespace via labels—replacing deprecated PodSecurityPolicy for most clusters.
+
+→ Hands-on: [Lab 16: Pod security standards](../../labmanuals/lab16-sec-pod-security-standards.md)
+
+### OPA Gatekeeper
+
+**Gatekeeper** (OPA on Kubernetes) registers validating admission webhooks so you can express organization-specific rules (labels, naming, disallowed fields) as constraints, beyond built-in admission plugins.
+
+→ [Gatekeeper scenarios](../security/gatekeeper-scenarios.md)
+
+### Resource quotas
+
+**ResourceQuota** caps aggregate CPU, memory, storage, and object counts per namespace so teams cannot exhaust shared capacity. Requests are checked at admission time against the namespace totals.
+
+→ [Resource quotas](../workloads/resourcequota.md)
+
+### Limit ranges
+
+**LimitRange** sets default, min, and max requests/limits for containers and Pods in a namespace, helping enforce consistent sizing and preventing tiny or huge allocations.
+
+→ [Scheduling practical guide (LimitRange)](../scheduling/scheduling-practical-guide.md)
+
+### Related built-ins (no separate guide here)
+
+**PodDisruptionBudget** limits voluntary disruptions (drains, evictions) so enough replicas stay up during upgrades. **Built-in admission controllers** (mutating/validating) run before objects are persisted; Pod Security Admission and webhooks like Gatekeeper are common ways to extend that pipeline.
 
 ---
 
-### **Use Cases for Kubernetes Policies**
-1. **Network Security**:
-   - Restrict inter-Pod communication using Network Policies.
-   - Example: Allow only frontend Pods to communicate with backend Pods.
+## At-a-glance comparison
 
-2. **Pod Configuration Enforcement**:
-   - Ensure Pods run with secure configurations (e.g., non-root users).
-   - Example: Use PSA or Pod Security Policies.
-
-3. **Resource Control**:
-   - Limit resource usage to avoid over-consumption in shared environments.
-   - Example: Use Resource Quotas and Limit Ranges.
-
-4. **High Availability**:
-   - Prevent service downtime during updates by using PodDisruptionBudgets.
-   - Example: Set a minimum number of replicas available for critical services.
-
-5. **Custom Compliance Rules**:
-   - Enforce organization-specific rules (e.g., required labels) with OPA/Gatekeeper.
-   - Example: Require all namespaces to have an `owner` label.
+| Mechanism | Primary focus | Typical scope |
+|-----------|----------------|---------------|
+| Network policy | East-west / ingress traffic | Namespace |
+| RBAC | API who can do what | Cluster / namespace |
+| Security context | Container process & filesystem hardening | Pod / container |
+| Pod Security Standards | Disallow unsafe Pod specs | Namespace (labels) |
+| OPA Gatekeeper | Custom validation rules | Cluster (webhook) |
+| Resource quota | Namespace resource budgets | Namespace |
+| Limit range | Defaults & min/max per Pod/container | Namespace |
+| Pod disruption budget | Min available during voluntary disruption | Namespace |
 
 ---
 
-### **Summary of Kubernetes Policies**
+## Hands-on labs
 
-| **Policy Type**          | **Purpose**                                        | **Scope**        | **Key Features**                           | **Example Use Case**                           |
-|---------------------------|---------------------------------------------------|------------------|--------------------------------------------|------------------------------------------------|
-| **Network Policies**      | Control traffic flow between Pods and endpoints.  | Namespace        | Uses labels to define ingress/egress rules.| Allow only frontend-to-backend traffic.       |
-| **Pod Security Policies** | Restrict insecure Pod configurations.            | Namespace        | Deprecated, replaced by PSA.               | Prevent privileged Pod execution.             |
-| **Resource Quotas**       | Limit resource usage in a namespace.             | Namespace        | CPU, memory, storage, object count limits. | Prevent resource over-provisioning.           |
-| **Limit Ranges**          | Set default/max resource requests/limits.        | Namespace        | Enforce sensible resource allocations.     | Prevent Pods from using excessive resources.   |
-| **PodDisruptionBudgets**  | Maintain Pod availability during disruptions.     | Namespace        | Define minimum available replicas.         | Avoid downtime during rolling updates.         |
-| **Admission Controllers** | Validate/modify API requests.                    | Cluster          | Enforce policies like PSA or custom webhooks.| Auto-reject Pods without required labels.      |
-| **Custom Policies (OPA)** | Define custom rules using OPA or Gatekeeper.      | Cluster          | Flexible, user-defined policy enforcement. | Enforce compliance standards (e.g., labels).   |
-
----
-
-### **Key Takeaways for Beginners**
-- **Understand Basics**: Start with simple policies like Network Policies and Resource Quotas.
-- **Apply Iteratively**: Gradually enforce stricter policies as your cluster grows.
-- **Use Tools**: Leverage tools like Open Policy Agent (OPA) for custom rules.
-- **Test Policies**: Always test policies in a development environment before applying them in production.
-
----
-
-## Hands-On Labs
-
-Practice these concepts with guided lab exercises:
-
-| Lab | Description |
-|-----|-------------|
-| [Lab 13: Network policies](../../labmanuals/lab13-sec-network-policies.md) | Ingress/egress rules and label-based pod traffic control. |
-| [Lab 14: OPA Gatekeeper](../../labmanuals/lab14-sec-opa-gatekeeper.md) | Admission-time policy with Gatekeeper constraints. |
+| Lab | Topic |
+|-----|--------|
+| [Lab 11: RBAC and security](../../labmanuals/lab11-sec-rbac-security.md) | Roles, bindings, and API access patterns. |
+| [Lab 12: Security context](../../labmanuals/lab12-sec-security-context.md) | Pod and container security settings. |
+| [Lab 13: Network policies](../../labmanuals/lab13-sec-network-policies.md) | Ingress/egress and label-based traffic control. |
+| [Lab 14: OPA Gatekeeper](../../labmanuals/lab14-sec-opa-gatekeeper.md) | Admission-time constraints with Gatekeeper. |
 | [Lab 16: Pod security standards](../../labmanuals/lab16-sec-pod-security-standards.md) | Namespace labels and Pod Security Admission (PSA). |
+| [Lab 37: Resource quotas and limits](../../labmanuals/lab37-resmgmt-resource-quotas-limits.md) | Quotas, limits, and admission behavior when caps are hit. |

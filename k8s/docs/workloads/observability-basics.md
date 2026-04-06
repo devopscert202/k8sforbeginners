@@ -30,17 +30,50 @@ graph TB
     style G fill:#95E1D3,color:#000
 ```
 
+Near-real-time **CPU and memory** for scheduling and autoscaling are exposed separately through the **Metrics API** and **Metrics Server** (covered below). Broader dashboards, alerting, and history usually build on **Prometheus**, **Grafana**, log pipelines, and trace backends.
+
 ---
 
-## 1. Metrics (what is happening?)
+## Metrics Server
 
-Metrics are numeric time series (rates, histograms, gauges) used for dashboards, alerting, and autoscaling.
+**Metrics Server** is an in-cluster component that **aggregates resource usage** (CPU and memory) from kubelets and exposes it through the **Metrics API**. That API backs **`kubectl top`** and supports **Horizontal Pod Autoscaler (HPA)** when scaling on CPU or memory.
 
-### Metrics Server
+### Use cases
 
-**Purpose**: Short-horizon **CPU and memory** metrics for nodes and Pods, exposed via the **Metrics API**.
+- **Real-time utilization**: View current CPU/memory for nodes and Pods (`kubectl top` style workflows).
+- **Autoscaling**: Supply resource metrics to HPA so replica counts can track demand.
+- **Troubleshooting**: Spot hot nodes or mis-sized containers when requests/limits and actual usage diverge.
+- **Capacity planning**: Reason about headroom and sizing using recent utilization (Metrics Server retains only short-term data; long-term planning usually needs Prometheus or cloud monitoring).
 
-**Role in the stack**: Powers **`kubectl top`** and **HPA** when scaling on CPU/memory. Install manifests and cluster-specific TLS notes belong in labs, not here.
+### Architecture and Metrics API flow
+
+1. **Kubelet** exposes container and node metrics via **`/stats/summary`** and related endpoints.
+2. **Metrics Server** scrapes those summaries, normalizes them, and serves the **Metrics API** (`metrics.k8s.io`), which is aggregated into the API server like other extension APIs.
+3. **Consumers**—the HPA controller, **`kubectl top`**, and UIs that call the Metrics API—read node and Pod **resource** metrics through that path.
+
+On many clusters, Metrics Server runs as a **Deployment** in `kube-system` (or similar), with a **Service**, **APIService** registration for `metrics.k8s.io`, and **RBAC** so it can reach kubelets and expose metrics securely.
+
+**TLS** between Metrics Server and kubelets must be trusted. Lab clusters sometimes need extra flags or configuration depending on how the kubelet presents its serving certificate.
+
+Metrics Server answers **“what is usage right now?”** for scheduling and autoscaling. It is **not** a full monitoring platform: limited retention, no rich query language, and no long-term alerting by itself. Installation, verification, and common lab-cluster fixes belong in guided labs rather than here.
+
+### Relationship to other observability tools
+
+| **Tool** | **Role** | **Compared to Metrics Server** |
+|----------|----------|--------------------------------|
+| **Prometheus** | Scrapes metrics, rules, alerting | Historical TSDB and PromQL; often paired with Grafana |
+| **Grafana Agent / Alloy** | Collect and forward metrics | Heavier or lighter paths to a backend |
+| **OpenTelemetry** | Metrics, traces, logs | Vendor-neutral instrumentation and pipelines |
+| **cAdvisor** | Container metrics | Often scraped by Prometheus |
+| **Cloud vendor monitoring** | Managed metrics for AKS/EKS/GKE | Integrated dashboards and alarms |
+
+Commercial platforms (Datadog, Sysdig, and others) also ingest Kubernetes metrics and add APM, security, or fleet features.
+
+---
+
+## Prometheus, Grafana, and richer monitoring
+
+Beyond resource metrics, teams typically want numeric time series (rates, histograms, gauges) for dashboards, alerting, and custom autoscaling signals.
 
 ### Prometheus (typical pattern)
 
@@ -74,108 +107,6 @@ spec:
 - Container CPU: `container_cpu_usage_seconds_total`
 - Container memory working set: `container_memory_working_set_bytes`
 - HTTP: `http_requests_total`, error and latency histograms
-
----
-
-## 2. Logs (why did it happen?)
-
-Logs are discrete events with timestamps and (ideally) structured fields.
-
-### kubectl logs
-
-`kubectl logs` streams **stdout/stderr** from a container. It is ideal for **quick triage** but not a durable log archive. Production setups **centralize** logs with an agent (DaemonSet or sidecar) shipping to object storage, Elasticsearch, Loki, or a vendor backend.
-
-### Fluent Bit (illustrative DaemonSet pattern)
-
-Agents often run on **every node**, mount host log paths read-only, parse and forward lines:
-
-```yaml
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: fluent-bit
-  namespace: logging
-spec:
-  selector:
-    matchLabels:
-      app: fluent-bit
-  template:
-    metadata:
-      labels:
-        app: fluent-bit
-    spec:
-      serviceAccountName: fluent-bit
-      containers:
-      - name: fluent-bit
-        image: fluent/fluent-bit:2.2
-        volumeMounts:
-        - name: varlog
-          mountPath: /var/log
-        - name: varlibdockercontainers
-          mountPath: /var/lib/docker/containers
-          readOnly: true
-      volumes:
-      - name: varlog
-        hostPath:
-          path: /var/log
-      - name: varlibdockercontainers
-        hostPath:
-          path: /var/lib/docker/containers
-```
-
-### Structured logging
-
-Structured logs (often **JSON**) let you filter by `level`, `trace_id`, `user_id`, and so on without fragile regex.
-
----
-
-## 3. Traces (how did the request flow?)
-
-Traces connect spans across services for latency and dependency analysis.
-
-### OpenTelemetry
-
-**Purpose**: Vendor-neutral instrumentation and export for metrics, traces, and logs.
-
-**Instrumentation resource** (illustrative): configures exporters, propagators, and sampling.
-
-```yaml
-apiVersion: opentelemetry.io/v1alpha1
-kind: Instrumentation
-metadata:
-  name: my-instrumentation
-spec:
-  exporter:
-    endpoint: http://jaeger-collector:4318
-  propagators:
-    - tracecontext
-    - baggage
-  sampler:
-    type: parentbased_traceidratio
-    argument: "0.1"
-```
-
-**Pod template annotation** (concept): operators can inject instrumentation based on annotations on the workload.
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: my-app
-spec:
-  template:
-    metadata:
-      annotations:
-        instrumentation.opentelemetry.io/inject-java: "true"
-    spec:
-      containers:
-      - name: app
-        image: my-java-app:1.0
-```
-
-### Jaeger / Tempo
-
-Backends store trace spans and provide a UI. Deployment choices (operator vs Helm vs cloud) vary; the important idea is **correlating** traces with logs and metrics via shared identifiers.
 
 ---
 
@@ -281,6 +212,108 @@ spec:
 
 ---
 
+## Logging (why did it happen?)
+
+Logs are discrete events with timestamps and (ideally) structured fields.
+
+### kubectl logs
+
+`kubectl logs` streams **stdout/stderr** from a container. It is ideal for **quick triage** but not a durable log archive. Production setups **centralize** logs with an agent (DaemonSet or sidecar) shipping to object storage, Elasticsearch, Loki, or a vendor backend.
+
+### Fluent Bit (illustrative DaemonSet pattern)
+
+Agents often run on **every node**, mount host log paths read-only, parse and forward lines:
+
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluent-bit
+  namespace: logging
+spec:
+  selector:
+    matchLabels:
+      app: fluent-bit
+  template:
+    metadata:
+      labels:
+        app: fluent-bit
+    spec:
+      serviceAccountName: fluent-bit
+      containers:
+      - name: fluent-bit
+        image: fluent/fluent-bit:2.2
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+```
+
+### Structured logging
+
+Structured logs (often **JSON**) let you filter by `level`, `trace_id`, `user_id`, and so on without fragile regex.
+
+---
+
+## Tracing (how did the request flow?)
+
+Traces connect spans across services for latency and dependency analysis.
+
+### OpenTelemetry
+
+**Purpose**: Vendor-neutral instrumentation and export for metrics, traces, and logs.
+
+**Instrumentation resource** (illustrative): configures exporters, propagators, and sampling.
+
+```yaml
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: my-instrumentation
+spec:
+  exporter:
+    endpoint: http://jaeger-collector:4318
+  propagators:
+    - tracecontext
+    - baggage
+  sampler:
+    type: parentbased_traceidratio
+    argument: "0.1"
+```
+
+**Pod template annotation** (concept): operators can inject instrumentation based on annotations on the workload.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "true"
+    spec:
+      containers:
+      - name: app
+        image: my-java-app:1.0
+```
+
+### Jaeger / Tempo
+
+Backends store trace spans and provide a UI. Deployment choices (operator vs Helm vs cloud) vary; the important idea is **correlating** traces with logs and metrics via shared identifiers.
+
+---
+
 ## Application instrumentation example
 
 Annotations and ports expose metrics to scrapers; environment variables can point OpenTelemetry exporters at collectors.
@@ -367,7 +400,8 @@ Practice these concepts with guided lab exercises:
 
 | Lab | Description |
 |-----|-------------|
-| [Lab 36: Metrics Server](../../labmanuals/lab36-observe-metrics-server.md) | Cluster metrics API, `kubectl top`, and foundation for resource-based autoscaling. |
+| [Lab 36: Metrics Server](../../labmanuals/lab36-observe-metrics-server.md) | Deploy or verify Metrics Server, use `kubectl top`, explore the Metrics API, and relate metrics to HPA behavior. |
+| [Lab 30: Horizontal Pod Autoscaling](../../labmanuals/lab30-workload-hpa.md) | Use resource metrics from the Metrics API with HPA for CPU- and memory-driven scaling. |
 
 ---
 
@@ -384,7 +418,7 @@ Practice these concepts with guided lab exercises:
 ## Summary
 
 - **Three pillars**: metrics (what), logs (why), traces (how).
-- **Metrics Server** covers near-real-time resource usage; **Prometheus/Grafana** cover richer monitoring.
+- **Metrics Server** is the default path for near-real-time **resource** metrics and **`kubectl top`**; **Prometheus/Grafana** cover richer monitoring, history, and alerting.
 - **Centralize logs** and **instrument apps** deliberately.
 - Expand the stack as requirements grow; validate tooling in exercises and staging before production reliance.
 

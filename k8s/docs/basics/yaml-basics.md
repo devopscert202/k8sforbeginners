@@ -20,7 +20,7 @@ A practical introduction to YAML for learners who are new to the format and need
 5. [Comments and multiline strings](#comments-and-multiline-strings)
 6. [Multiple documents in one file](#multiple-documents-in-one-file)
 7. [The Kubernetes object shape](#the-kubernetes-object-shape)
-8. [Labels and selectors (YAML view)](#labels-and-selectors-yaml-view)
+8. [Labels and selectors](#labels-and-selectors)
 9. [Lab-aligned examples](#lab-aligned-examples)
 10. [Editing manifests in real labs](#editing-manifests-in-real-labs)
 11. [Tools that make YAML easier](#tools-that-make-yaml-easier)
@@ -177,9 +177,86 @@ spec:             # desired state (shape depends on kind)
 
 ---
 
-## Labels and selectors (YAML view)
+## Labels and selectors
 
-Labels are arbitrary key/value pairs on metadata. Selectors connect objects (e.g. a Service to Pods).
+Labels are key/value pairs on `metadata.labels`. They are indexed and meant for **identifying** resources (unlike annotations, which are for non-identifying metadata). Controllers, `kubectl`, Services, and higher-level policies use **selectors** to find objects that match a set of labels.
+
+**Why labels matter**
+
+- **Organization:** Group workloads by environment, team, product, or cost center.
+- **Selection:** Filter with `kubectl get … -l key=value` and build dashboards or alerts around label dimensions.
+- **Wiring:** Services and many controllers match Pods (or other objects) using selectors—labels must stay consistent with those selectors.
+- **Policies:** NetworkPolicies and similar APIs often use `podSelector` / `namespaceSelector` with label selectors.
+- **Scheduling:** Node and Pod affinity, taints/tolerations, and topology spread **use** labels, but the YAML for those rules lives in scheduling-focused docs—see [affinity and anti-affinity](../scheduling/affinity_antiaffinity.md) and related guides.
+
+**Recommended keys (well-known labels)**
+
+Kubernetes documents [recommended labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/) (often prefixed with `app.kubernetes.io/`). Common keys include:
+
+| Key | Role |
+|-----|------|
+| `app.kubernetes.io/name` | Application name |
+| `app.kubernetes.io/instance` | Distinct instance of the app (e.g. release name) |
+| `app.kubernetes.io/version` | Version string |
+| `app.kubernetes.io/component` | Role within the app (`frontend`, `database`, …) |
+| `app.kubernetes.io/part-of` | Larger collection this resource belongs to |
+| `app.kubernetes.io/managed-by` | Tool or operator managing the resource |
+
+Many clusters and tutorials still use short keys such as **`app`**, **`tier`**, **`env`** (`production`, `staging`, `development`), **`component`**, or org-specific keys like **`department`**, **`appowner`**, **`business_critical`**. Pick a **convention for your team** and use it consistently; avoid storing sensitive data in labels (they are visible broadly).
+
+**Inspecting and setting labels**
+
+- In manifests: `metadata.labels` on the object, and on Pod templates (`spec.template.metadata.labels` for a Deployment).
+- Imperative: `kubectl label pod/my-pod env=staging` (add `--overwrite` to change an existing key).
+- Inspect: `kubectl get pods --show-labels` or `kubectl get pods -l app=my-app`.
+
+**How Services use selectors**
+
+A `Service`’s `spec.selector` is a **map** of label keys to values. The control plane sends traffic to Pods whose labels match **every** entry in that map (logical AND). There is no `matchExpressions` field on `Service`—only equality selectors.
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+    env: production
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+Pods must include **both** `app=my-app` and `env=production` to receive traffic from this Service.
+
+**`matchLabels` vs `matchExpressions`**
+
+For resources that use a `labelSelector` object (for example **Deployment / ReplicaSet** `spec.selector`, or **NetworkPolicy** `podSelector`), you can choose:
+
+- **`matchLabels`:** A map; each key must match the corresponding label value (AND across keys).
+- **`matchExpressions`:** A list of requirements, each with `key`, `operator`, and optionally `values`. Operators include `In`, `NotIn`, `Exists`, and `DoesNotExist`—handy for “any of these values” or “label must exist” rules.
+
+Example (Deployment selector using expressions; the Pod template’s labels must still satisfy this selector):
+
+```yaml
+spec:
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - my-app
+      - key: env
+        operator: In
+        values:
+          - production
+```
+
+If you use `matchLabels` on a Deployment, it must match the labels on `spec.template.metadata.labels` (see the [Deployment example](#lab-aligned-examples) in this guide).
+
+**Minimal label + selector patterns in YAML**
 
 ```yaml
 metadata:
@@ -365,6 +442,8 @@ Practice these concepts with guided lab exercises:
 - [Kubernetes configuration overview](https://kubernetes.io/docs/concepts/configuration/overview/)
 - [Official YAML spec (reference)](https://yaml.org/spec/)
 - [Kubernetes object management](https://kubernetes.io/docs/concepts/overview/working-with-objects/object-management/)
+- [Recommended labels (`app.kubernetes.io/*`)](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/)
+- [Labels and selectors (concepts)](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/)
 
 ---
 

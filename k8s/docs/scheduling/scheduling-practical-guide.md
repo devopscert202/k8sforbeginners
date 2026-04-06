@@ -1,116 +1,130 @@
-# **Comprehensive Kubernetes Advanced Scheduling and Resource Management Tutorial**
+# Kubernetes Scheduling: Concepts and Practice
 
-This tutorial combines advanced scheduling and resource management concepts in Kubernetes, focusing on optimizing cluster performance and resource utilization. Each topic is explained with context, practical examples, and use cases to provide a deeper understanding.
-
----
-
-## **1. Kubernetes Scheduler and Advanced Scheduling**
-
-### **1.1 Scheduler Overview**
-**What is it?**  
-The Kubernetes Scheduler is a control plane component responsible for assigning pods to nodes in a cluster. It evaluates resource requirements, constraints, and policies to determine the best node for a pod.
-
-**Why is it important?**  
-Efficient scheduling ensures workload balance, optimal resource utilization, and compliance with constraints like node affinity or taints.
-
-**When to use it?**  
-The Scheduler is always active, but tuning it is crucial for large-scale clusters or complex workloads requiring custom scheduling behavior.
+This guide explains how the Kubernetes scheduler places Pods on nodes, from core mechanics (including topics that often appear on the CKA exam) through advanced tuning, resource accounting, and preemption. Use it as a map: detailed mechanics for **nodeSelector**, **affinity**, **taints/tolerations**, and **namespace quotas** live in the linked deep-dives below.
 
 ---
 
-### **1.2 Scheduler Performance Tuning**
-**What is it?**  
-Scheduler performance tuning involves optimizing parameters such as the number of scheduling threads, cache size, and timeout values to handle large workloads efficiently.
+## Scheduler fundamentals
 
-**Why is it important?**  
-A tuned Scheduler minimizes pod scheduling latency and increases throughput, especially in clusters with high pod churn or thousands of nodes.
+The **kube-scheduler** is a control plane component that watches for Pods with no `spec.nodeName`, evaluates which nodes can run them, ranks the feasible nodes, and binds the Pod to the chosen node.
 
-**When to use it?**  
-- High-throughput environments with frequent pod creations.
-- Clusters experiencing scheduling delays.
+**Responsibilities**
 
-**Example**: Increase the number of scheduling threads for better performance.
+- Find schedulable Pods (no node assigned yet, not excluded by gates or other controllers).
+- Match each Pod against cluster state: node capacity, labels, taints, affinity rules, and configured plugins.
+- Select a node and record the assignment (bind).
+
+**Key inputs**
+
+- The Pod spec: resource requests/limits, affinity, tolerations, topology spread, priority, runtime class, and scheduler name.
+- Cluster state: nodes (Ready, allocatable resources, labels, taints), existing workloads, and policy objects (ResourceQuota, LimitRange, PriorityClass).
+
+### Scheduling framework (Filter and Score)
+
+Scheduling is implemented as a **plugin pipeline**. For exams and day-to-day reasoning, the most important phases are **Filter** (feasibility: node must fit) and **Score** (preference: best node among those that fit). The full sequence is:
+
+1. **PreFilter** — Preconditions (e.g. whether scheduling is allowed, some affinity checks).
+2. **Filter** — Remove nodes that cannot run the Pod (resources, node selector/affinity, taints, pod affinity, volume topology, etc.).
+3. **Score** — Rank remaining nodes (resource fit, spread, affinity preferences, custom plugins).
+4. **Reserve** — Reserve resources on the chosen node (coordination with storage/volume plugins where applicable).
+5. **Permit** — Optional wait/approve/deny hooks.
+6. **Bind** — Persist the Pod–node assignment.
+
+If no node passes Filter, the Pod stays **Pending** with events explaining the failure (for example insufficient CPU, unmatched taint, or anti-affinity).
+
+---
+
+## Node selection and binding
+
+**Node selection** applies Filter/Score using, among other things:
+
+- **Node conditions** — Typically the node must be Ready and not marked unschedulable.
+- **Allocatable resources** — Sum of existing Pod requests on the node plus this Pod’s **requests** must fit allocatable CPU/memory (and extended resources if requested).
+- **Labels and affinity** — Required and preferred node rules.
+- **Taints and tolerations** — Taints evict or block Pods unless tolerated.
+- **Inter-pod affinity / anti-affinity** — Co-location or separation from other Pods.
+- **Topology spread** — Even distribution across domains such as zone or hostname.
+
+**Binding** is the final step: the scheduler sets the Pod’s node (kubelet then starts containers on that node). Admission controllers and ResourceQuota/LimitRange can still reject or mutate the Pod before or during admission; the scheduler assumes quotas and limits that affect feasibility are enforced consistently with the API.
+
+---
+
+## Scheduling policies (overview)
+
+These mechanisms **compose**: a node can be eligible by resources but still rejected by a taint or affinity rule.
+
+| Mechanism | Role |
+|-----------|------|
+| **nodeSelector** | Simple required match on node labels. |
+| **Node affinity** | Required and/or preferred rules on node labels (richer than nodeSelector). |
+| **Pod affinity / anti-affinity** | Place Pods near or away from Pods with given labels, optionally scoped by topology. |
+| **Taints and tolerations** | Nodes repel Pods unless the Pod tolerates the taint (`NoSchedule`, `PreferNoSchedule`, `NoExecute`). |
+
+**Deep dives**
+
+- [NodeSelector](nodeselector-complete.md)
+- [Node and Pod affinity / anti-affinity](affinity_antiaffinity.md)
+- [Taints and tolerations](taints-tolerations-complete.md)
+
+---
+
+## Illustrative combined constraints
+
+The following Pod assumes a node is labeled `disktype=ssd` and tainted `key=value:NoSchedule`. A matching **toleration** allows the node to be considered; **required node affinity** enforces the SSD label. **Resource requests** participate in feasibility during Filter.
+
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
-  name: kube-scheduler
-  namespace: kube-system
+  name: scheduling-demo
 spec:
-  template:
-    spec:
-      containers:
-      - name: kube-scheduler
-        image: k8s.gcr.io/kube-scheduler:v1.27.0
-        args:
-        - --scheduler-threads=32
+  tolerations:
+  - key: "key"
+    operator: "Equal"
+    value: "value"
+    effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "disktype"
+            operator: "In"
+            values:
+            - "ssd"
+  containers:
+  - name: nginx
+    image: nginx
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
 ```
 
----
-
-### **1.3 Scheduling Policies**
-**What is it?**  
-Scheduling policies define rules and constraints that guide the Scheduler in placing pods on specific nodes.
-
-**Why is it important?**  
-Policies help achieve specific goals, such as workload isolation, affinity to certain zones, or avoiding nodes with taints.
-
-**When to use it?**  
-- To co-locate related workloads for performance benefits.
-- To segregate workloads across failure domains for fault tolerance.
-
-**Examples**:
-- **Node Affinity**: Place a pod on a node in the "us-east" zone.
-  ```yaml
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    name: pod-with-affinity
-  spec:
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: "zone"
-              operator: In
-              values:
-              - "us-east"
-    containers:
-    - name: nginx
-      image: nginx
-  ```
-- **Taints and Tolerations**: Operators apply taints with `kubectl taint nodes <name> key=value:effect`. Pods that need to land on those nodes declare matching **tolerations**:
-  ```yaml
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    name: pod-with-toleration
-  spec:
-    tolerations:
-    - key: "dedicated"
-      operator: "Equal"
-      value: "production"
-      effect: "NoSchedule"
-    containers:
-    - name: nginx
-      image: nginx
-  ```
+If no node satisfies taints, affinity, and free resources, the Pod remains **Pending** until cluster state changes.
 
 ---
 
-### **1.4 Scheduling Profiles**
-**What is it?**  
-Scheduling Profiles allow you to define different scheduling strategies for various workloads within the same cluster.
+## Advanced scheduler configuration
 
-**Why is it important?**  
-They enable flexibility by letting you customize Scheduler plugins for specific use cases, such as GPU workloads or latency-sensitive applications.
+### Performance tuning
 
-**When to use it?**  
-- In mixed-use clusters with diverse workload requirements.
-- When specific scheduling behaviors are necessary for certain workloads.
+On large or high-churn clusters, scheduling latency and throughput depend on scheduler **parallelism**, how many nodes are **scored** (e.g. `percentageOfNodesToScore`), and API/cache behavior. Tune the scheduler through its **KubeSchedulerConfiguration** (mounted into the `kube-scheduler` static Pod or equivalent control plane deployment), not by treating the scheduler as an arbitrary app Deployment.
 
-**Example**: Customize Scheduler profiles for general and GPU workloads.
+Example (fields vary slightly by Kubernetes version; confirm against your cluster version’s API):
+
+```yaml
+apiVersion: kubescheduler.config.k8s.io/v1
+kind: KubeSchedulerConfiguration
+parallelism: 16
+profiles:
+  - schedulerName: default-scheduler
+```
+
+### Scheduling profiles
+
+**Profiles** let you enable, disable, or reorder **plugins** per scheduler name. Pods select a scheduler with `spec.schedulerName` (default is `default-scheduler`).
+
 ```yaml
 apiVersion: kubescheduler.config.k8s.io/v1
 kind: KubeSchedulerConfiguration
@@ -130,40 +144,20 @@ profiles:
       - name: NodeAffinity
 ```
 
----
+### NUMA and topology-aware placement
 
-### **1.5 Topology Management Policies**
-**What is it?**  
-Topology management ensures optimal resource allocation across NUMA (Non-Uniform Memory Access) nodes for performance-critical applications.
+For latency-sensitive or bandwidth-heavy workloads, **topology manager** policies on the **kubelet** (`topologyManagerPolicy`, and related scope/policy options) influence how CPU/memory/devices are aligned on NUMA nodes. This is node-local coordination with the scheduler and device plugins, not a replacement for Pod-level affinity or spread.
 
-**Why is it important?**  
-It improves performance by minimizing latency caused by resource misalignment, especially for hardware-sensitive workloads.
-
-**When to use it?**  
-- Applications requiring high throughput or low latency.
-- Workloads benefiting from NUMA-aware scheduling.
-
-**Example**: Configure the Kubelet for strict topology alignment.
 ```yaml
 apiVersion: kubelet.config.k8s.io/v1
 kind: KubeletConfiguration
 topologyManagerPolicy: "restricted"
 ```
 
----
+### Pod topology spread constraints
 
-### **1.6 Pod Topology Spread Constraints**
-**What is it?**  
-These constraints distribute pods across failure domains (e.g., zones, racks) to ensure high availability and fault tolerance.
+**Topology spread** balances Pods across failure domains (for example `topology.kubernetes.io/zone` or `kubernetes.io/hostname`) using `maxSkew`, `topologyKey`, and `whenUnsatisfiable` (`DoNotSchedule` or `ScheduleAnyway`).
 
-**Why is it important?**  
-It reduces the risk of failure impacting all replicas of an application by spreading them across multiple nodes or zones.
-
-**When to use it?**  
-- To enhance fault tolerance for critical applications.
-- In multi-zone or multi-rack clusters to prevent single points of failure.
-
-**Example**: Spread pods across zones.
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -187,26 +181,20 @@ spec:
           matchLabels:
             app: demo
       containers:
-      - name: nginx
+      - name: app
         image: nginx
 ```
 
 ---
 
-## **2. Kubernetes Resource Management**
+## Resource management and scheduling
 
-### **2.1 Pod Overhead**
-**What is it?**  
-Pod Overhead accounts for additional resource usage caused by Kubernetes components, such as the container runtime or network overlay.
+### Requests, limits, and pod overhead
 
-**Why is it important?**  
-Accurately reflects the actual resource consumption of a pod, preventing overcommitment and ensuring node stability.
+- **Requests** — Used by the scheduler for feasibility and by the kubelet for allocation. They represent the minimum resources you expect the workload to need.
+- **Limits** — Cap runtime usage (enforced by the container runtime/C groups where applicable). They do **not** determine whether a node is “big enough” for scheduling; **requests** do.
+- **Pod overhead** — For some runtimes (sandboxed runtimes, etc.), **RuntimeClass** can declare fixed overhead so scheduling accounts for extra CPU/memory beyond container sums.
 
-**When to use it?**  
-- When using sidecar containers or custom runtimes.
-- For detailed resource accounting in resource-constrained clusters.
-
-**Example**: Use RuntimeClass to enable overhead accounting.
 ```yaml
 apiVersion: node.k8s.io/v1
 kind: RuntimeClass
@@ -219,25 +207,11 @@ overhead:
     memory: "50Mi"
 ```
 
----
-
-### **2.2 Resource Requests and Limits**
-**What is it?**  
-Requests and limits define the minimum and maximum resources a pod can use.
-
-**Why is it important?**  
-They ensure fair resource distribution, prevent overuse, and avoid resource contention between workloads.
-
-**When to use it?**  
-- To guarantee resources for critical workloads.
-- To control resource usage in multi-tenant environments.
-
-**Example**:
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: resource-managed-pod
+  name: resource-demo
 spec:
   containers:
   - name: nginx
@@ -251,48 +225,14 @@ spec:
         cpu: "1"
 ```
 
----
+### Quotas and limit ranges
 
-### **2.3 Resource Quotas**
-**What is it?**  
-Resource Quotas limit the total CPU, memory, or storage a namespace can consume.
+ResourceQuotas let administrators cap the total CPU, memory, and object counts that a namespace can consume. They enforce fair sharing in multi-tenant clusters by rejecting requests that would exceed the quota. Quotas don't affect scheduling directly—the scheduler still fits Pods using **requests** against node allocatable—but they ensure namespaces don't consume more than their share at admission time.
 
-**Why is it important?**  
-Prevents any single namespace from consuming disproportionate resources, ensuring balanced usage in multi-tenant clusters.
+For detailed configuration, YAML examples, and use cases, see [Resource Quotas and Limits](../workloads/resourcequota.md).
 
-**When to use it?**  
-- In multi-tenant clusters with resource caps.
-- To enforce organizational resource policies.
+**LimitRange** sets defaults, minima, and maxima for individual containers or Pods in a namespace. It affects whether Pods can be **created**; the scheduler still primarily uses **requests** vs node allocatable for fit.
 
-**Example**:
-```yaml
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: namespace-quota
-  namespace: my-namespace
-spec:
-  hard:
-    requests.cpu: "2"
-    requests.memory: 2Gi
-    limits.cpu: "4"
-    limits.memory: 4Gi
-```
-
----
-
-### **2.4 Limit Ranges**
-**What is it?**  
-Limit Ranges enforce minimum and maximum resource constraints for pods and containers.
-
-**Why is it important?**  
-It standardizes resource usage, avoiding extreme under or over-allocation.
-
-**When to use it?**  
-- For predictable workload performance.
-- To enforce consistent resource policies.
-
-**Example**:
 ```yaml
 apiVersion: v1
 kind: LimitRange
@@ -312,18 +252,10 @@ spec:
 
 ---
 
-### **2.5 Pod Priority and Preemption**
-**What is it?**  
-Pod Priority determines the order of scheduling during resource contention. High-priority pods can preempt lower-priority pods.
+## Priority and preemption
 
-**Why is it important?**  
-Ensures critical workloads receive resources during shortages.
+**PriorityClass** assigns an integer **priority** to Pods. When a high-priority Pod cannot schedule, the scheduler may **preempt** (evict) lower-priority Pods to free resources, subject to PDBs and other safety constraints. Set `globalDefault: true` on one class only if you want a default priority for Pods without an explicit class.
 
-**When to use it?**  
-- For system-critical or latency-sensitive applications.
-- In resource-constrained clusters.
-
-**Example**:
 ```yaml
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
@@ -344,29 +276,40 @@ spec:
     image: nginx
 ```
 
-Here is a comparison table between **LimitRange** and **ResourceQuota** in Kubernetes:  
+---
 
-| Feature          | LimitRange | ResourceQuota |
-|-----------------|------------|--------------|
-| **Purpose** | Defines resource limits (requests/limits) for individual containers/pods within a namespace. | Sets overall resource consumption limits at the namespace level. |
-| **Scope** | Works at the container or pod level. | Works at the namespace level. |
-| **Enforced on** | CPU, memory, and ephemeral storage requests and limits for containers. | Aggregate resources like CPU, memory, storage, object counts (e.g., pods, services, PVCs) for the whole namespace. |
-| **Key Benefit** | Prevents overconsumption by individual workloads, ensuring fair resource allocation. | Prevents a single namespace from exhausting cluster resources. |
-| **Common Use Cases** | - Setting minimum/maximum CPU and memory per container. <br> - Enforcing default resource requests/limits for containers. | - Restricting total CPU/memory a namespace can use. <br> - Limiting the number of pods, services, or persistent volumes in a namespace. |
-| **Example Fields** | `max`, `min`, `default`, `defaultRequest` | `hard` (defines max limits for resources) |
-| **Example Use Case** | Ensure a pod does not request more than 1 CPU and 2Gi memory. | Restrict a namespace to a total of 10 CPUs and 20Gi memory. |
+## Summary reference
+
+| Topic | Role |
+|-------|------|
+| **Scheduler** | Assigns Pending Pods to nodes using plugins (Filter/Score central). |
+| **Requests** | Drive feasibility; limits cap runtime use. |
+| **nodeSelector / affinity** | Required and preferred placement by labels (and topology for pod affinity). |
+| **Taints / tolerations** | Node repulsion and dedicated pools. |
+| **Topology spread** | Balance replicas across domains. |
+| **Profiles** | Customize plugin sets per `schedulerName`. |
+| **Quota / LimitRange** | Namespace policy; see linked workload doc. |
+| **Priority** | Ordering and preemption under contention. |
+
+---
+
+## Common use cases
+
+1. **High availability** — Spread across zones or hosts (topology spread, anti-affinity).
+2. **Specialized hardware** — Node labels + affinity or taints for GPU/SSD pools.
+3. **Isolation** — Taints for control plane or dedicated tenants; tolerations only where intended.
+4. **Fair sharing** — Requests for predictable packing; quotas per namespace.
+5. **Compliance** — Required node affinity to allowed regions or environments.
 
 ---
 
 ## Hands-On Labs
 
-Practice these concepts with guided lab exercises:
-
 | Lab | Description |
 |-----|-------------|
-| [Lab 17: Pod Scheduling with NodeSelector](../../labmanuals/lab17-sched-nodeselector.md) | Node labels and selector-based placement |
-| [Lab 18: Pod Scheduling with Node and Pod Affinity](../../labmanuals/lab18-sched-affinity-antiaffinity.md) | Affinity rules and topology |
-| [Lab 19: Pod Scheduling with PriorityClass](../../labmanuals/lab19-sched-priorityclass.md) | Priority classes and preemption behavior |
+| [Lab 17: Pod Scheduling with NodeSelector](../../labmanuals/lab17-sched-nodeselector.md) | Node labels and nodeSelector-style scheduling |
+| [Lab 18: Pod Scheduling with Node and Pod Affinity](../../labmanuals/lab18-sched-affinity-antiaffinity.md) | Node and Pod affinity / anti-affinity |
+| [Lab 19: Pod Scheduling with PriorityClass](../../labmanuals/lab19-sched-priorityclass.md) | Pod priority and preemption |
 | [Lab 20: Pod Scheduling with Taints and Tolerations](../../labmanuals/lab20-sched-taints-tolerations.md) | Taints, tolerations, and dedicated nodes |
 
-This combined tutorial ensures a strong understanding of Kubernetes' advanced scheduling and resource management capabilities, equipping you with the tools to optimize your cluster for efficiency and reliability.
+Together, these labs reinforce the behaviors described in this guide for both exam preparation and production clusters.

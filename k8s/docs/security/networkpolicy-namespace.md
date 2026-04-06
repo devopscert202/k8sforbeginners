@@ -4,6 +4,8 @@ This document explains how Kubernetes **NetworkPolicy** can isolate ingress so P
 
 ---
 
+> **Related:** [NetworkPolicy Basics](./networkpolicy.md) | [Kubernetes Hardening Guide](./k8s-hardening.md)
+
 ### **Background: Default Kubernetes Behavior**
 
 1. **Default Behavior Without NetworkPolicy**:

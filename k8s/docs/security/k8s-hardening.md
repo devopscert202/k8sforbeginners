@@ -4,6 +4,8 @@ This document covers key techniques for securing Kubernetes containers, focusing
 
 ---
 
+> **Related:** [NetworkPolicy Basics](./networkpolicy.md) | [Namespace-Scoped Network Isolation](./networkpolicy-namespace.md) — for dedicated NetworkPolicy guides
+
 ## **1. Prevent Privilege Escalation**
 
 ### **What is Privilege Escalation?**

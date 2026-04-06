@@ -16,6 +16,8 @@ A **ConfigMap** is a Kubernetes object used to decouple application configuratio
 - **Flexibility:** Supports dynamic updates without requiring Pod restarts (when mounted as files).
 - **Portability:** Simplifies application deployment across environments (e.g., development, staging, production).
 
+> **Deep dive:** For volume-mount patterns, projected volumes, and live-reload behavior, see [ConfigMap as a Volume](../storage/configmap-volume.md).
+
 ---
 
 ### **How ConfigMaps are Consumed**

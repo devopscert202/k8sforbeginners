@@ -1,511 +1,135 @@
-# Kubernetes Introduction for Beginners
+# Kubernetes Introduction — Complete Guide
 
-Kubernetes (K8s) is an **open-source container orchestration platform** that automates the **deployment, scaling, and management** of containerized applications.
+Kubernetes (K8s) is an **open-source container orchestration platform** that automates **deployment, scaling, and management** of containerized applications. It schedules work across a cluster of nodes, reconciles **desired state** (declarative manifests) with what is actually running, and provides built-in networking, storage hooks, and recovery when things fail. That matters because raw containers alone do not solve multi-node placement, upgrades without downtime, or service discovery at scale.
 
-It helps teams manage containers (like Docker or containerd) at scale across clusters of servers — ensuring high availability, efficient resource utilization, and zero-downtime deployments.
+**Official documentation:** [https://kubernetes.io/docs](https://kubernetes.io/docs)
 
-📘 **Official Documentation:** [https://kubernetes.io/docs](https://kubernetes.io/docs)
-
----
-
-## Containers and Docker – Quick Recap
-
-### **Containers**
-
-* **Definition:** Lightweight, portable units that package an application and all its dependencies together.
-* **Isolation:** Provide process-level isolation without the heavy overhead of virtual machines.
-* **Efficiency:** Containers share the host OS kernel, start up quickly, and use resources more efficiently than VMs.
-
-### **Docker**
-
-* **Definition:** A popular platform for building, packaging, and running containers.
-* **Docker Images:** Immutable templates that define the contents of a container (app, libraries, dependencies).
-* **Docker Engine:** The runtime responsible for running and managing containers.
-* **Portability:** Containers run identically across environments — dev, test, or production.
-
-### Container Image
-
-A read-only template used to create containers.
-
-### Containerized Application
-
-An application packaged with its dependencies to ensure portability.
-
-### Benefits of Containers
-
-* Portability
-* Scalability
-* Consistency
-* Isolation
-* Speed
+Use the numbered path below in order the first time through; skip or revisit sections based on what you already know. Each step points to a deeper guide in this repo.
 
 ---
 
-## Why Do We Need Kubernetes?
+## Learning path
 
-While **Docker** simplifies creating and running containers, it doesn't handle **container orchestration** — i.e., running containers at scale across multiple servers.
+### 1. Containers and images
 
-That's where **Kubernetes** comes in.
+Containers package an app with its dependencies; images are the immutable templates you run. You need that mental model before orchestration makes sense.
 
-### **1. Automatic Scaling**
+**Next:** [Container basics](./container-basics.md)
 
-* **Challenge:** Manually scaling applications to handle variable loads is difficult.
-* **Solution:** Kubernetes automatically adjusts the number of running containers (Pods) based on demand (via Horizontal Pod Autoscaler).
+### 2. Why orchestration (and Kubernetes)
 
-### **2. Service Discovery & Load Balancing**
+Docker and similar tools run containers on a host; **orchestration** decides *where* they run, *how many* copies to keep, *how* to roll out new versions, and *how* traffic finds healthy backends. Kubernetes provides horizontal scaling, service discovery and load balancing, self-healing for failed Pods, rollouts/rollbacks, resource-aware scheduling, storage abstractions (PV/PVC), Jobs/CronJobs, and ConfigMaps/Secrets—topics spelled out in the linked guides below rather than duplicated here.
 
-* **Challenge:** How to route traffic to the right container?
-* **Solution:** Kubernetes provides built-in DNS-based service discovery and load balancing.
+### 3. Cluster architecture
 
-### **3. Self-Healing**
+A cluster has a **control plane** (API server, etcd, scheduler, controllers) and **worker nodes** (kubelet, kube-proxy, container runtime) that run your Pods.
 
-* **Challenge:** Handling crashed or unhealthy containers manually.
-* **Solution:** Kubernetes automatically restarts, replaces, or reschedules failed Pods.
+**Next:** [Kubernetes architecture](./k8s-architecture.md)
 
-### **4. Automated Rollouts & Rollbacks**
+### 4. Local cluster with kind
 
-* **Challenge:** Deploying new versions without downtime.
-* **Solution:** Kubernetes supports rolling updates and allows rollback to stable versions.
+A disposable local cluster is the safest place to practice `kubectl` and manifests without cloud cost.
 
-### **5. Resource Management**
+**Next:** [Kind local cluster](./kind-local-cluster.md)
 
-* **Challenge:** Optimizing CPU, memory, and storage usage across clusters.
-* **Solution:** Kubernetes schedules containers based on resource requests/limits for maximum efficiency.
+### 5. YAML manifests
 
-### **6. Persistent Storage Management**
+Real work in Kubernetes is mostly declarative YAML: `apiVersion`, `kind`, `metadata`, `spec`, and (read-only) `status`.
 
-* **Challenge:** Containers are ephemeral; how to persist data?
-* **Solution:** Kubernetes supports Persistent Volumes (PVs) and Persistent Volume Claims (PVCs) to manage stateful apps.
+**Next:** [YAML basics](./yaml-basics.md)
 
-### **7. Batch Execution**
+### 6. Kubernetes API and kubectl
 
-* Kubernetes can run batch jobs, cron jobs, and scheduled tasks.
+The API is how the control plane represents resources; `kubectl` (and other clients) talk to the API server to read and change that state.
 
-### **8. Secret & Config Management**
+**Next:** [Kubernetes API](./k8s-apis.md)
 
-* Manage sensitive data and configurations securely.
+### 7. Objects, workloads, and controllers
 
-### **9. Storage Orchestration**
+Resources like Pods, ReplicaSets, Deployments, Services, Ingress, ConfigMaps, Secrets, PVs/PVCs, and Namespaces are **objects** in the API; controllers continuously drive the cluster toward the desired state.
 
-* Automatically mount storage systems (local, cloud, etc.).
+**Next:** [Kubernetes objects (complete guide)](./k8s-objects-complete.md)
 
----
+### 8. Container runtimes and crictl
 
-## Kubernetes Architecture Overview
+Nodes run containers through a **CRI**-compatible runtime (for example containerd or CRI-O). **crictl** is the standard CLI for inspecting workloads at the runtime layer when `kubectl` is not enough.
 
-A **Kubernetes cluster** consists of:
+**Next:** [crictl](./crictl.md)
 
-* A **Control Plane (Master components)** – manages the cluster.
-* One or more **Worker Nodes** – run your applications (Pods).
+### 9. Networking
 
-Here's a conceptual diagram:
+Pods get cluster IPs; Services provide stable virtual IPs and DNS names; a **CNI** plugin implements the Pod network. These ideas connect directly to how you design and debug applications on the cluster.
 
-```
-               +--------------------------------------+
-               |           Control Plane              |
-               |--------------------------------------|
-               |  kube-apiserver   etcd               |
-               |  kube-scheduler   kube-controller-mgr|
-               |  cloud-controller-manager (optional) |
-               +--------------------------------------+
-                             |
-                 Cluster Communication (API)
-                             |
-       +---------------------------------------------------+
-       |                   Worker Nodes                    |
-       |---------------------------------------------------|
-       |  kubelet | kube-proxy | container runtime (e.g.,  |
-       |  containerd) | Pods (App Containers)               |
-       +---------------------------------------------------+
-```
+**Next:** [Networking basics](../networking/networking-basics.md) · Deeper dive: [Kubernetes networking and services](../networking/k8s-networking.services.md)
 
-### Overview
+### 10. Scheduling (placement rules)
 
-Kubernetes architecture follows a **master–worker** model (Control Plane and Nodes).
+Beyond default scheduling, you can constrain which nodes run a workload using affinities, anti-affinities, and related mechanisms.
 
-#### Core Components
+**Next:** [Affinity and anti-affinity](../scheduling/affinity_antiaffinity.md)
 
-1. **Control Plane (Master)** – Manages the cluster state and decisions.
-2. **Worker Nodes** – Run the actual application workloads (Pods).
-3. **etcd** – Distributed key-value store for cluster state.
-4. **Controller Manager & Scheduler** – Manage lifecycle and placement of workloads.
+### 11. Cluster lifecycle and administration
+
+Production clusters involve topology choices, adding/removing nodes, upgrades, backups, and securing node/API access (certificates, RBAC, kubelet auth). **kubeadm** is a common bootstrap path: `kubeadm init` on the first control plane node (with a pod network CIDR aligned to your CNI) and `kubeadm join` on additional nodes with a join token—full sequences and prerequisites are in the installation and administration labs linked below.
 
 ---
 
-## Kubernetes Components Explained
+## Web UIs
 
-### **Control Plane Components (Master)**
+Treat the legacy **Kubernetes Dashboard** as a reference only; upstream maintenance has wound down. Prefer current UI options documented in this repo.
 
-| Component                    | Description                                                                                                                                  |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **kube-apiserver**           | The central management point — exposes the Kubernetes API. All communication (kubectl, UI, controllers) passes through it.                   |
-| **etcd**                     | A distributed key-value store that stores all cluster data (state, config, secrets, etc.). Acts as Kubernetes' "brain."                      |
-| **kube-scheduler**           | Assigns Pods to nodes based on resource requirements, constraints, and policies.                                                             |
-| **kube-controller-manager**  | Runs various controllers that manage different aspects of the cluster (e.g., node controller, replication controller, endpoints controller). |
-| **cloud-controller-manager** | Integrates Kubernetes with underlying cloud provider APIs (for load balancers, storage, etc.).                                               |
-
-**kube-apiserver**
-* Exposes the Kubernetes API (REST interface).
-* Validates and configures cluster data for objects like Pods, Services, etc.
-
-**etcd**
-* Stores all cluster state data.
-* Distributed and consistent.
-* Example:
-  ```bash
-  etcdctl get /registry/pods/default/nginx
-  ETCDCTL_API=3 etcdctl get /registry/nodes/worker-1
-  ```
-
-**kube-scheduler**
-* Assigns Pods to Nodes based on resource needs and policies.
-* Scheduling Process:
-  1. Filtering
-  2. Scoring
-  3. Binding
-* Example filters: CPU, Memory, Labels
-* Example scoring: Least requested node wins.
-
-**kube-controller-manager**
-* Runs controllers that manage replicas, endpoints, and nodes.
-
-**cloud-controller-manager**
-* Integrates Kubernetes with cloud platforms (AWS, GCP, Azure).
-* Bridges Kubernetes with cloud providers (e.g., creates LoadBalancers, storage volumes).
+**Next:** [Kubernetes UIs: landscape and alternatives](../workloads/k8s-ui-alternatives.md) · [Headlamp HTML guide](../../html/k8s-ui-headlamp.html)
 
 ---
 
-### **Node (Worker) Components**
+## When Kubernetes helps — and when it does not
 
-| Component             | Description                                                                                                                       |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **kubelet**           | The agent running on each node. It communicates with the control plane and ensures containers are running as defined in PodSpecs. |
-| **kube-proxy**        | Manages network routing and load balancing for Pods within the node. It maintains network rules for cluster IPs and services.     |
-| **Container Runtime** | The software responsible for running containers (e.g., containerd, CRI-O, Docker in older versions).                              |
+### Advantages
 
-Each Node runs:
+- **Scalability and self-healing** — replica counts and restarts without manual babysitting.
+- **Rolling updates and rollbacks** — reduce downtime during version changes.
+- **Portability** — same API and patterns across on-prem and cloud.
+- **Declarative operations** — versioned desired state instead of one-off imperative steps.
+- **Extensibility** — CRDs and operators for custom automation.
 
-* **kubelet** – Communicates with API server and manages Pods.
-  - Manages containers on a node.
-  - Watches the API server for Pod specs.
-  - Reports node and Pod status.
-  - Example manifest:
-    ```bash
-    cat /etc/kubernetes/manifests/kube-apiserver.yaml
-    ```
+### Disadvantages
 
-* **kube-proxy** – Handles networking, routing, load balancing.
-  - Handles Pod-to-Pod and external network routing.
-  - Operation Modes:
-    * iptables mode
-    * IPVS mode
+- **Complexity** — steep learning curve and many moving parts.
+- **Operational cost** — control plane and tooling need care and capacity.
+- **Setup and integration** — networking, security, and storage must be correct for your environment.
+- **Debugging** — distributed failures are harder to trace than on a single host.
 
-* **Container Runtime** – Runs containers (containerd, CRI-O).
+### Where it is used
+
+Kubernetes underpins major managed offerings (Google GKE, AWS EKS, Microsoft AKS). It is also used at scale by many product companies (for example Spotify, Airbnb, Shopify, and Netflix). Adoption always depends on team skills, workload fit, and operational maturity—not on name recognition alone.
 
 ---
 
-### **Additional Core Concepts**
-
-| Concept                                                    | Description                                                                                      |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Pod**                                                    | The smallest deployable unit in Kubernetes — one or more containers sharing network and storage. |
-| **ReplicaSet**                                             | Ensures a specified number of Pod replicas are running at all times.                             |
-| **Deployment**                                             | Manages stateless applications — handles rolling updates, rollbacks, and scaling.                |
-| **Service**                                                | Provides stable networking and load balancing for Pods.                                          |
-| **Ingress**                                                | Manages external HTTP/HTTPS access to Services within the cluster.                               |
-| **ConfigMap / Secret**                                     | Store configuration data and sensitive information separately from the application code.         |
-| **Persistent Volume (PV) / Persistent Volume Claim (PVC)** | Manage storage independently from Pods.                                                          |
-| **Namespace**                                              | Logical partitions for organizing cluster resources (like environments or teams).                |
-
----
-
-## Container Runtime
-
-**Container Runtime Interface (CRI):**
-
-* Connects Kubernetes to underlying container runtime.
-
-Common runtimes:
-
-* containerd
-* CRI-O
-* Docker (deprecated since v1.24)
-
-### Transition from Docker to Containerd
-
-Kubernetes **removed Docker support** in v1.24, adopting **containerd** directly.
-
-**Why?**
-
-* Docker is built atop containerd.
-* Removing Docker simplifies runtime integration.
-
-**Example:**
-
-```bash
-# Check container runtime
-kubectl get node -o wide
-# or
-crictl ps
-```
-
-### Containerd CLI and crictl
-
-**crictl** – CLI for CRI-compatible runtimes.
-
-```bash
-crictl ps        # List containers
-crictl images    # List images
-crictl inspect   # Inspect container
-```
-
----
-
-## Controllers in Kubernetes
-
-Controllers continuously monitor cluster state and take actions to reach the **desired state**.
-
-### Types:
-
-* **ReplicationController**
-* **DeploymentController**
-* **NodeController**
-* **JobController**
-* **DaemonSetController**
-
----
-
-## Node Affinity / Anti-Affinity
-
-Used to **control which nodes Pods are placed on.**
-
-Example:
-
-```yaml
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values: ["node1"]
-```
-
----
-
-## Kubernetes API
-
-* The **Kubernetes API** exposes resources such as `Pods`, `Services`, `Deployments`, etc.
-* Use `kubectl` to interact:
-
-  ```bash
-  kubectl get pods
-  kubectl describe node worker-1
-  ```
-
----
-
-## Kubernetes Objects
-
-Objects represent the **desired state** in the cluster (e.g., how many replicas, what image, etc.)
-
-### Object Fields
-
-* `apiVersion`
-* `kind`
-* `metadata`
-* `spec`
-* `status`
-
-Example Pod YAML:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx-pod
-spec:
-  containers:
-    - name: nginx
-      image: nginx:1.27
-      ports:
-        - containerPort: 80
-```
-
----
-
-## Pods – The Smallest Deployable Unit
-
-### Multi-container Pod Example:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: multi-container
-spec:
-  containers:
-    - name: app
-      image: nginx
-    - name: sidecar
-      image: busybox
-      command: ["sh", "-c", "echo sidecar running; sleep 3600"]
-```
-
----
-
-## ReplicaSets and Deployments
-
-### ReplicaSet
-
-Maintains a stable set of replica Pods.
-
-```yaml
-apiVersion: apps/v1
-kind: ReplicaSet
-metadata:
-  name: nginx-rs
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-        - name: nginx
-          image: nginx
-```
-
-### Deployment
-
-Manages ReplicaSets and updates.
-
----
-
-## Deployment operations
-
-Deployments support **rollout status**, **rollback** to a previous revision, and **scaling** replica count; these are exposed via `kubectl rollout` and `kubectl scale` (see the kubectl reference and lab manuals for exact commands).
-
----
-
-## Networking in Kubernetes
-
-### Key Concepts
-
-* Every Pod gets a unique IP.
-* Services expose Pods internally/externally.
-* CNI Plugins (Calico, Flannel, Weave Net).
-
----
-
-## Cluster Administration
-
-* **Planning a cluster** – choose topology, storage, network.
-* **Node management** – adding/removing nodes.
-* **Kubelet authz/authn** – TLS, certificates, RBAC.
-* **Kubeadm** – bootstrap and manage clusters.
-
-Bootstrapping typically uses **`kubeadm init`** on the first control plane node (often with a pod network CIDR that matches your CNI) and **`kubeadm join`** on additional nodes with a join token; see the installation lab for the full sequence and prerequisites.
-
----
-
-## Kubernetes Dashboard
-
-Note: Kubernetes Dashboard should now be treated as a legacy UI reference. The upstream repository is archived and no longer maintained. For the current UI path in this repo, use [Headlamp UI overview](../workloads/k8s-headlamp-ui.md) or [Headlamp HTML guide](../../html/k8s-ui-headlamp.html).
-
-Web-based UI to monitor, deploy, and manage workloads.
-
----
-
-## Kubelet Authentication & Authorization
-
-* **Authentication:** x509 certificates, bearer tokens.
-* **Authorization:** RBAC, ABAC, Node authorizer.
-
----
-
-## Advantages of Kubernetes
-
-* ✅ **Scalability** – Automatically scale up/down based on demand
-* ✅ **Self-healing** – Automatically restarts/replaces failed Pods
-* ✅ **Rolling updates** – Zero downtime deployments
-* ✅ **Portability** – Works across on-premises and cloud environments
-* ✅ **Resource efficiency** – Optimizes hardware utilization
-* ✅ **Declarative management** – "Desired state" maintained automatically
-* ✅ **Automation and declarative management**
-* ✅ **Cloud agnostic**
-* ✅ **Efficient resource utilization**
-* ✅ **Faster deployment cycles**
-* ✅ **Cost efficiency**
-* ✅ **Scalability and fault tolerance**
-
----
-
-## Disadvantages of Kubernetes
-
-* ❗ **Complexity:** Steep learning curve for beginners
-* ❗ **Operational overhead:** Control plane components consume resources
-* ❗ **Setup challenges:** Requires proper configuration for networking, security, and storage
-* ❗ **Debugging difficulty:** Troubleshooting distributed systems can be challenging
-
----
-
-## Business Benefits of Kubernetes
-
-* 🚀 **Faster deployment cycles**
-* 💰 **Cost efficiency**
-* 🧱 **Scalability and fault tolerance**
-* ⚙️ **Automation and declarative management**
-* 🌍 **Cloud agnostic**
-* 🧠 **Efficient resource utilization**
-
----
-
-## Organizations Using Kubernetes
-
-* Google (GKE)
-* AWS (EKS)
-* Microsoft (AKS)
-* Spotify
-* Airbnb
-* Shopify
-* Netflix
-
----
-
-## Helpful References
-
-* 📘 [Kubernetes Documentation](https://kubernetes.io/docs)
-* 📦 [Kubernetes Architecture Explained (Official)](https://kubernetes.io/docs/concepts/overview/components/)
-* 🧰 [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-* 🧩 [Interactive Playground – Katacoda (Archived)](https://www.katacoda.com/courses/kubernetes)
-* ☸️ [Play with Kubernetes](https://labs.play-with-k8s.com/)
+## Helpful external references
+
+- [Kubernetes components (official)](https://kubernetes.io/docs/concepts/overview/components/)
+- [kubectl cheat sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+- [Play with Kubernetes](https://labs.play-with-k8s.com/)
 
 ---
 
 ## Hands-On Labs
-
-Practice these concepts with guided lab exercises:
 
 | Lab | Description |
 |-----|-------------|
 | [Lab 01: Creating pods](../../labmanuals/lab01-basics-creating-pods.md) | Pods, manifests, and basic workload concepts. |
 | [Lab 02: Creating services](../../labmanuals/lab02-basics-creating-services.md) | Services, selectors, and cluster networking basics. |
 | [Lab 03: kubectl essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Core `kubectl` workflows for daily cluster work. |
+| [Lab 04: Docker build and run](../../labmanuals/lab04-basics-docker-build-run.md) | Container images aligned with [container basics](./container-basics.md). |
+| [Lab 05: Kind local Kubernetes](../../labmanuals/lab05-install-kind-local-kubernetes.md) | Local cluster aligned with [Kind guide](./kind-local-cluster.md). |
+| [Lab 06: Install Kubernetes with kubeadm](../../labmanuals/lab06-install-kubernetes-kubeadm.md) | Bootstrap a multi-node-style cluster; complements **§11** above. |
+| [Lab 08: Cluster administration](../../labmanuals/lab08-cluster-administration.md) | Day-2 operations and cluster-wide tasks. |
+| [Lab 46: YAML manifests](../../labmanuals/lab46-basics-yaml-manifests.md) | Hands-on practice for [YAML basics](./yaml-basics.md). |
+| [Lab 59: crictl](../../labmanuals/lab59-basics-crictl.md) | Runtime-level inspection; pairs with [crictl](./crictl.md). |
+| [Lab 60: Kubernetes APIs](../../labmanuals/lab60-basics-k8s-apis.md) | API exploration; pairs with [Kubernetes API](./k8s-apis.md). |
 
 ---
 
 ## Summary
 
-Kubernetes is a **complete ecosystem** for automating containerized workloads, with:
-
-* Declarative configuration
-* Self-healing
-* Scalability
-* Extensibility via CRDs & Operators
-* Multi-cloud support
+Kubernetes is an **ecosystem** for running containerized workloads: declarative configuration, controllers that enforce desired state, built-in networking and storage abstractions, and a path from a laptop cluster to production platforms. This page is the map; the linked guides and labs are the territory.
