@@ -61,8 +61,7 @@
 <body>
     <div class="container">
         <section class="hero">
-            <div class="eyebrow">Cloud Storage Flow</div>
-            <h1>CSI, AWS EBS, and EFS</h1>
+<h1>CSI, AWS EBS, and EFS</h1>
             <p class="subtitle">Understand how Kubernetes uses CSI drivers to provision cloud storage, how PVCs trigger AWS volumes, and when to choose EBS versus EFS.</p>
             <div class="lead">Pods do not call AWS storage APIs directly. A Pod uses a PVC, the PVC references a StorageClass, Kubernetes asks a CSI driver to create or attach real cloud storage, and the Pod finally mounts that storage as a filesystem path.</div>
         </section>
