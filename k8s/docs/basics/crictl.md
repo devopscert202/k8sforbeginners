@@ -121,4 +121,5 @@ Practice these concepts with guided lab exercises:
 
 | Lab | Description |
 |-----|-------------|
-| [Lab 03: kubectl essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Cluster interaction and troubleshooting workflows that complement node-level CRI tools. |
+| [Lab 59: Container Runtime Interface — crictl](../../labmanuals/lab59-basics-crictl.md) | Install, configure, and use `crictl` for node-level container and pod troubleshooting |
+| [Lab 03: kubectl Essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Cluster-level interaction and troubleshooting workflows that complement node-level CRI tools |

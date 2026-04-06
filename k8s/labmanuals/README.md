@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **58 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **60 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -112,18 +112,20 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 56 | Networking | CoreDNS Deep Dive | CoreDNS architecture, Corefile, plugins, DNS records, ndots, customization, and troubleshooting. | [lab56-net-coredns.md](lab56-net-coredns.md) |
 | 57 | Security | Network Policy Advanced | Pod-to-pod traffic control, ingress/egress rules, 3-tier isolation, CIDR blocks, AND vs OR logic. | [lab57-sec-network-policy-advanced.md](lab57-sec-network-policy-advanced.md) |
 | 58 | Networking | EndpointSlices | Scalable endpoint management, custom EndpointSlices for external services, and topology-aware routing. | [lab58-net-endpointslices.md](lab58-net-endpointslices.md) |
+| 59 | Basics | Container Runtime Interface — crictl | Install and use `crictl` for node-level pod, container, and image troubleshooting with CRI-compliant runtimes. | [lab59-basics-crictl.md](lab59-basics-crictl.md) |
+| 60 | Basics | Kubernetes API Discovery | Explore `api-versions`, `api-resources`, `explain`, output formats (`-o wide/yaml/jsonpath`), and raw API endpoints. | [lab60-basics-k8s-apis.md](lab60-basics-k8s-apis.md) |
 
 ---
 
 ## Learning Paths
 
-Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–57**):
+Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–60**):
 
 ### Path 1: Complete Beginner
 Start here if you're new to Kubernetes:
 ```
 Lab 04 (Docker) → Lab 01 (Pods) → Lab 46 (YAML deep dive, optional but recommended) → Lab 02 (Services) → Lab 03 (kubectl) →
-Lab 25 (ConfigMaps) → Lab 22 (Deployment Strategies)
+Lab 60 (K8s API Discovery) → Lab 59 (crictl) → Lab 25 (ConfigMaps) → Lab 22 (Deployment Strategies)
 ```
 
 ### Path 2: Security Focus

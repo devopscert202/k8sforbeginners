@@ -267,4 +267,5 @@ Practice these concepts with guided lab exercises:
 
 | Lab | Description |
 |-----|-------------|
-| [Lab 03: kubectl essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Use `kubectl` discovery commands (`api-resources`, `explain`, `get -o yaml`) against a live cluster. |
+| [Lab 60: Kubernetes API Discovery](../../labmanuals/lab60-basics-k8s-apis.md) | Hands-on with `api-versions`, `api-resources`, `explain`, output formats (`-o wide/yaml/jsonpath`), and raw API endpoints |
+| [Lab 03: kubectl Essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Core `kubectl` CRUD operations that build on API discovery skills |
