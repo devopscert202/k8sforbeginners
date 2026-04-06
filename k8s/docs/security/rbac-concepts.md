@@ -146,3 +146,13 @@ RBAC in Kubernetes revolves around **Operations**, **Objects**, **Roles**, and *
 
 
 RBAC provides a robust and flexible system for access control, ensuring your Kubernetes cluster remains secure and manageable.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 11: Role-Based Access Control (RBAC)](../../labmanuals/lab11-sec-rbac-security.md) | Create Roles, Bindings, and kubeconfig contexts and validate access. |

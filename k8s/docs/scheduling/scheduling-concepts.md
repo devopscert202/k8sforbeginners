@@ -199,23 +199,9 @@ spec:
 
 ---
 
-## Hands-On Example: Scheduling a Pod
+## Combined scheduling constraints (illustrative)
 
-Here is a complete example demonstrating how the scheduler assigns a pod using node affinity and tolerations.
-
-### Node Configuration
-
-Label a node:
-```bash
-kubectl label nodes node1 disktype=ssd
-```
-
-Taint the node:
-```bash
-kubectl taint nodes node1 key=value:NoSchedule
-```
-
-### Pod YAML with Scheduling Constraints
+The following Pod spec assumes a node is labeled `disktype=ssd` and tainted `key=value:NoSchedule`. Only Pods with a matching **toleration** can schedule there; **node affinity** further requires the SSD label. Resource **requests** participate in fit scoring and feasibility.
 
 ```yaml
 apiVersion: v1
@@ -246,23 +232,7 @@ spec:
         cpu: "250m"
 ```
 
-### Apply and Verify
-
-1. Apply the pod manifest:
-   ```bash
-   kubectl apply -f pod.yaml
-   ```
-
-2. Check the pod's node:
-   ```bash
-   kubectl get pods -o wide
-   ```
-
-Expected output:
-```
-NAME             READY   STATUS    NODE    AGE
-scheduling-demo  1/1     Running   node1   2m
-```
+If no node satisfies taints, affinity, and free resources, the Pod remains **Pending** until the cluster state changes.
 
 ---
 
@@ -293,5 +263,16 @@ scheduling-demo  1/1     Running   node1   2m
 5. **Compliance**: Restricting workloads to specific zones or environments based on organizational requirements
 
 ---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 17: Pod Scheduling with NodeSelector](../../labmanuals/lab17-sched-nodeselector.md) | Node labels and nodeSelector-style scheduling |
+| [Lab 18: Pod Scheduling with Node and Pod Affinity](../../labmanuals/lab18-sched-affinity-antiaffinity.md) | Node and Pod affinity / anti-affinity |
+| [Lab 19: Pod Scheduling with PriorityClass](../../labmanuals/lab19-sched-priorityclass.md) | Pod priority and preemption concepts in practice |
+| [Lab 20: Pod Scheduling with Taints and Tolerations](../../labmanuals/lab20-sched-taints-tolerations.md) | Taints, tolerations, and scheduling gates |
 
 This guide provides a solid foundation for understanding Kubernetes scheduling concepts essential for the CKA exam and practical cluster management.

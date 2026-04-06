@@ -261,7 +261,10 @@ Kubernetes uses version suffixes like `alpha`, `beta`, and `v1` to indicate matu
 
 ---
 
-If you want, I can:
+## Hands-On Labs
 
-* give examples for **specific resources** (e.g., `Ingress` changed group/versions across releases — show how to find the current one), or
-* provide a **short checklist** for migrating manifests from `v1beta1` → `v1` for common APIs like `Ingress` and `DaemonSet`. Which would help you more?
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 03: kubectl essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Use `kubectl` discovery commands (`api-resources`, `explain`, `get -o yaml`) against a live cluster. |

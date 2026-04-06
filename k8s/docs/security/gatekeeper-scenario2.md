@@ -2,38 +2,19 @@
 
 ## Introduction
 
-Gatekeeper is an admission controller webhook for Kubernetes that enforces policies defined using Open Policy Agent (OPA). It enables policy-based governance across a Kubernetes cluster by defining constraints and validating resource configurations.
+Gatekeeper is an admission controller webhook for Kubernetes that enforces policies defined using Open Policy Agent (OPA). It enables policy-based governance across a cluster by defining **ConstraintTemplates** (Rego + CRD schema) and **Constraints** (which resources and namespaces the policy applies to).
 
-In this tutorial, you will learn how to:
-1. Install OPA Gatekeeper
-2. Create and enforce constraints for resource limits on pods
-3. Create and enforce constraints for namespace naming conventions
-4. Validate the policies with test cases
+Common patterns include **limiting Pod resource limits** (for example maximum CPU or memory per container) and **enforcing naming conventions** on Namespaces (such as a required prefix for production namespaces). The admission webhook evaluates create/update requests; violations can be denied or audited depending on `enforcementAction` and cluster configuration.
 
-## Prerequisites
-- A running Kubernetes cluster
-- `kubectl` configured to interact with the cluster
-- Basic knowledge of Kubernetes objects like Pods and Namespaces
+## Prerequisites (conceptual)
+- A running Kubernetes cluster with permission to install admission webhooks
+- Familiarity with Pods, Namespaces, and how admission controllers interact with the API server
+- Optional: Helm for installing the Gatekeeper chart
 
-## Step 1: Install OPA Gatekeeper
+## Pattern 1: Pod resource limits via Rego
+A ConstraintTemplate can inspect `input.review.object` for Pod specs and emit violations when container `resources.limits` exceed policy. The Constraint then matches `kind: Pod` so the template applies cluster-wide or per-namespace as you configure `match`.
 
-Run the following command to install OPA Gatekeeper in your cluster:
-
-```sh
-kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/v3.17.1/deploy/gatekeeper.yaml
-```
-
-Verify that Gatekeeper is installed successfully:
-
-```sh
-kubectl get ns
-kubectl get pods -n gatekeeper-system
-```
-
-## Step 2: Create a ConstraintTemplate for Pod Resource Limits
-
-### Define the ConstraintTemplate
-Create a file `resourcequota-template.yaml` and add the following content:
+**Illustrative ConstraintTemplate** (concept: reject Pods whose CPU or memory limits exceed caps):
 
 ```yaml
 apiVersion: templates.gatekeeper.sh/v1beta1
@@ -54,7 +35,6 @@ spec:
           input.review.object.kind == "Pod"
           limits := input.review.object.spec.containers[_].resources.limits
 
-          # Check CPU limit
           limits.cpu > "500m"
           msg := sprintf("CPU limit exceeds the allowed maximum: %v", [limits.cpu])
         }
@@ -63,19 +43,12 @@ spec:
           input.review.object.kind == "Pod"
           limits := input.review.object.spec.containers[_].resources.limits
 
-          # Check memory limit
           limits.memory > "256Mi"
           msg := sprintf("Memory limit exceeds the allowed maximum: %v", [limits.memory])
         }
 ```
 
-Apply the ConstraintTemplate:
-```sh
-kubectl apply -f resourcequota-template.yaml
-```
-
-### Define the Constraint
-Create a file `resourcequota-constraint.yaml` and add:
+**Illustrative Constraint** binding that template to Pods:
 
 ```yaml
 apiVersion: constraints.gatekeeper.sh/v1beta1
@@ -89,65 +62,12 @@ spec:
         kinds: ["Pod"]
 ```
 
-Apply the constraint:
-```sh
-kubectl apply -f resourcequota-constraint.yaml
-```
+With this pattern, a Pod whose limits exceed the thresholds encoded in Rego is rejected at admission; Pods within the limits are allowed.
 
-## Step 3: Test the Resource Limit Policy
+## Pattern 2: Namespace naming conventions
+Another common use is ensuring Namespace names follow a convention— for example requiring a `prod-` prefix for production namespaces. The template matches `kind: Namespace` and uses string functions in Rego to compare `metadata.name`.
 
-### Create a Pod that Violates the Policy
-Create a file `excessive-pod.yaml` and add:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: excessive-cpu-pod
-spec:
-  containers:
-  - name: nginx
-    image: nginx
-    resources:
-      limits:
-        cpu: "600m"
-        memory: "128Mi"
-```
-
-Attempt to apply the pod configuration:
-```sh
-kubectl apply -f excessive-pod.yaml
-```
-This should result in an error.
-
-### Create a Valid Pod
-Create a file `valid-pod.yaml` and add:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: valid-pod
-spec:
-  containers:
-  - name: nginx
-    image: nginx
-    resources:
-      limits:
-        cpu: "400m"
-        memory: "128Mi"
-```
-
-Apply the configuration:
-```sh
-kubectl apply -f valid-pod.yaml
-```
-This pod should be successfully created.
-
-## Step 4: Create a ConstraintTemplate for Namespace Naming
-
-### Define the ConstraintTemplate
-Create a file `namespace-template.yaml` and add:
+**Illustrative ConstraintTemplate**:
 
 ```yaml
 apiVersion: templates.gatekeeper.sh/v1beta1
@@ -168,19 +88,12 @@ spec:
           input.review.object.kind == "Namespace"
           name := input.review.object.metadata.name
 
-          # Check if the namespace starts with "prod-"
           not startswith(name, "prod-")
           msg := sprintf("Namespace name %v must start with 'prod-'", [name])
         }
 ```
 
-Apply the ConstraintTemplate:
-```sh
-kubectl apply -f namespace-template.yaml
-```
-
-### Define the Constraint
-Create a file `namespace-constraint.yaml` and add:
+**Illustrative Constraint**:
 
 ```yaml
 apiVersion: constraints.gatekeeper.sh/v1beta1
@@ -194,51 +107,15 @@ spec:
         kinds: ["Namespace"]
 ```
 
-Apply the constraint:
-```sh
-kubectl apply -f namespace-constraint.yaml
-```
-
-## Step 5: Test the Namespace Naming Policy
-
-### Create an Invalid Namespace
-Create a file `invalid-namespace.yaml` and add:
-
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: test-environment
-```
-
-Apply the configuration:
-```sh
-kubectl apply -f invalid-namespace.yaml
-```
-This should result in an error.
-
-### Create a Valid Namespace
-Create a file `valid-namespace.yaml` and add:
-
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: prod-environment
-```
-
-Apply the configuration:
-```sh
-kubectl apply -f valid-namespace.yaml
-```
-This namespace should be successfully created.
-
 ## Conclusion
-In this lab, you successfully:
-- Installed OPA Gatekeeper
-- Defined and enforced policies for pod resource limits
-- Defined and enforced policies for namespace naming
-- Validated the policies with test cases
+OPA Gatekeeper provides a robust mechanism to enforce compliance and governance in Kubernetes environments. By defining policies as code, organizations can ensure security and best practices across their clusters. Hands-on installation, apply order, and test cases belong in the lab manual linked below.
 
-OPA Gatekeeper provides a robust mechanism to enforce compliance and governance in Kubernetes environments. By defining policies as code, organizations can ensure security and best practices across their clusters.
+---
 
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 14: OPA Gatekeeper - Policy Enforcement](../../labmanuals/lab14-sec-opa-gatekeeper.md) | Install Gatekeeper, create templates and constraints, and validate enforcement end to end. |

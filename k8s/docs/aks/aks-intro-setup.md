@@ -1,215 +1,69 @@
-### **Azure Kubernetes Service (AKS) Lab Tutorial - Part 1**
+### **Azure Kubernetes Service (AKS) — Part 1: Concepts and setup overview**
 
 ---
 
 ### **1. Introduction to AKS**
 
-Azure Kubernetes Service (AKS) is a fully managed Kubernetes service provided by Microsoft Azure. It abstracts the complexities of Kubernetes setup and maintenance, enabling developers to focus on deploying and managing containerized applications. 
+**Azure Kubernetes Service (AKS)** is Microsoft’s managed Kubernetes offering. Azure operates the **control plane** (API server, scheduler, controllers, etcd); you manage **node pools**, workloads, and integrations.
 
-#### **Features of AKS:**
+#### **Features of AKS**
 
-1. **Managed Kubernetes Control Plane**: Azure handles upgrades, patches, and scaling of the Kubernetes control plane.
-2. **Integration with Azure Services**: Native integration with Azure Monitor, Azure Active Directory (AAD), and other Azure services for enhanced observability and security.
-3. **Networking Options**: 
-   - **Kubenet**: Simple, default network configuration.
-   - **Azure CNI**: Advanced network configuration for enterprise-level requirements.
-4. **Scaling**: Supports manual scaling and cluster autoscaler.
-5. **Multi-Zone Availability**: Deploy applications across availability zones to increase reliability.
+1. **Managed control plane:** Upgrades, patching, and scaling of control plane components are handled by the platform.
+2. **Azure integrations:** Azure Monitor, Microsoft Entra ID (formerly Azure AD), Azure Policy, Key Vault, and ACR are common pairing points.
+3. **Networking:** **Kubenet** is simpler (overlay); **Azure CNI** assigns pod IPs from VNet space and suits enterprise IP and peering requirements.
+4. **Scaling:** Manual node pool scaling, cluster autoscaler, and workload-level HPA.
+5. **Availability:** Zone-redundant options for higher resilience.
 
 ---
 
-### **2. Comparison: AKS vs Other Cloud Kubernetes Offerings**
+### **2. Comparison: AKS vs other cloud Kubernetes offerings**
 
 | Feature                  | **Azure AKS**                   | **Amazon EKS**                  | **Google GKE**                  |
 |--------------------------|----------------------------------|----------------------------------|----------------------------------|
-| **Control Plane Cost**    | Free (pay for worker nodes only) | ~$74/month for control plane     | Free for basic cluster, $0.10/hour for autopilot/control plane |
-| **Networking**            | Azure CNI, Kubenet              | VPC CNI                          | VPC-native, Alias IPs           |
-| **Autoscaling**           | Supported                       | Supported                        | Supported                       |
-| **Integrated Monitoring** | Azure Monitor                   | CloudWatch                       | Cloud Monitoring                |
-| **Hybrid Options**        | Azure Arc                       | EKS Anywhere                     | Anthos                          |
-| **Multi-Zone Clusters**   | Supported                       | Supported                        | Supported                       |
+| **Control plane cost**   | No separate control-plane charge for the standard model (pay for nodes and associated resources) | Control plane fee (varies by region) | Varies by mode (Standard vs Autopilot, etc.) |
+| **Networking**           | Azure CNI, Kubenet              | VPC CNI (default on EKS)         | VPC-native / alias IP patterns   |
+| **Autoscaling**          | Supported                       | Supported                        | Supported                        |
+| **Integrated monitoring**| Azure Monitor                   | CloudWatch                       | Cloud Logging / Monitoring       |
+| **Hybrid / attach**      | Azure Arc                       | EKS Anywhere / Outposts patterns | Anthos-related options           |
+| **Multi-zone**           | Supported                       | Supported                        | Supported                        |
 
-**Why Choose AKS?**  
-- Strong integration with Azure services.  
-- Free managed control plane.  
-- Advanced security options like AAD integration and Azure Policy for Kubernetes.  
+**Why choose AKS:** Strong fit when workloads already live in Azure; identity and policy integration; operational focus on apps rather than control plane VMs.
 
 ---
 
-### **3. Step-by-Step AKS Lab**
+### **3. Creating a cluster (conceptual)**
 
-Launch Bash Shell.
+A typical **custom-network** AKS flow uses Azure CLI or ARM/Bicep/Terraform:
 
-#### **Step 1: Create a Resource Group**
+- **Resource group** — scope for the cluster and related resources.
+- **Virtual network and subnet** — address space for nodes (and, with Azure CNI, plan for pod IP consumption).
+- **`az aks create`** — parameters include node count, `network-plugin` (`azure` or `kubenet`), subnet ID, service CIDR/DNS IP for Kubernetes services, identity (often managed identity), and SSH keys or key management for node access.
 
-If the resource group is already created during the Cloud Shell filestore process, skip this step.
-
-```bash
-az group create \
-    --name Regroup_3etcnCVxcbW6UKd52_7oNl \
-    --location eastus
-```
-To list the available group, 
-
-```
-az group list
-```
----
-
-#### **Step 2: Create a Virtual Network (VNet) and Subnet**
-
-Replace the resource group name with the correct name.  
-
-```bash
-az network vnet create \
-    --resource-group Regroup_3etcnCVxcbW6UKd52_7oNl \
-    --name MyVNet \
-    --address-prefix 10.0.0.0/16 \
-    --location eastus \
-    --subnet-name MySubnet \
-    --subnet-prefix 10.0.1.0/24
-```
+Exact names, subscription IDs, and CIDRs are environment-specific; avoid copying hard-coded subscription or resource IDs from tutorials into production templates.
 
 ---
 
-#### **Step 3: Retrieve the Subnet ID**
+### **4. Connecting to the cluster**
 
-```bash
-az network vnet subnet show \
-    --resource-group Regroup_3etcnCVxcbW6UKd52_7oNl \
-    --vnet-name MyVNet \
-    --name MySubnet \
-    --query id --output tsv
-```
+- **`az login`** establishes Azure identity (Cloud Shell is already authenticated).
+- **`az account set --subscription <id>`** selects the subscription when you have more than one.
+- **`az aks get-credentials --resource-group <rg> --name <cluster>`** merges the cluster kubeconfig for `kubectl`.
+
+**What you see in `kubectl get nodes`:** Only **agent** (worker) nodes appear. The AKS **control plane** is not listed; it is managed by Azure and not accessed as SSH-able master VMs.
 
 ---
 
-#### **Step 4: Create the AKS Cluster**
+### **5. Cost and cleanup**
 
-Replace the resource group name with the correct name.  Replace the vnet-subnet-id name with the correct name from Step 3.
-
-
-```bash
-az aks create \
-    --resource-group Regroup_3etcnCVxcbW6UKd52_7oNl \
-    --name MyAKSCluster \
-    --node-count 2 \
-    --network-plugin azure \
-    --vnet-subnet-id "/subscriptions/2f02f8ca-866d-410a-bfed-32876b28bc58/resourceGroups/Regroup_3etcnCVxcbW6UKd52_7oNl/providers/Microsoft.Network/virtualNetworks/MyVNet/subnets/MySubnet" \
-    --location eastus \
-    --service-cidr 10.1.0.0/16 \
-    --dns-service-ip 10.1.0.10 \
-    --enable-managed-identity \
-    --generate-ssh-keys
-```
+Delete or scale down lab clusters when finished (`az aks delete` in the appropriate resource group) to avoid ongoing node and networking charges.
 
 ---
 
-### **4. Connect to the AKS Cluster**
+## Hands-On Labs
 
-To manage your AKS cluster, you need to authenticate and connect using `kubectl`. This can be done via the Azure CLI on your local machine or through the **Azure Cloud Shell** (a browser-based terminal accessible in the Azure portal).
+Practice these concepts with guided lab exercises:
 
-#### **Authentication and Credential Retrieval**
-
-1. **Authenticate to Azure**:
-   Log in to your Azure account using the CLI. If you're using the **Azure Cloud Shell**, you can skip this step as you're already authenticated.
-
-   ```bash
-   az login
-   ```
-   - This will open a browser window to sign in with your Azure credentials.
-   - After successful authentication, your subscriptions will be listed.
-
-   Alternatively, you can specify your subscription directly:
-   ```bash
-   az account set --subscription <SUBSCRIPTION_ID>
-   ```
-
-2. **Retrieve AKS Cluster Credentials**:
-   Use the `az aks get-credentials` command to configure access to your cluster:
-   Replace the resource group name with the correct name.
-   
-   ```bash
-   az aks get-credentials \
-       --resource-group Regroup_3etcnCVxcbW6UKd52_7oNl \
-       --name MyAKSCluster
-   ```
-   - This command downloads the kubeconfig file and configures `kubectl` to use it for cluster access.
-
-   If you want to merge the cluster's configuration with an existing kubeconfig file:
-   ```bash
-   az aks get-credentials \
-       --resource-group Regroup_3etcnCVxcbW6UKd52_7oNl \
-       --name MyAKSCluster \
-       --overwrite-existing
-   ```
-
----
-
-#### **Connecting Through Azure Cloud Shell**
-
-- The **Azure Cloud Shell** is an in-browser terminal provided by Azure, with the Azure CLI and `kubectl` pre-installed.
-- You can launch it from the Azure portal by clicking the **Cloud Shell** icon on the top-right corner of the Azure portal.
-
-   Once in the Cloud Shell:
-   - Skip the `az login` step (as it uses your portal authentication).
-   - Run the same `az aks get-credentials` command to fetch cluster credentials.
-
----
-
-#### **Verify Connection**
-
-Once authenticated, verify your connection to the AKS cluster by running:
-
-```bash
-kubectl get nodes
-```
-
-If successful, this command will display a list of nodes in your cluster, similar to the following output:
-
-```
-NAME                                STATUS   ROLES   AGE     VERSION
-aks-nodepool1-12345678-vmss000000   Ready    agent   10m     v1.24.9
-aks-nodepool1-12345678-vmss000001   Ready    agent   10m     v1.24.9
-```
-
-> **Note**: If `kubectl` is not installed locally, you can install it using the command:
-> ```bash
-> az aks install-cli
-> ```
-
----
-
-#### **Will the Master Node Appear in the Node List?**
-
-No, the **master node** (control plane) will **not** be shown when you run the `kubectl get nodes` command.
-
-In Azure Kubernetes Service (AKS), the **master node** is fully managed by Azure. The control plane is abstracted away, meaning you do not need to manage it directly. You will only see the **worker nodes** in the `kubectl get nodes` output.
-
-Note: Kubernetes version will be different on the lab session when cluster is created and thats okay.
-
-Example output:
-```
-NAME                                STATUS   ROLES   AGE     VERSION
-aks-nodepool1-12345678-vmss000000   Ready    agent   10m     v1.24.9
-aks-nodepool1-12345678-vmss000001   Ready    agent   10m     v1.24.9
-```
-
-- **Control Plane**: Azure manages it and ensures it's always running with high availability, but you cannot interact with it directly or see it via `kubectl`.
-- **Worker Nodes**: These are listed, and you can manage them directly (scale, upgrade, etc.).
-
-If you need to interact with the control plane, you would typically use Azure CLI or other management tools rather than `kubectl`.
-
----
-
-#### **5. Delete the AKS Cluster**
-
-When the lab is complete, delete the cluster to avoid incurring unnecessary costs:
-
-```bash
-az aks delete \
-    --resource-group Regroup_3etcnCVxcbW6UKd52_7oNl \
-    --name MyAKSCluster \
-    --yes \
-    --no-wait
-```
+| Lab | Description |
+|-----|-------------|
+| [Lab 01: Creating Pods and Deployments](../../labmanuals/lab01-basics-creating-pods.md) | Core workload objects on a Kubernetes cluster (use with your AKS kubeconfig) |
+| [Lab 02: Creating Kubernetes Services](../../labmanuals/lab02-basics-creating-services.md) | Services and in-cluster networking patterns on AKS or any cluster |

@@ -1,101 +1,48 @@
-### **Lab Tutorial: Setting Up an Ingress Controller with Transport Layer Security (TLS)**
+### **Ingress Controllers and TLS in Kubernetes**
 
-This tutorial explains the purpose of Ingress controllers, the concept of Transport Layer Security, and provides a step-by-step guide for configuring an Ingress controller with TLS.
+An **Ingress Controller** is a specialized component that fulfills **Ingress** resources: it terminates HTTP/HTTPS (or other protocols, depending on implementation), applies routing rules, and forwards traffic to **Services**. Common implementations include NGINX Ingress, Traefik, HAProxy-based controllers, and cloud-managed ingress controllers.
 
----
-
-### **What is an Ingress Controller?**
-An **Ingress Controller** is a specialized load balancer for Kubernetes that manages external access to services within a cluster. It routes HTTP and HTTPS traffic to cluster services based on defined rules (Ingress resources).
+**Ingress** itself is only configuration (rules, hosts, paths, TLS secrets); **a controller must be installed** in the cluster to act on those rules.
 
 Key benefits:
-- Consolidates multiple service accesses into a single entry point.
-- Supports routing rules, such as host- and path-based routing.
-- Simplifies SSL/TLS termination by handling certificates at the cluster edge.
+
+- Consolidates multiple applications behind one or a few entry points.
+- Supports host- and path-based routing to different Services.
+- Centralizes TLS termination at the cluster edge (certificates stored as Kubernetes Secrets and referenced from Ingress).
 
 ---
 
 ### **What is Transport Layer Security (TLS)?**
-TLS is the modern standard for securing data transmission over networks. It encrypts communication between clients and servers to ensure:
-- **Confidentiality**: Prevents unauthorized access to data in transit.
-- **Integrity**: Ensures data is not altered during transmission.
-- **Authentication**: Verifies the identity of servers (and optionally, clients).
 
-In Kubernetes, TLS is typically used in Ingress configurations for secure HTTPS traffic.
+TLS encrypts data in transit between clients and the ingress (or app). It provides:
 
----
+- **Confidentiality** — eavesdroppers cannot read payloads.
+- **Integrity** — tampering is detectable.
+- **Authentication** — clients verify the server identity via the certificate chain (and optionally mutual TLS for clients).
 
-### **Lab Steps: Setting Up an Ingress Controller with TLS**
-
-#### **Prerequisites**
-- Kubernetes cluster set up.
-- Tools: `kubectl`, `openssl`.
+In Kubernetes, Ingress typically references a **TLS Secret** (`kubernetes.io/tls`) containing certificate and key material for the hostnames listed under `spec.tls`.
 
 ---
 
-#### **1. Deploy the Ingress Controller**
+### **Illustrative Ingress with TLS**
 
-1.1 Deploy the NGINX Ingress Controller:
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.0/deploy/static/provider/cloud/deploy.yaml
-```
+The following shows the shape of an Ingress that uses TLS, an ingress class, and path-based routing to a Service. Controller-specific **annotations** (for example rewrite rules) vary by implementation.
 
-1.2 Verify the Ingress Controller components:
-```bash
-kubectl get all -n ingress-nginx
-kubectl get pod -n ingress-nginx
-```
-
----
-
-#### **2. Deploy Sample Applications**
-
-2.1 Deploy two sample apps:
-```bash
-kubectl create deployment myapp1 --image=docker.io/httpd
-kubectl create deployment myapp2 --image=docker.io/openshift/hello-openshift
-```
-
-2.2 Expose the apps as services:
-```bash
-kubectl expose deployment myapp1 --port=80
-kubectl expose deployment myapp2 --port=8080
-kubectl get svc
-```
-
----
-
-#### **3. Generate and Apply TLS Certificates**
-
-3.1 Generate a self-signed SSL certificate:
-```bash
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ingress.key -out ingress.crt -subj "/CN=master.example.com/O=security"
-```
-
-3.2 Create a Kubernetes secret for the certificate:
-```bash
-kubectl create secret tls tls-cert --key ingress.key --cert ingress.crt
-```
-
----
-
-#### **4. Configure and Apply Ingress Rules**
-
-4.1 Create an Ingress rule file (`ingress-rule.yaml`):
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: rewrite
+  name: example-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   tls:
   - hosts:
-      - master.example.com
+      - app.example.com
     secretName: tls-cert
   ingressClassName: nginx
   rules:
-  - host: master.example.com
+  - host: app.example.com
     http:
       paths:
       - path: /
@@ -107,63 +54,24 @@ spec:
               number: 80
 ```
 
-4.2 Apply the Ingress rule:
-```bash
-kubectl apply -f ingress-rule.yaml
-kubectl get ingress
-```
+**TLS Secret**: create a Secret of type `kubernetes.io/tls` with `tls.crt` and `tls.key` (from a CA-trusted cert or a self-signed cert for lab use). The Ingress `spec.tls[].secretName` must reference that Secret.
 
-4.3 Update the `/etc/hosts` file to map `master.example.com` to the Ingress IP:
-```bash
-sudo vi /etc/hosts
-```
-Add the line:
-```
-<Ingress_Node_IP> master.example.com
-```
+**Client access**: Clients need a hostname that resolves to the controller’s external address (load balancer, NodePort, or host network). For local testing, operators sometimes add static host entries on the client machine; in-cluster clients usually rely on cluster DNS and Service names instead.
 
 ---
 
-#### **5. Verify the Configuration**
+### **Troubleshooting (conceptual)**
 
-5.1 Check the Ingress service and its NodePort:
-```bash
-kubectl get svc -n ingress-nginx
-kubectl get pod -n ingress-nginx -o wide
-```
-
-5.2 Verify the certificate:
-```bash
-curl -kv https://master.example.com:<NodePort>/test
-```
+- **Ingress not taking effect**: Confirm an Ingress controller is running, `ingressClassName` matches an installed class, and the controller logs show no sync errors.
+- **TLS errors**: Verify the Secret exists in the same namespace as the Ingress, keys match the `hosts` list, and the certificate is not expired.
+- **404 or wrong backend**: Check path `pathType`, Service name/port, and Endpoints behind the Service.
 
 ---
 
-### **Troubleshooting**
+## Hands-On Labs
 
-1. **Ingress Pods Not Running**:
-   - Check the logs of the Ingress pods:
-     ```bash
-     kubectl logs <ingress-pod-name> -n ingress-nginx
-     ```
+Practice these concepts with guided lab exercises:
 
-2. **Invalid TLS Configuration**:
-   - Verify the TLS secret:
-     ```bash
-     kubectl describe secret tls-cert
-     ```
-
-3. **Unable to Access the Application**:
-   - Ensure the `/etc/hosts` entry maps correctly.
-   - Check Ingress rules and service ports.
-
----
-
-**Summary of Where to Add /etc/hosts Entry**
-```
-If curling from your local machine: Add an entry for the node's internal IP in your local /etc/hosts.
-If curling from a pod inside the cluster: No need to modify /etc/hosts, as Kubernetes DNS handles service name resolution.
-If curling directly from a node in the cluster: Add an entry in the /etc/hosts of that specific node (use 127.0.0.1 or the service's ClusterIP).
-```
-
-This step-by-step guide helps you set up a secure Ingress Controller with TLS to manage HTTPS traffic in a Kubernetes cluster. Let me know if you'd like further clarification on any part!
+| Lab | Description |
+|-----|-------------|
+| [Lab 35: Ingress Controllers and HTTP Routing](../../labmanuals/lab35-net-ingress.md) | Deploy a controller, define Ingress rules, TLS, and verify HTTP/HTTPS routing. |

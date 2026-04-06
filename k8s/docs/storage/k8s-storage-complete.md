@@ -576,6 +576,17 @@ spec:
 
 ## 15. Detailed YAML Examples
 
-All examples listed above provide a practical foundation for implementing Kubernetes storage. Each example highlights the benefits, including improved resilience, scalability, and operational efficiency.
+The YAML fragments throughout this guide illustrate how volume types, PVs, PVCs, StorageClasses, and snapshots are expressed in the API. They are meant for understanding and adaptation to your environment, not as a fixed apply order.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 38: Basic Storage Volumes in Kubernetes](../../labmanuals/lab38-storage-basic-volumes.md) | Core volume types and data sharing in Pods |
+| [Lab 39: Persistent Volumes and Advanced Storage](../../labmanuals/lab39-storage-persistent-storage.md) | PVs, PVCs, NFS-oriented patterns, and advanced storage |
 
 ---

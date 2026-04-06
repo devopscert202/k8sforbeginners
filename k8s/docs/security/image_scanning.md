@@ -3,47 +3,11 @@
 ## Introduction to Trivy
 Trivy is an open-source vulnerability scanner developed by Aqua Security. It is widely used for scanning container images, file systems, and Kubernetes resources for security vulnerabilities. Trivy helps identify Common Vulnerabilities and Exposures (CVEs) in images and misconfigurations in cloud infrastructure. With its ease of use and integration into CI/CD pipelines, Trivy has become a go-to tool for DevSecOps teams.
 
-## Prerequisites
-Before using Trivy to scan Kubernetes cluster resources, ensure you have the following:
-- A working Kubernetes cluster (GKE, AKS, EKS, or a local cluster like Minikube or Kind)
-- `kubectl` installed and configured to communicate with your cluster
-- Docker installed (optional for scanning container images locally)
-- Helm installed (if installing Trivy via Helm)
-- Internet access to fetch vulnerability databases
+## Prerequisites (conceptual)
+To use Trivy against a cluster or images you typically need: a Kubernetes cluster and working `kubectl` access when scanning workloads; a local or CI environment where the Trivy binary or container image can run; and network access to refresh vulnerability databases. Helm is optional if you deploy the **Trivy Operator** in-cluster rather than using the CLI only.
 
-## Installing Trivy
-Trivy can be installed in multiple ways. Below are the installation steps for common environments:
-
-### Installing on Linux/macOS
-```sh
-sudo apt-get install wget apt-transport-https gnupg lsb-release
-wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-sudo apt-get update
-sudo apt-get install trivy
-
-```
-
-### Installing on Windows
-Using Chocolatey:
-```powershell
-choco install trivy
-```
-Using Scoop:
-```powershell
-scoop install trivy
-```
-
-### Installing via Docker
-```sh
-docker pull aquasec/trivy
-```
-
-### Installing via Helm for Kubernetes Scanning
-```sh
-helm repo add aquasecurity https://aquasecurity.github.io/helm-charts/
-helm install trivy aquasecurity/trivy-operator
-```
+## Installation and deployment options
+Trivy can be installed via OS package managers, the upstream install script, Docker (`aquasec/trivy`), or as the **Trivy Operator** with Helm. Platform-specific steps change frequently; use the [Trivy documentation](https://aquasecurity.github.io/trivy/) for authoritative install and upgrade instructions.
 
 ## What Trivy Does
 Trivy performs security scans on:
@@ -69,35 +33,20 @@ Trivy performs security scans on:
 | Grype         | Vulnerability scanning for container images      | Open Source |
 | Kube-bench    | Kubernetes CIS Benchmark security checks         | Open Source |
 
-## Practical Example: Scanning a Docker Image with Trivy
-We will demonstrate how to use Trivy to scan a Docker image for vulnerabilities.
-
-### Step 1: Pull a Sample Image
-```sh
-docker pull nginx:latest
-```
-
-### Step 2: Scan the Image Using Trivy
-```sh
-trivy image nginx:latest
-```
-This command will output a list of detected vulnerabilities, including their severity levels (Critical, High, Medium, Low, Unknown).
-
-### Step 3: Scan with JSON Output
-```sh
-trivy image -f json -o report.json nginx:latest
-```
-### Step 4: Scan with HTML Output
-```sh
-trivy image --format template --template "@/usr/local/share/trivy/templates/html.tpl" nginx:latest -o /tmp/nginx_findings.html
-```
-Open the HTML file in the browser and validate the output. Check for the listed vulnerabilities for the image scanned.
-
-### Step 5: Scan a Running Kubernetes Workload
-```sh
-trivy k8s --include-namespaces default --report summary 
-```
-This will scan all resources in the default namespace of the Kubernetes cluster.
+## Scanning patterns (conceptual)
+- **Image scans**: Point Trivy at an image reference to list CVEs by severity; JSON or HTML report formats help automation and human review.
+- **Cluster / workload scans**: The `trivy k8s` family of commands evaluates resources visible to your current kubeconfig against policies and vulnerability data.
+- **CI/CD gates**: Fail builds or promotions when severities exceed organizational thresholds, and attach reports to tickets or chat for triage.
 
 ## Conclusion
-Trivy is an essential tool for security scanning in Kubernetes and containerized environments. Its ease of use, integration capabilities, and comprehensive scanning make it a preferred choice for DevSecOps professionals. By incorporating Trivy into CI/CD pipelines and Kubernetes security workflows, organizations can proactively identify and mitigate vulnerabilities, ensuring a more secure infrastructure.
+Trivy is an essential tool for security scanning in Kubernetes and containerized environments. Its ease of use, integration capabilities, and comprehensive scanning make it a preferred choice for DevSecOps professionals. Incorporating Trivy into CI/CD pipelines and cluster workflows helps organizations proactively identify and mitigate vulnerabilities.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 15: Container Image Scanning with Trivy](../../labmanuals/lab15-sec-image-scanning-trivy.md) | Install Trivy, run image and cluster scans, and interpret reports. |

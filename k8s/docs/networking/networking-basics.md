@@ -199,11 +199,19 @@ For a deeper dive, see [EndpointSlices](endpointslices.md).
 
 ### **8. Tools for Kubernetes Networking**
 
-- **kubectl get svc**:
-  - Lists services and their cluster IPs and ports.
-- **kubectl get pods -o wide**:
-  - Shows Pods along with their IPs and node assignments.
- 
-  ---
-  
+- **`kubectl get svc`**: Lists Services and their cluster IPs and ports.
+- **`kubectl get pods -o wide`**: Shows Pods with node assignment and Pod IP—useful when correlating Services with backends.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 02: Creating Kubernetes Services](../../labmanuals/lab02-basics-creating-services.md) | Service types, selectors, and in-cluster connectivity. |
+| [Lab 34: Multi-Port Services in Kubernetes](../../labmanuals/lab34-net-multi-port-services.md) | Multi-port Pods and Services and how clients reach each port. |
+| [Lab 45: DNS Configuration in Kubernetes](../../labmanuals/lab45-net-dns-configuration.md) | Cluster DNS behavior, `dnsPolicy`, and custom resolver settings. |
+| [Lab 58: EndpointSlices — Scalable Endpoint Management](../../labmanuals/lab58-net-endpointslices.md) | How Services map to EndpointSlices and related troubleshooting. |
 

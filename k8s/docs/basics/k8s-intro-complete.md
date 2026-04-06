@@ -387,13 +387,9 @@ Manages ReplicaSets and updates.
 
 ---
 
-## Deployment Operations
+## Deployment operations
 
-```bash
-kubectl rollout status deployment/nginx-deploy
-kubectl rollout undo deployment/nginx-deploy
-kubectl scale deployment/nginx-deploy --replicas=5
-```
+Deployments support **rollout status**, **rollback** to a previous revision, and **scaling** replica count; these are exposed via `kubectl rollout` and `kubectl scale` (see the kubectl reference and lab manuals for exact commands).
 
 ---
 
@@ -414,12 +410,7 @@ kubectl scale deployment/nginx-deploy --replicas=5
 * **Kubelet authz/authn** – TLS, certificates, RBAC.
 * **Kubeadm** – bootstrap and manage clusters.
 
-Example:
-
-```bash
-kubeadm init --pod-network-cidr=10.244.0.0/16
-kubeadm join <control-plane>:6443 --token <token>
-```
+Bootstrapping typically uses **`kubeadm init`** on the first control plane node (often with a pod network CIDR that matches your CNI) and **`kubeadm join`** on additional nodes with a join token; see the installation lab for the full sequence and prerequisites.
 
 ---
 
@@ -494,6 +485,18 @@ Web-based UI to monitor, deploy, and manage workloads.
 * 🧰 [Kubernetes Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 * 🧩 [Interactive Playground – Katacoda (Archived)](https://www.katacoda.com/courses/kubernetes)
 * ☸️ [Play with Kubernetes](https://labs.play-with-k8s.com/)
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 01: Creating pods](../../labmanuals/lab01-basics-creating-pods.md) | Pods, manifests, and basic workload concepts. |
+| [Lab 02: Creating services](../../labmanuals/lab02-basics-creating-services.md) | Services, selectors, and cluster networking basics. |
+| [Lab 03: kubectl essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Core `kubectl` workflows for daily cluster work. |
 
 ---
 

@@ -211,3 +211,14 @@ Kubernetes policies are rules and configurations that help you enforce standards
 - **Use Tools**: Leverage tools like Open Policy Agent (OPA) for custom rules.
 - **Test Policies**: Always test policies in a development environment before applying them in production.
 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 13: Network policies](../../labmanuals/lab13-sec-network-policies.md) | Ingress/egress rules and label-based pod traffic control. |
+| [Lab 14: OPA Gatekeeper](../../labmanuals/lab14-sec-opa-gatekeeper.md) | Admission-time policy with Gatekeeper constraints. |
+| [Lab 16: Pod security standards](../../labmanuals/lab16-sec-pod-security-standards.md) | Namespace labels and Pod Security Admission (PSA). |

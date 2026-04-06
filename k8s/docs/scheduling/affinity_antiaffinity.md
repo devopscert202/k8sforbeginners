@@ -1,57 +1,17 @@
-# Practical Guide to Affinity and Anti-Affinity in Kubernetes
+# Practical guide to affinity and anti-affinity in Kubernetes
 
 ## Introduction
-Affinity and Anti-Affinity are powerful Kubernetes features that allow you to control the placement of Pods within your cluster. By defining rules, you can specify whether certain Pods should or should not be scheduled together or on specific nodes. This is essential for ensuring high availability, resource optimization, and workload segregation.
+**Affinity** and **anti-affinity** steer Pod placement using **labels** on nodes and Pods. **Node affinity** constrains or prefers nodes by label selectors. **Pod affinity / anti-affinity** express placement relative to Pods that already run (same node, rack, zone, etc.) via `topologyKey`. Together they support high availability (spread replicas), co-location (latency), and tenancy patterns.
 
-In this guide, we’ll introduce the concepts of Node Affinity, Pod Anti-Affinity, and Kubernetes labeling. We’ll walk through practical examples to help you understand and apply these features effectively.
-
----
-
-## Prerequisites
-Before diving into the examples, ensure you have:
-
-1. **A Kubernetes Lab Cluster**: A running Kubernetes environment where you have administrative access.
-2. **kubectl Installed**: The Kubernetes CLI tool configured to interact with your cluster.
-3. **Basic Knowledge of Kubernetes Resources**: Familiarity with Pods, Deployments, and Services.
-4. **Understanding of Labels**: Kubernetes uses labels as key-value pairs for organizing and selecting resources. We will demonstrate labeling for nodes and Pods.
-
-### Labeling in Kubernetes
-Labels are essential for implementing affinity and anti-affinity rules. To label a node or Pod, use the following commands:
-
-- **Label a Node**:
-  ```bash
-  kubectl label node <node-name> env=production
-  ```
-  This adds a label `env=production` to the specified node.
-
-- **Label a Pod**:
-  ```bash
-  kubectl label pod <pod-name> env=staging
-  ```
-  This adds a label `env=staging` to the specified Pod.
-
-To view the labels on a node or Pod:
-```bash
-kubectl get nodes --show-labels
-kubectl get pods --show-labels
-```
+**Labels** are the data plane for these rules: nodes are labeled by administrators or cloud integrations; Pods inherit labels from templates. Affinity rules reference those labels with operators such as `In`, `NotIn`, `Exists`, and `DoesNotExist`.
 
 ---
 
-## Step-by-Step Practical Examples
+## Node affinity
+Node affinity filters or scores nodes using `nodeAffinity` under `spec.affinity`. **Hard** requirements use `requiredDuringSchedulingIgnoredDuringExecution`; **soft** preferences use `preferredDuringSchedulingIgnoredDuringExecution` with weights.
 
-### 1. Node Affinity
-Node Affinity allows you to specify which nodes a Pod can be scheduled on based on labels. Let’s create a Pod that only runs on nodes labeled `env=production`.
+**Example** (Pod must land on nodes labeled `env=production`):
 
-#### Labeling a Node
-First, label one of the nodes in your cluster:
-```bash
-kubectl label node <node-name> env=production
-```
-Replace `<node-name>` with the name of your node (e.g., `worker-node-1`).
-
-#### YAML Configuration: Node Affinity
-Here is the configuration for a Pod with Node Affinity:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -72,36 +32,16 @@ spec:
     image: nginx
 ```
 
-**Explanation:**
-- **`requiredDuringSchedulingIgnoredDuringExecution`**: The rule must be satisfied at scheduling time.
-- **`nodeSelectorTerms`**: Defines the conditions for node selection.
-- **`matchExpressions`**: Specifies the key (`env`), operator (`In`), and value (`production`) for matching nodes.
-
-#### Apply and Test
-Apply the YAML file:
-```bash
-kubectl apply -f production-pod.yaml
-```
-Verify that the Pod is scheduled on the labeled node:
-```bash
-kubectl get pods -o wide
-```
-Check the node where the Pod is running and ensure it matches the label `env=production`.
+- **`requiredDuringSchedulingIgnoredDuringExecution`**: If no node matches at schedule time, the Pod stays **Pending** (until something changes).
+- **`nodeSelectorTerms`**: OR across terms; expressions within a term are ANDed.
 
 ---
 
-### 2. Pod Anti-Affinity
-Pod Anti-Affinity ensures that Pods with specific labels are **not** scheduled on the same topology, such as a node.
+## Pod anti-affinity
+Pod anti-affinity prevents (or discourages) scheduling near Pods that match a label selector. `topologyKey` defines the **failure domain**—commonly `kubernetes.io/hostname` for “not on the same node,” or zone labels for broader spread.
 
-#### Labeling a Pod
-Label an existing Pod:
-```bash
-kubectl label pod <existing-pod-name> env=staging
-```
-Replace `<existing-pod-name>` with the name of your Pod.
+**Example** (do not schedule on the same node as Pods labeled `env=staging`):
 
-#### YAML Configuration: Pod Anti-Affinity
-Here is the configuration for a Pod with Pod Anti-Affinity:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -123,73 +63,40 @@ spec:
     image: nginx
 ```
 
-**Explanation:**
-- **`labelSelector`**: Matches Pods labeled `env=staging`.
-- **`topologyKey: kubernetes.io/hostname`**: Prevents scheduling Pods with the same label on the same node.
-
-#### Apply and Test
-Apply the YAML file:
-```bash
-kubectl apply -f anti-affinity-pod-2.yaml
-```
-Verify the placement of the Pod:
-```bash
-kubectl get pods -o wide
-```
-Ensure that the `anti-affinity-pod-2` is not scheduled on the same node as a Pod labeled `env=staging`.
+Use **preferred** anti-affinity when strict spread is desirable but not mandatory; required rules can deadlock scheduling if the cluster is too small.
 
 ---
 
-### Validation and Observations
-To validate your understanding:
-1. **List Nodes with Labels**:
-   ```bash
-   kubectl get nodes --show-labels
-   ```
-   Confirm that the nodes have the correct labels (`env=production`).
-
-2. **List Pods with Labels**:
-   ```bash
-   kubectl get pods --show-labels
-   ```
-   Ensure that the Pods are labeled correctly (`env=staging`, etc.).
-
-3. **Check Pod Placement**:
-   ```bash
-   kubectl get pods -o wide
-   ```
-   Observe where the Pods are running and confirm that affinity and anti-affinity rules are respected.
-
-4. **Events and Logs**:
-   If a Pod is not scheduled as expected, check events for details:
-   ```bash
-   kubectl describe pod <pod-name>
-   ```
+## Validation and troubleshooting
+- **Pending Pods**: `kubectl describe pod <name>` surfaces scheduler messages (unsatisfied affinity, taints, resources).
+- **Topology**: Ensure `topologyKey` labels exist on nodes; missing labels make domains look empty or uniform.
+- **Interaction effects**: Affinity combines with **taints/tolerations**, **nodeSelector**, **topology spread constraints**, and **PriorityClass**—conflicting rules keep Pods unschedulable.
 
 ---
 
-## Difference Between nodeSelector and nodeAffinity
+## NodeSelector vs nodeAffinity
 
-Both nodeSelector and nodeAffinity are Kubernetes features used to control the placement of Pods based on node labels. However, they differ in flexibility and use cases:
+Both steer Pods using node labels; nodeAffinity is strictly more expressive.
 
-Feature	nodeSelector	nodeAffinity
-Definition	A simple key-value matching mechanism to schedule Pods on specific nodes.	A more flexible and expressive method for scheduling Pods on nodes.
-Capabilities	Only supports exact match (key=value).	Supports operators like In, NotIn, Exists, etc.
-Complexity	Simple and less configurable.	Advanced and supports complex matching logic.
-Types	No types (basic match only).	Two types: requiredDuringSchedulingIgnoredDuringExecution and preferredDuringSchedulingIgnoredDuringExecution.
-Use Case	Best for basic scheduling needs.	Ideal for more complex scheduling scenarios.
-Example: nodeSelector
+| Feature | nodeSelector | nodeAffinity |
+|--------|--------------|--------------|
+| **Definition** | Exact `key: value` match required on the node | Label selectors with operators and multiple terms |
+| **Operators** | Equality only | `In`, `NotIn`, `Exists`, `DoesNotExist`, `Gt`, `Lt` (where supported) |
+| **Hard vs soft** | Always hard | Required vs preferred (`preferredDuringSchedulingIgnoredDuringExecution`) |
+| **Complexity** | Minimal | Higher; needs careful testing |
+| **When to use** | Simple pools (`disktype=ssd`) | OR of values, soft preferences, exclusion rules |
+
+---
 
 ## Conclusion
-Affinity and Anti-Affinity are essential tools for controlling Pod placement in Kubernetes. They allow you to:
-- Optimize resource utilization.
-- Ensure high availability by spreading workloads across nodes.
-- Enforce workload segregation based on labels and topology.
+Affinity and anti-affinity let you encode **where** Pods may run relative to nodes and peer Pods. Start with the smallest rule that meets the requirement (often `nodeSelector` or a single required node affinity term), add **preferred** rules before **required** ones to avoid unnecessary scheduling failures, and always verify behavior under failure (single node or single zone loss).
 
-By following this guide, you’ve learned how to:
-1. Label nodes and Pods in a Kubernetes cluster.
-2. Apply Node Affinity and Pod Anti-Affinity rules using YAML configurations.
-3. Validate and troubleshoot the behavior of your Pods.
+---
 
-These concepts provide a foundation for managing complex workloads and achieving robust deployments in Kubernetes. Keep experimenting with different affinity configurations to deepen your understanding!
+## Hands-On Labs
 
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 18: Pod Scheduling with Node and Pod Affinity](../../labmanuals/lab18-sched-affinity-antiaffinity.md) | Guided exercises for node and Pod affinity rules |

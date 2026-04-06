@@ -3,7 +3,7 @@
 ## Introduction
 When working with Kubernetes, especially in environments involving multiple clusters, namespaces, and user roles, managing access and configurations efficiently is critical. Kubernetes contexts provide a powerful way to manage and switch between configurations seamlessly.
 
-This tutorial explains the concept of Kubernetes contexts, their role in managing clusters, users, and namespaces, and provides practical examples and commands for admins.
+This document explains the concept of Kubernetes contexts, their role in managing clusters, users, and namespaces, and summarizes common `kubectl config` operations administrators use.
 
 ---
 
@@ -168,69 +168,19 @@ kubectl config set-context --current --namespace=staging
 
 ---
 
-## Lab Exercise: Managing Contexts
-
-### Objective
-Configure and manage Kubernetes contexts for multiple clusters.
-
-### Prerequisites
-1. Access to two Kubernetes clusters (e.g., `dev-cluster` and `prod-cluster`).
-2. A valid `kubeconfig` file.
-
----
-
-### Step 1: Verify Clusters
-List available clusters:
-```bash
-kubectl config get-clusters
-```
-
-### Step 2: Create Contexts
-Set up contexts for each cluster:
-```bash
-kubectl config set-context dev-context \
-  --cluster=dev-cluster \
-  --user=dev-user \
-  --namespace=development
-
-kubectl config set-context prod-context \
-  --cluster=prod-cluster \
-  --user=prod-user \
-  --namespace=production
-```
-
-### Step 3: Switch Contexts
-Switch to the development environment:
-```bash
-kubectl config use-context dev-context
-```
-
-List pods in the `development` namespace:
-```bash
-kubectl get pods
-```
-
-Switch to the production environment:
-```bash
-kubectl config use-context prod-context
-```
-
-List pods in the `production` namespace:
-```bash
-kubectl get pods
-```
-
-### Step 4: Cleanup
-Delete the `dev-context`:
-```bash
-kubectl config delete-context dev-context
-```
-
----
-
 ## Summary
 
 Kubernetes contexts simplify managing multiple clusters, users, and namespaces by allowing quick and consistent configuration switching. By mastering contexts, administrators can efficiently operate across complex Kubernetes environments.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 11: Role-Based Access Control (RBAC)](../../labmanuals/lab11-sec-rbac-security.md) | Work with kubeconfig, contexts, and cluster access as part of RBAC exercises. |
 
 ---
 

@@ -686,6 +686,17 @@ When something goes wrong:
 
 ---
 
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 03: kubectl essentials](../labmanuals/lab03-basics-kubectl-essentials.md) | Core commands and daily workflows on a live cluster. |
+| [Lab 54: Troubleshooting commands reference](../labmanuals/lab54-ts-commands-reference.md) | Command-oriented troubleshooting drills and patterns. |
+
+---
+
 ## Additional Resources
 
 - [Official kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)

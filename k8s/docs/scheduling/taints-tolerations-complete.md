@@ -9,6 +9,7 @@
 6. [Troubleshooting](#troubleshooting)
 7. [Best Practices](#best-practices)
 8. [Summary](#summary)
+9. [Hands-On Labs](#hands-on-labs)
 
 ---
 
@@ -192,19 +193,11 @@ In a multi-cluster setup, taints can prevent pods from failing over to unsuitabl
 
 ## Practical Examples
 
-### Example 1: Dedicated Nodes for Production Workloads
+The following Pods illustrate toleration shapes only. Operators apply matching **taints** on nodes with `kubectl taint` (see [Taint and Toleration Syntax](#taint-and-toleration-syntax)). Scheduling outcomes depend on the full cluster state.
 
-**Objective**: Schedule only production workloads on specific nodes.
+### Example 1: Dedicated nodes for production workloads
 
-#### Step 1: Apply Taint to Node
-
-```bash
-kubectl taint nodes node1 dedicated=production:NoSchedule
-```
-
-#### Step 2: Create Production Pod with Toleration
-
-Create `production-pod.yaml`:
+Only Pods that tolerate `dedicated=production:NoSchedule` may schedule on nodes carrying that taint:
 
 ```yaml
 apiVersion: v1
@@ -222,35 +215,11 @@ spec:
     image: nginx
 ```
 
-Apply the configuration:
-
-```bash
-kubectl apply -f production-pod.yaml
-```
-
-#### Step 3: Verify Pod Placement
-
-```bash
-kubectl get pods -o wide
-```
-
-The pod should be scheduled on `node1`.
-
 ---
 
-### Example 2: Isolate Test Environments
+### Example 2: Test pod without toleration
 
-**Objective**: Ensure test pods are not scheduled on production nodes.
-
-#### Step 1: Apply Taint to Production Node
-
-```bash
-kubectl taint nodes node2 dedicated=production:NoSchedule
-```
-
-#### Step 2: Create Test Pod Without Toleration
-
-Create `test-pod.yaml`:
+A Pod with **no** toleration for `dedicated=production:NoSchedule` stays off tainted production nodes (scheduler events will cite the taint):
 
 ```yaml
 apiVersion: v1
@@ -263,29 +232,11 @@ spec:
     image: nginx
 ```
 
-Apply the configuration:
-
-```bash
-kubectl apply -f test-pod.yaml
-```
-
-Since the test pod doesn't have a toleration for the `production` taint, it won't be scheduled on `node2`.
-
 ---
 
-### Example 3: Reserve Nodes for Critical Workloads
+### Example 3: Reserved critical capacity
 
-**Objective**: Prevent non-critical workloads from running on certain nodes but allow critical workloads.
-
-#### Step 1: Apply Taint to Node
-
-```bash
-kubectl taint nodes node3 critical=reserved:NoSchedule
-```
-
-#### Step 2: Create Critical Workload with Toleration
-
-Create `critical-pod.yaml`:
+Non-critical workloads without the toleration below do not use nodes tainted `critical=reserved:NoSchedule`:
 
 ```yaml
 apiVersion: v1
@@ -303,29 +254,17 @@ spec:
     image: nginx
 ```
 
-Non-critical workloads will avoid `node3` as they don't have the required toleration.
-
 ---
 
-### Example 4: Maintenance Mode
+### Example 4: Maintenance with NoExecute
 
-**Objective**: Evict non-critical pods from a node for maintenance.
-
-#### Step 1: Apply NoExecute Taint to Node
-
-```bash
-kubectl taint nodes node4 maintenance=true:NoExecute
-```
-
-#### Step 2: Create Critical Pod with Toleration
-
-Create `critical-maintenance-pod.yaml`:
+`NoExecute` evicts running Pods that lack a matching toleration. Critical Pods can remain if they tolerate the maintenance taint:
 
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: critical-pod
+  name: critical-maintenance-pod
 spec:
   tolerations:
   - key: "maintenance"
@@ -337,24 +276,11 @@ spec:
     image: nginx
 ```
 
-**Result**: Non-critical pods will be evicted, while the critical pod will continue running.
-
 ---
 
-### Example 5: Machine Learning Nodes for ML Workloads
+### Example 5: GPU / ML node with selector and toleration
 
-**Objective**: Ensure that machine learning workloads (using GPUs) are scheduled only on nodes designed for such tasks.
-
-#### Step 1: Label and Taint ML Node
-
-```bash
-kubectl label nodes node6 machine-learning=true
-kubectl taint nodes node6 machine-learning=true:NoSchedule
-```
-
-#### Step 2: Create ML Workload Pod
-
-Create `ml-workload-pod.yaml`:
+Combining **nodeSelector** (or affinity) with a toleration is a common pattern for dedicated hardware pools:
 
 ```yaml
 apiVersion: v1
@@ -374,151 +300,8 @@ spec:
     image: tensorflow/tensorflow:latest-gpu
     resources:
       limits:
-        nvidia.com/gpu: 1  # Requesting 1 GPU for machine learning tasks
+        nvidia.com/gpu: 1
 ```
-
----
-
-### Example 6: Lab Tutorial - Complete Walkthrough
-
-This example demonstrates taints and tolerations with all worker nodes tainted.
-
-#### Lab Environment Setup
-
-Confirm your Kubernetes cluster setup:
-
-```bash
-kubectl get nodes
-```
-
-Expected output:
-```plaintext
-NAME              STATUS   ROLES           AGE   VERSION
-master            Ready    control-plane   10d   v1.26
-worker-node-1     Ready    <none>          10d   v1.26
-worker-node-2     Ready    <none>          10d   v1.26
-```
-
-#### Step 1: Apply Taints to All Worker Nodes
-
-For `worker-node-1`:
-```bash
-kubectl taint nodes worker-node-1 dedicated=production:NoSchedule
-```
-
-For `worker-node-2`:
-```bash
-kubectl taint nodes worker-node-2 dedicated=production:NoSchedule
-```
-
-#### Step 2: Verify Taints
-
-```bash
-kubectl describe node worker-node-1 | grep -i taints
-kubectl describe node worker-node-2 | grep -i taints
-```
-
-Expected output:
-```plaintext
-Taints: dedicated=production:NoSchedule
-```
-
-#### Step 3: Deploy Pod Without Tolerations
-
-Create `no-tolerations-pod.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: no-tolerations-pod
-spec:
-  containers:
-  - name: nginx
-    image: nginx
-    ports:
-    - containerPort: 80
-```
-
-Apply the configuration:
-
-```bash
-kubectl apply -f no-tolerations-pod.yaml
-```
-
-Check the pod's status:
-
-```bash
-kubectl get pods -o wide
-```
-
-The pod will remain in a `Pending` state:
-
-```plaintext
-NAME                  READY   STATUS    NODE
-no-tolerations-pod    0/1     Pending   <none>
-```
-
-Describe the pod to confirm the scheduling issue:
-
-```bash
-kubectl describe pod no-tolerations-pod
-```
-
-Look for the `Events` section:
-```plaintext
-0/2 nodes are available: 2 node(s) had taint {dedicated: production}, that the pod didn't tolerate.
-```
-
-#### Step 4: Add Tolerations to the Pod
-
-Create `tolerations-pod.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: tolerations-pod-prod
-spec:
-  tolerations:
-  - key: "dedicated"
-    operator: "Equal"
-    value: "production"
-    effect: "NoSchedule"
-  containers:
-  - name: nginx
-    image: nginx
-    ports:
-    - containerPort: 80
-```
-
-Apply the updated pod configuration:
-
-```bash
-kubectl apply -f tolerations-pod.yaml
-```
-
-#### Step 5: Validate Pod Scheduling
-
-Verify that the pod is now running:
-
-```bash
-kubectl get pods -o wide
-```
-
-Expected output:
-```plaintext
-NAME                   READY   STATUS    NODE
-tolerations-pod-prod   1/1     Running   worker-node-1
-```
-
-Describe the pod to ensure the tolerations are applied correctly:
-
-```bash
-kubectl describe pod tolerations-pod-prod
-```
-
-Check the `Tolerations` section in the output to confirm the pod tolerates the taint.
 
 ---
 
@@ -666,5 +449,13 @@ Always test taint and toleration configurations in non-production environments f
 5. **Testing and Staging Environments**: Taint testing nodes with `testing:NoSchedule` to prevent production workload interference
 
 ---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 20: Pod Scheduling with Taints and Tolerations](../../labmanuals/lab20-sched-taints-tolerations.md) | Guided exercises for taints, tolerations, and scheduling behavior |
 
 This comprehensive guide provides you with a thorough understanding of taints and tolerations in Kubernetes. By using these features effectively, you can control the distribution of workloads based on node conditions and cluster resource requirements, ensuring optimal resource utilization and workload isolation.

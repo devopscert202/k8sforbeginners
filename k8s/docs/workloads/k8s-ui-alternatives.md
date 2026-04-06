@@ -158,6 +158,17 @@ Portainer remains a strong option where the scope is broader than Kubernetes alo
 
 ---
 
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 32: Headlamp Kubernetes UI](../../labmanuals/lab32-workload-headlamp-kubernetes-ui.md) | Primary web UI path: Headlamp in-cluster or desktop, RBAC, and navigation. |
+| [Lab 33: Kubernetes Dashboard (legacy)](../../labmanuals/lab33-workload-kubernetes-dashboard-legacy.md) | Legacy Dashboard-oriented steps for historical comparison only. |
+
+---
+
 ## Sources
 
 - Kubernetes Dashboard archive note: https://github.com/kubernetes/dashboard

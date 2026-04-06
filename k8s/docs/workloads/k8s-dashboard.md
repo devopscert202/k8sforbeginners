@@ -57,52 +57,34 @@ Because of that, new documentation in this repository should prefer **Headlamp**
 
 ---
 
-## Legacy Installation Reference
+## Legacy installation (historical)
 
-If you still need to understand how older labs referenced Kubernetes Dashboard, the common flow was:
+Older material often installed Dashboard into a dedicated namespace (for example `kubernetes-dashboard`), created a **ServiceAccount** and **token** (or kubeconfig) for sign-in, and reached the UI through **port-forward** or **Ingress**. Exact Helm chart names and Service names varied by release. Treat any legacy install docs as **historical context** only; do not extend them for new learning paths.
 
-1. install the dashboard into the `kubernetes-dashboard` namespace
-2. create a ServiceAccount for login
-3. create or retrieve a token
-4. use port-forward or ingress to access the UI
-
-Example legacy commands:
-
-```bash
-helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
-
-kubectl -n kubernetes-dashboard create token admin-user
-kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8444:443
-```
-
-This is retained only as historical context for older material.
+For the current UI direction in this repository, see [k8s-headlamp-ui.md](./k8s-headlamp-ui.md) and [k8s-ui-alternatives.md](./k8s-ui-alternatives.md).
 
 ---
 
-## Recommended Replacement
+## Recommended replacement
 
-Use **Headlamp** instead for current UI-based Kubernetes learning and labs.
-
-### Why Headlamp is the better current path
-
-- active and current project direction
-- official in-cluster deployment documentation
-- plugin support
-- modern extensibility
-- cleaner fit for future OIDC-based access patterns
-
-### Headlamp references in this repo
-
-- Markdown overview: [k8s-headlamp-ui.md](./k8s-headlamp-ui.md)
-- Lab manual: [../../labmanuals/lab32-workload-headlamp-kubernetes-ui.md](../../labmanuals/lab32-workload-headlamp-kubernetes-ui.md)
-- HTML reference: [../../html/k8s-ui-headlamp.html](../../html/k8s-ui-headlamp.html)
+Use **Headlamp** for current UI-based Kubernetes learning: active documentation, in-cluster and desktop options, plugins, and RBAC-aligned access patterns. Headlamp is **not** a substitute for `kubectl` automation but complements it for discovery and triage.
 
 ---
 
 ## Summary
 
-Kubernetes Dashboard remains part of Kubernetes platform history, but it should now be treated as a legacy reference in this repository. For current web UI setup and installation, the recommended direction is **Headlamp**.
+Kubernetes Dashboard remains part of Kubernetes platform history, but it should now be treated as a **legacy** reference in this repository. For current web UI setup, prefer **Headlamp**.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 33: Kubernetes Dashboard (legacy)](../../labmanuals/lab33-workload-kubernetes-dashboard-legacy.md) | Historical Dashboard-oriented exercises where still needed for comparison or maintenance of older environments. |
+| [Lab 32: Headlamp Kubernetes UI](../../labmanuals/lab32-workload-headlamp-kubernetes-ui.md) | Recommended path: deploy Headlamp, authenticate, and explore workloads in the browser. |
 
 ---
 

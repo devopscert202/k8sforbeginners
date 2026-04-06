@@ -36,9 +36,9 @@ A **StorageClass** in Kubernetes defines how storage resources are provisioned. 
 
 ---
 
-### **Setting Up Manual StorageClass in Non-Cloud Kubernetes**
+### **Manual StorageClass patterns in non-cloud Kubernetes**
 
-For non-cloud environments, two common storage solutions are **NFS** and **local storage**. Here’s how to set up manual StorageClasses for these scenarios.
+For non-cloud environments, two common storage solutions are **NFS** and **local storage**. Below are representative manifests for manual provisioning (no dynamic provisioner).
 
 ---
 
@@ -46,8 +46,9 @@ For non-cloud environments, two common storage solutions are **NFS** and **local
 
 NFS is widely used in non-cloud environments for its ability to provide shared storage across multiple nodes.
 
-#### **Step 1: Define the StorageClass**
-Create a manual StorageClass that refers to NFS storage.
+#### **StorageClass**
+
+A manual StorageClass that refers to NFS storage:
 
 ```yaml
 apiVersion: storage.k8s.io/v1
@@ -61,8 +62,9 @@ volumeBindingMode: Immediate
 - **`provisioner: kubernetes.io/no-provisioner`**: Indicates that the StorageClass does not support dynamic provisioning.
 - **`volumeBindingMode: Immediate`**: Ensures the PV will bind to a PVC as soon as it is created.
 
-#### **Step 2: Create a Persistent Volume (PV)**
-Manually create a PV that refers to an exported NFS path.
+#### **Persistent Volume (PV)**
+
+A PV that references an exported NFS path on the server:
 
 ```yaml
 apiVersion: v1
@@ -81,8 +83,9 @@ spec:
     server: 192.168.1.100
 ```
 
-#### **Step 3: Create a Persistent Volume Claim (PVC)**
-Create a PVC that uses the manual NFS StorageClass.
+#### **Persistent Volume Claim (PVC)**
+
+A PVC that requests storage with the manual NFS StorageClass:
 
 ```yaml
 apiVersion: v1
@@ -98,16 +101,15 @@ spec:
   storageClassName: nfs-manual
 ```
 
-This setup ensures that the NFS storage is available for pods with shared read-write access.
+This pattern makes NFS-backed storage available to pods with shared read-write access when the backend export supports **ReadWriteMany**.
 
 ---
 
-### **2. Manual StorageClass for Local Storage**
+### **2. Manual StorageClass for local storage**
 
 Local storage leverages physical disks or directories on nodes, making it ideal for high-performance workloads or single-node setups.
 
-#### **Step 1: Define the StorageClass**
-Create a manual StorageClass for local storage.
+#### **StorageClass**
 
 ```yaml
 apiVersion: storage.k8s.io/v1
@@ -118,10 +120,11 @@ provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 ```
 
-- **`volumeBindingMode: WaitForFirstConsumer`**: Delays PV binding until a pod using the PVC is scheduled. This ensures the volume is allocated to the correct node.
+- **`volumeBindingMode: WaitForFirstConsumer`**: Delays PV binding until a pod using the PVC is scheduled. This helps bind storage on the correct node.
 
-#### **Step 2: Create a Persistent Volume (PV)**
-Manually create a PV that refers to a directory on a specific node.
+#### **Persistent Volume (PV)**
+
+A PV that pins data to a directory on a specific node:
 
 ```yaml
 apiVersion: v1
@@ -147,11 +150,10 @@ spec:
                 - node-1
 ```
 
-- **`local.path`**: Specifies the directory on the node where the data is stored.
-- **Node Affinity**: Ensures the PV is bound only to the specified node.
+- **`local.path`**: Directory on the node where data lives.
+- **Node affinity**: Restricts which node can use this PV.
 
-#### **Step 3: Create a Persistent Volume Claim (PVC)**
-Create a PVC that uses the local storage StorageClass.
+#### **Persistent Volume Claim (PVC)**
 
 ```yaml
 apiVersion: v1
@@ -167,11 +169,18 @@ spec:
   storageClassName: local-storage
 ```
 
-This setup ensures that the local storage is reserved for a pod scheduled on the specific node.
-
 ---
 
 ### **Conclusion**
 
-In non-cloud Kubernetes environments, setting up manual StorageClasses for NFS and local storage provides flexibility and control over storage resources. While these configurations require manual intervention, they are highly effective for on-premises clusters where dynamic provisioning is not available. By combining access modes with manual StorageClasses, you can tailor storage solutions to meet the specific needs of your applications. 
+In non-cloud Kubernetes environments, manual StorageClasses for NFS and local storage provide flexibility and control over storage resources. While these configurations require manual PV (and often server-side) setup, they are effective for on-premises clusters where dynamic provisioning is unavailable. Combining access modes with StorageClasses lets you align storage with application needs.
 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 39: Persistent Volumes and Advanced Storage](../../labmanuals/lab39-storage-persistent-storage.md) | PVs, PVCs, NFS-style patterns, and advanced storage practice |

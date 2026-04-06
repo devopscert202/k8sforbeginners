@@ -77,6 +77,16 @@ AWS provides a vast ecosystem of services. Here are some fundamental ones:
 - [ ] **Set up a basic RDS database**
 - [ ] **Monitor services with CloudWatch**
 
+---
+
+## Hands-On Labs
+
+Practice Kubernetes installation and cluster operations with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 06: Kubernetes Cluster Installation](../../labmanuals/lab06-install-kubernetes-kubeadm.md) | Kubeadm-based cluster setup and validation (conceptually similar building blocks to EC2-based installs) |
+
 ## Further Learning Resources
 - **AWS Documentation**: [https://docs.aws.amazon.com](https://docs.aws.amazon.com)
 - **AWS Training and Certification**: [https://www.aws.training](https://www.aws.training)

@@ -20,10 +20,8 @@ AWS CloudFormation is an Infrastructure as Code (IaC) service that allows users 
 
 ## Working with Stacks
 ### Stack Creation
-1. Write a CloudFormation template (YAML or JSON).
-2. Upload the template to AWS CloudFormation.
-3. Define parameters and configurations.
-4. Deploy the stack to create resources.
+
+Author a template (YAML or JSON), upload it to CloudFormation (console, CLI, or CI), supply **parameters** (cluster name, version, subnets, instance types), and create a **stack** so AWS provisions the declared resources in dependency order.
 
 ### Stack Updates
 - Modify the CloudFormation template.
@@ -180,6 +178,16 @@ Outputs:
 
 ### Checking Stack Outputs
 - Use AWS Management Console or AWS CLI (`aws cloudformation describe-stacks`) to fetch outputs like cluster endpoints.
+
+---
+
+## Hands-On Labs
+
+Practice Kubernetes installation and cluster operations with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 06: Kubernetes Cluster Installation](../../labmanuals/lab06-install-kubernetes-kubeadm.md) | Kubeadm-based install patterns that parallel self-managed nodes and networking concerns |
 
 ## Conclusion and Further Learning
 - **Next Steps**: Explore advanced topics like nested stacks, stack sets, and cross-region deployments.

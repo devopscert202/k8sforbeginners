@@ -259,4 +259,17 @@ apiServer:
 
 ---
 
-By implementing these configurations, you can align your Kubernetes environment with the **CIS Kubernetes Benchmarks**, significantly improving its security posture. The provided YAML examples are ready for deployment and can be customized based on your specific requirements.
+By implementing these configurations, you can align your Kubernetes environment with the **CIS Kubernetes Benchmarks**, significantly improving its security posture. The YAML fragments above are illustrative patterns; adapt names, namespaces, and limits to your environment and validate in a non-production cluster first.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 11: Role-Based Access Control (RBAC)](../../labmanuals/lab11-sec-rbac-security.md) | Certificates, Roles, RoleBindings, contexts, and permission checks. |
+| [Lab 12: Pod Security Context](../../labmanuals/lab12-sec-security-context.md) | Configure pod and container security contexts and interpret behavior. |
+| [Lab 13: Advanced Network Policies - Namespace Isolation](../../labmanuals/lab13-sec-network-policies.md) | Restrict pod traffic with NetworkPolicy resources. |
+| [Lab 16: Pod Security Standards & Admission Control](../../labmanuals/lab16-sec-pod-security-standards.md) | Apply Pod Security admission and baseline/restricted profiles. |

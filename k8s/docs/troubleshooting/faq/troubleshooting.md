@@ -429,9 +429,6 @@ Now, dive into the troubleshooting scenarios and build a solid foundation for ma
 - Inspect the storage class and persistent volume configurations.
 - Verify node permissions and mount points.
 
-Here is the content with numbered questions starting from **61**:
-
-```markdown
 ## Kubernetes Events  
 
 ### 61. What are Kubernetes events, and how do they help in troubleshooting?  
@@ -615,9 +612,7 @@ Check whether ingress/egress rules allow the required traffic.
     ```bash
     kubectl exec -it <pod-name> -- ping <target-IP>
     ```  
-```
 
-```markdown
 ## Handling Component Failure Threshold  
 
 ### 81. What are the common causes of failure in Kubernetes components, and how would you address them?  
@@ -1789,6 +1784,20 @@ Here are the answers for **questions 172–179** with detailed steps and possibl
      - Check for high resource usage across nodes: `kubectl top node`.
      - Inspect etcd and API server latencies.  
    - **Fix:** Scale the cluster, resolve bottlenecks, or optimize workloads.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 49: Cluster and Control Plane Troubleshooting](../../../labmanuals/lab49-ts-cluster-control-plane.md) | Control plane, etcd, and API debugging |
+| [Lab 50: Troubleshooting Pod Failures](../../../labmanuals/lab50-ts-pod-failures.md) | Pod failure modes and recovery |
+| [Lab 51: Kubelet and Node Troubleshooting](../../../labmanuals/lab51-ts-kubelet-node.md) | Nodes, kubelet, and runtime issues |
+| [Lab 53: Workload and Application Debugging](../../../labmanuals/lab53-ts-workload-debugging.md) | Workloads, probes, and apps |
+| [Lab 55: CKA Troubleshooting Practice Scenarios](../../../labmanuals/lab55-ts-cka-scenarios.md) | Scenario-based practice |
 
 ---
 

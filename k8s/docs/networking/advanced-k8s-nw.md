@@ -21,15 +21,14 @@ Observing and monitoring network traffic is critical for debugging and optimizin
 
 - **Kube-proxy**:
   - Manages Service networking and load balancing.
-  - Use `kubectl logs -n kube-system kube-proxy-<pod>` to debug issues.
+  - When debugging Service routing, review kube-proxy Pod logs in `kube-system`.
 
 - **Prometheus/Grafana**:
   - Monitor traffic metrics and network policies.
   - Set up dashboards for real-time network insights.
 
 - **Packet Analysis Tools**:
-  - Use tools like `tcpdump` for inspecting network traffic at the packet level.
-  - Example command: `kubectl exec -it <pod> -- tcpdump -i eth0`
+  - Tools such as `tcpdump` inspect traffic at the packet level; operators often run them via `kubectl exec` inside the Pod’s network namespace.
 
 ## 3. Service Mesh
 
@@ -62,10 +61,8 @@ Kubernetes uses an internal DNS service to resolve Service and Pod names to thei
 - Integrated with CoreDNS for efficient name resolution.
 
 ### Troubleshooting DNS Issues
-- Use `nslookup` or `dig` within Pods:
-  - `kubectl exec -it <pod> -- nslookup <service-name>`
-- Verify CoreDNS Pods are running:
-  - `kubectl get pods -n kube-system -l k8s-app=kube-dns`
+- From inside a Pod, use resolver tools such as `nslookup` or `dig` against Service names or upstreams.
+- Confirm the cluster DNS deployment (for example CoreDNS) is healthy in `kube-system` before chasing application-level DNS failures.
 
 ## 5. Multi-Cluster Networking
 
@@ -120,33 +117,11 @@ Security is paramount in Kubernetes networking to prevent unauthorized access an
 Efficient troubleshooting is crucial to maintaining a healthy Kubernetes network.
 
 ### Key Practices
-- **Test Pod Connectivity**:
-  - Use `kubectl exec` to test connectivity:
-    ```bash
-    kubectl exec -it <pod> -- ping <other-pod-ip>
-    ```
-
-- **Verify Services and Endpoints**:
-  - Check Service and Endpoint configurations:
-    ```bash
-    kubectl get svc
-    kubectl describe svc <service-name>
-    kubectl get endpoints
-    ```
-
-- **Network Policy Debugging**:
-  - Use `kubectl describe netpol` to ensure correct policy application.
-
-- **Analyze Traffic**:
-  - Use `tcpdump` or `wireshark` to capture and inspect traffic for specific Pods.
-  - Example: Capturing traffic for a Pod’s interface:
-    ```bash
-    kubectl exec -it <pod> -- tcpdump -i eth0
-    ```
-
-- **Common Tools**:
-  - **curl/wget**: Test HTTP connectivity.
-  - **iproute2 suite**: Tools like `ip addr` and `ip route` for inspecting network configurations.
+- **Test Pod connectivity**: From a client Pod, use ICMP, TCP checks, or HTTP clients to reach another Pod IP, Service ClusterIP, or DNS name—often via `kubectl exec` into a debug container.
+- **Verify Services and backends**: Inspect Services with `kubectl get` / `describe`, and confirm backends via Endpoints or EndpointSlices so kube-proxy (or the data plane) has targets to forward to.
+- **Network policy debugging**: Use `kubectl describe networkpolicy` (or your CNI’s policy view) to confirm selectors, namespaces, and ingress/egress rules match intent.
+- **Analyze traffic**: Packet capture (`tcpdump`, Wireshark) run in the Pod or node namespace helps validate whether traffic is leaving the client, arriving at the server, or being dropped by policy or routing.
+- **Common tools**: **curl** / **wget** for HTTP checks; **iproute2** (`ip addr`, `ip route`) for interface and route inspection inside Pods or nodes.
 
 ---
 ### Summary
@@ -155,4 +130,12 @@ With the foundational background provided, explore these topics in detail to gai
 
 ---
 
+## Hands-On Labs
 
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 13: Advanced Network Policies — Namespace Isolation](../../labmanuals/lab13-sec-network-policies.md) | Namespace-scoped NetworkPolicies and multi-tenant-style isolation patterns. |
+| [Lab 44: Gateway API — Next Generation Ingress](../../labmanuals/lab44-net-gateway-api.md) | Gateway API resources, HTTPRoute, and traffic management beyond classic Ingress. |
+| [Lab 52: Network Troubleshooting](../../labmanuals/lab52-ts-networking.md) | Diagnose Service, DNS, policy, and connectivity issues in a cluster. |

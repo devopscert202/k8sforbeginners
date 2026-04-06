@@ -80,27 +80,22 @@ Policies help achieve specific goals, such as workload isolation, affinity to ce
     - name: nginx
       image: nginx
   ```
-- **Taints and Tolerations**:
-  - Taint a node:
-    ```bash
-    kubectl taint nodes node1 dedicated=production:NoSchedule
-    ```
-  - Tolerate the taint in a pod spec:
-    ```yaml
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: pod-with-toleration
-    spec:
-      tolerations:
-      - key: "dedicated"
-        operator: "Equal"
-        value: "production"
-        effect: "NoSchedule"
-      containers:
-      - name: nginx
-        image: nginx
-    ```
+- **Taints and Tolerations**: Operators apply taints with `kubectl taint nodes <name> key=value:effect`. Pods that need to land on those nodes declare matching **tolerations**:
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pod-with-toleration
+  spec:
+    tolerations:
+    - key: "dedicated"
+      operator: "Equal"
+      value: "production"
+      effect: "NoSchedule"
+    containers:
+    - name: nginx
+      image: nginx
+  ```
 
 ---
 
@@ -333,9 +328,7 @@ Ensures critical workloads receive resources during shortages.
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
- 
-
- name: high-priority
+  name: high-priority
 value: 1000
 globalDefault: false
 description: "Priority for critical workloads"
@@ -363,6 +356,17 @@ Here is a comparison table between **LimitRange** and **ResourceQuota** in Kuber
 | **Example Fields** | `max`, `min`, `default`, `defaultRequest` | `hard` (defines max limits for resources) |
 | **Example Use Case** | Ensure a pod does not request more than 1 CPU and 2Gi memory. | Restrict a namespace to a total of 10 CPUs and 20Gi memory. |
 
---- 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 17: Pod Scheduling with NodeSelector](../../labmanuals/lab17-sched-nodeselector.md) | Node labels and selector-based placement |
+| [Lab 18: Pod Scheduling with Node and Pod Affinity](../../labmanuals/lab18-sched-affinity-antiaffinity.md) | Affinity rules and topology |
+| [Lab 19: Pod Scheduling with PriorityClass](../../labmanuals/lab19-sched-priorityclass.md) | Priority classes and preemption behavior |
+| [Lab 20: Pod Scheduling with Taints and Tolerations](../../labmanuals/lab20-sched-taints-tolerations.md) | Taints, tolerations, and dedicated nodes |
 
 This combined tutorial ensures a strong understanding of Kubernetes' advanced scheduling and resource management capabilities, equipping you with the tools to optimize your cluster for efficiency and reliability.

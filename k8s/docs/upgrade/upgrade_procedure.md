@@ -1,115 +1,63 @@
 # Summary of Steps for Kubernetes Upgrade
 
-## Backup Before the Upgrade
-1. **Backup etcd Data:**
-   - etcd contains the cluster state and must be backed up before performing the upgrade.
-   - Use the following steps to create an etcd snapshot:
-     - **Set environment variables** for etcd access:
-       ```bash
-       export ETCDCTL_API=3
-       export ETCDCTL_ENDPOINTS=https://127.0.0.1:2379
-       export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
-       export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/server.crt
-       export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/server.key
-       ```
-     - **Save a snapshot:**
-       ```bash
-       sudo etcdctl snapshot save /path/to/backup/etcd-snapshot.db
-       ```
-     - **Verify the snapshot:**
-       ```bash
-       sudo etcdctl snapshot status /path/to/backup/etcd-snapshot.db
-       ```
-2. **Back up manifests and configuration files:**
-   - Save important files such as static pod manifests and `/etc/kubernetes` configurations.
+This page is a **high-level reference** for kubeadm-style upgrades: what to do in each phase and why. Exact package names, versions, and node names depend on your OS and cluster—follow [Lab 40](../../labmanuals/lab40-upgrade-cluster-upgrades.md) or the version-specific guides in this folder for command-level detail.
 
-## Upgrade the Control Plane
-1. **Prepare for the upgrade:**
-   - Update the system package lists and verify the target Kubernetes version.
-2. **Upgrade kubeadm:**
-   - Install the target `kubeadm` version and check compatibility.
-3. **Apply the upgrade plan:**
-   - Use `kubeadm` to upgrade the control plane components (API server, controller-manager, and scheduler).
-4. **Drain the control plane node:**
-   - Safely evict workloads to prepare the node for the upgrade.
-5. **Upgrade kubelet and kubectl:**
-   - Install the matching versions of `kubelet` and `kubectl` to align with `kubeadm`.
-6. **Restart and verify the control plane:**
-   - Restart services and confirm that the control plane node is operational.
+## Backup before the upgrade
 
-## Upgrade the Worker Nodes
-1. **Prepare the worker nodes:**
-   - Update the package lists and ensure the correct `kubeadm` version is installed.
-2. **Upgrade the node configuration:**
-   - Use `kubeadm` to upgrade each worker node configuration.
-3. **Drain the worker nodes:**
-   - Safely evict workloads to minimize disruption.
-4. **Upgrade kubelet and kubectl:**
-   - Install the new versions of `kubelet` and `kubectl` to match the control plane version.
-5. **Restart and uncordon the worker nodes:**
-   - Restart services and bring the node back into the cluster.
-6. **Verify the node status:**
-   - Ensure that the worker nodes are upgraded and in a `Ready` state.
+- **etcd** holds cluster state; take a verified snapshot before changing control plane components. Typical flow: set `ETCDCTL_API=3`, point `etcdctl` at the member endpoints and TLS assets under `/etc/kubernetes/pki/etcd/`, run `etcdctl snapshot save`, then `snapshot status` on the file.
+- **Configuration:** Preserve `/etc/kubernetes`, static pod manifests, and any custom kubeadm or kubelet config you rely on for restore or audit.
 
-## Validate the Upgrade
-1. **Check cluster health:**
-   - Verify that all control plane and worker nodes are in a `Ready` state.
-2. **Deploy a test workload:**
-   - Run a test pod (e.g., an NGINX pod) to confirm application deployments.
-3. **Check cluster components:**
-   - Ensure all system components (like DNS, networking, and storage) are healthy.
-4. **Verify networking and workloads:**
-   - Test pod-to-pod communication and network connectivity.
-5. **Clean up test resources:**
-   - Remove temporary workloads and ensure the cluster remains stable.
+## Upgrade the control plane
 
-## Rollback if the Upgrade Fails
-If an upgrade fails, rolling back to the previous state is critical:
-1. **Restore etcd Snapshot:**
-   - Stop the kubelet service:
-     ```bash
-     sudo systemctl stop kubelet
-     ```
-   - Restore the etcd snapshot:
-     ```bash
-     sudo etcdctl snapshot restore /path/to/backup/etcd-snapshot.db --data-dir /var/lib/etcd
-     ```
-   - Restart etcd and kubelet services.
-2. **Downgrade Kubernetes Components:**
-   - Reinstall the previous versions of `kubeadm`, `kubelet`, and `kubectl`.
-3. **Verify Cluster State:**
-   - Ensure that all components and workloads are running as expected.
+- Refresh packages to the **target minor version only** (Kubernetes does not support skipping minors).
+- Upgrade **kubeadm** first; run `kubeadm upgrade plan`, then `kubeadm upgrade apply` for the desired version.
+- **Drain** the control plane node when upgrading its kubelet (unless your topology treats it differently); upgrade **kubelet** and **kubectl** to match; restart kubelet; **uncordon** when healthy.
 
-## Version Skew Policy Considerations
-- **Kubeadm and Kubernetes Components:**
-   - `kubeadm` only supports upgrades **one minor version at a time**.
-   - For example, an upgrade from v1.27 to v1.29 requires upgrading to v1.28 first.
-- **Control Plane vs Worker Nodes:**
-   - Worker nodes can lag by **one minor version** behind the control plane version.
-- **kubelet and API Server:**
-   - The kubelet version must **not exceed** the API Server version.
+## Upgrade worker nodes
 
-### Summary of Version Skew:
-| Component               | Supported Skew           |
-|-------------------------|--------------------------|
-| Control Plane -> Nodes  | Nodes can lag by 1 minor |
-| API Server -> Kubelet   | Kubelet can lag by 1 minor |
-| Client -> API Server    | kubectl can lag by 1 minor |
+- For each node (or pool): install matching **kubeadm**, run **`kubeadm upgrade node`** on the worker, **drain** from a machine with `kubectl` access, upgrade **kubelet** and **kubectl**, restart kubelet, **uncordon**, and confirm `Ready` before continuing.
+- Rolling one node at a time (or small batches) limits blast radius; respect **PodDisruptionBudgets** and workload capacity.
 
-## Additional Considerations
-- **Staging Environment:** Always test upgrades in a staging environment before applying to production.
-- **Monitoring Tools:** Use monitoring tools like Prometheus and Grafana to detect post-upgrade issues.
-- **Audit Logs:** Check Kubernetes logs for anomalies during and after the upgrade.
-- **Cloud-Specific Differences:** For managed Kubernetes services (EKS, AKS, GKE), consult the cloud provider's documentation for any additional steps.
+## Validate the upgrade
 
-## Final Summary
-This high-level guide outlines the steps required for a successful Kubernetes upgrade:
-1. **Backup:** Protect cluster state with etcd snapshots and backups.
-2. **Upgrade the Control Plane:** Sequentially upgrade `kubeadm`, `kubelet`, and `kubectl`.
-3. **Upgrade the Worker Nodes:** Upgrade nodes one at a time to minimize disruption.
-4. **Validation:** Verify the cluster health, workloads, and networking.
-5. **Rollback:** Be prepared to restore etcd and downgrade components if needed.
-6. **Version Skew:** Ensure all components comply with the Kubernetes version skew policy.
+- Confirm **node versions** and `Ready` state, system namespaces (e.g. `kube-system`) healthy, and a **smoke workload** if appropriate.
+- Watch **events** and core addons (CNI, DNS, kube-proxy) for regressions.
 
-By following these steps, you can perform reliable Kubernetes upgrades with minimal downtime while safeguarding cluster stability.
+## Rollback if the upgrade fails
 
+- Restoring **etcd** from a known-good snapshot is the primary path for catastrophic failure; that usually implies stopping kubelet, restoring data to the configured etcd data directory, and bringing components back in a documented order consistent with your install guide.
+- **Downgrading** binaries (kubeadm, kubelet, kubectl) to the previous minor may be required; align package repositories with that minor and verify skew rules.
+
+## Version skew policy considerations
+
+- **kubeadm** upgrades are **one minor version at a time** (e.g. 1.27 → 1.28 → 1.29).
+- **Worker kubelets** may lag the API server by **at most one minor** version.
+- **kubectl** is generally supported within **±1 minor** of the API server.
+
+| Component               | Supported skew (typical) |
+|-------------------------|---------------------------|
+| Control plane → nodes   | Nodes may lag by 1 minor  |
+| API server → kubelet    | Kubelet may lag by 1 minor |
+| Client → API server     | kubectl within ±1 minor   |
+
+## Additional considerations
+
+- **Staging:** Exercise the full path on a non-production cluster first.
+- **Observability:** Watch metrics and logs through the upgrade window.
+- **Managed clouds (EKS, AKS, GKE):** Control plane upgrades are provider-driven; worker/node image upgrades follow vendor workflows.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 40: Kubernetes Cluster Upgrades with kubeadm](../../labmanuals/lab40-upgrade-cluster-upgrades.md) | Hands-on kubeadm upgrade, drain/cordon, etcd backup concepts, and validation |
+
+---
+
+## Final summary
+
+Successful upgrades combine **verified backups**, **ordered component upgrades** (control plane before workers, one minor at a time), **incremental node rollout**, **post-upgrade validation**, and a **documented rollback** path. Use the lab manual and version-specific docs in `k8s/docs/upgrade/` when you need exact commands.

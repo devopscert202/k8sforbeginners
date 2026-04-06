@@ -2,14 +2,14 @@
 
 In Kubernetes, **affinity** and **anti-affinity** are powerful features used to control the scheduling of pods based on node labels or other pod characteristics. They help ensure that your pods are scheduled on appropriate nodes or are placed in specific patterns, such as ensuring that certain pods don’t share the same node or that they are co-located for performance reasons.
 
-This guide will walk through the concepts, usage, and a practical example involving **node affinity** and **pod affinity/anti-affinity**, using two worker nodes (`worker-node-1` and `worker-node-2`) to demonstrate their effectiveness.
+This guide explains the concepts, syntax, and typical scheduling patterns—often illustrated with two worker nodes (`worker-node-1` and `worker-node-2`) so you can reason about placement and failure domains.
 
 ---
 
 ## **1. Understanding Affinity and Anti-Affinity**
 
 ### **Node Affinity**
-Node affinity allows you to control where a pod is scheduled based on the labels assigned to the nodes in your cluster. This is equivalent to "nodeSelector" but more flexible and expressive.
+Node affinity allows you to control where a pod is scheduled based on the labels assigned to the nodes in your cluster. This is equivalent to `nodeSelector` but more flexible and expressive.
 
 #### **Types of Node Affinity**:
 1. **RequiredDuringSchedulingIgnoredDuringExecution**: The pod will only be scheduled on nodes that match the specified criteria. If no matching nodes are found, the pod won’t be scheduled.
@@ -80,27 +80,11 @@ affinity:
 
 ---
 
-## **3. Practical Example: Scheduling with Affinity and Anti-Affinity**
+## **3. Example Scenario: Node and Pod Anti-Affinity**
 
-Let’s set up a scenario with two nodes (`worker-node-1` and `worker-node-2`) and show how affinity and anti-affinity can be applied to control where pods are scheduled.
+Consider nodes labeled by environment—for example, `worker-node-1` with `env=production` and `worker-node-2` with `env=staging`. You might pin a workload to production nodes using **node affinity**, while using **pod anti-affinity** so another workload does not land on the same host as an existing production pod (spreading replicas for availability).
 
-### **Scenario**:
-- **Node Labels**: `worker-node-1` has the label `env=production`, and `worker-node-2` has the label `env=staging`.
-- **Pod Affinity**: We will ensure that a certain pod can only be scheduled on `worker-node-1` because it’s for production.
-- **Pod Anti-Affinity**: We will ensure that another pod does not get scheduled on `worker-node-1`, as it is critical to avoid putting too many replicas of the same application on that node.
-
-### **Step 1: Label the Nodes**
-
-Label the nodes so we can apply affinity based on these labels.
-
-```bash
-kubectl label nodes worker-node-1 env=production
-kubectl label nodes worker-node-2 env=staging
-```
-
-### **Step 2: Create Pod with Node Affinity (Production)**
-
-We will create a pod that will only be scheduled on `worker-node-1`, where the `env=production` label is applied.
+**Node affinity (production node only):**
 
 ```yaml
 apiVersion: v1
@@ -122,15 +106,9 @@ spec:
     image: nginx
 ```
 
-### **Step 3: Create Pod with Pod Anti-Affinity (Avoiding Same Node)**
+**Pod anti-affinity (avoid same node as pods matching a label, using hostname topology):**
 
-Label the pods so we can apply anti-affinity based on these labels.
-
-```bash
-kubectl label pods production-pod env=production
-```
-
-Next, we will create another pod that should not be scheduled on the same node as the `production-pod`. This is achieved using pod anti-affinity.
+After the first pod exists, a second pod can declare anti-affinity against pods labeled `env=production` so the scheduler prefers a different node:
 
 ```yaml
 apiVersion: v1
@@ -153,56 +131,11 @@ spec:
     image: nginx
 ```
 
-In this example, we are specifying that the pod with the label `env=production` (from the first pod) should not be scheduled on the same node as the new pod, which is enforcing **anti-affinity**.
-
-### **Step 4: Apply the Pods**
-
-```bash
-kubectl apply -f production-pod.yaml
-kubectl apply -f anti-affinity-pod.yaml
-```
-
-### **Step 5: Verify Pod Scheduling**
-
-To verify that the affinity and anti-affinity have been applied correctly, check where the pods are running.
-
-```bash
-kubectl get pods -o wide
-```
-
-The `production-pod` should be scheduled on `worker-node-1` because of the node affinity rule. The `anti-affinity-pod` should be scheduled on `worker-node-2` because of the pod anti-affinity rule, ensuring it does not run on the same node as the `production-pod`.
+To make pod-to-pod rules meaningful, pods need labels the selector can match (for example `env=production` on the first pod). In real clusters you verify placement with `kubectl get pods -o wide`, describe events on unschedulable pods, and inspect node labels—those operational checks belong in hands-on labs.
 
 ---
 
-## **4. Verifying Affinity and Anti-Affinity in Effect**
-
-After deploying the pods, use the following commands to verify that everything is working as expected:
-
-1. **Check the Nodes**:
-   Verify the node labels to ensure they are correctly applied:
-   ```bash
-   kubectl get nodes --show-labels
-   ```
-
-2. **Check Pod Scheduling**:
-   Verify the pods’ scheduling:
-   ```bash
-   kubectl get pods -o wide
-   ```
-
-   The pods should be scheduled on different nodes based on the affinity and anti-affinity rules.
-
-3. **Check Pod Events**:
-   If the pods are not scheduled as expected, you can check events to see why:
-   ```bash
-   kubectl describe pod <pod-name>
-   ```
-
-   This will show if there were issues with the scheduling due to affinity or anti-affinity constraints.
-
----
-
-## **5. Summary of Affinity and Anti-Affinity Use Cases**
+## **4. Summary of Affinity and Anti-Affinity Use Cases**
 
 | **Scenario**                            | **Affinity Type**                       | **Example**                                                               |
 |-----------------------------------------|-----------------------------------------|---------------------------------------------------------------------------|
@@ -215,5 +148,14 @@ After deploying the pods, use the following commands to verify that everything i
 
 ### **Conclusion**
 
-This practical guide provides a detailed explanation of **affinity** and **anti-affinity** in Kubernetes scheduling. These features help control where pods are scheduled, ensuring your workloads are distributed efficiently based on your specific needs. Through the examples with **node affinity**, **pod affinity**, and **pod anti-affinity**, you can now understand how to manage pod placement effectively in a Kubernetes cluster.
+**Affinity** and **anti-affinity** control where pods are scheduled relative to nodes and to each other. **Node affinity** targets node labels; **pod affinity** and **pod anti-affinity** express co-location or separation across a **topology** (such as hostname or zone). Used together, they help you balance performance, isolation, and high availability.
 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 18: Pod Scheduling with Node and Pod Affinity](../../labmanuals/lab18-sched-affinity-antiaffinity.md) | Node affinity, pod affinity/anti-affinity, and scheduling verification on a multi-node cluster. |

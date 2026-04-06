@@ -68,81 +68,21 @@ Vulnerabilities are weaknesses in software, hardware, or configurations that att
 
 ---
 
-**Tutorial: Securing a Kubernetes Cluster**
-
-### Step 1: Set Up a Kubernetes Cluster
-- Use **Minikube** for local testing or **Managed Kubernetes Services** (EKS, GKE, AKS) for production.
-
-### Step 2: Secure Kubernetes API
-```yaml
-apiVersion: v1
-kind: Config
-users:
-- name: admin
-  user:
-    client-certificate: admin.crt
-    client-key: admin.key
-```
-- Restrict API access to only necessary IP ranges.
-
-### Step 3: Enable RBAC
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: read-only-binding
-subjects:
-- kind: User
-  name: dev-user
-roleRef:
-  kind: Role
-  name: read-only-role
-  apiGroup: rbac.authorization.k8s.io
-```
-
-### Step 4: Apply Network Policies
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: restrict-pod-access
-spec:
-  podSelector:
-    matchLabels:
-      app: web
-  policyTypes:
-  - Ingress
-  - Egress
-  ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: backend
-```
-
-### Step 5: Scan for Vulnerabilities
-- Install **Trivy**:
-```sh
-brew install aquasecurity/trivy/trivy
-```
-- Scan a Kubernetes cluster:
-```sh
-trivy k8s cluster --report all
-```
-
-### Step 6: Monitor Security Events
-- Install **Falco**:
-```sh
-helm install falco falcosecurity/falco
-```
-
-### Step 7: Automate Patch Management
-- Use Kubernetes **Kured** for automated node reboots after patches.
-```sh
-kubectl apply -f https://github.com/weaveworks/kured/releases/latest/download/kured.yaml
-```
+### Hardening themes (conceptual)
+Securing a cluster combines **API access control** (authentication, TLS client config, network reachability), **RBAC** (least-privilege Roles and Bindings), **network segmentation** (NetworkPolicies matching pod and namespace selectors), **continuous image and config scanning** (for example Trivy against images and cluster resources), **runtime detection** (for example Falco), and **operational patching** (node OS, kubelet, control plane, and workload images). The labs linked at the end of this document walk through representative controls end to end.
 
 ---
 
 **Conclusion**
 By implementing these best practices, organizations can significantly reduce their Kubernetes attack surface. Security is an ongoing process, requiring constant monitoring, updates, and proactive threat mitigation. Integrating security into DevOps workflows ensures a more resilient Kubernetes environment.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 15: Container Image Scanning with Trivy](../../labmanuals/lab15-sec-image-scanning-trivy.md) | Scan images and cluster-facing resources and interpret severity output. |
+| [Lab 16: Pod Security Standards & Admission Control](../../labmanuals/lab16-sec-pod-security-standards.md) | Enforce pod security profiles and reduce privileged workload risk. |

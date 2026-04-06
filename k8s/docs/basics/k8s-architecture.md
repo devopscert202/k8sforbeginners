@@ -75,6 +75,16 @@ For a comprehensive visual understanding of Kubernetes architecture with interac
 
 ---
 
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 06: Install Kubernetes with kubeadm](../../labmanuals/lab06-install-kubernetes-kubeadm.md) | Hands-on cluster setup that reinforces how control plane and node components fit together. |
+
+---
+
 ## 📚 Further Reading
 
 - [Official Kubernetes Architecture Documentation](https://kubernetes.io/docs/concepts/architecture/)

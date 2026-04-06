@@ -256,3 +256,14 @@ spec:
 ---
 
 This guide equips you with the knowledge to fine-tune Kubernetes clusters and workloads for optimal performance. By combining these strategies, you can ensure that your Kubernetes environment is robust, efficient, and scalable.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 30: Horizontal Pod Autoscaler (HPA)](../../labmanuals/lab30-workload-hpa.md) | Scale workloads based on CPU or custom metrics. |
+| [Lab 37: Resource quotas and limits](../../labmanuals/lab37-resmgmt-resource-quotas-limits.md) | Namespace quotas, limit ranges, and container resource requests/limits. |

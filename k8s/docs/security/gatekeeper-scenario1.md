@@ -3,32 +3,7 @@
 ## Introduction to Gatekeeper
 Gatekeeper is an admission controller webhook for Kubernetes that enforces policies defined using Open Policy Agent (OPA). It helps organizations ensure compliance, security, and governance by restricting the creation of resources that do not adhere to predefined policies. By leveraging Constraint Templates and Constraints, Gatekeeper allows cluster administrators to enforce custom rules dynamically.
 
-## Prerequisites
-Before installing and using Gatekeeper, ensure you have the following:
-- A running Kubernetes cluster (GKE, AKS, EKS, or a local cluster like Minikube)
-- `kubectl` installed and configured
-- Helm installed (optional for Helm-based installation)
-- Administrative access to apply admission controller configurations
-
-## Installing Gatekeeper
-Gatekeeper can be installed using Helm or Kubernetes manifests.
-
-### Installing via Helm
-```sh
-helm repo add open-policy-agent https://open-policy-agent.github.io/gatekeeper/charts
-helm install gatekeeper open-policy-agent/gatekeeper --namespace gatekeeper-system --create-namespace
-```
-
-### Installing via Kubernetes Manifests
-```sh
-kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/deploy/gatekeeper.yaml
-```
-
-### Verifying Installation
-```sh
-kubectl get pods -n gatekeeper-system
-```
-Ensure that all pods are running before proceeding.
+Gatekeeper is typically installed with Helm or the upstream project manifests into a dedicated namespace (for example `gatekeeper-system`). After the controller pods are healthy, you define **ConstraintTemplates** (which declare the CRD shape and Rego logic) and **Constraints** (which select API kinds and supply parameters).
 
 ## What Gatekeeper Does
 Gatekeeper enforces Kubernetes security and governance policies by:
@@ -54,11 +29,11 @@ Gatekeeper enforces Kubernetes security and governance policies by:
 | Kube-bench    | CIS Benchmark checks for Kubernetes         | Open Source |
 | Kube-hunter   | Penetration testing for Kubernetes clusters | Open Source |
 
-## Practical Example: Enforcing Label Constraints on Pods
-We will enforce a policy that requires specific labels (`name`, `environment`, `costApprover`, `businessOwner`) on all Pods.
+## Example: Required Labels on Pods
+The following illustrates how a **ConstraintTemplate** expresses Rego that checks for missing labels, and how a **Constraint** scopes that logic to Pods and lists the required label keys. A Pod without those labels is rejected at admission; a Pod that includes them is allowed.
 
-### Step 1: Create a Constraint Template
-Create a file named `template.yaml` with the following content:
+**ConstraintTemplate** (defines the `K8sRequiredLabels` kind and validation logic):
+
 ```yaml
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
@@ -89,13 +64,9 @@ spec:
           missing_labels[_]
         }
 ```
-Apply the template:
-```sh
-kubectl apply -f template.yaml
-```
 
-### Step 2: Create a Constraint
-Create a file named `constraint.yaml` with the following content:
+**Constraint** (enforces the template on Pods):
+
 ```yaml
 apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: K8sRequiredLabels
@@ -110,13 +81,9 @@ spec:
   parameters:
     labels: ["name", "environment", "costApprover", "businessOwner"]
 ```
-Apply the constraint:
-```sh
-kubectl apply -f constraint.yaml
-```
 
-### Step 3: Create Two Example Pods
-#### Pod Without Required Labels (Should Be Denied)
+**Non-compliant Pod** (would be denied—missing required labels):
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -127,13 +94,9 @@ spec:
   - name: busybox
     image: busybox
 ```
-Apply the pod definition:
-```sh
-kubectl apply -f uncompliant-pod.yaml
-```
-Expected result: This request should be denied due to missing required labels.
 
-#### Pod With Required Labels (Should Be Allowed)
+**Compliant Pod** (illustrates the metadata Gatekeeper expects):
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -149,12 +112,16 @@ spec:
   - name: busybox
     image: busybox
 ```
-Apply the pod definition:
-```sh
-kubectl apply -f compliant-pod.yaml
-```
-Expected result: This request should be allowed as it includes all required labels.
 
 ## Conclusion
 Gatekeeper is a powerful Kubernetes admission controller that enforces security and governance policies across clusters. By defining Constraint Templates and Constraints, administrators can enforce policies dynamically, ensuring compliance with security best practices. With integration into CI/CD pipelines and auditing capabilities, Gatekeeper plays a critical role in strengthening Kubernetes security.
 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 14: OPA Gatekeeper - Policy Enforcement](../../labmanuals/lab14-sec-opa-gatekeeper.md) | Install Gatekeeper, author constraints, and test allow/deny behavior. |

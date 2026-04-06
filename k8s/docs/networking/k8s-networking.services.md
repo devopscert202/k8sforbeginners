@@ -283,3 +283,15 @@ Kubernetes supports dual-stack networking to enable Pods and Services to use bot
 ## **8. Conclusion**
 
 This guide has outlined the foundational and advanced networking features of Kubernetes. Mastering these concepts enables developers to deploy and manage scalable, secure, and efficient containerized applications.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 02: Creating Kubernetes Services](../../labmanuals/lab02-basics-creating-services.md) | Service types, selectors, and cluster networking fundamentals. |
+| [Lab 34: Multi-Port Services in Kubernetes](../../labmanuals/lab34-net-multi-port-services.md) | Multiple container and Service ports, naming, and NodePort patterns. |
+| [Lab 58: EndpointSlices — Scalable Endpoint Management](../../labmanuals/lab58-net-endpointslices.md) | Auto-generated slices, custom backends, and endpoint troubleshooting. |

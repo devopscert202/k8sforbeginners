@@ -1,142 +1,77 @@
 ### **Liveness and Readiness Probes in Kubernetes: A Brief Overview**
 
-#### **What are Liveness and Readiness Probes?**
-- **Liveness Probes:** Used to determine if a container is running. If a liveness probe fails, Kubernetes will restart the container.
-- **Readiness Probes:** Used to determine if a container is ready to serve traffic. If a readiness probe fails, Kubernetes removes the Pod from the Service's endpoints until it recovers.
+#### **What are liveness and readiness probes?**
+- **Liveness probe**: Determines whether a container is still alive. If it fails repeatedly, the kubelet **restarts** the container (subject to the Pod’s restart policy).
+- **Readiness probe**: Determines whether a container is ready to **receive Service traffic**. If it fails, the Pod’s endpoint is removed from matching Services until it recovers.
 
-#### **Use Cases**
-1. **Liveness Probes:**
-   - Restarting a container that is stuck or deadlocked.
-   - Monitoring container health in long-running applications.
-2. **Readiness Probes:**
-   - Temporarily removing Pods from traffic during initialization or maintenance.
-   - Ensuring traffic is routed only to fully operational Pods.
+#### **Use cases**
+1. **Liveness**: Recover from deadlocks, hung processes, or broken application state without manual intervention.
+2. **Readiness**: Hold traffic during startup, migrations, or brief dependency outages; avoid sending users to Pods that cannot serve yet.
 
 #### **Benefits**
-- **Increased Stability:** Ensures Pods recover automatically from unhealthy states.
-- **Traffic Management:** Prevents routing traffic to unready Pods.
-- **Improved Fault Tolerance:** Restarts stuck containers, ensuring the application remains functional.
+- **Stability**: Unhealthy containers can be restarted automatically.
+- **Traffic safety**: Unready Pods are excluded from load-balanced endpoints.
+- **Clearer signals**: Probe success/failure shows up in Pod status and events.
 
 ---
 
-### **Commands Extracted from the PDF**
+### **Illustrative example: exec liveness probe**
 
-#### **Step 1: Create a Pod with Liveness Probe**
+The following Pod runs a script that creates `/tmp/healthy`, removes it after a delay, and then sleeps. The **liveness** probe runs `cat /tmp/healthy`; once the file is gone, the probe fails and Kubernetes restarts the container.
 
-1. **Create a YAML File:**
-   ```bash
-   vi exec-liveness.yaml
-   ```
-   Add the following content:
-   ```yaml
-   apiVersion: v1
-   kind: Pod
-   metadata:
-     labels:
-       test: liveness
-     name: liveness-exec
-   spec:
-     containers:
-     - name: liveness
-       image: k8s.gcr.io/busybox
-       args:
-       - /bin/sh
-       - -c
-       - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
-       livenessProbe:
-         exec:
-           command:
-           - cat
-           - /tmp/healthy
-         initialDelaySeconds: 5
-         periodSeconds: 5
-   ```
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: registry.k8s.io/busybox
+    args:
+    - /bin/sh
+    - -c
+    - touch /tmp/healthy; sleep 30; rm -rf /tmp/healthy; sleep 600
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/healthy
+      initialDelaySeconds: 5
+      periodSeconds: 5
+```
 
-2. **Create the Pod:**
-   ```bash
-   kubectl create -f exec-liveness.yaml
-   ```
-
-3. **Check Pod Status:**
-   ```bash
-   kubectl get pod
-   ```
+**What to expect conceptually**
+- While `/tmp/healthy` exists, the probe succeeds and the container keeps running.
+- After the script removes the file, probe failures accumulate until the kubelet **kills and restarts** the container.
+- **`kubectl describe pod`** on that Pod shows probe configuration and **Events** such as `Unhealthy` and `Killing` tied to probe failure.
+- The **`RESTARTS`** column from **`kubectl get pod`** increases across restart cycles.
 
 ---
 
-#### **Step 2: Describe the Pod**
+### **Choosing probe types**
 
-1. **Describe the Pod:**
-   ```bash
-   kubectl describe pod liveness-exec
-   ```
+- **`exec`**: Run a command inside the container; useful when HTTP or TCP checks do not fit.
+- **`httpGet`**: Hit an HTTP endpoint; common for web services.
+- **`tcpSocket`**: Open a TCP socket; common for non-HTTP listeners.
+- **`grpc`**: Where supported, for gRPC health-check protocols.
 
----
-
-### **Expected Output of Commands**
-
-1. **`kubectl get pod`**
-   Example Output:
-   ```
-   NAME             READY   STATUS    RESTARTS   AGE
-   liveness-exec    1/1     Running   3          1m
-   ```
-   - **STATUS:** Shows if the Pod is running.
-   - **RESTARTS:** Increases whenever the liveness probe fails.
-
-2. **`kubectl describe pod liveness-exec`**
-   Key Sections in the Output:
-   - **Liveness Probe Details:**  
-     ```text
-     Liveness:  exec [cat /tmp/healthy] delay=5s period=5s #success=1 #failure=3
-     ```
-   - **Events:**  
-     ```text
-     Warning  Unhealthy  Liveness probe failed: cat: can't open '/tmp/healthy': No such file or directory
-     Normal   Killing    Killing container with id: ...: Liveness probe failed
-     ```
-
----
-
-### **Demonstration: How Liveness Probe Monitors Pod Health**
-
-#### **What Happens in the YAML Example:**
-1. **Container Behavior:**
-   - Initially, the script creates a file (`/tmp/healthy`) to indicate the container is healthy.
-   - After 30 seconds, it deletes the file and simulates a failure by sleeping for 600 seconds.
-2. **Liveness Probe Behavior:**
-   - The liveness probe checks for the existence of `/tmp/healthy` every 5 seconds.
-   - When the file is deleted, the probe fails, and Kubernetes restarts the container.
-
-#### **Steps to Observe the Probe in Action:**
-1. **Watch Pod Status:**
-   ```bash
-   kubectl get pod liveness-exec -w
-   ```
-   - Observe the **RESTARTS** column increase every time the liveness probe fails.
-
-2. **View Pod Events:**
-   ```bash
-   kubectl describe pod liveness-exec
-   ```
-   - Look for failure events in the **Events** section.
-
-3. **View Logs (Optional):**
-   ```bash
-   kubectl logs liveness-exec
-   ```
-   - Check the logs for the `touch` and `rm` commands being executed.
+Tune **`initialDelaySeconds`**, **`periodSeconds`**, **`timeoutSeconds`**, **`successThreshold`**, and **`failureThreshold`** so probes tolerate normal startup without hiding real failures.
 
 ---
 
 ### **Summary**
 
-**Liveness and Readiness Probes** are essential for maintaining the stability and reliability of applications in Kubernetes. By configuring the liveness probe in this example:
-- The container is automatically restarted when it simulates failure by deleting `/tmp/healthy`.
-- Kubernetes ensures the Pod remains functional without manual intervention.
+Liveness and readiness probes separate **“should this container be running?”** from **“should this Pod receive traffic?”**. Used well, they improve resilience and safe rollouts; misconfigured probes (too aggressive or checking the wrong signal) can cause restart loops or accidental traffic drain. Hands-on practice with probe timing and events is in the linked lab.
 
-**Benefits Demonstrated:**
-- Automatic recovery from unhealthy states.
-- Detailed monitoring of container health.
+---
 
-By using liveness probes, you can ensure high availability and fault tolerance for your applications in Kubernetes clusters.
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 9: Pod health probes](../../labmanuals/lab09-pod-health-probes.md) | Configure liveness and readiness probes, observe failures and restarts, and interpret Pod events. |

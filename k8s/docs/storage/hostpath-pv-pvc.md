@@ -1,34 +1,26 @@
-# 5. Configuring Pod Using HostPath-Based PV and PVC
+# HostPath-based PersistentVolume and PersistentVolumeClaim
 
-## 5.1 Overview
-In Kubernetes, a `HostPath` volume type allows you to mount a file or directory from the host node's filesystem into a Pod. While `HostPath` is useful for local storage requirements or accessing specific files on the node, it is typically not recommended for production use due to the lack of portability and scalability. However, it can be useful in development and testing environments. This tutorial demonstrates how to use a `HostPath` volume along with a Persistent Volume (PV) and Persistent Volume Claim (PVC) to mount storage into a Pod.
+## Overview
+A **hostPath** volume mounts a file or directory from the **node’s** filesystem into a Pod. It is common in development and constrained environments but is a poor fit for most production clusters: data is tied to one node, poses security and portability risks, and **ReadWriteMany** on hostPath does not give true multi-node shared storage. Pairing hostPath with a **PersistentVolume (PV)** and **PersistentVolumeClaim (PVC)** still expresses the standard persistence API, but operators must understand node binding and access modes.
 
-## 5.2 Concept
-A `HostPath` volume in Kubernetes allows you to specify a directory or file on the node where your Kubernetes cluster is running. This volume can be used by Pods running on the same node to persist data. When using a `HostPath` volume in combination with a Persistent Volume and Persistent Volume Claim, you can dynamically manage storage and enable Pods to access this storage in a way that remains consistent even across restarts.
+## Concept
+- **PV**: Cluster-scoped storage resource; for hostPath, the `spec` points at a path on a specific node (often combined with node affinity for local volumes).
+- **PVC**: Namespaced request for storage; binds to a PV whose class, size, and access modes match.
+- **Pod**: Mounts the PVC; the kubelet resolves it to the host path on the node where the Pod runs.
 
-### How It Works:
-- **HostPath PV**: A Persistent Volume (PV) is created that uses the `HostPath` volume type, linking it to a specific file or directory on the node's filesystem.
-- **PVC**: A Persistent Volume Claim (PVC) is created by a Pod to request storage.
-- **Pod**: The Pod is configured to use the PVC, thereby getting access to the data stored on the host machine.
+## Benefits and trade-offs
+- **Low friction** for local dev and single-node tests.
+- **Persistence across Pod restarts** on the same node (data remains on the host path).
+- **Not portable** across nodes for RWO; **RWX with hostPath** is misleading for multi-node clusters—use NFS, CSI file shares, or cloud RWX volumes for real shared storage.
 
-## 5.3 Benefits
-- **Cost-Efficient**: Useful for low-cost development environments where you need to access local storage.
-- **Persistent Storage**: Provides persistent storage for Pods across restarts and rescheduling, even though the data is tied to the node.
-- **Simplicity**: Easy to set up and configure for local storage needs.
-- **Useful for Testing**: Can be used for testing scenarios where accessing local files on the node is required.
+## Use cases
+- Local development and CI-like clusters.
+- Node-local caches or fixtures where data loss on reschedule is acceptable.
+- Learning PV/PVC flow before moving to CSI or network storage.
 
-## 5.4 Use Cases
-- **Local Development**: In development environments, where you want to use local disk storage rather than external cloud storage.
-- **Node-Specific Data**: Storing data that is specific to a node and does not need to be replicated across nodes.
-- **Testing and Debugging**: Useful in testing environments where quick and simple local storage is required.
+## Example manifests
 
-## 5.5 Real-World Scenario
-Imagine you have a Kubernetes cluster running an application that processes logs. These logs are saved locally on each node in a specific directory. To ensure that the application has access to the logs even if the Pod is rescheduled or restarted, you can use a `HostPath` Persistent Volume (PV) to link the Pod to this directory. The application can then continue reading and writing logs, even if it moves between nodes or restarts.
-
-## 5.6 Implementation Example
-
-### 5.6.1 Step 1: Create the HostPath Persistent Volume
-First, we define a Persistent Volume (PV) that uses the `HostPath` volume type to point to a directory on the host.
+**PersistentVolume** (hostPath, manual class):
 
 ```yaml
 apiVersion: v1
@@ -48,13 +40,7 @@ spec:
     type: Directory
 ```
 
-### Explanation of the YAML:
-- **hostPath.path**: Specifies the directory on the host node that will be used as the persistent volume.
-- **accessModes**: `ReadWriteOnce` means the volume can be mounted by a single node for reading and writing.
-- **persistentVolumeReclaimPolicy**: When the volume is released, it will not be deleted (set to `Retain`).
-
-### 5.6.2 Step 2: Create the Persistent Volume Claim (PVC)
-Next, we create a PVC that requests storage from the above-defined PV.
+**PersistentVolumeClaim**:
 
 ```yaml
 apiVersion: v1
@@ -69,12 +55,7 @@ spec:
       storage: 1Gi
 ```
 
-### Explanation of the YAML:
-- **accessModes**: This matches the access mode of the PV (`ReadWriteOnce`).
-- **resources.requests.storage**: The size of the volume requested from the PV, in this case, 1Gi.
-
-### 5.6.3 Step 3: Create the Pod Using the PVC
-Now, we define the Pod that uses the `HostPath` volume via the PVC.
+**Pod** using the claim:
 
 ```yaml
 apiVersion: v1
@@ -94,117 +75,49 @@ spec:
       claimName: hostpath-pvc
 ```
 
-### Explanation of the YAML:
-- **volumeMounts.mountPath**: Mounts the volume to the `/usr/share/nginx/html` directory in the container.
-- **volumes.persistentVolumeClaim.claimName**: Refers to the PVC (`hostpath-pvc`), which requests the storage from the `HostPath` PV.
+---
 
-## 5.7 Verification Steps
+# Access modes (reference)
 
-1. **Create the Persistent Volume**:
-   Apply the PV YAML to create the Persistent Volume:
-   ```bash
-   kubectl apply -f pv.yaml
-   ```
+When defining PVs and PVCs, **access modes** describe how a volume may be mounted.
 
-2. **Create the Persistent Volume Claim**:
-   Apply the PVC YAML to create the Persistent Volume Claim:
-   ```bash
-   kubectl apply -f pvc.yaml
-   ```
+### **ReadWriteOnce (RWO)**  
+- **Description**: Read-write by a single node (legacy semantics allowed multiple pods on that node; **ReadWriteOncePod** tightens to one pod when supported).  
+- **Use case**: Block-like volumes, single-writer workloads.
 
-3. **Create the Pod**:
-   Apply the Pod YAML to create the Pod that uses the PVC:
-   ```bash
-   kubectl apply -f pod.yaml
-   ```
+### **ReadOnlyMany (ROX)**  
+- **Description**: Read-only on many nodes.  
+- **Use case**: Shared static content.
 
-4. **Verify the PVC is Bound to the PV**:
-   Check if the PVC is correctly bound to the PV:
-   ```bash
-   kubectl get pvc hostpath-pvc
-   ```
+### **ReadWriteMany (RWX)**  
+- **Description**: Read-write from multiple nodes.  
+- **Use case**: Shared file systems (NFS, EFS, managed file services).  
+- **Requires** a backend that actually supports concurrent writers.
 
-   The `STATUS` should be `Bound`.
+### **ReadWriteOncePod (RWOP)**  
+- **Description**: At most one pod may mount the volume read-write.  
+- **Use case**: Strict single-writer semantics with supported drivers.
 
-5. **Check the Pod Status**:
-   Check the status of the Pod to ensure it is running:
-   ```bash
-   kubectl get pods
-   ```
+### **PV, PVC, and StorageClass**
+- The PV declares supported access modes; the PVC requests a subset that must be satisfied for binding.
+- The **StorageClass** and provisioner determine which access modes are valid for dynamically provisioned volumes.
 
-6. **Verify the Mounted Volume**:
-   Enter the Pod and check if the volume is correctly mounted to the specified path:
-   ```bash
-   kubectl exec -it hostpath-pod -- /bin/bash
-   ls /usr/share/nginx/html
-   ```
-You should see the content from the mounted directory (`/mnt/data` on the host node).
+### **Summary**
+
+| **Access Mode**    | **Multiple pods (typical)** | **Multiple nodes** | **Notes**                    |
+|--------------------|-----------------------------|--------------------|------------------------------|
+| **ReadWriteOnce**  | Often, same node            | Single writer node | Common for block storage     |
+| **ReadOnlyMany**   | Yes                         | Yes                | Read-only shared data        |
+| **ReadWriteMany**| Yes                         | Yes                | Needs true shared filesystem |
+| **ReadWriteOncePod** | No (one pod RW)         | N/A                | CSI / newer plugins          |
 
 ---
 
-# Access Modes
+## Hands-On Labs
 
-When defining these storage resources, **access modes** specify how a volume can be mounted by pods. Here's a detailed explanation of the main access modes available in Kubernetes:
+Practice these concepts with guided lab exercises:
 
----
-
-### 1. **ReadWriteOnce (RWO)**  
-   - **Description**: The volume can be mounted as read-write by a single node.  
-   - **Use Case**: Ideal for applications that require exclusive access to a volume, such as single-node databases or applications that don't share data across nodes.  
-   - **Limitations**:  
-     - Only one pod on one node can write to this volume at a time.  
-     - The volume can be used by multiple pods on the same node (e.g., with shared `hostPath`).
-
----
-
-### 2. **ReadOnlyMany (ROX)**  
-   - **Description**: The volume can be mounted as read-only by many nodes.  
-   - **Use Case**: Useful for workloads that need to share static, unchanging data, such as configuration files, logs, or media files.  
-   - **Limitations**:  
-     - The data in the volume cannot be modified by any pod.  
-     - Multiple pods across multiple nodes can read the data.
-
----
-
-### 3. **ReadWriteMany (RWX)**  
-   - **Description**: The volume can be mounted as read-write by multiple nodes.  
-   - **Use Case**: Suitable for shared storage scenarios, such as distributed file systems, shared logs, or collaborative workloads like web servers.  
-   - **Limitations**:  
-     - Requires storage that supports simultaneous read-write access across nodes, such as NFS, Ceph, or cloud-native solutions like GCP Filestore or AWS EFS.
-
----
-
-### 4. **ReadWriteOncePod (RWOP)**  
-   - **Description**: The volume can be mounted as read-write by a single pod, even if other pods are on the same node.  
-   - **Use Case**: Useful for strict isolation scenarios where only one pod should have write access.  
-   - **Limitations**:  
-     - Supported only by specific volume plugins like CSI drivers.
-
----
-
-### How These Access Modes Work with PV and PVC
-1. **Persistent Volume (PV)**  
-   A PV is a storage resource in the cluster, and its access mode is defined when the volume is provisioned. It declares how a volume can be accessed.  
-
-2. **Persistent Volume Claim (PVC)**  
-   A PVC requests a storage resource with a specific access mode. Kubernetes binds a PVC to a PV that satisfies the requested mode.  
-
-### Compatibility with Storage Classes
-- The underlying **StorageClass** or storage backend determines the supported access modes.
-- For example, **GCP Filestore** supports `ReadWriteMany`, while **GCE Persistent Disks** typically support only `ReadWriteOnce`.
-
----
-
-### Summary of Access Modes
-
-| **Access Mode**   | **Multiple Pods?**     | **Multiple Nodes?**    | **Read/Write Capabilities**   | **Common Use Case**              |
-|--------------------|------------------------|-------------------------|--------------------------------|-----------------------------------|
-| **ReadWriteOnce**  | Yes (single node)      | No                      | Read-Write (single node)       | Databases, single-instance apps  |
-| **ReadOnlyMany**   | Yes                   | Yes                     | Read-Only                     | Config files, shared data         |
-| **ReadWriteMany**  | Yes                   | Yes                     | Read-Write (multiple nodes)    | Shared storage, logs              |
-| **ReadWriteOncePod**| No (single pod only)  | No                      | Read-Write (single pod)        | Isolated app environments         |
-
----
-
-
-   
+| Lab | Description |
+|-----|-------------|
+| [Lab 38: Basic Storage Volumes in Kubernetes](../../labmanuals/lab38-storage-basic-volumes.md) | emptyDir, hostPath, and sharing data between containers |
+| [Lab 39: Persistent Volumes and Advanced Storage](../../labmanuals/lab39-storage-persistent-storage.md) | PVs, PVCs, and persistent storage patterns |

@@ -16,43 +16,9 @@ Labels in Kubernetes are key-value pairs assigned to Kubernetes objects such as 
 - **appowner:** Defines the owner of the application.
 - **business_critical:** Indicates whether a workload is critical (`yes` or `no`).
 
-### Example Setup
-Let’s say we have a Kubernetes cluster with the following nodes:
-- **master.example.com** (Control Plane)
-- **worker-node-1.example.com** (Worker Node 1)
-- **worker-node-2.example.com** (Worker Node 2)
+### Example setup
 
-### Applying Labels to Nodes
-```bash
-# Labeling nodes
-kubectl label nodes worker-node-1.example.com env=production department=engineering business_critical=yes
-kubectl label nodes worker-node-2.example.com env=staging department=finance business_critical=no
-```
-To view labels applied to nodes:
-```bash
-kubectl get nodes --show-labels
-```
-
-### Applying Labels to Pods & Deployments
-Labels can also be applied to existing Deployments and Pods using the `kubectl label` command.
-
-#### Applying Labels via `kubectl` Command
-```bash
-# Labeling an existing Deployment
-kubectl label deployment my-app-deployment env=production department=engineering appowner=john_doe business_critical=yes
-
-# Labeling an existing Pod
-kubectl label pod my-app-pod env=staging department=finance business_critical=no
-```
-To check the applied labels:
-```bash
-kubectl get pods --show-labels
-```
-
-To filter resources based on labels:
-```bash
-kubectl get pods -l env=production
-```
+Consider a cluster with a control plane node (**master.example.com**) and workers (**worker-node-1.example.com**, **worker-node-2.example.com**). You can attach labels to **Nodes**, **Pods**, **Deployments**, and other objects—either in the manifest (`metadata.labels`) or imperatively with `kubectl label`. Use **`kubectl get … --show-labels`** (or `-l` selectors) to inspect and filter what you have in the cluster.
 
 ### Exposing Services Based on Labels
 Labels are also used to group Pods for service exposure.
@@ -73,11 +39,6 @@ spec:
       targetPort: 80
 ```
 In this example, the service selects all Pods with labels `app=my-app` and `env=production` and exposes them on port 80.
-
-You can verify the service with:
-```bash
-kubectl get service my-app-service
-```
 
 ```yaml
 apiVersion: apps/v1
@@ -143,3 +104,12 @@ This ensures that pods with the `env=production` label will be scheduled on the 
 ### Conclusion
 Kubernetes labeling is a simple yet powerful feature that provides granular control over managing resources. It enhances the Kubernetes environment’s flexibility and scalability through mechanisms like affinity, node selection, and monitoring. Properly defining and applying labels to resources in your cluster ensures better organization, resource allocation, and workload placement. When building production-grade environments, thoughtful labeling should be part of your Kubernetes best practices.
 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 46: YAML manifests](../../labmanuals/lab46-basics-yaml-manifests.md) | Author and fix manifests where `metadata.labels` and selectors must stay in sync. |

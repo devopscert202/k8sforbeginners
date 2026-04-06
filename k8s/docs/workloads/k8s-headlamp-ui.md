@@ -228,18 +228,9 @@ This repository is aimed at hands-on Kubernetes practice. Headlamp is a good fit
 
 ---
 
-## Recommended Lab Approach
+## Typical learning deployment (conceptual)
 
-For a **3-node VM-based cluster**, the simplest learning path is:
-
-1. install Headlamp **in-cluster using Helm**
-2. deploy it into `kube-system`
-3. create a **Headlamp admin ServiceAccount** for the lab
-4. generate a token
-5. access it by **port-forward**
-6. validate cluster, node, namespace, workload, and log views
-
-This approach avoids unnecessary ingress and DNS complexity for the first exercise while remaining close to the official Headlamp documentation.
+On a small lab cluster, a common pattern is **in-cluster Headlamp** installed with **Helm**, a dedicated or lab **ServiceAccount** for authentication, access via **port-forward** (before Ingress), and validation by browsing namespaces, workloads, events, and logs. Exact chart values and namespaces vary; the linked lab provides ordered steps aligned with current upstream docs.
 
 ---
 
@@ -248,6 +239,16 @@ This approach avoids unnecessary ingress and DNS complexity for the first exerci
 Headlamp is the more relevant Kubernetes web UI to teach now because the old Dashboard project is archived and explicitly points users toward Headlamp. It provides a modern, extensible, and Kubernetes-native UI for visual exploration, troubleshooting, and operational visibility, while still relying on standard Kubernetes RBAC and authentication models underneath.
 
 For this repository, Headlamp should be treated as the **current Kubernetes UI learning path** for web-based cluster access.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 32: Headlamp Kubernetes UI](../../labmanuals/lab32-workload-headlamp-kubernetes-ui.md) | Deploy Headlamp, sign in, and explore cluster resources through the web UI. |
 
 ---
 

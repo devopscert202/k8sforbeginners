@@ -2,8 +2,6 @@
 
 A practical introduction to YAML for learners who are new to the format and need to read, write, and fix manifests used in this repository’s labs.
 
-**Hands-on lab:** [Lab 46: YAML Manifests Deep Dive](../../labmanuals/lab46-basics-yaml-manifests.md) (uses `k8s/labs/yaml-lab/` manifests and break-and-fix exercises).
-
 **Interactive HTML (same content, visual layout):**
 
 - [Part 1 — Syntax and structure](../../html/yaml-k8s-part1-syntax.html)
@@ -36,7 +34,7 @@ A practical introduction to YAML for learners who are new to the format and need
 
 Kubernetes stores desired state as **declarative API objects**. You usually express those objects as **YAML** files (JSON works too, but YAML is the default in docs and labs because it is readable and diff-friendly).
 
-Every `kubectl apply -f ...` in the labs sends YAML to the API server. Understanding indentation and structure prevents most beginner errors.
+When you apply manifests in the labs, YAML is sent to the API server. Understanding indentation and structure prevents most beginner errors.
 
 ---
 
@@ -287,48 +285,9 @@ stringData:
 
 ---
 
-## Editing manifests in real labs
+## Working with manifests in a cluster
 
-### Apply from the repo
-
-```bash
-kubectl apply -f k8s/labs/basics/apache1.yaml
-```
-
-### Edit live objects (quick experiments)
-
-```bash
-kubectl edit deployment/my-deploy
-```
-
-Your editor opens the **current** YAML. Save to apply. For learning, prefer changing a file under version control and re-applying.
-
-### See what the API has
-
-```bash
-kubectl get pod apache1 -o yaml
-```
-
-### Validate without applying
-
-```bash
-kubectl apply --dry-run=client -f your-file.yaml
-kubectl apply --dry-run=server -f your-file.yaml   # needs cluster; catches more policy/admission issues
-```
-
-### Inspect allowed fields
-
-```bash
-kubectl explain pod
-kubectl explain pod.spec
-kubectl explain pod.spec.containers
-```
-
-### Compare file to cluster
-
-```bash
-kubectl diff -f your-file.yaml
-```
+Common workflows (covered in detail in the lab manuals): apply manifests from files under version control; use **`kubectl explain`** for schema; use **client and server dry-run** to catch parse and admission issues before committing changes; use **`kubectl get -o yaml`** and **`kubectl diff`** to compare declared state to what is running. Imperative **`kubectl edit`** updates live objects in an editor—convenient for experiments, but Git-tracked files plus `apply` is usually clearer for learning.
 
 ---
 
@@ -344,7 +303,7 @@ Install extensions:
 **Tips:**
 
 - Set **Files: Insert Final Newline** and show whitespace rendering to catch accidental tabs.
-- Use the integrated terminal next to the manifest for `kubectl apply` / `kubectl explain`.
+- Use the integrated terminal next to the manifest when validating with `kubectl`.
 
 ### Online validators (paste YAML)
 
@@ -374,10 +333,7 @@ Paste **sanitized** manifests only (no real Secret contents).
 
 **Safe recovery in labs**
 
-1. Fix YAML in the file (or revert from git).
-2. `kubectl apply --dry-run=client -f ...`
-3. `kubectl apply -f ...`
-4. `kubectl describe` the resource if still not running.
+Fix the file (or revert from git), validate with **client dry-run**, apply when clean, then **`kubectl describe`** the resource if the workload still misbehaves.
 
 ---
 
@@ -391,6 +347,16 @@ Paste **sanitized** manifests only (no real Secret contents).
 | Multi-doc file | `---` between objects |
 | Comment | `#` to end of line |
 | Multiline text | `|` or `>` |
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 46: YAML manifests deep dive](../../labmanuals/lab46-basics-yaml-manifests.md) | Uses `k8s/labs/yaml-lab/` manifests and break-and-fix exercises for real-world YAML skills. |
 
 ---
 
