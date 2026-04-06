@@ -8,6 +8,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
+      --kube-blue: #326CE5; --kube-blue-deep: #1d4ed8; --kube-sky: #dbeafe;
       --navy: #0f172a; --blue: #2563eb; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
       --slate-900: #0f172a;
       --slate-700: #334155;
@@ -21,22 +22,35 @@
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
-      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06); margin-bottom: 24px;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      margin-bottom: 26px;
+      border: 1px solid rgba(50,108,229,0.1);
     }
     .eyebrow {
-      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
-      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--kube-sky);
+      color: var(--kube-blue-deep);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
     }
-    h1 { font-size: 1.6rem; line-height: 1.12; margin-bottom: 12px; color: var(--blue); }
-    .hero h1 { color: #fff; }
-    .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
+    h1 { font-size: 1.6rem; line-height: 1.12; margin-bottom: 12px; color: var(--kube-blue); }
+    .hero p { max-width: 980px; margin-left: auto; margin-right: auto; color: var(--muted); }
     .hero-grid, .stats, .stack-grid, .lane, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { display: grid; gap: 16px; }
-    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
+    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; margin-bottom: 24px; }
     .hero-card, .panel, .stack-card, .swimlane, .map-card, .step-card, .command-card, .namespace-card, .warning {
       background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
     }
-    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card { padding: 18px; color: var(--ink); }
     .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
     .hero-card ul, .stack-card ul { padding-left: 18px; }
     .hero-card li + li, .stack-card li + li { margin-top: 6px; }
@@ -97,29 +111,30 @@
 <body>
   <div class="page">
     <section class="hero">
-      <div class="eyebrow">Headlamp In-Cluster Guide</div>
+      <div class="eyebrow">Interactive Kubernetes Explainer</div>
       <h1>Headlamp UI on a 3-Node Kubernetes VM Cluster</h1>
       <p>Headlamp provides a current web UI path for Kubernetes clusters. This document covers the official in-cluster installation path from the archived Dashboard background through Helm install, service exposure, token-based access, UI validation, and the next production-ready access model.</p>
-      <div class="hero-grid">
-        <div class="hero-card">
-          <h2>Why Headlamp now</h2>
-          <ul>
-            <li>The archived Kubernetes Dashboard repository says the project is no longer maintained and asks users to consider Headlamp instead.</li>
-            <li>Headlamp has active official documentation for in-cluster deployment, plugins, ingress, OIDC, and desktop use.</li>
-            <li>That makes it the better UI direction for new Kubernetes documentation and cluster setup guidance.</li>
-          </ul>
-        </div>
-        <div class="hero-card">
-          <h2>Scope</h2>
-          <ul>
-            <li>Helm-based in-cluster installation into `kube-system`</li>
-            <li>Port-forward access for VM-based labs</li>
-            <li>ServiceAccount token login for controlled lab access</li>
-            <li>UI testing from cluster overview through workloads and logs</li>
-          </ul>
-        </div>
-      </div>
     </section>
+
+    <div class="hero-grid">
+      <div class="hero-card">
+        <h2>Why Headlamp now</h2>
+        <ul>
+          <li>The archived Kubernetes Dashboard repository says the project is no longer maintained and asks users to consider Headlamp instead.</li>
+          <li>Headlamp has active official documentation for in-cluster deployment, plugins, ingress, OIDC, and desktop use.</li>
+          <li>That makes it the better UI direction for new Kubernetes documentation and cluster setup guidance.</li>
+        </ul>
+      </div>
+      <div class="hero-card">
+        <h2>Scope</h2>
+        <ul>
+          <li>Helm-based in-cluster installation into `kube-system`</li>
+          <li>Port-forward access for VM-based labs</li>
+          <li>ServiceAccount token login for controlled lab access</li>
+          <li>UI testing from cluster overview through workloads and logs</li>
+        </ul>
+      </div>
+    </div>
 
     <section class="stats">
       <div class="stat blue"><div class="stat-label">Cluster Shape</div><div class="stat-value">3 Nodes</div><div>One control plane VM and two worker VMs provide the lab target for the in-cluster install.</div></div>
