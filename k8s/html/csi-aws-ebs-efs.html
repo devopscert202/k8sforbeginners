@@ -40,6 +40,14 @@
         th, td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
         th { background: #326ce5; color: #fff; }
         @media (max-width: 768px) { body { padding: 14px; } .hero, .view { padding: 20px; } }
+        .footer-note {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: #326CE5; text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -151,7 +159,7 @@ spec:
                 <article class="card"><h3>Cloud storage teaching path</h3><p>Explain storage as: Pod -> PVC -> StorageClass -> CSI driver -> cloud volume -> mounted filesystem path.</p></article>
             </div>
         </section>
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — CSI, AWS EBS, and EFS — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <script>

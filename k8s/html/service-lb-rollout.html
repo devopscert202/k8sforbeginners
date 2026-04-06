@@ -11,6 +11,17 @@
             box-sizing: border-box;
         }
         :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
             --blue: #2563eb;
             --slate-900: #0f172a;
             --slate-700: #334155;
@@ -23,19 +34,45 @@
             padding: 20px;
             min-height: 100vh;
             line-height: 1.6;
-            color: var(--slate-900);
+            color: var(--ink);
         }
         .container {
             max-width: 1380px;
             margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-            padding: 20px;
         }
+        .hero {
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
         h1 {
             text-align: center;
-            color: var(--blue);
+            color: var(--kube-blue);
             margin-bottom: 15px;
             font-size: 1.6rem;
         }
@@ -245,7 +282,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Service Load Balancing During Rolling Update</h1>
+        <header class="hero">
+            <div class="eyebrow">Interactive Kubernetes Explainer</div>
+            <h1>Service Load Balancing During Rolling Update</h1>
+        </header>
 
         <div class="intro">
             <strong>Zero-Downtime Deployments:</strong> During a rolling update, the Service continuously routes traffic to healthy pods. As new v2 pods become ready, they're added to the endpoint list. Old v1 pods are removed only after graceful termination. This ensures 100% availability throughout the rollout.
@@ -472,7 +512,7 @@ spec:
                 <li><strong>Session Affinity:</strong> Can be configured with <code>sessionAffinity: ClientIP</code> for sticky sessions</li>
             </ul>
         </div>
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Service Load Balancing During Rolling Update — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <script>

@@ -7,6 +7,17 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
             --blue: #2563eb;
             --slate-900: #0f172a;
             --slate-700: #334155;
@@ -16,14 +27,43 @@
         body {
             font-family: "Segoe UI", system-ui, sans-serif;
             background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-            color: var(--slate-900);
+            color: var(--ink);
             padding: 20px;
             line-height: 1.6;
         }
         .container { max-width: 1380px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 28px; }
-        h1 { font-size: 1.6rem; color: var(--blue); margin-bottom: 8px; }
-        .subtitle { max-width: 760px; margin: 0 auto; color: #64748b; }
+        .hero {
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+        h1 { font-size: 1.6rem; color: var(--kube-blue); margin-bottom: 8px; }
+        .subtitle { max-width: 760px; margin: 0 auto; color: var(--muted); }
         .controls { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
         .btn {
             border: 1px solid #bfdbfe; background: white; color: #326ce5; border-radius: 999px;
@@ -134,7 +174,8 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <header class="hero">
+            <div class="eyebrow">Interactive Kubernetes Explainer</div>
             <h1>Kubernetes Init Containers</h1>
             <p class="subtitle">Interactive guide based on Lab 21. Explore ordered startup, dependency checks, shared volumes, multi-stage initialization, and failure handling before the main app container starts.</p>
         </header>
@@ -381,7 +422,7 @@ kubectl get pod &lt;pod&gt; -o jsonpath='{.status.initContainerStatuses[*].state
                 </div>
             </div>
         </div>
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Kubernetes Init Containers — <a href="index.html">Back to catalog</a></p>
     </div>
     <script>
         const flowDetails = [

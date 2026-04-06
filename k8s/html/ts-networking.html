@@ -7,46 +7,83 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
             --blue: #2563eb;
-            --blue-deep: #1d4ed8;
-            --sky: #dbeafe;
             --slate-900: #0f172a;
             --slate-700: #334155;
             --slate-500: #64748b;
             --slate-200: #e2e8f0;
+            --blue-deep: var(--kube-blue-deep);
+            --sky: var(--kube-sky);
             --green: #16a34a;
-            --amber: #d97706;
-            --rose: #e11d48;
+            --signal-amber: #d97706;
+            --signal-rose: #e11d48;
         }
         body {
             font-family: "Segoe UI", system-ui, sans-serif;
             background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-            color: var(--slate-900);
+            color: var(--ink);
             padding: 20px;
             line-height: 1.6;
         }
         .container { max-width: 1380px; margin: 0 auto; }
 
-        .header-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-            padding: 20px 24px;
-            margin-bottom: 20px;
+        .hero {
             text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
         }
-        .header-card h1 {
-            font-size: 1.6rem;
-            color: var(--blue);
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
             font-weight: 700;
-            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
         }
-        .header-card .subtitle {
-            color: var(--slate-500);
+        .hero h1 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            color: var(--kube-blue);
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.15;
+        }
+        .subtitle {
+            color: var(--muted);
             font-size: 0.95rem;
+        }
+        .hero .subtitle {
             max-width: 820px;
             margin: 0 auto;
         }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
 
         .nav-tabs {
             display: flex;
@@ -141,8 +178,8 @@
             margin-right: 6px;
         }
         .tag-green { background: #dcfce7; color: var(--green); }
-        .tag-amber { background: #fef3c7; color: var(--amber); }
-        .tag-rose { background: #ffe4e6; color: var(--rose); }
+        .tag-amber { background: #fef3c7; color: var(--signal-amber); }
+        .tag-rose { background: #ffe4e6; color: var(--signal-rose); }
 
         pre {
             background: #1e293b;
@@ -193,7 +230,8 @@
 </head>
 <body>
     <div class="container">
-        <header class="header-card">
+        <header class="hero">
+            <div class="eyebrow">Interactive Kubernetes Explainer</div>
             <h1>Kubernetes Network Troubleshooting</h1>
             <p class="subtitle">Interactive guide: services, DNS, pod connectivity, NetworkPolicy, Ingress, and a quick symptom-to-fix reference.</p>
         </header>
@@ -507,7 +545,7 @@ kubectl logs -n kube-system DS_OR_POD_FOR_KUBE_PROXY</pre>
             </div>
         </section>
 
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Kubernetes Network Troubleshooting — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <script>

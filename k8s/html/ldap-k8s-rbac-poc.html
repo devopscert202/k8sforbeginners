@@ -84,7 +84,15 @@
     @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 1150px) { .hero-grid, .stats, .stack-grid, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { grid-template-columns: 1fr; } .stack-arrow { display: none; } }
     @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.6rem; } }
-  </style>
+          .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: #326CE5; text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
   <div class="page">
@@ -396,7 +404,7 @@ kubectl get pods -n prod</pre></div>
         <p>If the exercise is for human enterprise users, an OIDC bridge is usually the cleanest pattern. Direct client certificates for every employee do not scale well for joiner-mover-leaver processes, group management, or self-service governance.</p>
       </div>
     </section>
-    <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Corporate LDAP / Active Directory to Kubernetes RBAC Flow — <a href="index.html">Back to catalog</a></p>
   </div>
 
   <script>

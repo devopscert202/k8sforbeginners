@@ -109,7 +109,15 @@
             border-left: 4px solid var(--blue); color: #1e3a8a;
         }
         @media (max-width: 768px) { body { padding: 14px; } .hero, .view { padding: 20px; } }
-    </style>
+            .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: #326CE5; text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
     <div class="container">
@@ -208,7 +216,7 @@ spec:
                 <article class="practice"><h3>Recovery planning</h3><p>Decide on reclaim, cleanup, backup, and snapshot strategy before the first application depends on the volume.</p></article>
             </div>
         </section>
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+                <p class="footer-note">k8sforbeginners — Kubernetes Storage Overview — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <script>

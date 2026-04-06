@@ -7,34 +7,70 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
             --blue: #2563eb;
-            --blue-deep: #1d4ed8;
-            --sky: #dbeafe;
             --slate-900: #0f172a;
             --slate-700: #334155;
             --slate-500: #64748b;
             --slate-200: #e2e8f0;
+            --blue-deep: var(--kube-blue-deep);
+            --sky: var(--kube-sky);
             --green: #16a34a;
-            --amber: #d97706;
-            --rose: #e11d48;
         }
         body {
             font-family: "Segoe UI", system-ui, sans-serif;
             background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-            color: var(--slate-900);
+            color: var(--ink);
             padding: 20px;
             line-height: 1.6;
         }
         .container { max-width: 1380px; margin: 0 auto; }
 
-        .header-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
-            padding: 20px 24px;
-            margin-bottom: 16px;
+        .hero {
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
         }
-        .header-card h1 { margin-bottom: 6px; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
+        .hero h1 { margin-bottom: 6px; font-size: 1.6rem; color: var(--blue); }
+        .subtitle { color: var(--muted); font-size: 0.95rem; }
         .tab-bar {
             display: flex;
             flex-wrap: wrap;
@@ -79,7 +115,7 @@
         p, li { color: var(--slate-700); margin-bottom: 10px; }
         ul { margin-left: 1.25rem; margin-bottom: 12px; }
         .callout {
-            border-left: 4px solid var(--amber);
+            border-left: 4px solid #d97706;
             background: #fffbeb;
             padding: 12px 14px;
             border-radius: 0 8px 8px 0;
@@ -88,7 +124,7 @@
         }
         .callout strong { color: var(--slate-900); }
         .ok { color: var(--green); font-weight: 600; }
-        .block { color: var(--rose); font-weight: 600; }
+        .block { color: #e11d48; font-weight: 600; }
         pre {
             background: #0f172a;
             color: #e2e8f0;
@@ -176,10 +212,11 @@
 </head>
 <body>
     <div class="container">
-        <div class="header-card">
-            <h1 style="font-size:1.6rem;color:var(--blue)">Kubernetes Network Policies</h1>
-            <p class="subtitle" style="color:var(--slate-500);font-size:0.95rem">Control pod-to-pod, namespace, and external traffic with ingress and egress rules</p>
-        </div>
+        <header class="hero">
+            <div class="eyebrow">Interactive Kubernetes Explainer</div>
+            <h1>Kubernetes Network Policies</h1>
+            <p class="subtitle">Control pod-to-pod, namespace, and external traffic with ingress and egress rules</p>
+        </header>
 
         <div class="tab-bar" role="tablist" aria-label="Network policy topics">
             <button type="button" class="tab-btn" role="tab" id="tab-1" aria-selected="true" aria-controls="panel-1" data-tab="1">Concepts</button>
@@ -723,7 +760,7 @@ kubectl get networkpolicy &lt;name&gt; -n &lt;namespace&gt; -o yaml</code></pre>
             </table>
         </div>
 
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Kubernetes Network Policies — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <script>

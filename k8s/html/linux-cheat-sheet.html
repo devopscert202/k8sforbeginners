@@ -32,7 +32,7 @@
             padding: 20px;
         }
         .container { max-width: 1380px; margin: 0 auto; }
-        header {
+        .hero {
             text-align: center;
             margin-bottom: 30px;
             background: white;
@@ -228,24 +228,25 @@
         }
         .footer-note {
             text-align: center;
-            color: var(--slate-500);
-            font-size: 0.84rem;
-            margin-top: 24px;
-            padding-bottom: 12px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
         }
+        .footer-note a { color: var(--blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
         @media (max-width: 1100px) {
             .grid-3, .grid-2, .flow, .callout-row { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
             body { padding: 14px; }
-            header, .panel { padding: 22px; }
+            .hero, .panel { padding: 22px; }
             h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
+        <header class="hero">
             <div class="eyebrow">Linux for Kubernetes Beginners</div>
             <h1>Ubuntu Linux Cheat Sheet</h1>
             <p class="subtitle">An interactive quick-grasp guide for file system work, users and permissions, services and logs, package management, shell history, and the Linux skills that show up constantly in Kubernetes labs.</p>
@@ -890,8 +891,7 @@ free -h</code></pre>
             </div>
         </section>
 
-        <p class="footer-note">Designed as a practical Linux companion for Ubuntu-based Kubernetes learning and lab work.</p>
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Ubuntu Linux Cheat Sheet — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <script>

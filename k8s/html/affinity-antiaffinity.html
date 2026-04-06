@@ -163,7 +163,15 @@
             .controls { justify-content: flex-start; }
             .constraint-row { grid-template-columns: 1fr; }
         }
-    </style>
+            .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
     <div class="container">
@@ -795,7 +803,7 @@ spec:
                 </article>
             </div>
         </section>
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+                <p class="footer-note">k8sforbeginners — Affinity and Anti-Affinity — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <script>

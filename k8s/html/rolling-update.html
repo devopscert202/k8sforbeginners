@@ -12,6 +12,17 @@
         }
 
         :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
             --blue: #2563eb;
             --slate-900: #0f172a;
             --slate-700: #334155;
@@ -24,20 +35,49 @@
             background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             padding: 20px;
             line-height: 1.6;
-            color: var(--slate-900);
+            color: var(--ink);
         }
 
         .container {
             max-width: 1380px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
-            padding: 30px;
         }
 
+        .hero {
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
         h1 {
-            color: var(--blue);
+            color: var(--kube-blue);
             text-align: center;
             margin-bottom: 10px;
             font-size: 1.6rem;
@@ -45,7 +85,7 @@
 
         .subtitle {
             text-align: center;
-            color: var(--slate-500);
+            color: var(--muted);
             margin-bottom: 30px;
             font-size: 1.1em;
         }
@@ -663,8 +703,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Kubernetes Rolling Update Strategy</h1>
-        <p class="subtitle">Interactive visualization of pod replacement during deployment updates</p>
+        <header class="hero">
+            <div class="eyebrow">Interactive Kubernetes Explainer</div>
+            <h1>🚀 Kubernetes Rolling Update Strategy</h1>
+            <p class="subtitle">Interactive visualization of pod replacement during deployment updates</p>
+        </header>
 
         <div class="controls">
             <button class="btn btn-primary" id="playBtn">
@@ -995,7 +1038,7 @@
             <p>✅ <strong>Easy Rollback:</strong> Old ReplicaSet retained for quick reversions</p>
             <p>✅ <strong>Automatic Traffic Distribution:</strong> Service handles load balancing automatically</p>
         </div>
-        <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Kubernetes Rolling Update Strategy — <a href="index.html">Back to catalog</a></p>
     </div>
 
     <div class="tooltip" id="tooltip"></div>

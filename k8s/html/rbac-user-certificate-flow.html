@@ -85,7 +85,15 @@
     @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 1100px) { .hero-grid, .layout, .stats, .artifacts, .command-grid, .test-grid { grid-template-columns: 1fr; } }
     @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.6rem; } .flow-line { margin-left: 8px; padding-left: 20px; } .step-card::before { left: -30px; } }
-  </style>
+          .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: #326CE5; text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
   <div class="page">
@@ -344,7 +352,7 @@ kubectl create deployment test --image=docker.io/httpd -n role</pre></div>
         <p>This walkthrough demonstrates classic X.509 client-certificate authentication. In many enterprises, human users are integrated through OIDC or a webhook-backed identity layer, while certificates remain common for admin access, cluster bootstrap, or automation.</p>
       </div>
     </section>
-    <div class="footer" style="margin-top:24px;text-align:center;color:var(--slate-500);font-size:0.84rem;padding-bottom:12px;">k8sforbeginners — Kubernetes visual learning</div>
+        <p class="footer-note">k8sforbeginners — Kubernetes User Certificate to RBAC Test Flow — <a href="index.html">Back to catalog</a></p>
   </div>
 
   <script>
