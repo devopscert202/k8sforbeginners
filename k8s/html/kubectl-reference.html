@@ -141,7 +141,7 @@
         }
         .concept-grid, .practice-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 18px;
         }
         .card {
@@ -174,7 +174,10 @@
             color: #dbeafe;
             border-radius: 16px;
             padding: 18px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 0.86rem;
             line-height: 1.55;
             border: 1px solid rgba(148,163,184,0.18);
@@ -242,6 +245,37 @@
             text-transform: uppercase;
             letter-spacing: 0.04em;
             margin-top: 4px;
+        }
+        details {
+            margin-top: 18px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        details summary {
+            padding: 14px 18px;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--kube-blue-deep);
+            font-size: 0.95rem;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        details summary::-webkit-details-marker { display: none; }
+        details summary::before {
+            content: '▶';
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+        details .details-body {
+            padding: 18px;
+            background: white;
         }
         @media (max-width: 900px) {
             body { padding: 14px; }
@@ -336,37 +370,45 @@ kubectl delete ns scratch --wait=false</code></pre>
                             <article class="card">
                     <div class="card-badge">Beyond create/get/delete</div>
                     <p>ConfigMaps, secrets, cluster metadata, labels, cordon/drain, raw API paths, and kustomize.</p>
-                    <pre><code>kubectl create configmap app --from-literal=key=value --dry-run=client -o yaml</code></pre>
-                    <pre><code>kubectl create secret generic db --from-literal=password=changeme --dry-run=client -o yaml</code></pre>
-                    <pre><code>kubectl create job --from=cronjob/backup manual-run-1 -n cron</code></pre>
-                    <pre><code>kubectl run curl --image=curlimages/curl --rm -it --restart=Never -- curl -s http://web.default.svc.cluster.local</code></pre>
-                    <pre><code>kubectl attach mypod -i -t</code></pre>
-                    <pre><code>kubectl cp -h | head -5</code></pre>
-                    <pre><code>kubectl version --client -o yaml</code></pre>
-                    <pre><code>kubectl version -o json | jq &#x27;.serverVersion.gitVersion&#x27;</code></pre>
-                    <pre><code>kubectl cluster-info dump --output-directory=/tmp/cluster-dump</code></pre>
-                    <pre><code>kubectl api-versions | sort | tail -20</code></pre>
-                    <pre><code>kubectl api-resources --verbs=list --namespaced -o name</code></pre>
-                    <pre><code>kubectl config view --minify --raw</code></pre>
-                    <pre><code>kubectl config get-contexts</code></pre>
-                    <pre><code>kubectl config set-context --current --namespace=dev</code></pre>
-                    <pre><code>kubectl label pod mypod color=blue --overwrite</code></pre>
-                    <pre><code>kubectl annotate pod mypod inspected-at=$(date -Iseconds)</code></pre>
-                    <pre><code>kubectl taint nodes worker-1 key=value:NoSchedule</code></pre>
-                    <pre><code>kubectl cordon worker-2</code></pre>
-                    <pre><code>kubectl drain worker-2 --ignore-daemonsets --delete-emptydir-data</code></pre>
-                    <pre><code>kubectl uncordon worker-2</code></pre>
-                    <pre><code>kubectl replace -f pod.yaml --force --grace-period=0</code></pre>
-                    <pre><code>kubectl apply --server-side -f deployment.yaml</code></pre>
-                    <pre><code>kubectl kustomize ./overlays/prod/ | kubectl apply -f -</code></pre>
-                    <pre><code>kubectl get --raw /healthz?verbose</code></pre>
-                    <pre><code>kubectl get --raw /api/v1/namespaces/kube-system/pods</code></pre>
+                    <details>
+                        <summary>Beyond create/get/delete — full command cookbook</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl create configmap app --from-literal=key=value --dry-run=client -o yaml
+kubectl create secret generic db --from-literal=password=changeme --dry-run=client -o yaml
+kubectl create job --from=cronjob/backup manual-run-1 -n cron
+kubectl run curl --image=curlimages/curl --rm -it --restart=Never -- curl -s http://web.default.svc.cluster.local
+kubectl attach mypod -i -t
+kubectl cp -h | head -5
+kubectl version --client -o yaml
+kubectl version -o json | jq &#x27;.serverVersion.gitVersion&#x27;
+kubectl cluster-info dump --output-directory=/tmp/cluster-dump
+kubectl api-versions | sort | tail -20
+kubectl api-resources --verbs=list --namespaced -o name
+kubectl config view --minify --raw
+kubectl config get-contexts
+kubectl config set-context --current --namespace=dev
+kubectl label pod mypod color=blue --overwrite
+kubectl annotate pod mypod inspected-at=$(date -Iseconds)
+kubectl taint nodes worker-1 key=value:NoSchedule
+kubectl cordon worker-2
+kubectl drain worker-2 --ignore-daemonsets --delete-emptydir-data
+kubectl uncordon worker-2
+kubectl replace -f pod.yaml --force --grace-period=0
+kubectl apply --server-side -f deployment.yaml
+kubectl kustomize ./overlays/prod/ | kubectl apply -f -
+kubectl get --raw /healthz?verbose
+kubectl get --raw /api/v1/namespaces/kube-system/pods</code></pre>
+                        </div>
+                    </details>
                 </article>
             </div>
             <div class="concept-grid" style="margin-top:24px;">
                             <article class="card">
                     <div class="card-badge">Verb &amp; noun cheatsheet</div>
                     <p>Fifty high-frequency operator commands with a one-line “why” — complements the Everyday cards above.</p>
+                    <details>
+                        <summary>Verb &amp; noun cheatsheet — fifty commands with notes</summary>
+                        <div class="details-body">
                     <div class="table-wrap"><table>
                     <thead><tr><th>Intent</th><th>Command</th><th>Note</th></tr></thead>
                     <tbody>
@@ -422,6 +464,8 @@ kubectl delete ns scratch --wait=false</code></pre>
 <tr><td>Debug copy Pod</td><td><code>kubectl debug POD --copy-to=debug --image=busybox -- sh</code></td><td>Clone for triage</td></tr>
 <tr><td>Ephemeral attach</td><td><code>kubectl debug POD -it --image=nicolaka/netshoot --target=app -- bash</code></td><td>Network toolbox sidecar</td></tr>
                     </tbody></table></div>
+                        </div>
+                    </details>
                 </article>
             </div>
             <div class="section-note">Pair these with a fixed namespace (<code>-n</code> / <code>--namespace</code>) or <code>kubens</code> so you never delete in the wrong scope.</div>
@@ -545,80 +589,93 @@ kubectl get events -A --sort-by=.lastTimestamp</code></pre>
                             <article class="card">
                     <div class="card-badge">JSONPath (extended)</div>
                     <p>Forty-five copy-ready extractions for services, storage, workloads, webhooks, and discovery.</p>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get deploy -n prod -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get svc -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\t&quot;}{.spec.clusterIP}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{.items[0].status.podIP}&#x27;</code></pre>
-                    <pre><code>kubectl get nodes -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.phase}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{.items[?(@.status.phase==&quot;Running&quot;)].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{.items[?(@.spec.nodeName==&quot;worker-1&quot;)].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get deploy web -o jsonpath=&#x27;{.metadata.generation}&#x27;</code></pre>
-                    <pre><code>kubectl get deploy web -o jsonpath=&#x27;{.status.observedGeneration}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.spec.containers[*].name}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pod mypod -o jsonpath=&#x27;{.spec.containers[0].resources.requests.cpu}&#x27;</code></pre>
-                    <pre><code>kubectl get pod mypod -o jsonpath=&#x27;{.spec.containers[0].resources.limits.memory}&#x27;</code></pre>
-                    <pre><code>kubectl get ingress -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.spec.rules[*].host}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pv -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.phase}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pvc -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}/{.metadata.name}{&quot;\t&quot;}{.status.phase}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get sa -n kube-system -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get cm coredns -n kube-system -o jsonpath=&#x27;{.data.Corefile}&#x27;</code></pre>
-                    <pre><code>kubectl get nodes -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.nodeInfo.kubeletVersion}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.startTime}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get deploy -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\t&quot;}{.spec.replicas}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{.items[*].status.containerStatuses[*].imageID}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{range .items[*]}{range .status.conditions[*]}{.type}={.status}{&quot;\n&quot;}{end}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get hpa -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}/{.metadata.name}{&quot;\t&quot;}{.status.currentReplicas}/{.spec.maxReplicas}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pdb -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.disruptionsAllowed}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get networkpolicy -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get cronjobs -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\t&quot;}{.spec.schedule}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get job -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.succeeded}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get sts -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.spec.replicas}{&quot;\t&quot;}{.status.readyReplicas}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get ds -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.numberReady}{&quot;\t&quot;}{.status.desiredNumberScheduled}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get endpointslices -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get validatingwebhookconfigurations -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get mutatingwebhookconfigurations -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get ns -o jsonpath=&#x27;{.items[*].metadata.name}{&quot;\n&quot;}&#x27;</code></pre>
-                    <pre><code>kubectl get nodes -o jsonpath=&#x27;{.items[?(@.spec.unschedulable==true)].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.ownerReferences[0].kind}{&quot;\t&quot;}{.metadata.ownerReferences[0].name}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get secret db-secret -o jsonpath=&#x27;{.data.username}&#x27; | base64 -d</code></pre>
-                    <pre><code>kubectl get pod -l app=web -o jsonpath=&#x27;{.items[0].metadata.annotations}&#x27;</code></pre>
-                    <pre><code>kubectl get deploy web -o jsonpath=&#x27;{.spec.strategy.type}&#x27;</code></pre>
-                    <pre><code>kubectl get svc web -o jsonpath=&#x27;{.spec.ports[0].nodePort}&#x27;</code></pre>
-                    <pre><code>kubectl get pod mypod -o jsonpath=&#x27;{.spec.dnsPolicy}&#x27;</code></pre>
-                    <pre><code>kubectl get pod mypod -o jsonpath=&#x27;{.spec.restartPolicy}&#x27;</code></pre>
-                    <pre><code>kubectl get nodes -o jsonpath=&#x27;{range .items[*]}{.status.allocatable.pods}{&quot; pods on &quot;}{.metadata.name}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.spec.serviceAccountName}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl get rs -l app=web -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl api-resources -o name | head -30</code></pre>
+                    <details>
+                        <summary>JSONPath Cookbook — 45 copy-ready extractions</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl get pods -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;
+kubectl get deploy -n prod -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;
+kubectl get svc -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\t&quot;}{.spec.clusterIP}{&quot;\n&quot;}{end}&#x27;
+kubectl get pods -o jsonpath=&#x27;{.items[0].status.podIP}&#x27;
+kubectl get nodes -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;
+kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.phase}{&quot;\n&quot;}{end}&#x27;
+kubectl get pods -o jsonpath=&#x27;{.items[?(@.status.phase==&quot;Running&quot;)].metadata.name}&#x27;
+kubectl get pods -o jsonpath=&#x27;{.items[?(@.spec.nodeName==&quot;worker-1&quot;)].metadata.name}&#x27;
+kubectl get deploy web -o jsonpath=&#x27;{.metadata.generation}&#x27;
+kubectl get deploy web -o jsonpath=&#x27;{.status.observedGeneration}&#x27;
+kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.spec.containers[*].name}{&quot;\n&quot;}{end}&#x27;
+kubectl get pod mypod -o jsonpath=&#x27;{.spec.containers[0].resources.requests.cpu}&#x27;
+kubectl get pod mypod -o jsonpath=&#x27;{.spec.containers[0].resources.limits.memory}&#x27;
+kubectl get ingress -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.spec.rules[*].host}{&quot;\n&quot;}{end}&#x27;
+kubectl get pv -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.phase}{&quot;\n&quot;}{end}&#x27;
+kubectl get pvc -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}/{.metadata.name}{&quot;\t&quot;}{.status.phase}{&quot;\n&quot;}{end}&#x27;
+kubectl get sa -n kube-system -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;
+kubectl get cm coredns -n kube-system -o jsonpath=&#x27;{.data.Corefile}&#x27;
+kubectl get nodes -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.nodeInfo.kubeletVersion}{&quot;\n&quot;}{end}&#x27;
+kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.startTime}{&quot;\n&quot;}{end}&#x27;
+kubectl get deploy -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\t&quot;}{.spec.replicas}{&quot;\n&quot;}{end}&#x27;
+kubectl get pods -o jsonpath=&#x27;{.items[*].status.containerStatuses[*].imageID}&#x27;
+kubectl get pods -o jsonpath=&#x27;{range .items[*]}{range .status.conditions[*]}{.type}={.status}{&quot;\n&quot;}{end}{end}&#x27;
+kubectl get hpa -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}/{.metadata.name}{&quot;\t&quot;}{.status.currentReplicas}/{.spec.maxReplicas}{&quot;\n&quot;}{end}&#x27;
+kubectl get pdb -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.disruptionsAllowed}{&quot;\n&quot;}{end}&#x27;
+kubectl get networkpolicy -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\n&quot;}{end}&#x27;
+kubectl get cronjobs -A -o jsonpath=&#x27;{range .items[*]}{.metadata.namespace}{&quot;\t&quot;}{.metadata.name}{&quot;\t&quot;}{.spec.schedule}{&quot;\n&quot;}{end}&#x27;
+kubectl get job -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.succeeded}{&quot;\n&quot;}{end}&#x27;
+kubectl get sts -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.spec.replicas}{&quot;\t&quot;}{.status.readyReplicas}{&quot;\n&quot;}{end}&#x27;
+kubectl get ds -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.numberReady}{&quot;\t&quot;}{.status.desiredNumberScheduled}{&quot;\n&quot;}{end}&#x27;
+kubectl get endpointslices -A -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\n&quot;}{end}&#x27;
+kubectl get validatingwebhookconfigurations -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;
+kubectl get mutatingwebhookconfigurations -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;
+kubectl get ns -o jsonpath=&#x27;{.items[*].metadata.name}{&quot;\n&quot;}&#x27;
+kubectl get nodes -o jsonpath=&#x27;{.items[?(@.spec.unschedulable==true)].metadata.name}&#x27;
+kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.ownerReferences[0].kind}{&quot;\t&quot;}{.metadata.ownerReferences[0].name}{&quot;\n&quot;}{end}&#x27;
+kubectl get secret db-secret -o jsonpath=&#x27;{.data.username}&#x27; | base64 -d
+kubectl get pod -l app=web -o jsonpath=&#x27;{.items[0].metadata.annotations}&#x27;
+kubectl get deploy web -o jsonpath=&#x27;{.spec.strategy.type}&#x27;
+kubectl get svc web -o jsonpath=&#x27;{.spec.ports[0].nodePort}&#x27;
+kubectl get pod mypod -o jsonpath=&#x27;{.spec.dnsPolicy}&#x27;
+kubectl get pod mypod -o jsonpath=&#x27;{.spec.restartPolicy}&#x27;
+kubectl get nodes -o jsonpath=&#x27;{range .items[*]}{.status.allocatable.pods}{&quot; pods on &quot;}{.metadata.name}{&quot;\n&quot;}{end}&#x27;
+kubectl get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.spec.serviceAccountName}{&quot;\n&quot;}{end}&#x27;
+kubectl get rs -l app=web -o jsonpath=&#x27;{.items[*].metadata.name}&#x27;
+kubectl api-resources -o name | head -30</code></pre>
+                        </div>
+                    </details>
                 </article>
                             <article class="card">
                     <div class="card-badge">custom-columns (extended)</div>
                     <p>Twenty tabular views when <code>-o wide</code> is not enough.</p>
-                    <pre><code>kubectl get pods -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,QOS:.status.qosClass</code></pre>
-                    <pre><code>kubectl get pods -o custom-columns=NAME:.metadata.name,RESTARTS:.status.containerStatuses[0].restartCount</code></pre>
-                    <pre><code>kubectl get pods -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,PULL:.spec.containers[0].imagePullPolicy</code></pre>
-                    <pre><code>kubectl get svc -o custom-columns=NAME:.metadata.name,TYPE:.spec.type,CLUSTER_IP:.spec.clusterIP,PORTS:.spec.ports[0].port</code></pre>
-                    <pre><code>kubectl get ingress -o custom-columns=NAME:.metadata.name,CLASS:.spec.ingressClassName,HOSTS:.spec.rules[0].host</code></pre>
-                    <pre><code>kubectl get pvc -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,VOL:.spec.volumeName,SIZE:.spec.resources.requests.storage</code></pre>
-                    <pre><code>kubectl get pv -o custom-columns=NAME:.metadata.name,CAP:.spec.capacity.storage,CLAIM:.spec.claimRef.name,STATUS:.status.phase</code></pre>
-                    <pre><code>kubectl get hpa -o custom-columns=NAME:.metadata.name,TARGET:.spec.scaleTargetRef.name,MIN:.spec.minReplicas,MAX:.spec.maxReplicas,CURRENT:.status.currentReplicas</code></pre>
-                    <pre><code>kubectl get cronjob -o custom-columns=NAME:.metadata.name,SCHEDULE:.spec.schedule,SUSPEND:.spec.suspend</code></pre>
-                    <pre><code>kubectl get job -o custom-columns=NAME:.metadata.name,COMPLETIONS:.status.succeeded,ACTIVE:.status.active,FAILED:.status.failed</code></pre>
-                    <pre><code>kubectl get pdb -o custom-columns=NAME:.metadata.name,MIN:.spec.minAvailable,MAX:.spec.maxUnavailable,ALLOWED:.status.disruptionsAllowed</code></pre>
-                    <pre><code>kubectl get networkpolicy -o custom-columns=NAME:.metadata.name,PODSEL:.spec.podSelector.matchLabels.app</code></pre>
-                    <pre><code>kubectl get cm -o custom-columns=NAME:.metadata.name,KEYS:.data</code></pre>
-                    <pre><code>kubectl get secret -o custom-columns=NAME:.metadata.name,TYPE:.type,KEYS:.data</code></pre>
-                    <pre><code>kubectl get sa -o custom-columns=NAME:.metadata.name,NS:.metadata.namespace,SECRETS:.secrets[0].name</code></pre>
-                    <pre><code>kubectl get endpoints -o custom-columns=NAME:.metadata.name,ENDPOINTS:.subsets[0].addresses[0].ip</code></pre>
-                    <pre><code>kubectl get rs -o custom-columns=NAME:.metadata.name,DESIRED:.spec.replicas,CURRENT:.status.replicas,READY:.status.readyReplicas</code></pre>
-                    <pre><code>kubectl get sts -o custom-columns=NAME:.metadata.name,REPLICAS:.spec.replicas,READY:.status.readyReplicas,CURRENT:.status.currentReplicas</code></pre>
-                    <pre><code>kubectl get ds -o custom-columns=NAME:.metadata.name,DESIRED:.status.desiredNumberScheduled,READY:.status.numberReady</code></pre>
-                    <pre><code>kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints[*].key</code></pre>
+                    <details>
+                        <summary>custom-columns (extended) — twenty tabular views</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl get pods -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,QOS:.status.qosClass
+kubectl get pods -o custom-columns=NAME:.metadata.name,RESTARTS:.status.containerStatuses[0].restartCount
+kubectl get pods -o custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,PULL:.spec.containers[0].imagePullPolicy
+kubectl get svc -o custom-columns=NAME:.metadata.name,TYPE:.spec.type,CLUSTER_IP:.spec.clusterIP,PORTS:.spec.ports[0].port
+kubectl get ingress -o custom-columns=NAME:.metadata.name,CLASS:.spec.ingressClassName,HOSTS:.spec.rules[0].host
+kubectl get pvc -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,VOL:.spec.volumeName,SIZE:.spec.resources.requests.storage
+kubectl get pv -o custom-columns=NAME:.metadata.name,CAP:.spec.capacity.storage,CLAIM:.spec.claimRef.name,STATUS:.status.phase
+kubectl get hpa -o custom-columns=NAME:.metadata.name,TARGET:.spec.scaleTargetRef.name,MIN:.spec.minReplicas,MAX:.spec.maxReplicas,CURRENT:.status.currentReplicas
+kubectl get cronjob -o custom-columns=NAME:.metadata.name,SCHEDULE:.spec.schedule,SUSPEND:.spec.suspend
+kubectl get job -o custom-columns=NAME:.metadata.name,COMPLETIONS:.status.succeeded,ACTIVE:.status.active,FAILED:.status.failed
+kubectl get pdb -o custom-columns=NAME:.metadata.name,MIN:.spec.minAvailable,MAX:.spec.maxUnavailable,ALLOWED:.status.disruptionsAllowed
+kubectl get networkpolicy -o custom-columns=NAME:.metadata.name,PODSEL:.spec.podSelector.matchLabels.app
+kubectl get cm -o custom-columns=NAME:.metadata.name,KEYS:.data
+kubectl get secret -o custom-columns=NAME:.metadata.name,TYPE:.type,KEYS:.data
+kubectl get sa -o custom-columns=NAME:.metadata.name,NS:.metadata.namespace,SECRETS:.secrets[0].name
+kubectl get endpoints -o custom-columns=NAME:.metadata.name,ENDPOINTS:.subsets[0].addresses[0].ip
+kubectl get rs -o custom-columns=NAME:.metadata.name,DESIRED:.spec.replicas,CURRENT:.status.replicas,READY:.status.readyReplicas
+kubectl get sts -o custom-columns=NAME:.metadata.name,REPLICAS:.spec.replicas,READY:.status.readyReplicas,CURRENT:.status.currentReplicas
+kubectl get ds -o custom-columns=NAME:.metadata.name,DESIRED:.status.desiredNumberScheduled,READY:.status.numberReady
+kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints[*].key</code></pre>
+                        </div>
+                    </details>
                 </article>
                             <article class="card">
                     <div class="card-badge">Field-selector cookbook</div>
                     <p>Pair with <code>-l</code> when you need both label and field constraints on the same <code>get</code>.</p>
+                    <details>
+                        <summary>Field-selector cookbook — examples and combined filters</summary>
+                        <div class="details-body">
                     <div class="table-wrap"><table>
                     <thead><tr><th>Example</th><th>Intent</th></tr></thead>
                     <tbody><tr><td><code>kubectl get pods -A --field-selector=status.phase=Running</code></td><td>Only Running Pods</td></tr>
@@ -629,8 +686,10 @@ kubectl get events -A --sort-by=.lastTimestamp</code></pre>
 <tr><td><code>kubectl get pods -A --field-selector=spec.restartPolicy=Never</code></td><td>Jobs / one-shot style</td></tr>
 <tr><td><code>kubectl get pods -A --field-selector=metadata.namespace=kube-system</code></td><td>Objects in kube-system (with -A)</td></tr>
 <tr><td><code>kubectl get pods -A --field-selector=spec.schedulerName=default-scheduler</code></td><td>Default scheduler assignment</td></tr></tbody></table></div>
-                    <pre><code>kubectl get pods -n dev --field-selector=status.phase=Running -l app=web
+                            <pre><code>kubectl get pods -n dev --field-selector=status.phase=Running -l app=web
 kubectl get pods -A --field-selector=metadata.namespace!=kube-system,status.phase=Running</code></pre>
+                        </div>
+                    </details>
                 </article>
             </div>
             <div class="section-head" style="margin-top:32px;">
@@ -643,58 +702,66 @@ kubectl get pods -A --field-selector=metadata.namespace!=kube-system,status.phas
                             <article class="card">
                     <div class="card-badge">Global options &amp; workflows</div>
                     <p>Frequently used flags, multi-context invocations, RBAC spot checks, and advanced apply patterns.</p>
-                    <pre><code>kubectl get pods -v=6</code></pre>
-                    <pre><code>kubectl get pods -v=8 2&gt;&amp;1 | tail -20</code></pre>
-                    <pre><code>kubectl get pods --request-timeout=3s</code></pre>
-                    <pre><code>kubectl get pods --chunk-size=50</code></pre>
-                    <pre><code>kubectl get pods --ignore-not-found</code></pre>
-                    <pre><code>kubectl get pods --show-managed-fields</code></pre>
-                    <pre><code>kubectl apply -f app.yaml --validate=true</code></pre>
-                    <pre><code>kubectl apply -f app.yaml --validate=false</code></pre>
-                    <pre><code>kubectl apply -f app.yaml --force-conflicts --server-side</code></pre>
-                    <pre><code>kubectl apply -f app.yaml --prune -l app=myapp --prune-allowlist=core/v1/ConfigMap</code></pre>
-                    <pre><code>kubectl delete pod demo --wait=false</code></pre>
-                    <pre><code>kubectl delete pod demo --grace-period=0 --force</code></pre>
-                    <pre><code>kubectl get pods --selector=&#x27;environment in (prod,staging)&#x27;</code></pre>
-                    <pre><code>kubectl get pods -o json | jq &#x27;.items | length&#x27;</code></pre>
-                    <pre><code>kubectl config use-context prod</code></pre>
-                    <pre><code>kubectl --context=staging get nodes</code></pre>
-                    <pre><code>kubectl --kubeconfig=/path/kubeconfig get ns</code></pre>
-                    <pre><code>kubectl options | head -40</code></pre>
-                    <pre><code>kubectl help apply | col -b | head -30</code></pre>
-                    <pre><code>kubectl create namespace tmp-ns --dry-run=client -o yaml | kubectl apply -f -</code></pre>
-                    <pre><code>kubectl run tmp-shell --rm -it --image=busybox:1.36 --restart=Never -- nslookup kubernetes.default</code></pre>
-                    <pre><code>kubectl auth can-i list secrets --as=system:anonymous</code></pre>
-                    <pre><code>kubectl get rolebindings,roles --all-namespaces</code></pre>
-                    <pre><code>kubectl get clusterrolebindings | grep admin</code></pre>
-                    <pre><code>kubectl describe limitrange -n default</code></pre>
-                    <pre><code>kubectl describe quota -n default</code></pre>
-                    <pre><code>kubectl get podsecuritypolicy 2&gt;/dev/null || kubectl get podsecuritystandards 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl get poddisruptionbudget -A</code></pre>
-                    <pre><code>kubectl get resourcequota -A --sort-by=.metadata.namespace</code></pre>
-                    <pre><code>kubectl get events -A --field-selector involvedObject.kind=Pod --sort-by=.lastTimestamp | tail -15</code></pre>
-                    <pre><code>kubectl patch deployment web -p &#x27;{&quot;spec&quot;:{&quot;progressDeadlineSeconds&quot;:600}}&#x27;</code></pre>
-                    <pre><code>kubectl scale deploy web --replicas=0</code></pre>
-                    <pre><code>kubectl scale deploy web --replicas=3 --timeout=120s</code></pre>
-                    <pre><code>kubectl wait --for=jsonpath=&#x27;{.status.readyReplicas}&#x27;=3 deployment/web --timeout=180s</code></pre>
-                    <pre><code>kubectl get lease -n kube-system</code></pre>
-                    <pre><code>kubectl get componentstatuses 2&gt;/dev/null || kubectl get --raw /healthz</code></pre>
-                    <pre><code>kubectl config view -o jsonpath=&#x27;{.users[*].name}&#x27;</code></pre>
-                    <pre><code>kubectl config set-context --current --user=admin</code></pre>
-                    <pre><code>kubectl config unset contexts.old</code></pre>
-                    <pre><code>kubectl version --output=yaml</code></pre>
-                    <pre><code>kubectl api-resources --api-group=apps -o wide</code></pre>
-                    <pre><code>kubectl api-resources --verbs=create --namespaced</code></pre>
-                    <pre><code>kubectl explain pod --recursive | head -80</code></pre>
-                    <pre><code>kubectl convert -f old-deploy.yaml --output-version=apps/v1 2&gt;/dev/null || echo &#x27;convert removed in modern kubectl&#x27;</code></pre>
-                    <pre><code>kubectl kustomize ./base | kubectl apply -f - --dry-run=client</code></pre>
-                    <pre><code>kubectl apply -f https://example.com/manifest.yaml --dry-run=client</code></pre>
+                    <details>
+                        <summary>Global options &amp; workflows — flags, contexts, RBAC, apply patterns</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl get pods -v=6
+kubectl get pods -v=8 2&gt;&amp;1 | tail -20
+kubectl get pods --request-timeout=3s
+kubectl get pods --chunk-size=50
+kubectl get pods --ignore-not-found
+kubectl get pods --show-managed-fields
+kubectl apply -f app.yaml --validate=true
+kubectl apply -f app.yaml --validate=false
+kubectl apply -f app.yaml --force-conflicts --server-side
+kubectl apply -f app.yaml --prune -l app=myapp --prune-allowlist=core/v1/ConfigMap
+kubectl delete pod demo --wait=false
+kubectl delete pod demo --grace-period=0 --force
+kubectl get pods --selector=&#x27;environment in (prod,staging)&#x27;
+kubectl get pods -o json | jq &#x27;.items | length&#x27;
+kubectl config use-context prod
+kubectl --context=staging get nodes
+kubectl --kubeconfig=/path/kubeconfig get ns
+kubectl options | head -40
+kubectl help apply | col -b | head -30
+kubectl create namespace tmp-ns --dry-run=client -o yaml | kubectl apply -f -
+kubectl run tmp-shell --rm -it --image=busybox:1.36 --restart=Never -- nslookup kubernetes.default
+kubectl auth can-i list secrets --as=system:anonymous
+kubectl get rolebindings,roles --all-namespaces
+kubectl get clusterrolebindings | grep admin
+kubectl describe limitrange -n default
+kubectl describe quota -n default
+kubectl get podsecuritypolicy 2&gt;/dev/null || kubectl get podsecuritystandards 2&gt;/dev/null || true
+kubectl get poddisruptionbudget -A
+kubectl get resourcequota -A --sort-by=.metadata.namespace
+kubectl get events -A --field-selector involvedObject.kind=Pod --sort-by=.lastTimestamp | tail -15
+kubectl patch deployment web -p &#x27;{&quot;spec&quot;:{&quot;progressDeadlineSeconds&quot;:600}}&#x27;
+kubectl scale deploy web --replicas=0
+kubectl scale deploy web --replicas=3 --timeout=120s
+kubectl wait --for=jsonpath=&#x27;{.status.readyReplicas}&#x27;=3 deployment/web --timeout=180s
+kubectl get lease -n kube-system
+kubectl get componentstatuses 2&gt;/dev/null || kubectl get --raw /healthz
+kubectl config view -o jsonpath=&#x27;{.users[*].name}&#x27;
+kubectl config set-context --current --user=admin
+kubectl config unset contexts.old
+kubectl version --output=yaml
+kubectl api-resources --api-group=apps -o wide
+kubectl api-resources --verbs=create --namespaced
+kubectl explain pod --recursive | head -80
+kubectl convert -f old-deploy.yaml --output-version=apps/v1 2&gt;/dev/null || echo &#x27;convert removed in modern kubectl&#x27;
+kubectl kustomize ./base | kubectl apply -f - --dry-run=client
+kubectl apply -f https://example.com/manifest.yaml --dry-run=client</code></pre>
+                        </div>
+                    </details>
                 </article>
             </div>
             <div class="concept-grid" style="margin-top:24px;">
                             <article class="card">
                     <div class="card-badge">Flags &amp; output matrix</div>
                     <p>Quick map from flag to behavior — check <code>kubectl options</code> and subcommand <code>-h</code> for authoritative syntax.</p>
+                    <details>
+                        <summary>Flags &amp; output matrix — full reference table</summary>
+                        <div class="details-body">
                     <div class="table-wrap"><table>
                     <thead><tr><th>Flag / form</th><th>Meaning</th></tr></thead>
                     <tbody>
@@ -864,6 +931,8 @@ kubectl get pods -A --field-selector=metadata.namespace!=kube-system,status.phas
 <tr><td><code>kubectl logs --since=5m</code></td><td>Relative log window</td></tr>
 <tr><td><code>kubectl logs --tail=-1</code></td><td>Entire log buffer (heavy)</td></tr>
                     </tbody></table></div>
+                        </div>
+                    </details>
                 </article>
             </div>
         </section>
@@ -1007,26 +1076,31 @@ kubectl rollout history deployment/web</code></pre>
                             <article class="card">
                     <div class="card-badge">Cluster cookbook</div>
                     <p>Contexts, credentials, discovery, health endpoints, and version-dependent APIs.</p>
-                    <pre><code>kubectl cluster-info</code></pre>
-                    <pre><code>kubectl cluster-info dump --namespaces kube-system --output-directory=/tmp/cinfo</code></pre>
-                    <pre><code>kubectl get --raw /version | jq .</code></pre>
-                    <pre><code>kubectl get --raw /readyz?verbose</code></pre>
-                    <pre><code>kubectl get --raw /livez?verbose</code></pre>
-                    <pre><code>kubectl config current-context</code></pre>
-                    <pre><code>kubectl config view --minify -o jsonpath=&#x27;{.contexts[0].context.namespace}&#x27;</code></pre>
-                    <pre><code>kubectl config rename-context old-name new-name</code></pre>
-                    <pre><code>kubectl config delete-context stale-context</code></pre>
-                    <pre><code>kubectl config unset users.old-user</code></pre>
-                    <pre><code>kubectl config set-credentials lab-user --token=$TOKEN</code></pre>
-                    <pre><code>kubectl plugin list</code></pre>
-                    <pre><code>kubectl options</code></pre>
-                    <pre><code>kubectl completion bash | head -3</code></pre>
-                    <pre><code>kubectl describe ns kube-system | head -40</code></pre>
-                    <pre><code>kubectl get validatingadmissionpolicies 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl get mutatingadmissionpolicies 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl get runtimeclasses 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl get apiservices | grep False</code></pre>
-                    <pre><code>kubectl get crd | wc -l</code></pre>
+                    <details>
+                        <summary>Cluster cookbook — contexts, discovery, health, plugins</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl cluster-info
+kubectl cluster-info dump --namespaces kube-system --output-directory=/tmp/cinfo
+kubectl get --raw /version | jq .
+kubectl get --raw /readyz?verbose
+kubectl get --raw /livez?verbose
+kubectl config current-context
+kubectl config view --minify -o jsonpath=&#x27;{.contexts[0].context.namespace}&#x27;
+kubectl config rename-context old-name new-name
+kubectl config delete-context stale-context
+kubectl config unset users.old-user
+kubectl config set-credentials lab-user --token=$TOKEN
+kubectl plugin list
+kubectl options
+kubectl completion bash | head -3
+kubectl describe ns kube-system | head -40
+kubectl get validatingadmissionpolicies 2&gt;/dev/null || true
+kubectl get mutatingadmissionpolicies 2&gt;/dev/null || true
+kubectl get runtimeclasses 2&gt;/dev/null || true
+kubectl get apiservices | grep False
+kubectl get crd | wc -l</code></pre>
+                        </div>
+                    </details>
                 </article>
             </div>
         </section>
@@ -1108,51 +1182,56 @@ kubectl delete pod demo --dry-run=server</code></pre>
                             <article class="card">
                     <div class="card-badge">Patching &amp; lifecycle cookbook</div>
                     <p>Fifty real-world patch, set, rollout, quota, and node maintenance commands.</p>
-                    <pre><code>kubectl patch cm app-config --type merge -p &#x27;{&quot;data&quot;:{&quot;log_level&quot;:&quot;debug&quot;}}&#x27;</code></pre>
-                    <pre><code>kubectl patch svc web --type=json -p &#x27;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/type&quot;,&quot;value&quot;:&quot;ClusterIP&quot;}]&#x27;</code></pre>
-                    <pre><code>kubectl annotate deployment web deployment.kubernetes.io/revision-</code></pre>
-                    <pre><code>kubectl label pod mypod app-</code></pre>
-                    <pre><code>kubectl label pod mypod app=web --overwrite</code></pre>
-                    <pre><code>kubectl patch deploy web -p &#x27;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;kubectl.kubernetes.io/restartedAt&quot;:&quot;&#x27;$(date -Iseconds)&#x27;&quot;}}}}}&#x27;</code></pre>
-                    <pre><code>kubectl rollout restart deployment/web</code></pre>
-                    <pre><code>kubectl set probes deployment/web --liveness=exec -- bash -c true --period-seconds=10 2&gt;/dev/null || kubectl explain deploy.spec.template.spec.containers.livenessProbe</code></pre>
-                    <pre><code>kubectl edit deploy web --windows-line-endings=false</code></pre>
-                    <pre><code>kubectl apply --server-side --field-manager=my-controller -f svc.yaml</code></pre>
-                    <pre><code>kubectl replace -f pod-static.yaml --force --grace-period=0</code></pre>
-                    <pre><code>kubectl patch pvc data --type=json -p &#x27;[{&quot;op&quot;:&quot;add&quot;,&quot;path&quot;:&quot;/metadata/annotations/pv.kubernetes.io~1bind-completed&quot;,&quot;value&quot;:&quot;true&quot;}]&#x27; 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl patch hpa web --patch &#x27;{&quot;spec&quot;:{&quot;maxReplicas&quot;:20}}&#x27;</code></pre>
-                    <pre><code>kubectl patch sts redis --type=&#x27;merge&#x27; -p &#x27;{&quot;spec&quot;:{&quot;updateStrategy&quot;:{&quot;type&quot;:&quot;RollingUpdate&quot;}}}&#x27;</code></pre>
-                    <pre><code>kubectl patch cronjob backup --patch &#x27;{&quot;spec&quot;:{&quot;suspend&quot;:true}}&#x27;</code></pre>
-                    <pre><code>kubectl patch job run-once --type=json -p &#x27;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/suspend&quot;,&quot;value&quot;:true}]&#x27; 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl patch networkpolicy deny-all -p &#x27;{&quot;spec&quot;:{&quot;podSelector&quot;:{}}}&#x27;</code></pre>
-                    <pre><code>kubectl patch secret tls-cert --type=merge -p &#x27;{&quot;stringData&quot;:{&quot;tls.crt&quot;:&quot;&#x27;&quot;$(cat tls.crt)&quot;&#x27;&quot;}}&#x27; 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl diff -R -f ./manifests/</code></pre>
-                    <pre><code>kubectl apply -f ./manifests/ --server-side --force-conflicts</code></pre>
-                    <pre><code>kubectl apply -f pod.json --dry-run=client -o yaml | kubectl apply -f -</code></pre>
-                    <pre><code>kubectl create deploy web --image=nginx --dry-run=client -o yaml | kubectl apply -f -</code></pre>
-                    <pre><code>kubectl set resources deployment web -c web --requests=cpu=100m,memory=128Mi --limits=cpu=500m,memory=256Mi</code></pre>
-                    <pre><code>kubectl set image deployment/web &#x27;*=nginx:1.27&#x27;</code></pre>
-                    <pre><code>kubectl set env deployment/web FEATURE_FLAG=on --from=configmap/app-config --keys=log_level</code></pre>
-                    <pre><code>kubectl set serviceaccount deployment/web sa-apps</code></pre>
-                    <pre><code>kubectl patch deploy web --subresource=status --type=merge -p &#x27;{&quot;status&quot;:{&quot;conditions&quot;:[]}}&#x27; 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl wait --for=delete pod/old-pod --timeout=60s</code></pre>
-                    <pre><code>kubectl delete pod -l app=web --field-selector=status.phase!=Running</code></pre>
-                    <pre><code>kubectl patch node worker-1 -p &#x27;{&quot;spec&quot;:{&quot;unschedulable&quot;:true}}&#x27;</code></pre>
-                    <pre><code>kubectl patch node worker-1 -p &#x27;{&quot;spec&quot;:{&quot;unschedulable&quot;:false}}&#x27;</code></pre>
-                    <pre><code>kubectl cordon worker-1 &amp;&amp; kubectl drain worker-1 --ignore-daemonsets --delete-emptydir-data</code></pre>
-                    <pre><code>kubectl taint nodes worker-1 dedicated=team-a:NoSchedule</code></pre>
-                    <pre><code>kubectl taint nodes worker-1 dedicated-</code></pre>
-                    <pre><code>kubectl patch validatingwebhookconfigurations admission --type=json -p=&#x27;[]&#x27; 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl get deploy web -o yaml | kubectl apply -f - --server-side</code></pre>
-                    <pre><code>kubectl create cm patch-demo --from-literal=key=value --dry-run=client -o yaml | kubectl apply -f -</code></pre>
-                    <pre><code>kubectl patch cm patch-demo --type merge -p &#x27;{&quot;data&quot;:{&quot;key&quot;:&quot;new&quot;}}&#x27;</code></pre>
-                    <pre><code>kubectl delete cm patch-demo --ignore-not-found</code></pre>
-                    <pre><code>kubectl patch deploy web --type=json -p &#x27;[{&quot;op&quot;:&quot;test&quot;,&quot;path&quot;:&quot;/spec/replicas&quot;,&quot;value&quot;:3},{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/replicas&quot;,&quot;value&quot;:5}]&#x27; 2&gt;/dev/null || true</code></pre>
-                    <pre><code>kubectl rollout history deploy/web --revision=3</code></pre>
-                    <pre><code>kubectl rollout undo deploy/web --to-revision=2</code></pre>
-                    <pre><code>kubectl set image deployment/web web=nginx:bad &amp;&amp; kubectl rollout undo deployment/web</code></pre>
-                    <pre><code>kubectl patch deploy web -p &#x27;{&quot;spec&quot;:{&quot;strategy&quot;:{&quot;type&quot;:&quot;Recreate&quot;}}}&#x27;</code></pre>
-                    <pre><code>kubectl patch deploy web -p &#x27;{&quot;spec&quot;:{&quot;strategy&quot;:{&quot;type&quot;:&quot;RollingUpdate&quot;,&quot;rollingUpdate&quot;:{&quot;maxSurge&quot;:&quot;25%&quot;,&quot;maxUnavailable&quot;:&quot;25%&quot;}}}}&#x27;</code></pre>
+                    <details>
+                        <summary>Patching &amp; lifecycle cookbook — fifty patch, set, and rollout commands</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl patch cm app-config --type merge -p &#x27;{&quot;data&quot;:{&quot;log_level&quot;:&quot;debug&quot;}}&#x27;
+kubectl patch svc web --type=json -p &#x27;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/type&quot;,&quot;value&quot;:&quot;ClusterIP&quot;}]&#x27;
+kubectl annotate deployment web deployment.kubernetes.io/revision-
+kubectl label pod mypod app-
+kubectl label pod mypod app=web --overwrite
+kubectl patch deploy web -p &#x27;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;kubectl.kubernetes.io/restartedAt&quot;:&quot;&#x27;$(date -Iseconds)&#x27;&quot;}}}}}&#x27;
+kubectl rollout restart deployment/web
+kubectl set probes deployment/web --liveness=exec -- bash -c true --period-seconds=10 2&gt;/dev/null || kubectl explain deploy.spec.template.spec.containers.livenessProbe
+kubectl edit deploy web --windows-line-endings=false
+kubectl apply --server-side --field-manager=my-controller -f svc.yaml
+kubectl replace -f pod-static.yaml --force --grace-period=0
+kubectl patch pvc data --type=json -p &#x27;[{&quot;op&quot;:&quot;add&quot;,&quot;path&quot;:&quot;/metadata/annotations/pv.kubernetes.io~1bind-completed&quot;,&quot;value&quot;:&quot;true&quot;}]&#x27; 2&gt;/dev/null || true
+kubectl patch hpa web --patch &#x27;{&quot;spec&quot;:{&quot;maxReplicas&quot;:20}}&#x27;
+kubectl patch sts redis --type=&#x27;merge&#x27; -p &#x27;{&quot;spec&quot;:{&quot;updateStrategy&quot;:{&quot;type&quot;:&quot;RollingUpdate&quot;}}}&#x27;
+kubectl patch cronjob backup --patch &#x27;{&quot;spec&quot;:{&quot;suspend&quot;:true}}&#x27;
+kubectl patch job run-once --type=json -p &#x27;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/suspend&quot;,&quot;value&quot;:true}]&#x27; 2&gt;/dev/null || true
+kubectl patch networkpolicy deny-all -p &#x27;{&quot;spec&quot;:{&quot;podSelector&quot;:{}}}&#x27;
+kubectl patch secret tls-cert --type=merge -p &#x27;{&quot;stringData&quot;:{&quot;tls.crt&quot;:&quot;&#x27;&quot;$(cat tls.crt)&quot;&#x27;&quot;}}&#x27; 2&gt;/dev/null || true
+kubectl diff -R -f ./manifests/
+kubectl apply -f ./manifests/ --server-side --force-conflicts
+kubectl apply -f pod.json --dry-run=client -o yaml | kubectl apply -f -
+kubectl create deploy web --image=nginx --dry-run=client -o yaml | kubectl apply -f -
+kubectl set resources deployment web -c web --requests=cpu=100m,memory=128Mi --limits=cpu=500m,memory=256Mi
+kubectl set image deployment/web &#x27;*=nginx:1.27&#x27;
+kubectl set env deployment/web FEATURE_FLAG=on --from=configmap/app-config --keys=log_level
+kubectl set serviceaccount deployment/web sa-apps
+kubectl patch deploy web --subresource=status --type=merge -p &#x27;{&quot;status&quot;:{&quot;conditions&quot;:[]}}&#x27; 2&gt;/dev/null || true
+kubectl wait --for=delete pod/old-pod --timeout=60s
+kubectl delete pod -l app=web --field-selector=status.phase!=Running
+kubectl patch node worker-1 -p &#x27;{&quot;spec&quot;:{&quot;unschedulable&quot;:true}}&#x27;
+kubectl patch node worker-1 -p &#x27;{&quot;spec&quot;:{&quot;unschedulable&quot;:false}}&#x27;
+kubectl cordon worker-1 &amp;&amp; kubectl drain worker-1 --ignore-daemonsets --delete-emptydir-data
+kubectl taint nodes worker-1 dedicated=team-a:NoSchedule
+kubectl taint nodes worker-1 dedicated-
+kubectl patch validatingwebhookconfigurations admission --type=json -p=&#x27;[]&#x27; 2&gt;/dev/null || true
+kubectl get deploy web -o yaml | kubectl apply -f - --server-side
+kubectl create cm patch-demo --from-literal=key=value --dry-run=client -o yaml | kubectl apply -f -
+kubectl patch cm patch-demo --type merge -p &#x27;{&quot;data&quot;:{&quot;key&quot;:&quot;new&quot;}}&#x27;
+kubectl delete cm patch-demo --ignore-not-found
+kubectl patch deploy web --type=json -p &#x27;[{&quot;op&quot;:&quot;test&quot;,&quot;path&quot;:&quot;/spec/replicas&quot;,&quot;value&quot;:3},{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/replicas&quot;,&quot;value&quot;:5}]&#x27; 2&gt;/dev/null || true
+kubectl rollout history deploy/web --revision=3
+kubectl rollout undo deploy/web --to-revision=2
+kubectl set image deployment/web web=nginx:bad &amp;&amp; kubectl rollout undo deployment/web
+kubectl patch deploy web -p &#x27;{&quot;spec&quot;:{&quot;strategy&quot;:{&quot;type&quot;:&quot;Recreate&quot;}}}&#x27;
+kubectl patch deploy web -p &#x27;{&quot;spec&quot;:{&quot;strategy&quot;:{&quot;type&quot;:&quot;RollingUpdate&quot;,&quot;rollingUpdate&quot;:{&quot;maxSurge&quot;:&quot;25%&quot;,&quot;maxUnavailable&quot;:&quot;25%&quot;}}}}&#x27;</code></pre>
+                        </div>
+                    </details>
                 </article>
             </div>
         </section>
@@ -1228,21 +1307,26 @@ kubectl describe node worker-2</code></pre>
                             <article class="card">
                     <div class="card-badge">Logs, exec, events, port-forward, auth</div>
                     <p>Fifteen high-signal commands to keep in your shell history.</p>
-                    <pre><code>kubectl logs -f deploy/web --since-time=&#x27;2026-04-01T12:00:00Z&#x27;</code></pre>
-                    <pre><code>kubectl logs pod/mypod -c init --tail=20</code></pre>
-                    <pre><code>kubectl logs -l app=web --prefix=true --tail=50</code></pre>
-                    <pre><code>kubectl logs daemonset/fluent-bit -n logging --tail=100</code></pre>
-                    <pre><code>kubectl exec -it sts/redis-0 -- redis-cli ping</code></pre>
-                    <pre><code>kubectl exec deploy/api -- wget -qO- http://127.0.0.1:8080/ready</code></pre>
-                    <pre><code>kubectl run netshoot --image=nicolaka/netshoot --rm -it --restart=Never -- bash</code></pre>
-                    <pre><code>kubectl get pod mypod -o jsonpath=&#x27;{.status.containerStatuses[*].state.waiting.message}&#x27;</code></pre>
-                    <pre><code>kubectl describe pod mypod | sed -n &#x27;/Events/,$p&#x27;</code></pre>
-                    <pre><code>kubectl get events --field-selector reason=FailedScheduling</code></pre>
-                    <pre><code>kubectl get events --field-selector type=Warning -A | tail -20</code></pre>
-                    <pre><code>kubectl port-forward svc/prometheus 9090:9090 -n monitoring</code></pre>
-                    <pre><code>kubectl auth can-i get secret --namespace kube-system</code></pre>
-                    <pre><code>kubectl auth can-i use podsecuritypolicies --as=system:serviceaccount:default:default</code></pre>
-                    <pre><code>kubectl proxy --port=0 &amp;</code></pre>
+                    <details>
+                        <summary>More debugging recipes — fifteen high-signal commands</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl logs -f deploy/web --since-time=&#x27;2026-04-01T12:00:00Z&#x27;
+kubectl logs pod/mypod -c init --tail=20
+kubectl logs -l app=web --prefix=true --tail=50
+kubectl logs daemonset/fluent-bit -n logging --tail=100
+kubectl exec -it sts/redis-0 -- redis-cli ping
+kubectl exec deploy/api -- wget -qO- http://127.0.0.1:8080/ready
+kubectl run netshoot --image=nicolaka/netshoot --rm -it --restart=Never -- bash
+kubectl get pod mypod -o jsonpath=&#x27;{.status.containerStatuses[*].state.waiting.message}&#x27;
+kubectl describe pod mypod | sed -n &#x27;/Events/,$p&#x27;
+kubectl get events --field-selector reason=FailedScheduling
+kubectl get events --field-selector type=Warning -A | tail -20
+kubectl port-forward svc/prometheus 9090:9090 -n monitoring
+kubectl auth can-i get secret --namespace kube-system
+kubectl auth can-i use podsecuritypolicies --as=system:serviceaccount:default:default
+kubectl proxy --port=0 &amp;</code></pre>
+                        </div>
+                    </details>
                 </article>
             </div>
             <h3 style="margin-top:28px;font-size:1.1rem;color:var(--ink);">Troubleshooting checklist</h3>
@@ -1259,6 +1343,9 @@ kubectl describe node worker-2</code></pre>
                             <article class="card">
                     <div class="card-badge">Troubleshooting matrix</div>
                     <p>Seventy copy-ready pairings of intent and command — align with <a href="../labmanuals/lab54-ts-commands-reference.md">Lab 54</a> for full drills.</p>
+                    <details>
+                        <summary>Troubleshooting matrix — seventy scenario and command pairings</summary>
+                        <div class="details-body">
                     <div class="table-wrap"><table>
                     <thead><tr><th>Scenario</th><th>Command</th></tr></thead>
                     <tbody><tr><td>API endpoint sanity</td><td><code>kubectl cluster-info</code></td></tr>
@@ -1341,6 +1428,8 @@ kubectl describe node worker-2</code></pre>
 <tr><td>StatefulSet ordered pods</td><td><code>kubectl get pods -l app=sts -o wide</code></td></tr>
 <tr><td>DaemonSet miss-scheduled</td><td><code>kubectl get ds -A | grep -v &#x27;DESIRED&#x27; | awk &#x27;$3!=$4 {print}&#x27; | head</code></td></tr>
 <tr><td>Replica count mismatch</td><td><code>kubectl get deploy -A -o custom-columns=NS:.metadata.namespace,N:.metadata.name,WANT:.spec.replicas,READY:.status.readyReplicas | awk &#x27;$3!=$4 {print}&#x27; | head</code></td></tr></tbody></table></div>
+                        </div>
+                    </details>
                 </article>
             </div>
         </section>
@@ -1389,89 +1478,99 @@ kubectl describe node worker-2</code></pre>
                             <article class="card">
                     <div class="card-badge">Commands from Lab 62</div>
                     <p>Run in order with the lab manual for explanations, verification steps, and cleanup.</p>
-                    <pre><code>kubectl create namespace lab62</code></pre>
-                    <pre><code>kubectl -n lab62 create deployment web --image=nginx:1.25 --replicas=3</code></pre>
-                    <pre><code>kubectl -n lab62 expose deployment web --port=80 --type=ClusterIP</code></pre>
-                    <pre><code>kubectl -n lab62 wait --for=condition=available deployment/web --timeout=60s</code></pre>
-                    <pre><code>kubectl -n lab62 get svc web -o jsonpath=&#x27;{.spec.clusterIP}&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.podIP}{&quot;\t&quot;}{.spec.nodeName}{&quot;\n&quot;}{end}&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 get pods -o jsonpath=&#x27;{.items[*].spec.containers[*].image}&#x27;</code></pre>
-                    <pre><code>kubectl get nodes -o jsonpath=&#x27;{.items[?(@.status.conditions[-1].type==&quot;Ready&quot;)].metadata.name}&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 get pods -o custom-columns=NAME:.metadata.name,IP:.status.podIP,NODE:.spec.nodeName,STATUS:.status.phase</code></pre>
-                    <pre><code>kubectl -n lab62 get deployments -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,DESIRED:.spec.replicas,READY:.status.readyReplicas</code></pre>
-                    <pre><code>kubectl get nodes -o custom-columns=NODE:.metadata.name,CPU_CAP:.status.capacity.cpu,MEM_CAP:.status.capacity.memory,CPU_ALLOC:.status.allocatable.cpu,MEM_ALLOC:.status.allocatable.memory</code></pre>
-                    <pre><code>kubectl -n lab62 patch deployment web -p &#x27;{&quot;metadata&quot;:{&quot;labels&quot;:{&quot;tier&quot;:&quot;frontend&quot;}}}&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 get deployment web --show-labels</code></pre>
-                    <pre><code>kubectl -n lab62 patch deployment web --type=merge -p &#x27;{&quot;spec&quot;:{&quot;template&quot;:{&quot;spec&quot;:{&quot;containers&quot;:[{&quot;name&quot;:&quot;nginx&quot;,&quot;image&quot;:&quot;nginx:1.26&quot;}]}}}}&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 rollout status deployment/web</code></pre>
-                    <pre><code>kubectl -n lab62 patch deployment web --type=json -p &#x27;[{&quot;op&quot;:&quot;add&quot;,&quot;path&quot;:&quot;/metadata/annotations/patched-by&quot;,&quot;value&quot;:&quot;lab62&quot;}]&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 get deployment web -o jsonpath=&#x27;{.metadata.annotations.patched-by}&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 patch svc web -p &#x27;{&quot;spec&quot;:{&quot;type&quot;:&quot;NodePort&quot;}}&#x27;</code></pre>
-                    <pre><code>kubectl -n lab62 get svc web</code></pre>
-                    <pre><code>kubectl get pods -A --field-selector=status.phase=Running | head -20</code></pre>
-                    <pre><code>NODE=$(kubectl get nodes -o jsonpath=&#x27;{.items[0].metadata.name}&#x27;)</code></pre>
-                    <pre><code>kubectl get pods -A --field-selector spec.nodeName=$NODE</code></pre>
-                    <pre><code>kubectl -n lab62 get pods --field-selector=status.phase=Running -l app=web</code></pre>
-                    <pre><code>kubectl -n lab62 get pods --sort-by=.metadata.creationTimestamp</code></pre>
-                    <pre><code>kubectl get nodes --sort-by=.status.capacity.cpu</code></pre>
-                    <pre><code>kubectl diff -f /tmp/lab62-web.yaml</code></pre>
-                    <pre><code>kubectl apply -f /tmp/lab62-web.yaml --dry-run=server</code></pre>
-                    <pre><code>kubectl apply -f /tmp/lab62-web.yaml --server-side</code></pre>
-                    <pre><code>POD=$(kubectl -n lab62 get pods -l app=web -o jsonpath=&#x27;{.items[0].metadata.name}&#x27;)</code></pre>
-                    <pre><code>kubectl -n lab62 debug $POD -it --image=busybox:1.36 --target=nginx -- sh</code></pre>
-                    <pre><code>kubectl -n lab62 debug $POD -it --copy-to=debug-copy --image=busybox:1.36 -- sh</code></pre>
-                    <pre><code>kubectl -n lab62 delete pod debug-copy</code></pre>
-                    <pre><code>kubectl auth can-i create deployments -n lab62</code></pre>
-                    <pre><code>kubectl auth can-i delete nodes</code></pre>
-                    <pre><code>kubectl auth can-i &#x27;*&#x27; &#x27;*&#x27; --all-namespaces</code></pre>
-                    <pre><code>kubectl auth can-i get pods -n lab62 --as=system:serviceaccount:lab62:default</code></pre>
-                    <pre><code>kubectl auth can-i create deployments -n lab62 --as=system:serviceaccount:lab62:default</code></pre>
-                    <pre><code>kubectl delete namespace lab62</code></pre>
-                    <pre><code>rm -f /tmp/lab62-web.yaml</code></pre>
+                    <details>
+                        <summary>Commands from Lab 62 — full sequence</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl create namespace lab62
+kubectl -n lab62 create deployment web --image=nginx:1.25 --replicas=3
+kubectl -n lab62 expose deployment web --port=80 --type=ClusterIP
+kubectl -n lab62 wait --for=condition=available deployment/web --timeout=60s
+kubectl -n lab62 get svc web -o jsonpath=&#x27;{.spec.clusterIP}&#x27;
+kubectl -n lab62 get pods -o jsonpath=&#x27;{range .items[*]}{.metadata.name}{&quot;\t&quot;}{.status.podIP}{&quot;\t&quot;}{.spec.nodeName}{&quot;\n&quot;}{end}&#x27;
+kubectl -n lab62 get pods -o jsonpath=&#x27;{.items[*].spec.containers[*].image}&#x27;
+kubectl get nodes -o jsonpath=&#x27;{.items[?(@.status.conditions[-1].type==&quot;Ready&quot;)].metadata.name}&#x27;
+kubectl -n lab62 get pods -o custom-columns=NAME:.metadata.name,IP:.status.podIP,NODE:.spec.nodeName,STATUS:.status.phase
+kubectl -n lab62 get deployments -o custom-columns=NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,DESIRED:.spec.replicas,READY:.status.readyReplicas
+kubectl get nodes -o custom-columns=NODE:.metadata.name,CPU_CAP:.status.capacity.cpu,MEM_CAP:.status.capacity.memory,CPU_ALLOC:.status.allocatable.cpu,MEM_ALLOC:.status.allocatable.memory
+kubectl -n lab62 patch deployment web -p &#x27;{&quot;metadata&quot;:{&quot;labels&quot;:{&quot;tier&quot;:&quot;frontend&quot;}}}&#x27;
+kubectl -n lab62 get deployment web --show-labels
+kubectl -n lab62 patch deployment web --type=merge -p &#x27;{&quot;spec&quot;:{&quot;template&quot;:{&quot;spec&quot;:{&quot;containers&quot;:[{&quot;name&quot;:&quot;nginx&quot;,&quot;image&quot;:&quot;nginx:1.26&quot;}]}}}}&#x27;
+kubectl -n lab62 rollout status deployment/web
+kubectl -n lab62 patch deployment web --type=json -p &#x27;[{&quot;op&quot;:&quot;add&quot;,&quot;path&quot;:&quot;/metadata/annotations/patched-by&quot;,&quot;value&quot;:&quot;lab62&quot;}]&#x27;
+kubectl -n lab62 get deployment web -o jsonpath=&#x27;{.metadata.annotations.patched-by}&#x27;
+kubectl -n lab62 patch svc web -p &#x27;{&quot;spec&quot;:{&quot;type&quot;:&quot;NodePort&quot;}}&#x27;
+kubectl -n lab62 get svc web
+kubectl get pods -A --field-selector=status.phase=Running | head -20
+NODE=$(kubectl get nodes -o jsonpath=&#x27;{.items[0].metadata.name}&#x27;)
+kubectl get pods -A --field-selector spec.nodeName=$NODE
+kubectl -n lab62 get pods --field-selector=status.phase=Running -l app=web
+kubectl -n lab62 get pods --sort-by=.metadata.creationTimestamp
+kubectl get nodes --sort-by=.status.capacity.cpu
+kubectl diff -f /tmp/lab62-web.yaml
+kubectl apply -f /tmp/lab62-web.yaml --dry-run=server
+kubectl apply -f /tmp/lab62-web.yaml --server-side
+POD=$(kubectl -n lab62 get pods -l app=web -o jsonpath=&#x27;{.items[0].metadata.name}&#x27;)
+kubectl -n lab62 debug $POD -it --image=busybox:1.36 --target=nginx -- sh
+kubectl -n lab62 debug $POD -it --copy-to=debug-copy --image=busybox:1.36 -- sh
+kubectl -n lab62 delete pod debug-copy
+kubectl auth can-i create deployments -n lab62
+kubectl auth can-i delete nodes
+kubectl auth can-i &#x27;*&#x27; &#x27;*&#x27; --all-namespaces
+kubectl auth can-i get pods -n lab62 --as=system:serviceaccount:lab62:default
+kubectl auth can-i create deployments -n lab62 --as=system:serviceaccount:lab62:default
+kubectl delete namespace lab62
+rm -f /tmp/lab62-web.yaml</code></pre>
+                        </div>
+                    </details>
                 </article>
                             <article class="card">
                     <div class="card-badge">Commands from Lab 03</div>
                     <p>Core create → inspect → expose → scale → delete flow; substitute real pod names where noted.</p>
-                    <pre><code>kubectl create deployment hello --image=nginx:1.25</code></pre>
-                    <pre><code>kubectl get deployments.apps</code></pre>
-                    <pre><code>kubectl get pods -l app=hello</code></pre>
-                    <pre><code>kubectl describe deployment hello</code></pre>
-                    <pre><code>kubectl scale deployment/hello --replicas=3</code></pre>
-                    <pre><code>kubectl get pods -o wide</code></pre>
-                    <pre><code>kubectl expose deployment hello --port=80 --type=ClusterIP</code></pre>
-                    <pre><code>kubectl get svc hello</code></pre>
-                    <pre><code>kubectl port-forward svc/hello 8080:80</code></pre>
-                    <pre><code>kubectl logs deploy/hello --tail=20</code></pre>
-                    <pre><code>kubectl logs deploy/hello -f</code></pre>
-                    <pre><code>kubectl exec -it deploy/hello -- nginx -v</code></pre>
-                    <pre><code>kubectl delete svc hello</code></pre>
-                    <pre><code>kubectl delete deployment hello</code></pre>
-                    <pre><code>kubectl create namespace lab03-demo</code></pre>
-                    <pre><code>kubectl -n lab03-demo run tmp --image=busybox:1.36 --restart=Never -- sleep 3600</code></pre>
-                    <pre><code>kubectl -n lab03-demo get pods</code></pre>
-                    <pre><code>kubectl -n lab03-demo describe pod tmp</code></pre>
-                    <pre><code>kubectl -n lab03-demo delete pod tmp --force --grace-period=0</code></pre>
-                    <pre><code>kubectl delete namespace lab03-demo</code></pre>
-                    <pre><code>kubectl get all</code></pre>
-                    <pre><code>kubectl get all -n kube-system | head</code></pre>
-                    <pre><code>kubectl cluster-info</code></pre>
-                    <pre><code>kubectl get nodes</code></pre>
-                    <pre><code>kubectl version --short</code></pre>
-                    <pre><code>kubectl config get-contexts</code></pre>
-                    <pre><code>kubectl get events --sort-by=.metadata.creationTimestamp | tail -15</code></pre>
-                    <pre><code>kubectl rollout status deployment/hello</code></pre>
-                    <pre><code>kubectl set image deployment/hello hello=nginx:1.26</code></pre>
-                    <pre><code>kubectl rollout undo deployment/hello</code></pre>
-                    <pre><code>kubectl get rs -l app=hello</code></pre>
-                    <pre><code>kubectl cp /etc/hosts hello-pod:/tmp/hosts 2&gt;/dev/null || echo &#x27;replace hello-pod name&#x27;</code></pre>
-                    <pre><code>kubectl wait --for=condition=ready pod -l app=hello --timeout=90s</code></pre>
-                    <pre><code>kubectl get pods --show-labels</code></pre>
-                    <pre><code>kubectl label pod PODNAME color=blue</code></pre>
-                    <pre><code>kubectl annotate pod PODNAME note=lab03</code></pre>
-                    <pre><code>kubectl top pods 2&gt;/dev/null || echo &#x27;install metrics-server&#x27;</code></pre>
-                    <pre><code>kubectl api-resources | head -25</code></pre>
-                    <pre><code>kubectl explain pod.spec</code></pre>
-                    <pre><code>kubectl run shell --rm -it --image=busybox:1.36 --restart=Never -- sh</code></pre>
+                    <details>
+                        <summary>Commands from Lab 03 — full sequence</summary>
+                        <div class="details-body">
+                            <pre><code>kubectl create deployment hello --image=nginx:1.25
+kubectl get deployments.apps
+kubectl get pods -l app=hello
+kubectl describe deployment hello
+kubectl scale deployment/hello --replicas=3
+kubectl get pods -o wide
+kubectl expose deployment hello --port=80 --type=ClusterIP
+kubectl get svc hello
+kubectl port-forward svc/hello 8080:80
+kubectl logs deploy/hello --tail=20
+kubectl logs deploy/hello -f
+kubectl exec -it deploy/hello -- nginx -v
+kubectl delete svc hello
+kubectl delete deployment hello
+kubectl create namespace lab03-demo
+kubectl -n lab03-demo run tmp --image=busybox:1.36 --restart=Never -- sleep 3600
+kubectl -n lab03-demo get pods
+kubectl -n lab03-demo describe pod tmp
+kubectl -n lab03-demo delete pod tmp --force --grace-period=0
+kubectl delete namespace lab03-demo
+kubectl get all
+kubectl get all -n kube-system | head
+kubectl cluster-info
+kubectl get nodes
+kubectl version --short
+kubectl config get-contexts
+kubectl get events --sort-by=.metadata.creationTimestamp | tail -15
+kubectl rollout status deployment/hello
+kubectl set image deployment/hello hello=nginx:1.26
+kubectl rollout undo deployment/hello
+kubectl get rs -l app=hello
+kubectl cp /etc/hosts hello-pod:/tmp/hosts 2&gt;/dev/null || echo &#x27;replace hello-pod name&#x27;
+kubectl wait --for=condition=ready pod -l app=hello --timeout=90s
+kubectl get pods --show-labels
+kubectl label pod PODNAME color=blue
+kubectl annotate pod PODNAME note=lab03
+kubectl top pods 2&gt;/dev/null || echo &#x27;install metrics-server&#x27;
+kubectl api-resources | head -25
+kubectl explain pod.spec
+kubectl run shell --rm -it --image=busybox:1.36 --restart=Never -- sh</code></pre>
+                        </div>
+                    </details>
                 </article>
             </div>
             <p style="margin-top:20px;color:#475569;">Structured labs in this repository:</p>
