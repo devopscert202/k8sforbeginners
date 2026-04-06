@@ -112,7 +112,7 @@
 
         .grid-2 {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 14px;
         }
 
@@ -149,7 +149,10 @@
             color: #e2e8f0;
             border-radius: 10px;
             padding: 16px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 0.82rem;
             line-height: 1.45;
             margin: 10px 0 16px;

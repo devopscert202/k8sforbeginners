@@ -123,7 +123,10 @@
             color: #e2e8f0;
             padding: 14px 16px;
             border-radius: 10px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 0.82rem;
             line-height: 1.5;
             margin: 10px 0 16px;
@@ -152,7 +155,7 @@
 
         .arch-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 12px;
             margin: 14px 0;
         }

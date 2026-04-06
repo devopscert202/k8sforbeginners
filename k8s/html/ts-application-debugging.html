@@ -116,7 +116,10 @@
             color: #e2e8f0;
             padding: 14px;
             border-radius: 8px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
             font-size: 0.82rem;
             line-height: 1.5;
@@ -167,7 +170,7 @@
 
         .decision-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
             gap: 12px;
             margin-top: 12px;
         }

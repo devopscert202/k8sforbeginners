@@ -149,7 +149,7 @@
         .concept-grid,
         .practice-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 18px;
         }
         .card {
@@ -189,7 +189,7 @@
         }
         .flow-track {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 18px;
         }
         .flow-step {
@@ -238,7 +238,10 @@
             color: #dbeafe;
             border-radius: 16px;
             padding: 18px;
-            overflow-x: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
             font-size: 0.88rem;
             line-height: 1.55;
             border: 1px solid rgba(148,163,184,0.18);

@@ -72,7 +72,7 @@
         .view { display: none; padding: 28px; margin-bottom: 22px; }
         .view.active { display: block; }
         h2 { font-size: 1.4rem; margin-bottom: 16px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 16px; }
         .card, .step, .practice {
             border: 1px solid var(--line);
             border-radius: 16px;
@@ -91,7 +91,10 @@
             color: #dbeafe;
             padding: 18px;
             border-radius: 16px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 0.86rem;
             border: 1px solid rgba(148,163,184,0.2);
             margin-top: 12px;

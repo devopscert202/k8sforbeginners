@@ -86,7 +86,7 @@
             border-left: 4px solid var(--kube-blue); background: #eff6ff; color: #1e3a8a;
             padding: 14px 16px; border-radius: 12px; margin-top: 18px;
         }
-        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
         .card {
             background: linear-gradient(180deg, #ffffff, #f8fbff); border: 1px solid var(--line);
             border-top: 4px solid #326CE5; border-radius: 16px; padding: 20px; min-height: 160px;
@@ -107,14 +107,14 @@
         .card-purple { border-top-color: var(--purple); }
         .card p { color: #475569; font-size: 0.95rem; }
         .card h3 { color: var(--ink); margin-bottom: 8px; font-size: 1.05rem; }
-        .analogy { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 18px; }
+        .analogy { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; margin-top: 18px; }
         .analogy-card {
             background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
             border: 1px solid rgba(50,108,229,0.18); border-radius: 16px; padding: 22px 18px 18px;
         }
         .analogy-card h3 { font-size: 1rem; margin-bottom: 10px; color: var(--kube-blue-deep); }
         .analogy-card p { color: #475569; font-size: 0.95rem; }
-        .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+        .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
         .type-card { border-radius: 16px; padding: 22px; border: 2px solid var(--line); background: linear-gradient(180deg, #ffffff, #f8fbff); }
         .type-card h3 { font-size: 1.1rem; margin-bottom: 10px; }
         .type-card p { color: #475569; font-size: 0.92rem; margin-bottom: 8px; }
@@ -143,7 +143,8 @@
         }
         pre {
             margin-top: 10px; background: #0f172a; color: #dbeafe; border-radius: 16px;
-            padding: 18px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55;
+            padding: 18px; overflow-x: hidden; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;
+            font-size: 0.88rem; line-height: 1.55;
             border: 1px solid rgba(148,163,184,0.18);
         }
         code { font-family: Consolas, 'Cascadia Code', monospace; }
@@ -152,7 +153,7 @@
         th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; font-size: 0.92rem; }
         th { background: linear-gradient(180deg, #326CE5, #2557be); color: white; font-weight: 700; }
         tbody tr:nth-child(even) { background: #f8fbff; }
-        .practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+        .practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
         .practice-card .card-badge { background: var(--mint); color: #166534; }
         .practice-card { border-top-color: var(--green); }
         .desc-box { background: #eff6ff; border-radius: 14px; padding: 16px 18px; color: #1e3a8a; border-left: 4px solid var(--kube-blue); margin-top: 16px; }

@@ -151,7 +151,10 @@
 
         .command-block pre {
             margin: 0;
-            white-space: pre;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             color: #e2e8f0;
         }
 

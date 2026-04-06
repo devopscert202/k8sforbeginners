@@ -116,7 +116,7 @@
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 16px;
         }
         .card,
@@ -155,7 +155,10 @@
             color: #dbeafe;
             border-radius: 16px;
             padding: 18px;
-            overflow-x: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
             font-size: 0.86rem;
         }
         .example {

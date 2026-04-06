@@ -297,7 +297,10 @@
 
         .yaml-container pre {
             margin: 0;
-            white-space: pre;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-family: 'Courier New', monospace;
             line-height: 1.4;
         }
