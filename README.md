@@ -86,7 +86,7 @@ k8sforbeginners/
 
 **Lab Manuals** (`k8s/labmanuals/`) are the primary learning resource. Each lab has an overview, prerequisites, numbered exercises, expected outputs, a cleanup section, and links to related labs. They reference YAML files from `k8s/labs/` so you apply real manifests.
 
-**Interactive HTML** (`k8s/html/`) are self-contained browser pages that visualize concepts with tabs, diagrams, tables, and code blocks. Open `k8s/html/index.html` to browse the full catalog. Every page works offline — no server required.
+**Interactive HTML** (`k8s/html/`) are self-contained browser pages that visualize concepts with tabs, diagrams, tables, and code blocks. Open the [HTML catalog](https://devopscert202.github.io/k8sforbeginners/k8s/html/index.html) to browse all pages. Every page works offline — no server required.
 
 ### 2. Set Up a Cluster
 
@@ -132,8 +132,8 @@ kubectl get pods -o wide
 
 - Need background before a lab? Read the linked concept doc.
 - Want a visual walkthrough? Open the corresponding HTML page in your browser.
-- Looking for a kubectl command? See the [kubectl Reference](k8s/docs/basics/kubectl-reference.md) or the [interactive HTML version](k8s/html/kubectl-reference.html).
-- Stuck on YAML? Start with [YAML Basics](k8s/docs/basics/yaml-basics.md), then [Lab 46](k8s/labmanuals/lab46-basics-yaml-manifests.md), then the [interactive YAML series](k8s/html/yaml-k8s-part1-syntax.html).
+- Looking for a kubectl command? See the [kubectl Reference](k8s/docs/basics/kubectl-reference.md) or the [interactive HTML version](https://devopscert202.github.io/k8sforbeginners/k8s/html/kubectl-reference.html).
+- Stuck on YAML? Start with [YAML Basics](k8s/docs/basics/yaml-basics.md), then [Lab 46](k8s/labmanuals/lab46-basics-yaml-manifests.md), then the [interactive YAML series](https://devopscert202.github.io/k8sforbeginners/k8s/html/yaml-k8s-part1-syntax.html).
 
 ---
 
@@ -179,7 +179,7 @@ All pages are self-contained, work offline, and require no build step — just o
 | Tools & Reference | 6 | kubectl essentials, kubectl reference, dashboard, Headlamp, CRDs |
 | Troubleshooting | 7 | Cluster admin, pod debugging, LDAP-RBAC PoC |
 
-Browse them all: open [`k8s/html/index.html`](k8s/html/index.html) in your browser.
+Browse them all: [open the Interactive HTML catalog](https://devopscert202.github.io/k8sforbeginners/k8s/html/index.html).
 
 ---
 
@@ -251,7 +251,7 @@ When submitting changes, test all commands on a real cluster and follow the exis
 | Resource | Link |
 |----------|------|
 | Lab Manuals (start here) | [k8s/labmanuals/README.md](k8s/labmanuals/README.md) |
-| Interactive HTML catalog | [k8s/html/index.html](k8s/html/index.html) |
+| Interactive HTML catalog | [devopscert202.github.io/.../index.html](https://devopscert202.github.io/k8sforbeginners/k8s/html/index.html) |
 | kubectl reference | [k8s/docs/basics/kubectl-reference.md](k8s/docs/basics/kubectl-reference.md) |
 | YAML basics | [k8s/docs/basics/yaml-basics.md](k8s/docs/basics/yaml-basics.md) |
 | Architecture overview | [k8s/docs/basics/k8s-architecture.md](k8s/docs/basics/k8s-architecture.md) |
