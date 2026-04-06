@@ -13,7 +13,7 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - 82 concept explainers plus the home page
 - All pages are self-contained and work offline
 
-## Diagram Catalog (12 Categories)
+## Diagram Catalog (13 Categories)
 
 ### 1. Foundations (9 pages)
 
@@ -114,14 +114,13 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `sharingdata.html` - Sharing data between containers using emptyDir
 - `readwrite-pod.html` - Multi-container Pod sharing a persistent NFS claim
 
-### 11. Tools and Reference (6 pages)
+### 11. Tools and Reference (5 pages)
 
 - `kubectl-essentials.html` - kubectl command-line mental model
 - `kubectl-reference.html` - Comprehensive kubectl command, output, patch, and debug reference
 - `k8s-dashboard.html` - Legacy Kubernetes Dashboard explainer
 - `k8s-ui-headlamp.html` - Headlamp in-cluster installation and access
 - `k8s-ui-alternatives.html` - Headlamp, FreeLens, Portainer, K9s comparison
-- `custom-resource-definitions.html` - CRDs, custom resources, and API extension
 
 ### 12. Troubleshooting (7 pages)
 
@@ -132,6 +131,10 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `ts-application-debugging.html` - kubectl logs, exec, port-forward, and debug containers
 - `ts-commands-reference.html` - Categorized troubleshooting commands cheat sheet
 - `ts-cka-scenarios.html` - CKA exam-style troubleshooting practice scenarios
+
+### 13. Extensibility (1 page)
+
+- `custom-resource-definitions.html` - CRDs, custom resources, and API extension
 
 ## Technical Notes
 

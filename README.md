@@ -176,7 +176,8 @@ All pages are self-contained, work offline, and require no build step — just o
 | Scaling & Health | 3 | HPA, health probes, metrics server |
 | Cluster Ops | 6 | etcd backup, upgrades, version skew, static pods |
 | Storage | 9 | Volume types, PV/PVC binding, access modes |
-| Tools & Reference | 6 | kubectl essentials, kubectl reference, dashboard, Headlamp, CRDs |
+| Tools & Reference | 5 | kubectl essentials, kubectl reference, dashboard, Headlamp, UI alternatives |
+| Extensibility | 1 | Custom Resource Definitions (CRDs) |
 | Troubleshooting | 7 | Cluster admin, pod debugging, LDAP-RBAC PoC |
 
 Browse them all: [open the Interactive HTML catalog](https://devopscert202.github.io/k8sforbeginners/k8s/html/index.html).
