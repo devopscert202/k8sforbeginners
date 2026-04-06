@@ -9,8 +9,8 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 81 HTML pages total in this folder
-- 80 concept explainers plus the home page
+- 82 HTML pages total in this folder
+- 81 concept explainers plus the home page
 - All pages are self-contained and work offline
 
 ## Diagram Catalog (12 Categories)
@@ -27,11 +27,12 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `workloads-pod-concepts.html` - Pod and workload concept landscape
 - `linux-cheat-sheet.html` - Ubuntu Linux basics for K8s learners
 
-### 2. Installation (3 pages)
+### 2. Installation (4 pages)
 
 - `kubernetes-installation.html` - Cluster installation and bootstrap flow
 - `kind-local-kubernetes.html` - Learning-focused local Kubernetes with Kind
 - `helm-charts-overview.html` - Helm chart overview, architecture, and commands
+- `kubeconfig-contexts.html` - Kubeconfig structure, context switching, and multi-cluster management
 
 ### 3. Workload Management (13 pages)
 

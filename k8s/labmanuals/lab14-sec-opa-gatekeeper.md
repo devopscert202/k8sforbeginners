@@ -1256,6 +1256,6 @@ Many organizations use **both** approaches:
 
 **Lab Created**: March 2026
 **Compatible with**: Kubernetes 1.24+, Gatekeeper v3.17+, CEL validation requires K8s 1.25+
-**Based on**: gatekeeper-scenario1.md, labs/security/gatekeeper/
+**Based on**: docs/security/gatekeeper-scenarios.md, labs/security/gatekeeper/
 **Tested on**: kubeadm clusters
 **Estimated Time**: 90-110 minutes
