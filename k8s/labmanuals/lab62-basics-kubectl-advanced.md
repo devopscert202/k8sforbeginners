@@ -24,6 +24,10 @@ By the end of this lab, you will be able to:
 - Compare live state against manifests with `kubectl diff`
 - Debug running pods with `kubectl debug`
 - Check API permissions with `kubectl auth can-i`
+- Set up kubectl aliases and bash/zsh completion
+- Use resource shortnames for speed
+- Generate YAML manifests using imperative dry-run
+- Use `-o wide`, `--show-labels`, and `-w` effectively
 
 ---
 
@@ -322,6 +326,120 @@ kubectl auth can-i create deployments -n lab62 --as=system:serviceaccount:lab62:
 
 ---
 
+## Exercise 7: Productivity Setup and Tips
+
+Muscle memory with aliases, completion, and shortcuts saves significant time during daily work and CKA exams.
+
+### Step 1: Enable bash completion
+
+```bash
+source <(kubectl completion bash)
+```
+
+Verify it works — type `kubectl get p` and press Tab. It should complete to `pods`.
+
+### Step 2: Set up the kubectl alias
+
+```bash
+alias k=kubectl
+complete -o default -F __start_kubectl k
+```
+
+Now test:
+
+```bash
+k get pods -n lab62
+k get nodes -o wide
+```
+
+### Step 3: Try resource shortnames
+
+```bash
+k get po -A               # pods in all namespaces
+k get svc -n kube-system   # services
+k get deploy -n lab62      # deployments
+k get no                   # nodes
+k get cm -n lab62          # configmaps
+k get ns                   # namespaces
+k get ep -n lab62          # endpoints
+```
+
+To see all shortnames available on your cluster:
+
+```bash
+kubectl api-resources --sort-by=name | head -30
+```
+
+### Step 4: Practice -o wide, --show-labels, and -w
+
+```bash
+# -o wide adds Node, IP, and other columns
+k get pods -n lab62 -o wide
+
+# --show-labels adds a LABELS column
+k get pods -n lab62 --show-labels
+
+# -w (watch) streams updates in real-time — open in a separate terminal
+k get pods -n lab62 -w
+```
+
+In another terminal, scale the deployment and watch the first terminal update:
+
+```bash
+k -n lab62 scale deploy web --replicas=1
+k -n lab62 scale deploy web --replicas=3
+```
+
+Press Ctrl+C to stop watching.
+
+### Step 5: Generate YAML templates without creating resources
+
+```bash
+k run test-pod --image=nginx --dry-run=client -o yaml
+k create deployment test-deploy --image=nginx --replicas=2 --dry-run=client -o yaml
+k create service clusterip test-svc --tcp=80:80 --dry-run=client -o yaml
+k create configmap test-cm --from-literal=env=dev --dry-run=client -o yaml
+```
+
+Redirect to files for editing:
+
+```bash
+k run test-pod --image=nginx --dry-run=client -o yaml > /tmp/test-pod.yaml
+cat /tmp/test-pod.yaml
+rm /tmp/test-pod.yaml
+```
+
+### Step 6: kubectl wait and kubectl cp
+
+```bash
+# Wait for deployment to be available
+k -n lab62 wait --for=condition=available deployment/web --timeout=60s
+
+# Copy a file into a pod
+POD=$(k -n lab62 get pods -l app=web -o jsonpath='{.items[0].metadata.name}')
+echo "hello from lab62" > /tmp/lab62-test.txt
+k cp /tmp/lab62-test.txt lab62/$POD:/tmp/lab62-test.txt
+
+# Copy it back
+k cp lab62/$POD:/tmp/lab62-test.txt /tmp/lab62-retrieved.txt
+cat /tmp/lab62-retrieved.txt
+
+# Cleanup
+rm /tmp/lab62-test.txt /tmp/lab62-retrieved.txt
+```
+
+### Verify
+
+- Tab completion works with both `kubectl` and `k`.
+- Shortnames resolve correctly.
+- `-o wide` shows Node and IP columns.
+- `--show-labels` appends a LABELS column.
+- `-w` streams live updates.
+- `--dry-run=client -o yaml` generates manifests without creating resources.
+- `kubectl cp` successfully copies files in both directions.
+
+---
+
 ## Cleanup
 
 ```bash
@@ -345,6 +463,14 @@ rm -f /tmp/lab62-web.yaml
 | Dry run | `--dry-run=server` | Validate against server without persisting |
 | Debug | `kubectl debug pod -it --image=...` | Attach ephemeral container to running pod |
 | Auth check | `kubectl auth can-i verb resource` | Verify RBAC permissions |
+| Resource shortnames | `k get po`, `k get svc`, `k get deploy` | Save typing with abbreviated resource names |
+| `-o wide` | `kubectl get pods -o wide` | Show extra columns (node, IP, ports) |
+| `--show-labels` | `kubectl get pods --show-labels` | Display all labels as a column |
+| `-w` (watch) | `kubectl get pods -w` | Stream resource changes in real-time |
+| `-A` (all namespaces) | `kubectl get pods -A` | Cross-namespace view |
+| Imperative generator | `kubectl run ... --dry-run=client -o yaml` | Generate YAML without creating |
+| Wait | `kubectl wait --for=condition=... ...` | Block until condition is met |
+| Copy | `kubectl cp local pod:remote` | Transfer files to/from pods |
 
 ---
 

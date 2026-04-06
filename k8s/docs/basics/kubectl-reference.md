@@ -4,6 +4,8 @@
 
 This guide provides practical kubectl commands with explanations to help you work effectively with Kubernetes.
 
+> **Interactive version:** [kubectl Reference — Interactive HTML](../../html/kubectl-reference.html)
+
 ---
 
 ## Table of Contents
@@ -669,6 +671,114 @@ kubectl describe limitrange <limitrange-name>
    ```bash
    kubectl apply -f manifest.yaml --dry-run=server
    ```
+
+6. **Watch mode**: Use `-w` to stream changes in real-time: `kubectl get pods -w`
+
+7. **All namespaces shorthand**: `-A` is equivalent to `--all-namespaces`
+
+8. **Generate YAML templates** (imperative generators):
+   ```bash
+   kubectl run nginx --image=nginx --dry-run=client -o yaml > pod.yaml
+   kubectl create deployment web --image=nginx --dry-run=client -o yaml > deploy.yaml
+   kubectl create service clusterip my-svc --tcp=80:80 --dry-run=client -o yaml > svc.yaml
+   kubectl create configmap my-cm --from-literal=key=val --dry-run=client -o yaml > cm.yaml
+   kubectl create secret generic my-sec --from-literal=pass=s3cr3t --dry-run=client -o yaml > secret.yaml
+   ```
+
+9. **kubectl wait**: Wait for conditions before proceeding:
+   ```bash
+   kubectl wait --for=condition=available deployment/web --timeout=60s
+   kubectl wait --for=condition=ready pod -l app=web --timeout=30s
+   kubectl wait --for=delete pod/old-pod --timeout=60s
+   ```
+
+10. **kubectl cp**: Copy files to/from pods:
+    ```bash
+    kubectl cp /local/file pod-name:/remote/path
+    kubectl cp pod-name:/remote/path /local/file
+    kubectl cp pod-name:/remote/path /local/file -c container-name
+    ```
+
+11. **Custom columns syntax**:
+    ```bash
+    kubectl get pods -o custom-columns=NAME:.metadata.name,IP:.status.podIP,NODE:.spec.nodeName
+    ```
+
+12. **Combine label and field selectors**:
+    ```bash
+    kubectl get pods -l app=web --field-selector=status.phase=Running
+    ```
+
+13. **CKA exam tip**: Bookmark the official kubectl cheat sheet — it is allowed during the exam
+
+---
+
+## Resource Shortnames
+
+| Shortname | Full Resource | API Group |
+|-----------|--------------|-----------|
+| po | pods | core |
+| svc | services | core |
+| deploy | deployments | apps |
+| rs | replicasets | apps |
+| ds | daemonsets | apps |
+| sts | statefulsets | apps |
+| cm | configmaps | core |
+| ns | namespaces | core |
+| no | nodes | core |
+| ing | ingresses | networking.k8s.io |
+| ep | endpoints | core |
+| pv | persistentvolumes | core |
+| pvc | persistentvolumeclaims | core |
+| sa | serviceaccounts | core |
+| cj | cronjobs | batch |
+| hpa | horizontalpodautoscalers | autoscaling |
+| pdb | poddisruptionbudgets | policy |
+| sc | storageclasses | storage.k8s.io |
+| netpol | networkpolicies | networking.k8s.io |
+| crd | customresourcedefinitions | apiextensions.k8s.io |
+
+`kubectl api-resources` shows all shortnames for your cluster.
+
+---
+
+## Shell Setup for Productivity
+
+```bash
+# Bash completion
+source <(kubectl completion bash)
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+
+# Zsh completion
+source <(kubectl completion zsh)
+echo 'source <(kubectl completion zsh)' >> ~/.zshrc
+
+# Core aliases
+alias k=kubectl
+alias kg='kubectl get'
+alias kd='kubectl describe'
+alias kl='kubectl logs'
+alias ka='kubectl apply -f'
+alias kdel='kubectl delete'
+
+# Power aliases
+alias kgp='kubectl get pods'
+alias kgpa='kubectl get pods -A'
+alias kgpw='kubectl get pods -o wide'
+alias kgs='kubectl get svc'
+alias kgd='kubectl get deploy'
+alias kgn='kubectl get nodes'
+alias kge='kubectl get events --sort-by=.lastTimestamp'
+alias kns='kubectl config set-context --current --namespace'
+alias kctx='kubectl config use-context'
+alias kcurrent='kubectl config current-context'
+
+# Make completion work with the alias
+complete -o default -F __start_kubectl k
+
+# Set preferred editor
+export KUBE_EDITOR=nano  # or vim, code, etc.
+```
 
 ---
 

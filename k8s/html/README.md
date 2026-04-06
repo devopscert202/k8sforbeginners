@@ -9,8 +9,8 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 82 HTML pages total in this folder
-- 81 concept explainers plus the home page
+- 83 HTML pages total in this folder
+- 82 concept explainers plus the home page
 - All pages are self-contained and work offline
 
 ## Diagram Catalog (12 Categories)
@@ -114,9 +114,10 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `sharingdata.html` - Sharing data between containers using emptyDir
 - `readwrite-pod.html` - Multi-container Pod sharing a persistent NFS claim
 
-### 11. Tools and Reference (5 pages)
+### 11. Tools and Reference (6 pages)
 
 - `kubectl-essentials.html` - kubectl command-line mental model
+- `kubectl-reference.html` - Comprehensive kubectl command, output, patch, and debug reference
 - `k8s-dashboard.html` - Legacy Kubernetes Dashboard explainer
 - `k8s-ui-headlamp.html` - Headlamp in-cluster installation and access
 - `k8s-ui-alternatives.html` - Headlamp, FreeLens, Portainer, K9s comparison
