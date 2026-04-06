@@ -1048,6 +1048,6 @@ After mastering RBAC:
 
 **Lab Created**: March 2026
 **Compatible with**: Kubernetes 1.24+
-**Based on**: docs/security/rbacdemo.md, labs/security/role.yaml, labs/security/rolebinding.yaml
+**Based on**: docs/security/rbac-concepts.md, labs/security/role.yaml, labs/security/rolebinding.yaml
 **Tested on**: kubeadm clusters
 **Estimated Time**: 60-75 minutes
