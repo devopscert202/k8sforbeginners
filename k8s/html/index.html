@@ -44,25 +44,36 @@
             color: var(--slate-500);
             font-size: 0.92rem;
         }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
-            margin-bottom: 22px;
+        .search-bar {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
         }
-        .stat {
-            border-radius: 14px;
-            padding: 14px;
-            color: white;
-            min-height: 90px;
+        .search-bar input {
+            width: 100%;
+            max-width: 480px;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-family: inherit;
+            color: var(--slate-900);
+            background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 14px center;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .stat.blue { background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%); }
-        .stat.green { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
-        .stat.amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
-        .stat.rose { background: linear-gradient(135deg, #be123c 0%, #fb7185 100%); }
-        .stat .label { font-size: 0.72rem; text-transform: uppercase; opacity: 0.88; }
-        .stat .value { font-size: 1.5rem; font-weight: 800; margin: 4px 0; }
-        .stat div:last-child { font-size: 0.78rem; opacity: 0.92; }
+        .search-bar input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .search-bar input::placeholder { color: #94a3b8; }
+        .no-results {
+            text-align: center;
+            color: var(--slate-500);
+            padding: 24px;
+            font-size: 0.92rem;
+            display: none;
+        }
         .section { margin-bottom: 22px; }
         .section-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
         .section-note { color: var(--slate-500); font-size: 0.88rem; margin-bottom: 12px; }
@@ -130,13 +141,12 @@
             padding-bottom: 12px;
         }
         @media (max-width: 1200px) {
-            .stats { grid-template-columns: 1fr 1fr; }
             .link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (max-width: 768px) {
             body { padding: 12px; }
             h1 { font-size: 1.3rem; }
-            .stats, .link-grid { grid-template-columns: 1fr; }
+            .link-grid { grid-template-columns: 1fr; }
             .catalog-table, .catalog-table thead, .catalog-table tbody, .catalog-table th, .catalog-table td, .catalog-table tr { display: block; }
             .catalog-table thead { display: none; }
             .catalog-table td { border-bottom: none; padding-top: 6px; padding-bottom: 6px; }
@@ -148,15 +158,11 @@
     <div class="container">
         <header>
             <h1>Kubernetes Interactive Learning</h1>
-            <p class="subtitle">Self-contained HTML explainers for visual learning, demos, and concept reinforcement.</p>
+            <p class="subtitle">82 visual explainers across 13 categories — from foundations to extensibility.</p>
+            <div class="search-bar">
+                <input type="text" id="catalog-search" placeholder="Search topics, e.g. pods, storage, RBAC, ingress..." autocomplete="off">
+            </div>
         </header>
-
-        <section class="stats">
-            <div class="stat blue"><div class="label">Interactive Pages</div><div class="value">83</div><div>82 concept explainers plus this catalog.</div></div>
-            <div class="stat green"><div class="label">Categories</div><div class="value">13</div><div>Foundations through Extensibility.</div></div>
-            <div class="stat amber"><div class="label">Works Offline</div><div class="value">Yes</div><div>No CDN or external dependencies.</div></div>
-            <div class="stat rose"><div class="label">Navigation</div><div class="value">Centralized</div><div>Browse all topics from this page.</div></div>
-        </section>
 
         <section class="section">
             <div class="section-title">Browse by Category</div>
@@ -417,9 +423,25 @@
             </div>
         </section>
 
-        <div class="footer">
-            Self-contained HTML, CSS, and JavaScript. Works offline, no external dependencies.
-        </div>
+        <div class="no-results" id="no-results">No topics match your search.</div>
     </div>
+
+    <script>
+        const searchInput = document.getElementById('catalog-search');
+        const rows = document.querySelectorAll('.catalog-table tbody tr');
+        const noResults = document.getElementById('no-results');
+
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.toLowerCase().trim();
+            let visible = 0;
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const match = !q || text.includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            noResults.style.display = visible === 0 ? 'block' : 'none';
+        });
+    </script>
 </body>
 </html>
