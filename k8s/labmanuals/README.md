@@ -2,7 +2,7 @@
 
 ## Background
 
-This collection of **61 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
+This collection of **62 comprehensive, hands-on lab manuals** has been created to provide a structured learning path for mastering Kubernetes from fundamentals to advanced production-ready concepts. Each lab has been carefully designed with step-by-step instructions, real-world examples, and practical exercises that build upon one another.
 
 ### What We're Trying to Achieve
 
@@ -115,18 +115,19 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 59 | Basics | Container Runtime Interface — crictl | Install and use `crictl` for node-level pod, container, and image troubleshooting with CRI-compliant runtimes. | [lab59-basics-crictl.md](lab59-basics-crictl.md) |
 | 60 | Basics | Kubernetes API Discovery | Explore `api-versions`, `api-resources`, `explain`, output formats (`-o wide/yaml/jsonpath`), and raw API endpoints. | [lab60-basics-k8s-apis.md](lab60-basics-k8s-apis.md) |
 | 61 | Basics | Kubeconfig and Context Management | Create, switch, rename, and delete contexts; set default namespaces; merge kubeconfig files; RBAC context switching. | [lab61-basics-kubeconfig-contexts.md](lab61-basics-kubeconfig-contexts.md) |
+| 62 | Basics | Advanced kubectl Patterns | JSONPath, custom-columns, patching (strategic/merge/JSON), field-selectors, diff, debug, auth can-i. | [lab62-basics-kubectl-advanced.md](lab62-basics-kubectl-advanced.md) |
 
 ---
 
 ## Learning Paths
 
-Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–60**):
+Choose a learning path based on your goals and experience (numbers refer to **global Lab 01–62**):
 
 ### Path 1: Complete Beginner
 Start here if you're new to Kubernetes:
 ```
 Lab 04 (Docker) → Lab 01 (Pods) → Lab 46 (YAML deep dive, optional but recommended) → Lab 02 (Services) → Lab 03 (kubectl) →
-Lab 60 (K8s API Discovery) → Lab 59 (crictl) → Lab 25 (ConfigMaps) → Lab 22 (Deployment Strategies)
+Lab 60 (K8s API Discovery) → Lab 62 (Advanced kubectl) → Lab 59 (crictl) → Lab 25 (ConfigMaps) → Lab 22 (Deployment Strategies)
 ```
 
 ### Path 2: Security Focus

@@ -1,6 +1,6 @@
 ## Kubernetes Policies
 
-Kubernetes does not rely on a single “policy engine.” Instead, it combines API objects, admission-time checks, and cluster add-ons so teams can enforce networking rules, access control, workload hardening, and fair resource use. Different mechanisms apply at different scopes—namespace, cluster, or webhook—and often work best together. This page is a **catalog**: short descriptions plus links to the dedicated guides and labs for each area.
+Kubernetes does not rely on a single "policy engine." Instead, it combines API objects, admission-time checks, and cluster add-ons so teams can enforce networking rules, access control, workload hardening, and fair resource use. Different mechanisms apply at different scopes—namespace, cluster, or webhook—and often work best together. This page is a **catalog**: short descriptions plus links to the dedicated guides and labs for each area.
 
 ---
 
@@ -10,19 +10,19 @@ Kubernetes does not rely on a single “policy engine.” Instead, it combines A
 
 **NetworkPolicy** restricts Pod-to-Pod and Pod-to-external traffic using labels and ports (ingress/egress). It only takes effect if your CNI implements it; default-allow clusters stay open until you define policies.
 
-→ [Network policies](../security/networkpolicy.md)
+→ [Network policies](./networkpolicy.md)
 
 ### RBAC
 
 **Role-Based Access Control** binds users, groups, or service accounts to Roles and ClusterRoles so the API server allows only the verbs and resources you intend. It is the foundation for who can create workloads and secrets—not a substitute for network or Pod hardening.
 
-→ [RBAC concepts](../security/rbac-concepts.md)
+→ [RBAC concepts](./rbac-concepts.md)
 
 ### Security context
 
 **Security context** fields on Pods and containers control user/group IDs, capabilities, read-only root filesystem, privilege escalation, and similar runtime settings. Tightening these settings reduces the impact of a compromised container.
 
-→ [Security context](../security/securitycontext.md)
+→ [Security context](./securitycontext.md)
 
 ### Pod Security Standards (admission)
 
@@ -34,7 +34,7 @@ Kubernetes does not rely on a single “policy engine.” Instead, it combines A
 
 **Gatekeeper** (OPA on Kubernetes) registers validating admission webhooks so you can express organization-specific rules (labels, naming, disallowed fields) as constraints, beyond built-in admission plugins.
 
-→ [Gatekeeper scenarios](../security/gatekeeper-scenarios.md)
+→ [Gatekeeper scenarios](./gatekeeper-scenarios.md)
 
 ### Resource quotas
 

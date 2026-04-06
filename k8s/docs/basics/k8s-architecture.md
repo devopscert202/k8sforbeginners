@@ -97,11 +97,11 @@ Practice these concepts with guided lab exercises:
 
 After understanding the architecture:
 
-1. **Basics** → [Pods](../workloads/pods.md), [Namespaces](../common/k8s-namespaces.md)
-2. **Workloads** → [Deployments](../workloads/deployments.md), [Services](../networking/services.md)
-3. **Networking** → [Ingress](../networking/ingress.md), [Network Policies](../networking/networkpolicies.md)
-4. **Security** → [RBAC](../security/rbac.md), [Pod Security Standards](../security/pod-security-standards.md)
-5. **Storage** → [Volumes](../storage/volumes.md), [Persistent Volumes](../storage/persistentvolumes.md)
+1. **Basics** → [Kubernetes Objects](./k8s-objects-complete.md), [YAML Basics](./yaml-basics.md)
+2. **Workloads** → [Workload Concepts](../workloads/workloads-concepts.md), [HPA](../workloads/hpa.md)
+3. **Networking** → [Networking & Services](../networking/k8s-networking.services.md), [Network Policies](../security/networkpolicy.md)
+4. **Security** → [RBAC](../security/rbac-concepts.md), [Security Context](../security/securitycontext.md)
+5. **Storage** → [Storage Overview](../storage/k8s-storage-complete.md), [PV/PVC](../storage/hostpath-pv-pvc.md)
 
 ---
 

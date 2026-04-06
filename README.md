@@ -212,7 +212,7 @@ k8s/labs/
 **Comprehensive guides** that complement the labs:
 
 #### Quick References
-- **[kubectl Command Reference](k8s/docs/kubectl-reference.md)** - Complete cheat sheet for kubectl
+- **[kubectl Command Reference](k8s/docs/basics/kubectl-reference.md)** - Complete cheat sheet for kubectl
 - **[YAML 101 for Kubernetes Labs](k8s/docs/basics/yaml-basics.md)** - Markdown primer; hands-on [Lab 46](k8s/labmanuals/lab46-basics-yaml-manifests.md); interactive HTML: [Part 1](k8s/html/yaml-k8s-part1-syntax.html), [Part 2](k8s/html/yaml-k8s-part2-objects-editing.html), [Part 3](k8s/html/yaml-k8s-part3-tools-troubleshooting.html); [all HTML guides](k8s/html/index.html)
 - **[Kubernetes Objects Guide](k8s/docs/basics/k8s-objects-complete.md)** - All K8s objects explained (basics → advanced)
 
@@ -323,7 +323,7 @@ See [Learning Paths](#-learning-paths) above.
 
 When you need deeper understanding:
 - **YAML syntax or manifest structure?** → Read [yaml-basics.md](k8s/docs/basics/yaml-basics.md), run [Lab 46](k8s/labmanuals/lab46-basics-yaml-manifests.md), or open the [HTML YAML series](k8s/html/yaml-k8s-part1-syntax.html)
-- **kubectl commands?** → Check [kubectl-reference.md](k8s/docs/kubectl-reference.md)
+- **kubectl commands?** → Check [kubectl-reference.md](k8s/docs/basics/kubectl-reference.md)
 - **How storage works?** → Read [k8s-storage-complete.md](k8s/docs/storage/k8s-storage-complete.md)
 - **Observability concepts?** → See [observability-basics.md](k8s/docs/workloads/observability-basics.md)
 

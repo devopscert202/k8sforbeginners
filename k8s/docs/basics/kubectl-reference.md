@@ -692,8 +692,9 @@ Practice these concepts with guided lab exercises:
 
 | Lab | Description |
 |-----|-------------|
-| [Lab 03: kubectl essentials](../labmanuals/lab03-basics-kubectl-essentials.md) | Core commands and daily workflows on a live cluster. |
-| [Lab 54: Troubleshooting commands reference](../labmanuals/lab54-ts-commands-reference.md) | Command-oriented troubleshooting drills and patterns. |
+| [Lab 03: kubectl essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Core commands and daily workflows on a live cluster. |
+| [Lab 62: Advanced kubectl patterns](../../labmanuals/lab62-basics-kubectl-advanced.md) | JSONPath, custom-columns, patching, field-selectors, diff, debug, auth can-i. |
+| [Lab 54: Troubleshooting commands reference](../../labmanuals/lab54-ts-commands-reference.md) | Command-oriented troubleshooting drills and patterns. |
 
 ---
 
