@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GKE Regional Cluster - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --gcp-blue: #1a73e8;
+            --gcp-blue-deep: #174ea6;
+            --gcp-cyan: #12b5cb;
+            --gcp-green: #34a853;
+            --gcp-yellow: #fbbc04;
+            --gcp-red: #ea4335;
+            --ink: #122033;
+            --muted: #5f6f86;
+            --line: #d7e3f4;
+            --zone-a: #e8f0fe;
+            --zone-b: #e6f4ea;
+            --zone-c: #fef7e0;
+            --shadow: 0 16px 40px rgba(18, 32, 51, 0.10);
+        }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(26,115,232,0.14), transparent 30%),
+                radial-gradient(circle at top right, rgba(52,168,83,0.10), transparent 22%),
+                linear-gradient(180deg, #f6faff 0%, #edf4fb 100%);
+            color: var(--ink);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1440px; margin: 0 auto; }
+        .hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f7fbff 55%, #eef5ff 100%);
+            border: 1px solid rgba(26,115,232,0.10);
+            border-radius: 24px;
+            padding: 34px 32px 28px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -120px -120px auto;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(18,181,203,0.20), transparent 65%);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: #e8f0fe;
+            color: var(--gcp-blue-deep);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            line-height: 1.05;
+            color: var(--gcp-blue);
+            margin-bottom: 12px;
+            max-width: 980px;
+        }
+        .subtitle {
+            max-width: 980px;
+            color: var(--muted);
+            font-size: 1.02rem;
+            margin-bottom: 22px;
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 18px;
+            align-items: stretch;
+        }
+        .lead-panel,
+        .hero-stats {
+            background: rgba(255,255,255,0.84);
+            border: 1px solid rgba(26,115,232,0.12);
+            border-radius: 18px;
+            padding: 18px 20px;
+        }
+        .lead-panel p { color: #314358; }
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .stat {
+            border-radius: 16px;
+            padding: 14px;
+            color: white;
+            min-height: 105px;
+        }
+        .stat.blue { background: linear-gradient(140deg, #1a73e8 0%, #12b5cb 100%); }
+        .stat.green { background: linear-gradient(140deg, #1e8e3e 0%, #34a853 100%); }
+        .stat.yellow { background: linear-gradient(140deg, #c58b00 0%, #fbbc04 100%); color: #2d2100; }
+        .stat.red { background: linear-gradient(140deg, #d93025 0%, #ea4335 100%); }
+        .stat-label {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            opacity: 0.9;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 10px 0 6px;
+        }
+        .stat-copy { font-size: 0.86rem; line-height: 1.45; }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .btn {
+            border: 2px solid #9fc4ff;
+            background: rgba(255,255,255,0.95);
+            color: var(--gcp-blue-deep);
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+        .btn:hover,
+        .btn.active {
+            background: var(--gcp-blue);
+            color: white;
+            border-color: var(--gcp-blue);
+            box-shadow: 0 10px 22px rgba(26,115,232,0.24);
+            transform: translateY(-2px);
+        }
+        .view {
+            display: none;
+            background: rgba(255,255,255,0.96);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(215,227,244,0.92);
+            margin-bottom: 24px;
+        }
+        .view.active { display: block; }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--line);
+        }
+        .section-kicker {
+            color: var(--gcp-blue-deep);
+            text-transform: uppercase;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+        .section-head h2 { font-size: 1.55rem; }
+        .section-note {
+            padding: 14px 16px;
+            border-radius: 14px;
+            border-left: 4px solid var(--gcp-blue);
+            background: #eef5ff;
+            color: #21406f;
+            max-width: 760px;
+        }
+        .concept-grid,
+        .summary-grid,
+        .legend-grid,
+        .command-grid,
+        .yaml-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+        .card, .icon-card, .yaml-card, .flow-node, .command-card, .zone, .stack-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card, .stack-card {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+            box-shadow: 0 10px 24px rgba(18,32,51,0.05);
+        }
+        .card:hover, .icon-card:hover, .yaml-card:hover, .flow-node:hover, .command-card:hover, .zone:hover, .stack-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 30px rgba(18,32,51,0.10);
+        }
+        .card-badge, .mini-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.76rem;
+            letter-spacing: 0.03em;
+            margin-bottom: 12px;
+        }
+        .card-badge { background: #e8f0fe; color: var(--gcp-blue-deep); }
+        .mini-badge.green { background: #e6f4ea; color: #137333; }
+        .mini-badge.yellow { background: #fef7e0; color: #8f6200; }
+        .mini-badge.red { background: #fce8e6; color: #b3261e; }
+        .mini-badge.blue { background: #e8f0fe; color: var(--gcp-blue-deep); }
+        .card p, .stack-card p, .icon-copy, .command-card p, .yaml-card p { color: #506277; }
+        .icon-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 22px;
+        }
+        .icon-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px;
+            background: white;
+            text-align: center;
+        }
+        .gcp-icon { width: 58px; height: 58px; margin: 0 auto 12px; display: block; }
+        .icon-title { font-weight: 800; margin-bottom: 6px; }
+        .icon-copy { font-size: 0.9rem; }
+        .architecture-shell { display: grid; gap: 20px; }
+        .regional-banner {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #e8f0fe 0%, #eef7ff 100%);
+            border: 1px solid rgba(26,115,232,0.14);
+        }
+        .regional-banner strong { color: var(--gcp-blue-deep); }
+        .cluster-canvas {
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 24px;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(18,181,203,0.08), transparent 22%),
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        }
+        .cloud-boundary {
+            border: 2px dashed #9dc0fb;
+            border-radius: 24px;
+            padding: 20px;
+            background: rgba(238,245,255,0.55);
+            position: relative;
+        }
+        .cloud-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: white;
+            border: 1px solid rgba(26,115,232,0.18);
+            color: var(--gcp-blue-deep);
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .control-plane-box {
+            border: 1px solid #b9d3fd;
+            border-radius: 18px;
+            padding: 18px;
+            background: linear-gradient(135deg, #eef5ff 0%, #ffffff 100%);
+            margin-bottom: 18px;
+        }
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+        .control-card {
+            background: white;
+            border: 1px solid rgba(26,115,232,0.12);
+            border-radius: 16px;
+            padding: 14px;
+        }
+        .zones {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+        .zone {
+            border-radius: 20px;
+            padding: 18px;
+            border: 1px solid var(--line);
+        }
+        .zone-a { background: linear-gradient(180deg, var(--zone-a), #ffffff); }
+        .zone-b { background: linear-gradient(180deg, var(--zone-b), #ffffff); }
+        .zone-c { background: linear-gradient(180deg, var(--zone-c), #ffffff); }
+        .zone-title {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .zone-title h3 { font-size: 1rem; }
+        .node-card, .object-chip, .service-chip {
+            border-radius: 16px;
+            border: 1px solid rgba(18,32,51,0.08);
+            background: white;
+        }
+        .node-card { padding: 16px; margin-bottom: 12px; }
+        .node-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .node-title { font-weight: 800; color: #19355d; }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .object-chip, .service-chip { padding: 8px 10px; font-size: 0.82rem; font-weight: 700; }
+        .object-chip.wordpress { border-left: 4px solid var(--gcp-blue); color: var(--gcp-blue-deep); }
+        .object-chip.mysql { border-left: 4px solid var(--gcp-green); color: #137333; }
+        .object-chip.secret { border-left: 4px solid var(--gcp-red); color: #b3261e; }
+        .object-chip.config { border-left: 4px solid var(--gcp-yellow); color: #8f6200; }
+        .service-chip.lb { border-left: 4px solid var(--gcp-cyan); color: #0b7285; }
+        .service-chip.clusterip { border-left: 4px solid #7c3aed; color: #5b21b6; }
+        .arrow-strip {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 22px;
+        }
+        .flow-node {
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+            padding: 18px;
+            position: relative;
+        }
+        .flow-node::after {
+            content: "->";
+            position: absolute;
+            right: -12px;
+            top: calc(50% - 10px);
+            color: var(--gcp-blue);
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+        .flow-node:last-child::after { display: none; }
+        .flow-node h3 { font-size: 1rem; margin-bottom: 8px; color: var(--ink); }
+        .flow-node p { color: #526477; font-size: 0.92rem; }
+        .pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #edf4ff;
+            color: var(--gcp-blue-deep);
+            font-size: 0.74rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .split-layout, .stack-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .app-canvas {
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 20px;
+            background:
+                radial-gradient(circle at top right, rgba(251,188,4,0.10), transparent 24%),
+                linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        }
+        .access-lane {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .access-box, .yaml-card, .command-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px;
+            background: white;
+        }
+        .access-box h3, .yaml-card h3, .command-card h3 { font-size: 1rem; margin-bottom: 8px; }
+        .namespace-shell {
+            border: 2px solid #c8daf8;
+            border-radius: 22px;
+            padding: 18px;
+            background: #f9fbff;
+        }
+        .namespace-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: white;
+            border: 1px solid var(--line);
+            color: var(--gcp-blue-deep);
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 16px;
+        }
+        .deployment-shell, .service-shell, .secret-shell, .pvc-shell {
+            border-radius: 18px;
+            padding: 16px;
+            background: white;
+            border: 1px solid var(--line);
+        }
+        .object-title { font-weight: 800; margin-bottom: 12px; }
+        .pod-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .pod-box, .mini-box {
+            border-radius: 14px;
+            padding: 12px;
+            border: 1px solid rgba(18,32,51,0.08);
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+        }
+        .pod-box.wordpress { border-left: 4px solid var(--gcp-blue); }
+        .pod-box.mysql { border-left: 4px solid var(--gcp-green); }
+        .mini-stack { display: grid; gap: 12px; }
+        pre {
+            margin-top: 12px;
+            background: #0f172a;
+            color: #dbeafe;
+            border-radius: 18px;
+            padding: 18px;
+            overflow-x: auto;
+            font-size: 0.86rem;
+            line-height: 1.55;
+            border: 1px solid rgba(148,163,184,0.18);
+        }
+        code { font-family: Consolas, "Cascadia Code", monospace; }
+        .legend-grid { margin-top: 20px; }
+        .legend-item {
+            display: flex;
+            gap: 12px;
+            align-items: start;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: white;
+        }
+        .legend-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.92rem;
+            padding: 6px 0 14px;
+        }
+        @media (max-width: 1120px) {
+            .hero-grid, .split-layout, .stack-layout, .app-grid { grid-template-columns: 1fr; }
+            .zones, .arrow-strip, .access-lane { grid-template-columns: 1fr; }
+            .flow-node::after { display: none; }
+        }
+        @media (max-width: 720px) {
+            body { padding: 14px; }
+            .hero, .view { padding: 20px; }
+            .hero-stats { grid-template-columns: 1fr; }
+            .pod-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <div class="eyebrow">Google Kubernetes Engine</div>
+            <h1>Interactive Guide to a 3-Node Regional GKE Cluster</h1>
+            <p class="subtitle">
+                GKE is Google Cloud's managed Kubernetes platform. Google runs the control plane for you, integrates
+                deeply with Google Cloud networking and security, and lets you focus on workloads such as WordPress,
+                MySQL, Deployments, Secrets, and Services instead of building the cluster plumbing yourself.
+            </p>
+            <div class="hero-grid">
+                <div class="lead-panel">
+                    <p>
+                        This guide models a <strong>regional GKE cluster</strong> spread across three zones with one worker
+                        node per zone. It shows the managed control plane, kubectl interactions, object deployment flow,
+                        and the two main user paths: operators managing the app through <code>kubectl</code> and end users
+                        reaching WordPress through a public <code>LoadBalancer</code> Service.
+                    </p>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat blue">
+                        <div class="stat-label">Topology</div>
+                        <div class="stat-value">3 Zones</div>
+                        <div class="stat-copy">Regional spread for higher availability across failures.</div>
+                    </div>
+                    <div class="stat green">
+                        <div class="stat-label">Nodes</div>
+                        <div class="stat-value">3 Nodes</div>
+                        <div class="stat-copy">One node in each zone hosts your application workloads.</div>
+                    </div>
+                    <div class="stat yellow">
+                        <div class="stat-label">Access</div>
+                        <div class="stat-value">2 Paths</div>
+                        <div class="stat-copy">kubectl for ops and public load balancer for users.</div>
+                    </div>
+                    <div class="stat red">
+                        <div class="stat-label">App Stack</div>
+                        <div class="stat-value">WP + MySQL</div>
+                        <div class="stat-copy">Secrets, Deployments, Service discovery, and external traffic.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="controls">
+            <button class="btn active" data-view="overview">GKE Overview</button>
+            <button class="btn" data-view="architecture">Regional Cluster</button>
+            <button class="btn" data-view="kubectl">kubectl Flow</button>
+            <button class="btn" data-view="wordpress">WordPress on GKE</button>
+        </div>
+
+        <section class="view active" id="overview">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Managed Platform</div>
+                    <h2>What GKE gives you on Google Cloud</h2>
+                </div>
+                <div class="section-note">
+                    GKE keeps the Kubernetes API highly available, wires in Google Cloud networking, and automates
+                    tasks like upgrades, node provisioning, health checks, and load balancer integration.
+                </div>
+            </div>
+
+            <div class="concept-grid">
+                <article class="card">
+                    <div class="card-badge">Managed Control Plane</div>
+                    <p>
+                        Google operates the API server, scheduler, controller manager, and backing control plane
+                        infrastructure, so your team works with Kubernetes without manually building the masters.
+                    </p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Regional Resilience</div>
+                    <p>
+                        A regional cluster spreads nodes and control plane replicas across zones, reducing the blast
+                        radius of a zone outage and improving availability for production workloads.
+                    </p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Cloud-Native Networking</div>
+                    <p>
+                        GKE integrates with Google Cloud VPC, health checks, firewall rules, and external load
+                        balancers so Services can become reachable with public IPs.
+                    </p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Kubernetes Objects</div>
+                    <p>
+                        You still use standard Kubernetes primitives like Pods, Deployments, Secrets, Services,
+                        ConfigMaps, and PVCs. GKE manages the platform around them rather than changing the API model.
+                    </p>
+                </article>
+            </div>
+
+            <div class="icon-row">
+                <div class="icon-card">
+                    <svg class="gcp-icon" viewBox="0 0 64 64" aria-hidden="true">
+                        <circle cx="32" cy="32" r="29" fill="#e8f0fe"></circle>
+                        <path d="M23 41c-6 0-11-5-11-11s5-11 11-11c2 0 3 0 5 1 2-6 8-10 14-10 9 0 17 8 17 17v1c3 2 5 6 5 10 0 7-6 13-13 13H23z" fill="#1a73e8"></path>
+                        <circle cx="25" cy="29" r="4" fill="#ffffff"></circle>
+                        <circle cx="36" cy="25" r="4" fill="#ffffff"></circle>
+                        <circle cx="45" cy="31" r="4" fill="#ffffff"></circle>
+                    </svg>
+                    <div class="icon-title">GKE Cluster</div>
+                    <div class="icon-copy">Managed Kubernetes cluster boundary inside Google Cloud.</div>
+                </div>
+                <div class="icon-card">
+                    <svg class="gcp-icon" viewBox="0 0 64 64" aria-hidden="true">
+                        <rect x="10" y="10" width="44" height="44" rx="14" fill="#e6f4ea"></rect>
+                        <rect x="18" y="18" width="28" height="28" rx="8" fill="#34a853"></rect>
+                        <path d="M26 23h12v4H26zm0 7h12v4H26zm0 7h8v4h-8z" fill="#ffffff"></path>
+                        <rect x="40" y="37" width="6" height="6" rx="2" fill="#ffffff"></rect>
+                    </svg>
+                    <div class="icon-title">Workloads</div>
+                    <div class="icon-copy">Pods and Deployments run across worker nodes in each zone.</div>
+                </div>
+                <div class="icon-card">
+                    <svg class="gcp-icon" viewBox="0 0 64 64" aria-hidden="true">
+                        <rect x="8" y="8" width="48" height="48" rx="16" fill="#fef7e0"></rect>
+                        <path d="M20 32h24" stroke="#fbbc04" stroke-width="6" stroke-linecap="round"></path>
+                        <path d="M32 20v24" stroke="#ea4335" stroke-width="6" stroke-linecap="round"></path>
+                        <circle cx="32" cy="32" r="8" fill="#ffffff"></circle>
+                    </svg>
+                    <div class="icon-title">Load Balancer</div>
+                    <div class="icon-copy">Public traffic enters through a Service of type LoadBalancer.</div>
+                </div>
+                <div class="icon-card">
+                    <svg class="gcp-icon" viewBox="0 0 64 64" aria-hidden="true">
+                        <rect x="8" y="8" width="48" height="48" rx="16" fill="#fce8e6"></rect>
+                        <path d="M23 27l9-9 9 9v12l-9 9-9-9z" fill="#ea4335"></path>
+                        <circle cx="32" cy="32" r="5" fill="#ffffff"></circle>
+                    </svg>
+                    <div class="icon-title">Secrets</div>
+                    <div class="icon-copy">Passwords and DB credentials are injected into containers securely.</div>
+                </div>
+            </div>
+
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-swatch" style="background:#1a73e8;"></span>
+                    <div><strong>Blue</strong> shows cluster control and frontend application pieces.</div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-swatch" style="background:#34a853;"></span>
+                    <div><strong>Green</strong> highlights stateful database components such as MySQL.</div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-swatch" style="background:#ea4335;"></span>
+                    <div><strong>Red</strong> marks secrets and protected configuration inputs.</div>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-swatch" style="background:#12b5cb;"></span>
+                    <div><strong>Cyan</strong> represents traffic entry and external connectivity.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="view" id="architecture">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Regional Topology</div>
+                    <h2>3-node regional cluster across three zones</h2>
+                </div>
+                <div class="section-note">
+                    In a regional GKE design, Google keeps the control plane highly available across the region while
+                    your worker nodes are distributed into multiple zones for stronger fault tolerance.
+                </div>
+            </div>
+
+            <div class="architecture-shell">
+                <div class="regional-banner">
+                    <div>
+                        <strong>Example region:</strong> <code>us-central1</code> with zones
+                        <code>us-central1-a</code>, <code>us-central1-b</code>, and <code>us-central1-c</code>.
+                    </div>
+                    <div class="mini-badge blue">1 worker node per zone</div>
+                </div>
+
+                <div class="cluster-canvas">
+                    <div class="cloud-boundary">
+                        <div class="cloud-label">Google Cloud Platform / VPC Network</div>
+
+                        <div class="control-plane-box">
+                            <div class="mini-badge blue">Managed by Google</div>
+                            <h3>Regional GKE Control Plane</h3>
+                            <p>
+                                Google runs multiple control plane replicas for the region and exposes the Kubernetes API
+                                endpoint that <code>kubectl</code> talks to. You manage the cluster through the API;
+                                you do not SSH into masters or maintain etcd yourself.
+                            </p>
+                            <div class="control-grid">
+                                <div class="control-card">
+                                    <strong>Kubernetes API Server</strong>
+                                    <p>Receives kubectl requests such as apply, get, describe, and rollout.</p>
+                                </div>
+                                <div class="control-card">
+                                    <strong>Scheduler</strong>
+                                    <p>Places Pods onto nodes based on available resources and constraints.</p>
+                                </div>
+                                <div class="control-card">
+                                    <strong>Controllers</strong>
+                                    <p>Continuously reconcile Deployments, ReplicaSets, Services, and more.</p>
+                                </div>
+                                <div class="control-card">
+                                    <strong>Managed etcd and health</strong>
+                                    <p>Stores desired state and keeps the control plane highly available.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="zones">
+                            <article class="zone zone-a">
+                                <div class="zone-title">
+                                    <h3>Zone A</h3>
+                                    <span class="mini-badge blue">us-central1-a</span>
+                                </div>
+                                <div class="node-card">
+                                    <div class="node-head">
+                                        <div class="node-title">Node 1</div>
+                                        <span class="mini-badge blue">GKE node pool</span>
+                                    </div>
+                                    <div class="chips">
+                                        <div class="object-chip wordpress">wordpress pod</div>
+                                        <div class="object-chip secret">env from Secret</div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="zone zone-b">
+                                <div class="zone-title">
+                                    <h3>Zone B</h3>
+                                    <span class="mini-badge green">us-central1-b</span>
+                                </div>
+                                <div class="node-card">
+                                    <div class="node-head">
+                                        <div class="node-title">Node 2</div>
+                                        <span class="mini-badge green">GKE node pool</span>
+                                    </div>
+                                    <div class="chips">
+                                        <div class="object-chip wordpress">wordpress pod</div>
+                                        <div class="service-chip lb">LoadBalancer backend</div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="zone zone-c">
+                                <div class="zone-title">
+                                    <h3>Zone C</h3>
+                                    <span class="mini-badge yellow">us-central1-c</span>
+                                </div>
+                                <div class="node-card">
+                                    <div class="node-head">
+                                        <div class="node-title">Node 3</div>
+                                        <span class="mini-badge yellow">GKE node pool</span>
+                                    </div>
+                                    <div class="chips">
+                                        <div class="object-chip mysql">mysql pod</div>
+                                        <div class="service-chip clusterip">mysql ClusterIP</div>
+                                        <div class="object-chip config">persistent volume</div>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="legend-grid">
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background:#e8f0fe;"></span>
+                            <div><strong>Zone A</strong> hosts one WordPress replica.</div>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background:#e6f4ea;"></span>
+                            <div><strong>Zone B</strong> hosts another WordPress replica to spread the frontend.</div>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background:#fef7e0;"></span>
+                            <div><strong>Zone C</strong> hosts the MySQL pod and persistent storage example.</div>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background:#12b5cb;"></span>
+                            <div><strong>Service connectivity</strong> lets traffic reach healthy WordPress pods.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-grid">
+                    <article class="card">
+                        <div class="card-badge">Why regional?</div>
+                        <p>If one zone has issues, your other zones still host nodes and reachable application replicas.</p>
+                    </article>
+                    <article class="card">
+                        <div class="card-badge">Why 3 nodes?</div>
+                        <p>It is a simple teaching topology that clearly shows multi-zone placement and failover behavior.</p>
+                    </article>
+                    <article class="card">
+                        <div class="card-badge">Why GKE?</div>
+                        <p>You retain standard Kubernetes APIs while Google handles much of the undifferentiated platform work.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="view" id="kubectl">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Operator Interaction</div>
+                    <h2>How kubectl interacts with GKE</h2>
+                </div>
+                <div class="section-note">
+                    <code>kubectl</code> never talks directly to Pods or kubelets first. It talks to the Kubernetes API
+                    endpoint, and the control plane makes the rest of the system converge to the declared state.
+                </div>
+            </div>
+
+            <div class="arrow-strip">
+                <article class="flow-node">
+                    <div class="pill">Step 1</div>
+                    <h3>Engineer workstation</h3>
+                    <p>User authenticates to Google Cloud, fetches cluster credentials, and uses kubectl locally.</p>
+                </article>
+                <article class="flow-node">
+                    <div class="pill">Step 2</div>
+                    <h3>GKE API endpoint</h3>
+                    <p><code>kubectl apply -f</code> sends manifests to the managed Kubernetes API server.</p>
+                </article>
+                <article class="flow-node">
+                    <div class="pill">Step 3</div>
+                    <h3>Controllers reconcile</h3>
+                    <p>Deployments create ReplicaSets, Services create endpoints, and Secrets become available.</p>
+                </article>
+                <article class="flow-node">
+                    <div class="pill">Step 4</div>
+                    <h3>Scheduler places Pods</h3>
+                    <p>Pods are assigned to nodes across the three zones based on capacity and policy.</p>
+                </article>
+                <article class="flow-node">
+                    <div class="pill">Step 5</div>
+                    <h3>Nodes run workloads</h3>
+                    <p>Kubelet and container runtime pull images, start containers, and report status back.</p>
+                </article>
+            </div>
+
+            <div class="split-layout" style="margin-top: 22px;">
+                <div class="command-grid">
+                    <article class="command-card">
+                        <h3>1. Connect to the cluster</h3>
+                        <p>Get kubeconfig credentials for the regional cluster.</p>
+                        <pre><code>gcloud container clusters get-credentials gke-regional-demo \
+  --region us-central1 \
+  --project my-gcp-project</code></pre>
+                    </article>
+                    <article class="command-card">
+                        <h3>2. Create the namespace and secrets</h3>
+                        <p>Prepare the namespace where WordPress and MySQL will run.</p>
+                        <pre><code>kubectl create namespace wordpress
+kubectl apply -f wordpress-secret.yaml
+kubectl get secrets -n wordpress</code></pre>
+                    </article>
+                    <article class="command-card">
+                        <h3>3. Deploy the workloads</h3>
+                        <p>Apply the manifests for MySQL, WordPress, and Services.</p>
+                        <pre><code>kubectl apply -f mysql-deployment.yaml
+kubectl apply -f wordpress-deployment.yaml
+kubectl apply -f wordpress-service.yaml</code></pre>
+                    </article>
+                    <article class="command-card">
+                        <h3>4. Verify cluster state</h3>
+                        <p>Inspect Pods, Services, and rollout progress.</p>
+                        <pre><code>kubectl get pods -n wordpress -o wide
+kubectl get svc -n wordpress
+kubectl rollout status deployment/wordpress -n wordpress</code></pre>
+                    </article>
+                </div>
+
+                <aside class="stack-card">
+                    <div class="card-badge">kubectl mental model</div>
+                    <p>
+                        Think in terms of desired state. When you apply YAML, you are telling Kubernetes what should
+                        exist. The control plane and node agents keep working until the running state matches that intent.
+                    </p>
+                    <div class="mini-stack" style="margin-top: 14px;">
+                        <div class="mini-box">
+                            <strong>Create / update</strong>
+                            <p>Use <code>kubectl apply</code> for manifests that describe objects declaratively.</p>
+                        </div>
+                        <div class="mini-box">
+                            <strong>Observe</strong>
+                            <p>Use <code>kubectl get</code>, <code>describe</code>, and <code>logs</code> to troubleshoot.</p>
+                        </div>
+                        <div class="mini-box">
+                            <strong>Operate safely</strong>
+                            <p>Use rollouts and health checks rather than manually replacing Pods one by one.</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="view" id="wordpress">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Application Walkthrough</div>
+                    <h2>Deploying WordPress and MySQL on GKE</h2>
+                </div>
+                <div class="section-note">
+                    This example uses a Secret for credentials, a MySQL backend Service inside the cluster, and a public
+                    LoadBalancer Service that exposes WordPress to end users on the internet.
+                </div>
+            </div>
+
+            <div class="stack-layout">
+                <div class="app-canvas">
+                    <div class="access-lane">
+                        <div class="access-box">
+                            <div class="mini-badge blue">Operator path</div>
+                            <h3>kubectl</h3>
+                            <p>Applies manifests and checks status from the admin workstation.</p>
+                        </div>
+                        <div class="access-box">
+                            <div class="mini-badge blue">Kubernetes path</div>
+                            <h3>API + controllers</h3>
+                            <p>Converts YAML into running Pods, Services, Secrets, and ReplicaSets.</p>
+                        </div>
+                        <div class="access-box">
+                            <div class="mini-badge green">Application path</div>
+                            <h3>WordPress + MySQL</h3>
+                            <p>App pods consume env vars from the Secret and connect to MySQL internally.</p>
+                        </div>
+                        <div class="access-box">
+                            <div class="mini-badge yellow">User path</div>
+                            <h3>External Load Balancer</h3>
+                            <p>Internet users reach WordPress through the public Service IP.</p>
+                        </div>
+                    </div>
+
+                    <div class="namespace-shell">
+                        <div class="namespace-title">Namespace: wordpress</div>
+
+                        <div class="app-grid">
+                            <div>
+                                <div class="deployment-shell" style="margin-bottom: 14px;">
+                                    <div class="object-title">Deployment: wordpress</div>
+                                    <div class="pod-row">
+                                        <div class="pod-box wordpress">
+                                            <strong>wordpress-pod-a</strong>
+                                            <p>Replica 1 in Zone A</p>
+                                        </div>
+                                        <div class="pod-box wordpress">
+                                            <strong>wordpress-pod-b</strong>
+                                            <p>Replica 2 in Zone B</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="service-shell">
+                                    <div class="object-title">Service: wordpress-lb</div>
+                                    <div class="chips">
+                                        <div class="service-chip lb">type: LoadBalancer</div>
+                                        <div class="service-chip lb">public IP</div>
+                                        <div class="service-chip lb">port 80 -> targetPort 80</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mini-stack">
+                                <div class="secret-shell">
+                                    <div class="object-title">Secret: wordpress-db-secret</div>
+                                    <div class="chips">
+                                        <div class="object-chip secret">MYSQL_ROOT_PASSWORD</div>
+                                        <div class="object-chip secret">MYSQL_PASSWORD</div>
+                                        <div class="object-chip secret">WORDPRESS_DB_PASSWORD</div>
+                                    </div>
+                                </div>
+                                <div class="deployment-shell">
+                                    <div class="object-title">Deployment: mysql</div>
+                                    <div class="pod-box mysql">
+                                        <strong>mysql-pod</strong>
+                                        <p>Single backend pod with persistent storage</p>
+                                    </div>
+                                </div>
+                                <div class="pvc-shell">
+                                    <div class="object-title">Service + PVC for MySQL</div>
+                                    <div class="chips">
+                                        <div class="service-chip clusterip">mysql Service ClusterIP</div>
+                                        <div class="object-chip config">PersistentVolumeClaim</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="stack-card">
+                    <div class="card-badge">Traffic story</div>
+                    <p>
+                        Operators manage everything with kubectl, but end users only see the external IP or DNS name of
+                        the WordPress load balancer. Inside the cluster, WordPress talks to the MySQL ClusterIP service,
+                        not to the pod IP directly.
+                    </p>
+                    <div class="mini-stack" style="margin-top: 14px;">
+                        <div class="mini-box">
+                            <strong>User access</strong>
+                            <p>Browser -> public load balancer -> WordPress Service -> healthy WordPress pods.</p>
+                        </div>
+                        <div class="mini-box">
+                            <strong>App to database</strong>
+                            <p>WordPress pods resolve <code>mysql</code> service name and connect internally.</p>
+                        </div>
+                        <div class="mini-box">
+                            <strong>Secrets usage</strong>
+                            <p>Credentials are injected as environment variables rather than hardcoded in images.</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="yaml-grid" style="margin-top: 22px;">
+                <article class="yaml-card">
+                    <h3>Secret</h3>
+                    <p>Shared credentials for MySQL and WordPress.</p>
+                    <pre><code>apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress-db-secret
+  namespace: wordpress
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: rootpass
+  MYSQL_PASSWORD: wordpresspass
+  WORDPRESS_DB_PASSWORD: wordpresspass</code></pre>
+                </article>
+                <article class="yaml-card">
+                    <h3>MySQL Deployment and Service</h3>
+                    <p>Internal database endpoint for WordPress.</p>
+                    <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        envFrom:
+        - secretRef:
+            name: wordpress-db-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: wordpress
+spec:
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306</code></pre>
+                </article>
+                <article class="yaml-card">
+                    <h3>WordPress Deployment and LoadBalancer Service</h3>
+                    <p>Public app entry point backed by multiple replicas.</p>
+                    <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: wordpress
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: wordpress:php8.2-apache
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: mysql
+        envFrom:
+        - secretRef:
+            name: wordpress-db-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-lb
+  namespace: wordpress
+spec:
+  type: LoadBalancer
+  selector:
+    app: wordpress
+  ports:
+  - port: 80
+    targetPort: 80</code></pre>
+                </article>
+            </div>
+        </section>
+
+        <div class="footer-note">
+            Use the buttons above to switch between the GKE overview, topology, kubectl flow, and WordPress deployment story.
+        </div>
+    </div>
+
+    <script>
+        const buttons = document.querySelectorAll('.btn');
+        const views = document.querySelectorAll('.view');
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const nextView = button.dataset.view;
+
+                buttons.forEach((btn) => btn.classList.remove('active'));
+                views.forEach((view) => view.classList.remove('active'));
+
+                button.classList.add('active');
+                document.getElementById(nextView).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
