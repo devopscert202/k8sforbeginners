@@ -1,6 +1,4 @@
-# 2) PersistentVolume (cluster-scoped; no namespace)
-# Update `volumeHandle` to match an existing Google Compute Engine Persistent Disk:
-# projects/PROJECT_ID/zones/ZONE/disks/DISK_NAME
+# 1) PersistentVolume (cluster-scoped; no namespace)
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -13,12 +11,11 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Filesystem
   storageClassName: ""
-  csi:
-    driver: pd.csi.storage.gke.io
-    fsType: ext4
-    volumeHandle: projects/app-cloud-dns/zones/asia-south1-a/disks/mysqldisk
----  
-# 3) PersistentVolumeClaim (namespaced)
+  hostPath:
+    path: /mnt/data
+    type: Directory
+---
+# 2) PersistentVolumeClaim (default namespace)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -33,7 +30,7 @@ spec:
     requests:
       storage: 1Gi
 ---
-# 4) Deployment (namespaced) using the PVC as storage
+# 3) Deployment (default namespace) using the PVC as storage
 apiVersion: apps/v1
 kind: Deployment
 metadata:
