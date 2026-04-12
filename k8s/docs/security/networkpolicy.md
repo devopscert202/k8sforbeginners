@@ -1,75 +1,43 @@
-### **Lab Tutorial: NetworkPolicy with Allow and Deny-All Ingress**
+### **NetworkPolicy: Allow Lists and Deny-All Ingress**
 
-This tutorial provides an introduction to **Kubernetes NetworkPolicy**, discusses its use cases and dependencies on container networking interfaces (CNIs) like Calico and Flannel, and demonstrates how to configure "allow" and "deny-all" ingress rules.
+This document introduces **Kubernetes NetworkPolicy**: what it controls, when to use it, how it depends on your **CNI**, and how **allow-list** versus **empty ingress** rules change Pod reachability.
 
 ---
 
+> **Related:** [Namespace-Scoped Network Isolation](./networkpolicy-namespace.md) | [Kubernetes Hardening Guide](./k8s-hardening.md) (includes NetworkPolicy in the hardening checklist)
+
 ### **What is a NetworkPolicy?**
 
-A **NetworkPolicy** in Kubernetes is a resource used to define rules for network traffic to and from Pods. By default, Kubernetes allows all traffic to flow between Pods, Nodes, and external services. NetworkPolicies enable you to:
-- **Restrict incoming (ingress) or outgoing (egress) traffic** to specific Pods.
-- Define rules based on Pod labels, namespaces, and IP blocks.
-- Enhance security by isolating workloads in a multi-tenant or microservices architecture.
+A **NetworkPolicy** defines rules for **ingress** and/or **egress** for Pods that match a `podSelector` (and optional `namespaceSelector`). By default, Kubernetes does not restrict Pod-to-Pod traffic; without policies, traffic is generally allowed subject to CNI and cloud networking. Once you attach policies to selected Pods, only traffic matching the declared rules is permitted for the directions the policy covers.
 
 ---
 
 ### **Use Cases for NetworkPolicy**
+
 1. **Application Isolation**: Ensure one application cannot unintentionally communicate with another.
-2. **Compliance**: Enforce strict network segmentation to meet regulatory requirements.
-3. **Traffic Restriction**: Control access to applications from specific sources, like trusted Pods or IP addresses.
-4. **Improved Security**: Prevent unauthorized traffic to sensitive components, such as APIs or databases.
+2. **Compliance**: Enforce network segmentation for regulatory or internal standards.
+3. **Traffic Restriction**: Limit sources to trusted Pods, namespaces, or IP blocks.
+4. **Improved Security**: Reduce exposure of sensitive APIs or data stores.
 
 ---
 
 ### **Dependencies: Container Networking Interface (CNI)**
-NetworkPolicies depend on the underlying **CNI plugin** to enforce traffic rules. Kubernetes itself does not enforce NetworkPolicies. Supported CNIs include:
 
-1. **Calico**:
-   - Full support for NetworkPolicies.
-   - Advanced features like global policies, service-based policies, and BGP routing.
-   - Best suited for production-grade deployments.
+NetworkPolicies are **implemented by the CNI** (and related datapath), not by the Kubernetes API server alone. Examples:
 
-2. **Flannel**:
-   - Does not support NetworkPolicies out-of-the-box.
-   - Requires **Flannel with Calico** to enable NetworkPolicy enforcement.
+1. **Calico**: Broad NetworkPolicy support; common in production.
+2. **Flannel**: Does not enforce NetworkPolicy by itself; often paired with another policy engine.
+3. **Cilium**: BPF-based enforcement and rich L3/L4/L7 options.
+4. **Weave Net**: Basic NetworkPolicy support suitable for smaller clusters.
 
-3. **Cilium**:
-   - Focuses on security and observability.
-   - Offers fine-grained control and deep integration with Linux BPF.
-
-4. **Weave Net**:
-   - Supports basic NetworkPolicies.
-   - Simplified setup for smaller-scale clusters.
+Always confirm in your environment that the installed CNI **enforces** policies before relying on them for security.
 
 ---
 
-### **Prerequisites**
+### **Pattern: Allow ingress only from matching Pods**
 
-1. Kubernetes cluster is up and running.
-2. A CNI plugin that supports NetworkPolicies (e.g., Calico).
-   - To install Calico:
-     ```bash
-     kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-     ```
-3. `kubectl` command-line tool.
+The following policy selects Pods with `app: k8slearning` and allows ingress **only** from Pods in the same namespace that also have `app: k8slearning`. Other sources are not listed and therefore cannot reach those Pods on ingress (for this policy’s selected set).
 
----
-
-### **Section 1: Allow Ingress Traffic**
-
-#### **1. Create the Main Application Pod**
-Launch the main application pod with the `app=k8slearning` label:
-```bash
-kubectl run k8slearning --image=nginx --labels="app=k8slearning" --expose --port=80
-```
-Verify the pod and service:
-```bash
-kubectl get pods
-kubectl get svc k8slearning
-```
-
-#### **2. Create an Allow-Ingress NetworkPolicy**
-Create a YAML file named `allow-ingress.yaml`:
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -86,32 +54,12 @@ spec:
             app: k8slearning
 ```
 
-Apply the NetworkPolicy:
-```bash
-kubectl apply -f allow-ingress.yaml
-```
-
-Verify the policy:
-```bash
-kubectl get networkpolicy
-```
-
-#### **3. Test Allow Ingress**
-Run a testing pod **with matching labels**:
-```bash
-kubectl run --image=nginx test-$RANDOM --labels="app=k8slearning"
-kubectl exec -it test-<podname> -- curl http://k8slearning
-```
-
-Expected Result:
-- Traffic is **allowed**, and the NGINX default page should load.
-
 ---
 
-### **Section 2: Deny-All Ingress Traffic**
+### **Pattern: Deny all ingress to selected Pods**
 
-#### **1. Create a Deny-All NetworkPolicy**
-Create a YAML file named `deny-all-ingress.yaml`:
+An **empty `ingress` list** means **no ingress rules** are defined for the selected Pods. For implementations that interpret this as “no ingress allowed,” **all ingress to matching Pods is blocked** unless another policy also applies and permits traffic (multiple policies can stack).
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -124,70 +72,28 @@ spec:
   ingress: []
 ```
 
-Apply the policy:
-```bash
-kubectl apply -f deny-all-ingress.yaml
-```
-
-Verify the policy:
-```bash
-kubectl get networkpolicy
-```
-
-#### **2. Test Deny-All Ingress**
-Run a testing pod to verify blocked traffic:
-```bash
-kubectl run --rm -i -t --image=alpine test-$RANDOM -- sh
-curl http://k8slearning
-```
-
-Expected Result:
-- Traffic is **blocked**, and the connection times out.
-
 ---
 
-### **Illustration: Comparing Allow and Deny Policies**
+### **Allow vs deny-all (conceptual)**
 
-1. **Allow Policy**:
-   - Test with a matching label:
-     ```bash
-     curl http://k8slearning
-     ```
-   - Result: NGINX default page loads, indicating **allowed ingress**.
-
-2. **Deny-All Policy**:
-   - Test with any Pod, regardless of labels:
-     ```bash
-     curl http://k8slearning
-     ```
-   - Result: Traffic is **blocked**, and the connection times out.
-
----
-
-### **Cleanup**
-
-1. Delete the application pod:
-   ```bash
-   kubectl delete pod k8slearning
-   ```
-
-2. Delete the service:
-   ```bash
-   kubectl delete svc k8slearning
-   ```
-
-3. Delete the NetworkPolicies:
-   ```bash
-   kubectl delete networkpolicy k8slearning-allow-ingress
-   kubectl delete networkpolicy k8slearning-deny-all
-   ```
+- **Allow-list policy**: Only explicitly described `from` (and ports) are permitted; useful for microservice “talks only to X.”
+- **Deny-all ingress**: A hard stop for inbound connections to labeled Pods—pair with Services, health checks, and mesh or CNI features so you do not break required probes or control-plane paths.
 
 ---
 
 ### **Summary**
 
-- **NetworkPolicies** allow you to control ingress and egress traffic to Pods, enhancing security and traffic management.
-- Dependencies like Calico or Cilium are necessary to enforce policies.
-- This tutorial demonstrated the configuration and testing of both "allow" and "deny-all" ingress rules, providing a clear understanding of their impact. 
+- **NetworkPolicies** express intent for Pod traffic; the **CNI** enforces them.
+- **Label selectors** and **namespace selectors** determine which Pods and which remote endpoints participate in a rule.
+- Combining **default-deny** patterns with **narrow allows** is a common zero-trust style approach in Kubernetes.
 
-Let me know if you need further assistance!
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 13: Advanced Network Policies - Namespace Isolation](../../labmanuals/lab13-sec-network-policies.md) | Install or verify a policy-capable CNI and exercise allow/deny scenarios. |
+| [Lab 57: Network Policies — Pod and Application Traffic Control](../../labmanuals/lab57-sec-network-policy-advanced.md) | Deepen ingress/egress patterns and troubleshooting. |

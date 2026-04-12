@@ -8,33 +8,50 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #f4f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d9e2ef;
+      --kube-blue: #326CE5; --kube-blue-deep: #1d4ed8; --kube-sky: #dbeafe;
       --blue: #2563eb; --cyan: #0891b2; --teal: #0f766e; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
     }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(37,99,235,.1), transparent 26%),
-        radial-gradient(circle at top right, rgba(8,145,178,.1), transparent 26%),
-        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
-      color: var(--ink); padding: 24px; line-height: 1.55;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--slate-900); padding: 20px; line-height: 1.55;
     }
     .page { max-width: 1380px; margin: 0 auto; }
     .hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #0891b2 100%);
-      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+            position: relative;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      margin-bottom: 26px;
+      border: 1px solid rgba(50,108,229,0.1);
     }
     .eyebrow {
-      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
-      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--kube-sky);
+      color: var(--kube-blue-deep);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
     }
-    h1 { font-size: 2.45rem; margin-bottom: 12px; line-height: 1.15; }
-    .hero p { max-width: 940px; color: rgba(255,255,255,.88); font-size: 1rem; }
+    h1 { font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 12px; line-height: 1.15; color: var(--kube-blue); }
+    .hero p { max-width: 940px; margin-left: auto; margin-right: auto; color: var(--muted); font-size: 1rem; }
     .hero-grid, .stats, .layout, .artifacts, .command-grid, .test-grid, .details-grid { display: grid; gap: 16px; }
-    .hero-grid { grid-template-columns: 1.3fr 1fr; margin-top: 22px; }
+    .hero-grid { grid-template-columns: 1.3fr 1fr; margin-top: 22px; margin-bottom: 24px; }
     .hero-card, .panel, .step-card, .artifact, .command-card, .note, .details-card, .test-card {
       background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
     }
-    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card { padding: 18px; color: var(--ink); }
     .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
     .hero-card ul, .details-card ul { padding-left: 18px; }
     .hero-card li + li, .details-card li + li { margin-top: 6px; }
@@ -73,7 +90,7 @@
     .mini-flow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
     .node { background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%); border: 1px solid #cfe0f6; color: #16345b; padding: 10px 12px; border-radius: 14px; font-weight: 700; font-size: .9rem; }
     .arrow { align-self: center; font-weight: 900; color: #5d7aa5; padding: 0 2px; }
-    pre { background: #0f172a; color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: auto; font-size: .86rem; line-height: 1.55; margin: 12px 0; }
+    pre { background: #0f172a; color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: hidden; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; font-size: .86rem; line-height: 1.55; margin: 12px 0; }
     .artifacts, .command-grid, .test-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .artifact, .command-card, .test-card, .details-card { padding: 18px; }
     .token { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .76rem; font-weight: 800; margin-right: 6px; margin-bottom: 8px; }
@@ -82,36 +99,45 @@
     .note h3, .note p { color: #8a4b08; }
     @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 1100px) { .hero-grid, .layout, .stats, .artifacts, .command-grid, .test-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.85rem; } .flow-line { margin-left: 8px; padding-left: 20px; } .step-card::before { left: -30px; } }
-  </style>
+    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.6rem; } .flow-line { margin-left: 8px; padding-left: 20px; } .step-card::before { left: -30px; } }
+          .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: #326CE5; text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
   <div class="page">
     <section class="hero">
-      <div class="eyebrow">Interactive RBAC Walkthrough</div>
-      <h1>Kubernetes User Certificate to RBAC Test Flow</h1>
-      <p>This page turns `rbacdemo.md` into a visual lab runbook: create the namespace, generate user certificates, bind the Role, wire the certificate into kubeconfig, switch context, confirm the namespace, and test both allowed and forbidden operations.</p>
-      <div class="hero-grid">
-        <div class="hero-card">
-          <h2>What this shows</h2>
-          <ul>
-            <li>How `user3.key`, `user3.csr`, and `user3.crt` are created and signed with the cluster CA.</li>
-            <li>How `kubectl config set-credentials` stores the client certificate for `user3`.</li>
-            <li>How `kubectl config set-context` points `user3` at namespace `role`.</li>
-            <li>How testing proves both the allow path and the RBAC deny path.</li>
-          </ul>
-        </div>
-        <div class="hero-card">
-          <h2>Core idea</h2>
-          <ul>
-            <li>Authentication comes from the client certificate common name: `user3`.</li>
-            <li>Authorization comes from `Role` plus `RoleBinding` in namespace `role`.</li>
-            <li>The kubeconfig context glues together cluster, user, and namespace.</li>
-            <li>Success means the user is authenticated but only partially authorized.</li>
-          </ul>
-        </div>
-      </div>
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes User Certificate to RBAC Test Flow</h1>
+      <p>This page visualizes the RBAC client-certificate flow as a lab runbook: create the namespace, generate user certificates, bind the Role, wire the certificate into kubeconfig, switch context, confirm the namespace, and test both allowed and forbidden operations. See <a href="../../docs/security/rbac-concepts.md" style="color:#1d4ed8;font-weight:600;">RBAC Concepts</a> for the full reference.</p>
     </section>
+
+    <div class="hero-grid">
+      <div class="hero-card">
+        <h2>What this shows</h2>
+        <ul>
+          <li>How `user3.key`, `user3.csr`, and `user3.crt` are created and signed with the cluster CA.</li>
+          <li>How `kubectl config set-credentials` stores the client certificate for `user3`.</li>
+          <li>How `kubectl config set-context` points `user3` at namespace `role`.</li>
+          <li>How testing proves both the allow path and the RBAC deny path.</li>
+        </ul>
+      </div>
+      <div class="hero-card">
+        <h2>Core idea</h2>
+        <ul>
+          <li>Authentication comes from the client certificate common name: `user3`.</li>
+          <li>Authorization comes from `Role` plus `RoleBinding` in namespace `role`.</li>
+          <li>The kubeconfig context glues together cluster, user, and namespace.</li>
+          <li>Success means the user is authenticated but only partially authorized.</li>
+        </ul>
+      </div>
+    </div>
 
     <section class="stats">
       <div class="stat blue"><div class="stat-label">Namespace</div><div class="stat-value">role</div><div>All checks in this lab are scoped to one namespace.</div></div>
@@ -342,7 +368,7 @@ kubectl create deployment test --image=docker.io/httpd -n role</pre></div>
         <p>This walkthrough demonstrates classic X.509 client-certificate authentication. In many enterprises, human users are integrated through OIDC or a webhook-backed identity layer, while certificates remain common for admin access, cluster bootstrap, or automation.</p>
       </div>
     </section>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

@@ -765,6 +765,24 @@ minikube service external-service --url
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/networking/multi-port-pod.yaml` | Demo Pod with two named container ports (`http` 8080, `custom` 9090) using `hashicorp/http-echo` and label `app: multi-port-app` for Service selection. |
+| `k8s/labs/networking/multi-port-service.yaml` | NodePort Service exposing both ports (8080→30080, 9090→30090) with named ports; selector `app: multi-port-app`. Pairs with the demo Pod manifest. |
+
+You can apply these directly:
+
+```bash
+kubectl apply -f k8s/labs/networking/multi-port-pod.yaml
+kubectl apply -f k8s/labs/networking/multi-port-service.yaml
+```
+
+---
+
 ## Lab Cleanup
 
 Remove all resources created in this lab:

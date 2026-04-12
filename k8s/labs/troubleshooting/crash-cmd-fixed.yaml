@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crash-cmd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crash-cmd
+  template:
+    metadata:
+      labels:
+        app: crash-cmd
+    spec:
+      containers:
+        - name: app
+          image: busybox:1.36
+          command: ["/bin/sh", "-c", "echo ok && sleep 3600"]

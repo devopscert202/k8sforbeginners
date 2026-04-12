@@ -3,476 +3,839 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetworkPolicy Traffic Filtering</title>
+    <title>Kubernetes Network Policies</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --blue-deep: var(--kube-blue-deep);
+            --sky: var(--kube-sky);
+            --green: #16a34a;
         }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px;
-            line-height: 1.4;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
             padding: 20px;
+            line-height: 1.6;
         }
+        .container { max-width: 1380px; margin: 0 auto; }
 
-        h1 {
+        .hero {
+            position: relative;
             text-align: center;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 26px;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
         }
 
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .section {
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .behavior-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .behavior-card {
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px;
-            background: #f8f9fa;
-        }
-
-        .behavior-card h3 {
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 14px;
-            display: flex;
+        .eyebrow {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
         }
 
-        .behavior-card ul {
-            margin-left: 20px;
-            font-size: 13px;
-            color: #555;
-        }
-
-        .behavior-card li {
-            margin-bottom: 4px;
-        }
-
-        .icon {
-            font-size: 18px;
-        }
-
-        .traffic-matrix {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .matrix-header {
-            background: #34495e;
-            color: white;
-            padding: 8px;
+        .footer-note {
             text-align: center;
-            font-weight: 600;
-            font-size: 13px;
-            border-radius: 6px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
         }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
 
-        .matrix-cell {
-            padding: 8px;
-            text-align: center;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .allowed {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
-        }
-
-        .denied {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
-        }
-
-        .label {
-            background: #e9ecef;
-            padding: 8px;
-            font-weight: 600;
-            font-size: 12px;
-            border-radius: 6px;
-        }
-
-        .diagram-container {
+        .hero h1 { margin-bottom: 6px; font-size: clamp(2rem, 4vw, 3rem); color: var(--kube-blue); }
+        .subtitle { color: var(--muted); font-size: 0.95rem; }
+        .tab-bar {
             display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
         }
-
-        .diagram {
-            flex: 1;
-            border: 2px solid #e0e0e0;
+        .tab-btn {
+            border: 1px solid var(--slate-200);
+            background: #f8fafc;
+            color: var(--slate-700);
+            padding: 8px 14px;
             border-radius: 8px;
-            padding: 12px;
-            background: #f8f9fa;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
         }
-
-        .diagram h3 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 14px;
+        .tab-btn:hover { border-color: var(--blue); color: var(--blue-deep); }
+        .tab-btn[aria-selected="true"] {
+            background: var(--blue);
+            color: #fff;
+            border-color: var(--blue-deep);
         }
-
-        .namespace {
-            border: 2px dashed #3498db;
-            border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 8px;
-            background: #ebf5fb;
+        .panel {
+            display: none;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 22px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
         }
-
-        .ns-title {
-            font-weight: 600;
-            color: #2980b9;
-            margin-bottom: 6px;
-            font-size: 12px;
+        .panel.active { display: block; }
+        h2 {
+            font-size: 1.15rem;
+            color: var(--blue-deep);
+            margin: 18px 0 10px;
         }
-
-        .pod {
-            background: white;
-            border: 2px solid #95a5a6;
-            border-radius: 4px;
-            padding: 6px;
-            margin-bottom: 4px;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        h2:first-child { margin-top: 0; }
+        h3 { font-size: 1rem; color: var(--slate-700); margin: 14px 0 8px; }
+        p, li { color: var(--slate-700); margin-bottom: 10px; }
+        ul { margin-left: 1.25rem; margin-bottom: 12px; }
+        .callout {
+            border-left: 4px solid #d97706;
+            background: #fffbeb;
+            padding: 12px 14px;
+            border-radius: 0 8px 8px 0;
+            margin: 12px 0;
+            font-size: 0.92rem;
         }
-
-        .pod.protected {
-            border-color: #e74c3c;
-            background: #fadbd8;
-        }
-
-        .arrow {
-            text-align: center;
-            font-size: 24px;
-            color: #27ae60;
-            margin: 8px 0;
-        }
-
-        .arrow.blocked {
-            color: #e74c3c;
-        }
-
-        .yaml-section {
-            margin-bottom: 15px;
-        }
-
-        .yaml-section h3 {
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
+        .callout strong { color: var(--slate-900); }
+        .ok { color: var(--green); font-weight: 600; }
+        .block { color: #e11d48; font-weight: 600; }
         pre {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 12px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            line-height: 1.5;
-            border: 2px solid #21252b;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+            font-size: 0.78rem;
+            line-height: 1.45;
+            margin: 10px 0 14px;
         }
-
-        .key {
-            color: #c678dd;
-        }
-
-        .string {
-            color: #98c379;
-        }
-
-        .number {
-            color: #d19a66;
-        }
-
-        .comment {
-            color: #5c6370;
-            font-style: italic;
-        }
-
-        .key-points {
+        code { font-family: ui-monospace, monospace; }
+        .diagram-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 16px;
+            margin: 14px 0;
         }
-
-        .key-point {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 12px;
+        @media (max-width: 900px) {
+            .diagram-row { grid-template-columns: 1fr; }
         }
-
-        .key-point strong {
-            color: #856404;
-            display: block;
-            margin-bottom: 4px;
+        .diagram-card {
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 12px;
+            background: #f8fafc;
         }
-
-        .toggle-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
+        .diagram-card h4 {
+            font-size: 0.85rem;
+            color: var(--slate-500);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .svg-wrap { width: 100%; overflow: hidden; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin: 12px 0;
+        }
+        th, td {
+            border: 1px solid var(--slate-200);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th { background: var(--sky); color: var(--slate-900); }
+        .scenario {
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
             margin-bottom: 10px;
-            transition: background 0.3s;
+            overflow: hidden;
         }
-
-        .toggle-btn:hover {
-            background: #5568d3;
+        .scenario-toggle {
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            background: #f1f5f9;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--slate-900);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
         }
-
-        .hidden {
+        .scenario-toggle:hover { background: var(--sky); }
+        .scenario-toggle .chev { color: var(--blue); font-size: 1.1rem; transition: transform 0.2s; }
+        .scenario-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
+        .scenario-body {
             display: none;
+            padding: 14px 16px 16px;
+            border-top: 1px solid var(--slate-200);
+            background: #fff;
         }
-
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            .container {
-                box-shadow: none;
-                padding: 10px;
-            }
-            .toggle-btn {
-                display: none;
-            }
+        .scenario-body.open { display: block; }
+        .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        @media (max-width: 768px) { .mini-grid { grid-template-columns: 1fr; } }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🛡️ Kubernetes NetworkPolicy Traffic Filtering</h1>
-        <p class="subtitle">Pod-Level Network Security & Namespace Isolation</p>
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Network Policies</h1>
+            <p class="subtitle">Control pod-to-pod, namespace, and external traffic with ingress and egress rules</p>
+        </header>
 
-        <!-- Default Behavior Section -->
-        <div class="section">
-            <div class="section-title">📋 Default Behavior (No NetworkPolicy)</div>
-            <div class="behavior-grid">
-                <div class="behavior-card">
-                    <h3><span class="icon">⬇️</span>Ingress (Incoming Traffic)</h3>
-                    <ul>
-                        <li><strong>Allow-all:</strong> All pods accept traffic from any source</li>
-                        <li>Cross-namespace traffic: ✅ Allowed</li>
-                        <li>No restrictions by default</li>
-                    </ul>
-                </div>
-                <div class="behavior-card">
-                    <h3><span class="icon">⬆️</span>Egress (Outgoing Traffic)</h3>
-                    <ul>
-                        <li><strong>Allow-all:</strong> All pods can send traffic anywhere</li>
-                        <li>External connectivity: ✅ Allowed</li>
-                        <li>No restrictions by default</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="tab-bar" role="tablist" aria-label="Network policy topics">
+            <button type="button" class="tab-btn" role="tab" id="tab-1" aria-selected="true" aria-controls="panel-1" data-tab="1">Concepts</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-2" aria-selected="false" aria-controls="panel-2" data-tab="2">Policy structure</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-3" aria-selected="false" aria-controls="panel-3" data-tab="3">Scenarios</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-4" aria-selected="false" aria-controls="panel-4" data-tab="4">Namespace isolation</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-5" aria-selected="false" aria-controls="panel-5" data-tab="5">Pod-level control</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-6" aria-selected="false" aria-controls="panel-6" data-tab="6">Ingress &amp; egress</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-7" aria-selected="false" aria-controls="panel-7" data-tab="7">Commands</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-8" aria-selected="false" aria-controls="panel-8" data-tab="8">Best practices</button>
         </div>
 
-        <!-- Traffic Matrix -->
-        <div class="section">
-            <div class="section-title">📊 Traffic Matrix: Before & After Policy</div>
-            <button class="toggle-btn" onclick="toggleMatrix()">Toggle Matrix View</button>
-            <div id="trafficMatrix" class="traffic-matrix">
-                <div class="matrix-header">Scenario</div>
-                <div class="matrix-header">Without Policy</div>
-                <div class="matrix-header">With Policy</div>
-
-                <div class="label">default → default</div>
-                <div class="matrix-cell allowed">✅ ALLOWED</div>
-                <div class="matrix-cell allowed">✅ ALLOWED</div>
-
-                <div class="label">test → default</div>
-                <div class="matrix-cell allowed">✅ ALLOWED</div>
-                <div class="matrix-cell denied">❌ DENIED</div>
-
-                <div class="label">default → test</div>
-                <div class="matrix-cell allowed">✅ ALLOWED</div>
-                <div class="matrix-cell denied">❌ DENIED</div>
-
-                <div class="label">test → test</div>
-                <div class="matrix-cell allowed">✅ ALLOWED</div>
-                <div class="matrix-cell allowed">✅ ALLOWED</div>
+        <!-- Tab 1 -->
+        <div class="panel active" id="panel-1" role="tabpanel" aria-labelledby="tab-1">
+            <h2>What are NetworkPolicies?</h2>
+            <div class="callout" style="background:#eff6ff;border-left-color:var(--blue);margin-bottom:1rem;">
+                <strong>Repository YAML files:</strong> Ready-to-use NetworkPolicy manifests are available in <code>k8s/labs/security/</code>:
+                <ul style="margin:6px 0 0 1.2rem;font-size:0.88rem;">
+                    <li><code>deny-all-ingress.yaml</code> — Deny all ingress to pods labeled <code>app: k8slearning</code></li>
+                    <li><code>allow-ingress.yaml</code> — Allow ingress only from pods with matching <code>app: k8slearning</code> label</li>
+                    <li><code>deny-from-other-namespaces.yaml</code> — Deny cross-namespace ingress in the <code>prod</code> namespace</li>
+                </ul>
             </div>
-        </div>
-
-        <!-- Visual Diagram -->
-        <div class="section">
-            <div class="section-title">🎨 Traffic Flow Visualization</div>
-            <div class="diagram-container">
-                <div class="diagram">
-                    <h3>Before NetworkPolicy</h3>
-                    <div class="namespace">
-                        <div class="ns-title">Namespace: default</div>
-                        <div class="pod">🟢 pod1 (nginx)</div>
-                    </div>
-                    <div class="arrow">⬇️ Traffic Flows Freely</div>
-                    <div class="namespace">
-                        <div class="ns-title">Namespace: test</div>
-                        <div class="pod">🟢 pod2 (nginx)</div>
-                    </div>
-                </div>
-
-                <div class="diagram">
-                    <h3>After NetworkPolicy Applied</h3>
-                    <div class="namespace">
-                        <div class="ns-title">Namespace: default</div>
-                        <div class="pod protected">🛡️ pod1 (protected)</div>
-                    </div>
-                    <div class="arrow blocked">❌ Traffic Blocked</div>
-                    <div class="namespace">
-                        <div class="ns-title">Namespace: test</div>
-                        <div class="pod">🟢 pod2 (nginx)</div>
+            <p>NetworkPolicies are Kubernetes resources that express <strong>Layer 3 / Layer 4</strong> rules (IP, ports, protocols) for which traffic may reach your Pods. Think of them as a distributed firewall: the CNI plugin enforces the rules on the data plane.</p>
+            <h3>Default cluster behavior</h3>
+            <p>If <strong>no</strong> NetworkPolicy selects a Pod, <span class="ok">all traffic is allowed</span> in both directions. The cluster is “open” until you opt in to restrictions.</p>
+            <h3>Implicit deny when a Pod is selected</h3>
+            <p>As soon as <strong>any</strong> NetworkPolicy’s <code>podSelector</code> matches a Pod, that Pod is now governed by NetworkPolicy semantics for the directions listed in <code>policyTypes</code>. Traffic that does not match an explicit allow rule is <span class="block">dropped</span> for those directions.</p>
+            <div class="callout"><strong>Key idea:</strong> Policies are <em>allow lists</em>. Unlisted flows are denied once the Pod participates in policy evaluation for ingress and/or egress.</div>
+            <h3>Three selector dimensions</h3>
+            <ul>
+                <li><code>podSelector</code> — Pods in the <em>same namespace</em> as the policy, matched by labels.</li>
+                <li><code>namespaceSelector</code> — Namespaces matched by labels; often combined with <code>podSelector</code> for Pods in those namespaces.</li>
+                <li><code>ipBlock</code> — CIDR ranges (cluster/external IPs), with optional <code>except</code> subnets.</li>
+            </ul>
+            <h3>Ingress vs egress</h3>
+            <ul>
+                <li><strong>Ingress</strong> — Who may send traffic <em>to</em> the selected Pods (incoming).</li>
+                <li><strong>Egress</strong> — Where selected Pods may send traffic <em>to</em> (outgoing).</li>
+            </ul>
+            <h3>CNI support</h3>
+            <p>NetworkPolicy requires a CNI that implements it. Examples: <strong>Calico, Cilium, Weave Net</strong> (and many managed CNIs). <strong>Flannel</strong> alone does <span class="block">not</span> enforce NetworkPolicy unless paired with another controller (for example Calico for policy). Always verify your platform’s docs.</p>
+            <h3>Before and after (visual)</h3>
+            <div class="diagram-row">
+                <div class="diagram-card">
+                    <h4>Before any policy</h4>
+                    <div class="svg-wrap">
+                        <svg viewBox="0 0 320 140" width="100%" height="140" aria-label="All traffic allowed between pods">
+                            <rect x="10" y="20" width="70" height="36" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+                            <text x="45" y="43" text-anchor="middle" font-size="11" fill="#14532d">Pod A</text>
+                            <rect x="125" y="20" width="70" height="36" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+                            <text x="160" y="43" text-anchor="middle" font-size="11" fill="#14532d">Pod B</text>
+                            <rect x="240" y="20" width="70" height="36" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+                            <text x="275" y="43" text-anchor="middle" font-size="11" fill="#14532d">Pod C</text>
+                            <path d="M80 56 L125 56" stroke="#16a34a" stroke-width="3" marker-end="url(#ag)"/>
+                            <path d="M195 56 L240 56" stroke="#16a34a" stroke-width="3" marker-end="url(#ag)"/>
+                            <path d="M160 56 L80 70" stroke="#16a34a" stroke-width="2" marker-end="url(#ag)"/>
+                            <path d="M275 70 L195 56" stroke="#16a34a" stroke-width="2" marker-end="url(#ag)"/>
+                            <text x="10" y="110" font-size="11" fill="#334155">Every pod can reach every pod (typical default).</text>
+                            <defs>
+                                <marker id="ag" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#16a34a"/></marker>
+                            </defs>
+                        </svg>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Key Concepts -->
-        <div class="section">
-            <div class="section-title">🔑 Key Concepts</div>
-            <div class="key-points">
-                <div class="key-point">
-                    <strong>podSelector: {}</strong>
-                    Empty selector matches ALL pods in the namespace where the policy is applied
-                </div>
-                <div class="key-point">
-                    <strong>Namespace Isolation</strong>
-                    Policy blocks ingress from other namespaces while allowing same-namespace traffic
-                </div>
-                <div class="key-point">
-                    <strong>Deny-All Effect</strong>
-                    Applying a NetworkPolicy with ingress rules creates an implicit deny-all for unmatched traffic
-                </div>
-                <div class="key-point">
-                    <strong>CNI Requirement</strong>
-                    NetworkPolicy requires CNI plugin support (e.g., Calico, Cilium, Weave Net)
+                <div class="diagram-card">
+                    <h4>After policy on Pod B</h4>
+                    <div class="svg-wrap">
+                        <svg viewBox="0 0 320 140" width="100%" height="140" aria-label="Only allowed paths reach Pod B">
+                            <rect x="10" y="20" width="70" height="36" rx="6" fill="#fee2e2" stroke="#e11d48"/>
+                            <text x="45" y="43" text-anchor="middle" font-size="11" fill="#881337">Pod A</text>
+                            <rect x="125" y="20" width="70" height="36" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+                            <text x="160" y="43" text-anchor="middle" font-size="11" fill="#14532d">Pod B</text>
+                            <rect x="240" y="20" width="70" height="36" rx="6" fill="#fee2e2" stroke="#e11d48"/>
+                            <text x="275" y="43" text-anchor="middle" font-size="11" fill="#881337">Pod C</text>
+                            <path d="M80 56 L125 56" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 3"/>
+                            <path d="M195 56 L240 56" stroke="#16a34a" stroke-width="3" marker-end="url(#ag2)"/>
+                            <text x="10" y="105" font-size="11" fill="#334155">Only flows matching your allow rules reach B; others are dropped.</text>
+                            <defs>
+                                <marker id="ag2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#16a34a"/></marker>
+                            </defs>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- YAML Example -->
-        <div class="section">
-            <div class="section-title">📝 NetworkPolicy Example: Namespace Isolation</div>
-            <div class="yaml-section">
-                <h3>deny-from-other-namespaces.yaml</h3>
-                <pre><span class="key">apiVersion:</span> <span class="string">networking.k8s.io/v1</span>
-<span class="key">kind:</span> <span class="string">NetworkPolicy</span>
-<span class="key">metadata:</span>
-  <span class="key">namespace:</span> <span class="string">default</span>              <span class="comment"># Applied to 'default' namespace</span>
-  <span class="key">name:</span> <span class="string">deny-from-other-namespaces</span>
-<span class="key">spec:</span>
-  <span class="key">podSelector:</span>
-    <span class="key">matchLabels:</span> {}                <span class="comment"># {} = ALL pods in namespace</span>
-  <span class="key">ingress:</span>                          <span class="comment"># Define allowed ingress rules</span>
-  - <span class="key">from:</span>
-      - <span class="key">podSelector:</span> {}            <span class="comment"># Allow from ALL pods in same namespace</span>
-                                     <span class="comment"># (no namespaceSelector = same namespace)</span></pre>
+        <!-- Tab 2 -->
+        <div class="panel" id="panel-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+            <h2>NetworkPolicy YAML anatomy</h2>
+            <p>Below is a annotated skeleton. Your cluster must serve <code>networking.k8s.io/v1</code> NetworkPolicy.</p>
+            <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example
+  namespace: default
+spec:
+  podSelector:        # Which pods this policy applies to
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:            # Who can talk TO these pods
+    - from:
+      - podSelector: {}
+      - namespaceSelector: {}
+      - ipBlock: {}
+      ports:
+      - protocol: TCP
+        port: 80
+  egress:             # Where these pods can talk TO
+    - to:
+      - podSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443</code></pre>
+            <h3>AND vs OR — the #1 confusion</h3>
+            <div class="callout">
+                <strong>Between <code>from</code> (or <code>to</code>) list items:</strong> <span class="ok">OR</span> — traffic may match <em>any</em> peer.<br>
+                <strong>Inside one peer</strong> (same list element): if you specify both <code>podSelector</code> and <code>namespaceSelector</code>, they are <span class="block">AND</span>ed — the source must satisfy <em>both</em>.
             </div>
+            <p><strong>Example A — OR:</strong> two separate <code>from</code> entries allow either Pods with <code>role=monitor</code> <em>or</em> any Pod in namespaces labeled <code>env=staging</code>.</p>
+            <pre><code>ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          role: monitor
+    - namespaceSelector:
+        matchLabels:
+          env: staging</code></pre>
+            <p><strong>Example B — AND:</strong> one <code>from</code> entry with both selectors allows only Pods labeled <code>app=worker</code> that live in namespaces labeled <code>team=data</code>.</p>
+            <pre><code>ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: worker
+      namespaceSelector:
+        matchLabels:
+          team: data</code></pre>
+            <p><code>ipBlock</code> in the same peer is also <strong>AND</strong>ed with any pod/namespace selectors in that peer (unusual but valid).</p>
         </div>
 
-        <!-- Policy Rules Explanation -->
-        <div class="section">
-            <div class="section-title">⚙️ How the Policy Works</div>
-            <div class="behavior-grid">
-                <div class="behavior-card">
-                    <h3><span class="icon">✅</span>Allowed Traffic</h3>
-                    <ul>
-                        <li><strong>Same namespace:</strong> pod1 → pod1 (default)</li>
-                        <li>Traffic matches <code>podSelector: {}</code></li>
-                        <li>No namespaceSelector = implicit same-namespace</li>
-                    </ul>
+        <!-- Tab 3 -->
+        <div class="panel" id="panel-3" role="tabpanel" aria-labelledby="tab-3" hidden>
+            <h2>Interactive scenarios</h2>
+            <p>Click a scenario to reveal YAML, explanation, and a before/after diagram. Adapt namespaces and labels to your cluster.</p>
+
+            <div class="scenario" data-scenario>
+                <button type="button" class="scenario-toggle" aria-expanded="false"><span>1. Default deny all ingress (namespace)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
+                <div class="scenario-body">
+                    <p>Applies to all Pods in the namespace (empty <code>podSelector</code>). Declaring <code>Ingress</code> with no rules denies all inbound to those Pods.</p>
+                    <p style="font-size:0.85rem;color:var(--slate-500);">📂 See also: <code>k8s/labs/security/deny-all-ingress.yaml</code> (targets pods labeled <code>app: k8slearning</code> specifically)</p>
+                    <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: apps
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]</code></pre>
+                    <div class="mini-grid">
+                        <div class="diagram-card"><h4>Before</h4><svg viewBox="0 0 260 90" width="100%" height="90"><rect x="10" y="25" width="60" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="40" y="45" text-anchor="middle" font-size="10">Client</text><rect x="160" y="25" width="80" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="200" y="45" text-anchor="middle" font-size="10">Pods</text><path d="M70 41 H160" stroke="#16a34a" stroke-width="3" marker-end="url(#g1)"/><defs><marker id="g1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#16a34a"/></marker></defs></svg></div>
+                        <div class="diagram-card"><h4>After</h4><svg viewBox="0 0 260 90" width="100%" height="90"><rect x="10" y="25" width="60" height="32" rx="5" fill="#fee2e2" stroke="#e11d48"/><text x="40" y="45" text-anchor="middle" font-size="10">Client</text><rect x="160" y="25" width="80" height="32" rx="5" fill="#e2e8f0" stroke="#64748b"/><text x="200" y="45" text-anchor="middle" font-size="10">Pods</text><path d="M70 41 H160" stroke="#e11d48" stroke-width="3" stroke-dasharray="5 4"/><text x="95" y="72" font-size="10" fill="#e11d48">ingress denied</text></svg></div>
+                    </div>
                 </div>
-                <div class="behavior-card">
-                    <h3><span class="icon">❌</span>Blocked Traffic</h3>
-                    <ul>
-                        <li><strong>Cross-namespace:</strong> pod2 (test) → pod1 (default)</li>
-                        <li>Does not match ingress rules</li>
-                        <li>Implicit deny for unmatched traffic</li>
-                    </ul>
+            </div>
+
+            <div class="scenario" data-scenario>
+                <button type="button" class="scenario-toggle" aria-expanded="false"><span>2. Default deny all egress</span><span class="chev" aria-hidden="true">&#8250;</span></button>
+                <div class="scenario-body">
+                    <p>Selected Pods may not initiate connections anywhere until you add egress rules (remember DNS — see Pod-level tab).</p>
+                    <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: apps
+spec:
+  podSelector: {}
+  policyTypes: [Egress]</code></pre>
+                    <div class="mini-grid">
+                        <div class="diagram-card"><h4>Before</h4><svg viewBox="0 0 260 90" width="100%" height="90"><rect x="30" y="25" width="80" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="70" y="45" text-anchor="middle" font-size="10">Pods</text><rect x="170" y="25" width="60" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="200" y="45" text-anchor="middle" font-size="10">World</text><path d="M110 41 H170" stroke="#16a34a" stroke-width="3" marker-end="url(#g2)"/><defs><marker id="g2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#16a34a"/></marker></defs></svg></div>
+                        <div class="diagram-card"><h4>After</h4><svg viewBox="0 0 260 90" width="100%" height="90"><rect x="30" y="25" width="80" height="32" rx="5" fill="#e2e8f0" stroke="#64748b"/><text x="70" y="45" text-anchor="middle" font-size="10">Pods</text><rect x="170" y="25" width="60" height="32" rx="5" fill="#fee2e2" stroke="#e11d48"/><text x="200" y="45" text-anchor="middle" font-size="10">World</text><path d="M110 41 H170" stroke="#e11d48" stroke-width="3" stroke-dasharray="5 4"/><text x="85" y="72" font-size="10" fill="#e11d48">egress denied</text></svg></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scenario" data-scenario>
+                <button type="button" class="scenario-toggle" aria-expanded="false"><span>3. Allow from specific namespace (frontend → backend)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
+                <div class="scenario-body">
+                    <p>Backend Pods only accept ingress from Pods in namespaces labeled <code>env=frontend</code>. Label the frontend namespace accordingly.</p>
+                    <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-from-frontend-ns
+  namespace: backend
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              env: frontend
+      ports:
+        - protocol: TCP
+          port: 8080</code></pre>
+                    <div class="mini-grid">
+                        <div class="diagram-card"><h4>Before</h4><svg viewBox="0 0 280 100" width="100%" height="100"><rect x="5" y="15" width="75" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="42" y="34" text-anchor="middle" font-size="9">ns: other</text><rect x="100" y="15" width="75" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="137" y="34" text-anchor="middle" font-size="9">ns: frontend</text><rect x="185" y="55" width="90" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="230" y="74" text-anchor="middle" font-size="9">backend</text><path d="M80 30 L185 60" stroke="#16a34a" stroke-width="2"/><path d="M175 30 L200 55" stroke="#16a34a" stroke-width="2"/></svg></div>
+                        <div class="diagram-card"><h4>After</h4><svg viewBox="0 0 280 100" width="100%" height="100"><rect x="5" y="15" width="75" height="30" rx="5" fill="#fee2e2" stroke="#e11d48"/><text x="42" y="34" text-anchor="middle" font-size="9">ns: other</text><rect x="100" y="15" width="75" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="137" y="34" text-anchor="middle" font-size="9">ns: frontend</text><rect x="185" y="55" width="90" height="30" rx="5" fill="#e2e8f0" stroke="#64748b"/><text x="230" y="74" text-anchor="middle" font-size="9">backend</text><path d="M80 30 L185 60" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3"/><path d="M175 30 L200 55" stroke="#16a34a" stroke-width="2"/></svg></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scenario" data-scenario>
+                <button type="button" class="scenario-toggle" aria-expanded="false"><span>4. Allow specific pod-to-pod (gateway → backend)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
+                <div class="scenario-body">
+                    <p>Only Pods labeled <code>role=api-gateway</code> in the same namespace may reach <code>role=backend</code> on TCP 8080.</p>
+                    <p style="font-size:0.85rem;color:var(--slate-500);">&#128194; See also: <code>k8s/labs/security/allow-ingress.yaml</code> — a simpler variant allowing ingress from pods sharing the same <code>app</code> label</p>
+                    <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-from-gateway
+  namespace: apps
+spec:
+  podSelector:
+    matchLabels:
+      role: backend
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8080</code></pre>
+                    <div class="mini-grid">
+                        <div class="diagram-card"><h4>Before</h4><svg viewBox="0 0 260 90" width="100%" height="90"><text x="15" y="28" font-size="10" fill="#334155">random pod</text><text x="140" y="28" font-size="10" fill="#334155">gateway</text><rect x="15" y="38" width="55" height="28" rx="5" fill="#dcfce7" stroke="#16a34a"/><rect x="140" y="38" width="55" height="28" rx="5" fill="#dcfce7" stroke="#16a34a"/><rect x="185" y="38" width="70" height="28" rx="5" fill="#dcfce7" stroke="#16a34a"/><path d="M70 52 H140" stroke="#16a34a" stroke-width="2"/><path d="M195 52 H185" stroke="#16a34a" stroke-width="2"/></svg></div>
+                        <div class="diagram-card"><h4>After</h4><svg viewBox="0 0 260 90" width="100%" height="90"><text x="15" y="28" font-size="10" fill="#334155">random pod</text><text x="140" y="28" font-size="10" fill="#334155">gateway</text><rect x="15" y="38" width="55" height="28" rx="5" fill="#fee2e2" stroke="#e11d48"/><rect x="140" y="38" width="55" height="28" rx="5" fill="#dcfce7" stroke="#16a34a"/><rect x="185" y="38" width="70" height="28" rx="5" fill="#e2e8f0" stroke="#64748b"/><path d="M70 52 H140" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3"/><path d="M195 52 H185" stroke="#16a34a" stroke-width="2"/></svg></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scenario" data-scenario>
+                <button type="button" class="scenario-toggle" aria-expanded="false"><span>5. Limit to one port (TCP 8080 only)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
+                <div class="scenario-body">
+                    <p>Ingress allows TCP 8080 only; other ports on the same Pod are not matched by this rule (implicit deny for ingress to that Pod if this is the only policy).</p>
+                    <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-port-8080
+  namespace: apps
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8080
+      from:
+        - podSelector: {}</code></pre>
+                    <div class="mini-grid">
+                        <div class="diagram-card"><h4>Before</h4><svg viewBox="0 0 260 80" width="100%" height="80"><text x="20" y="22" font-size="10">:8080</text><text x="90" y="22" font-size="10">:9090</text><rect x="150" y="12" width="95" height="50" rx="6" fill="#dcfce7" stroke="#16a34a"/><text x="197" y="40" text-anchor="middle" font-size="10">backend</text><path d="M55 35 H150" stroke="#16a34a" stroke-width="2"/><path d="M125 35 H150" stroke="#16a34a" stroke-width="2"/></svg></div>
+                        <div class="diagram-card"><h4>After</h4><svg viewBox="0 0 260 80" width="100%" height="80"><text x="20" y="22" font-size="10">:8080</text><text x="90" y="22" font-size="10">:9090</text><rect x="150" y="12" width="95" height="50" rx="6" fill="#e2e8f0" stroke="#64748b"/><text x="197" y="40" text-anchor="middle" font-size="10">backend</text><path d="M55 35 H150" stroke="#16a34a" stroke-width="2"/><path d="M125 35 H150" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3"/></svg></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scenario" data-scenario>
+                <button type="button" class="scenario-toggle" aria-expanded="false"><span>6. Allow external CIDR (corporate 10.0.0.0/8)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
+                <div class="scenario-body">
+                    <p>Use <code>ipBlock</code> for non-Pod sources. Tighten with <code>except</code> if you need holes inside a CIDR.</p>
+                    <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-from-corporate
+  namespace: apps
+spec:
+  podSelector:
+    matchLabels:
+      app: public-api
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443</code></pre>
+                    <div class="mini-grid">
+                        <div class="diagram-card"><h4>Before</h4><svg viewBox="0 0 280 90" width="100%" height="90"><rect x="10" y="25" width="70" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="45" y="44" text-anchor="middle" font-size="9">Internet</text><rect x="110" y="25" width="70" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="145" y="44" text-anchor="middle" font-size="9">10.0.0.0/8</text><rect x="200" y="25" width="70" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="235" y="44" text-anchor="middle" font-size="9">API</text><path d="M80 41 H110" stroke="#16a34a" stroke-width="2"/><path d="M180 41 H200" stroke="#16a34a" stroke-width="2"/></svg></div>
+                        <div class="diagram-card"><h4>After</h4><svg viewBox="0 0 280 90" width="100%" height="90"><rect x="10" y="25" width="70" height="32" rx="5" fill="#fee2e2" stroke="#e11d48"/><text x="45" y="44" text-anchor="middle" font-size="9">Internet</text><rect x="110" y="25" width="70" height="32" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="145" y="44" text-anchor="middle" font-size="9">10.0.0.0/8</text><rect x="200" y="25" width="70" height="32" rx="5" fill="#e2e8f0" stroke="#64748b"/><text x="235" y="44" text-anchor="middle" font-size="9">API</text><path d="M80 41 H110" stroke="#e11d48" stroke-width="2" stroke-dasharray="4 3"/><path d="M180 41 H200" stroke="#16a34a" stroke-width="2"/></svg></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scenario" data-scenario>
+                <button type="button" class="scenario-toggle" aria-expanded="false"><span>7. Combined ingress + egress (frontend in, DB only out)</span><span class="chev" aria-hidden="true">&#8250;</span></button>
+                <div class="scenario-body">
+                    <p>Backend accepts traffic from the <code>frontend</code> namespace and may egress only to Pods labeled <code>app=database</code> on TCP 5432. Add a separate DNS egress policy in real clusters.</p>
+                    <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-combined
+  namespace: apps
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: frontend
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: database
+      ports:
+        - protocol: TCP
+          port: 5432</code></pre>
+                    <div class="mini-grid">
+                        <div class="diagram-card"><h4>Ingress</h4><svg viewBox="0 0 260 85" width="100%" height="85"><rect x="10" y="28" width="75" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="47" y="47" text-anchor="middle" font-size="9">frontend</text><rect x="170" y="28" width="80" height="30" rx="5" fill="#e2e8f0" stroke="#64748b"/><text x="210" y="47" text-anchor="middle" font-size="9">backend</text><path d="M85 43 H170" stroke="#16a34a" stroke-width="2" marker-end="url(#gm)"/><defs><marker id="gm" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#16a34a"/></marker></defs></svg></div>
+                        <div class="diagram-card"><h4>Egress</h4><svg viewBox="0 0 260 85" width="100%" height="85"><rect x="10" y="28" width="80" height="30" rx="5" fill="#e2e8f0" stroke="#64748b"/><text x="50" y="47" text-anchor="middle" font-size="9">backend</text><rect x="170" y="28" width="80" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="210" y="47" text-anchor="middle" font-size="9">database</text><path d="M90 43 H170" stroke="#16a34a" stroke-width="2" marker-end="url(#gm2)"/><defs><marker id="gm2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#16a34a"/></marker></defs></svg></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Advanced Selectors -->
-        <div class="section">
-            <div class="section-title">🎯 Advanced Selector Patterns</div>
-            <div class="yaml-section">
-                <h3>Combined Pod + Namespace Selector</h3>
-                <pre><span class="key">ingress:</span>
-- <span class="key">from:</span>
-  - <span class="key">namespaceSelector:</span>
-      <span class="key">matchLabels:</span>
-        <span class="key">environment:</span> <span class="string">production</span>   <span class="comment"># Allow from 'production' namespaces</span>
-    <span class="key">podSelector:</span>
-      <span class="key">matchLabels:</span>
-        <span class="key">role:</span> <span class="string">frontend</span>            <span class="comment"># AND pods labeled 'role=frontend'</span></pre>
-            </div>
+        <!-- Tab 4 -->
+        <div class="panel" id="panel-4" role="tabpanel" aria-labelledby="tab-4" hidden>
+            <h2>Namespace isolation patterns</h2>
+            <p>Teams often mirror environments as namespaces (<code>dev</code>, <code>staging</code>, <code>prod</code>). The usual pattern is <strong>default deny</strong> plus <strong>targeted allows</strong>.</p>
+            <h3>Label namespaces for selectors</h3>
+            <pre><code>kubectl label namespace prod env=production
+kubectl label namespace staging env=staging
+kubectl label namespace dev env=development</code></pre>
+            <h3>Allow only within the same namespace</h3>
+            <p>After default-deny ingress, an empty <code>podSelector</code> under <code>from</code> means “Pods in the policy’s namespace” — i.e. same-namespace only.</p>
+            <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: same-namespace-only
+  namespace: prod
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: {}</code></pre>
+            <p style="font-size:0.85rem;color:var(--slate-500);">&#128194; This is exactly what <code>k8s/labs/security/deny-from-other-namespaces.yaml</code> does for the <code>prod</code> namespace. Apply it directly: <code>kubectl apply -f k8s/labs/security/deny-from-other-namespaces.yaml</code></p>
+            <h3>Allow a set of environments by namespace label</h3>
+            <p>To allow any namespace labeled <code>env=production</code> (not only the local namespace), use <code>namespaceSelector</code>:</p>
+            <pre><code>ingress:
+  - from:
+      - namespaceSelector:
+          matchLabels:
+            env: production</code></pre>
+            <h3>Cross-namespace for platform services</h3>
+            <p>Allow monitoring agents in <code>observability</code> to scrape Pods in <code>prod</code>:</p>
+            <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: prod
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - protocol: TCP
+          port: 9090</code></pre>
+            <p>For logging/egress from app namespaces to a central collector, mirror the idea with <code>egress</code> and <code>namespaceSelector</code> or <code>ipBlock</code> for the collector VIP.</p>
         </div>
 
-    </div>
+        <!-- Tab 5 -->
+        <div class="panel" id="panel-5" role="tabpanel" aria-labelledby="tab-5" hidden>
+            <h2>Pod-level traffic control</h2>
+            <p>Inside one namespace you can enforce tiers: UI → API → database, or restrict sidecars to only talk to their primary container’s ports (combine with Service meshes for L7).</p>
+            <h3>Three-tier example (conceptual labels)</h3>
+            <ul>
+                <li><code>tier=frontend</code> may egress only to <code>tier=backend</code> on app port.</li>
+                <li><code>tier=backend</code> accepts from frontend; egress only to <code>tier=database</code> on 5432.</li>
+                <li><code>tier=database</code> accepts from backend only.</li>
+            </ul>
+            <h3 class="ok">DNS egress (critical)</h3>
+            <p>Deny-all egress breaks name resolution unless you allow traffic to kube-dns/CoreDNS (typically UDP and TCP 53 to the cluster DNS Service cluster IP or to labeled DNS Pods — implementation varies by CNI; verify endpoints).</p>
+            <pre><code>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: apps
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53</code></pre>
+            <p>Adjust labels/namespace to match your cluster’s DNS deployment.</p>
+            <h3>Combined tier + DNS (sketch)</h3>
+            <p>Apply default deny, then stack policies: one for DNS, one per tier. Example backend ingress/egress fragment:</p>
+            <pre><code># Backend: ingress from frontend tier only
+ingress:
+  - from:
+      - podSelector:
+          matchLabels:
+            tier: frontend
+    ports:
+      - protocol: TCP
+        port: 8080
+# Backend: egress to database tier only
+egress:
+  - to:
+      - podSelector:
+          matchLabels:
+            tier: database
+    ports:
+      - protocol: TCP
+        port: 5432</code></pre>
+        </div>
+
+        <!-- Tab 6 -->
+        <div class="panel" id="panel-6" role="tabpanel" aria-labelledby="tab-6" hidden>
+            <h2>Ingress and egress deep dive</h2>
+            <h3>Ingress peers</h3>
+            <ul>
+                <li><code>from.podSelector</code> — Pods in the <strong>policy namespace</strong>.</li>
+                <li><code>from.namespaceSelector</code> — Any Pod in matching namespaces (use with podSelector to narrow).</li>
+                <li><code>from.ipBlock</code> — Source CIDR outside or inside the cluster.</li>
+                <li><code>ports</code> — Optional per rule; restricts protocols/ports for that ingress stanza.</li>
+            </ul>
+            <h3>Egress peers</h3>
+            <ul>
+                <li><code>to.podSelector</code>, <code>to.namespaceSelector</code>, <code>to.ipBlock</code> — same semantics as ingress but for destinations.</li>
+                <li><code>ports</code> — Allowed destination ports for that egress stanza.</li>
+            </ul>
+            <h3>Port ranges (<code>endPort</code>, Kubernetes 1.25+)</h3>
+            <pre><code>ports:
+  - protocol: TCP
+    port: 8000
+    endPort: 8080</code></pre>
+            <h3>Protocols</h3>
+            <p><code>TCP</code>, <code>UDP</code>, and <code>SCTP</code> are supported where the CNI and kernel allow. If unsure, test with your platform.</p>
+            <h3>Named ports</h3>
+            <p>You may use the port <em>name</em> from a container’s <code>ports</code> list instead of a numeric port; the API resolves it to the numeric port on each Pod.</p>
+            <h3>Ingress vs egress (comparison)</h3>
+            <table>
+                <thead><tr><th>Aspect</th><th>Ingress</th><th>Egress</th></tr></thead>
+                <tbody>
+                    <tr><td>Direction</td><td>Into selected Pods</td><td>Out of selected Pods</td></tr>
+                    <tr><td>Peer field</td><td><code>from</code></td><td><code>to</code></td></tr>
+                    <tr><td>Selectors</td><td>podSelector, namespaceSelector, ipBlock</td><td>Same set under <code>to</code></td></tr>
+                    <tr><td>Ports</td><td>Destination ports on <em>your</em> Pods</td><td>Destination ports on remote peers</td></tr>
+                    <tr><td>PolicyTypes</td><td>Include <code>Ingress</code> to evaluate</td><td>Include <code>Egress</code> to evaluate</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tab 7 -->
+        <div class="panel" id="panel-7" role="tabpanel" aria-labelledby="tab-7" hidden>
+            <h2>Commands and verification</h2>
+            <pre><code># List policies in all namespaces
+kubectl get networkpolicy -A
+
+# Describe one policy (events + rules summary)
+kubectl describe networkpolicy &lt;name&gt; -n &lt;namespace&gt;
+
+# Full YAML
+kubectl get networkpolicy &lt;name&gt; -n &lt;namespace&gt; -o yaml</code></pre>
+            <h3>Test connectivity from a Pod</h3>
+            <pre><code>kubectl exec -it &lt;pod&gt; -n &lt;ns&gt; -- wget -qO- --timeout=2 http://&lt;target&gt;:80</code></pre>
+            <p>Replace <code>target</code> with a Service DNS name or Pod IP. Use <code>nc</code> or <code>curl</code> if your image includes them.</p>
+            <h3>DNS test</h3>
+            <pre><code>kubectl exec -it &lt;pod&gt; -n &lt;ns&gt; -- nslookup kubernetes.default</code></pre>
+            <h3>Label namespaces</h3>
+            <pre><code>kubectl label namespace &lt;ns&gt; &lt;key&gt;=&lt;value&gt;</code></pre>
+            <h3>Quick troubleshooting</h3>
+            <ul>
+                <li>Confirm your CNI enforces NetworkPolicy.</li>
+                <li>Check <strong>which policies select the Pod</strong> and the effective <code>policyTypes</code>.</li>
+                <li>Verify <strong>labels</strong> on Pods and namespaces match selectors.</li>
+                <li>Remember <strong>OR across <code>from</code>/<code>to</code> peers</strong>, <strong>AND inside a peer</strong>.</li>
+                <li>If egress is denied, check <strong>DNS</strong> and control-plane paths your app needs.</li>
+            </ul>
+        </div>
+
+        <!-- Tab 8 -->
+        <div class="panel" id="panel-8" role="tabpanel" aria-labelledby="tab-8" hidden>
+            <h2>Best practices</h2>
+            <ul>
+                <li>Start from <strong>default deny</strong> per namespace or workload class, then add explicit allows.</li>
+                <li>Always permit <strong>DNS egress</strong> (UDP/TCP 53) to cluster DNS when using egress restrictions.</li>
+                <li><strong>Label consistently</strong> — namespaces, apps, tiers, and owners.</li>
+                <li>Roll out in <strong>non-production</strong> first; watch for dropped health checks and metrics.</li>
+                <li>After each change, <strong>exec into a real Pod</strong> and probe representative paths.</li>
+                <li><strong>Document intent</strong> beside the YAML (runbooks, ADRs, or comments in Git).</li>
+            </ul>
+            <h3>Common mistakes</h3>
+            <table>
+                <thead><tr><th>Mistake</th><th>Symptom</th><th>Fix</th></tr></thead>
+                <tbody>
+                    <tr><td>Deny egress without DNS allow</td><td>Intermittent <code>lookup failed</code>, CrashLoop</td><td>Add DNS NetworkPolicy peer to kube-dns</td></tr>
+                    <tr><td>AND/OR confusion in <code>from</code></td><td>Unexpected allow/deny</td><td>Split peers for OR; combine selectors in one peer for AND</td></tr>
+                    <tr><td>Wrong namespace labels</td><td>Cross-namespace traffic blocked</td><td><code>kubectl get ns --show-labels</code>; align selectors</td></tr>
+                    <tr><td>CNI without policy support</td><td>Policies exist but nothing changes</td><td>Install supported CNI or enable policy feature</td></tr>
+                    <tr><td>Forgetting <code>policyTypes</code></td><td>Egress unrestricted while tuning ingress (or vice versa)</td><td>Set both when you want both evaluated</td></tr>
+                </tbody>
+            </table>
+            <h3>NetworkPolicy vs mesh vs Cilium</h3>
+            <table>
+                <thead><tr><th>Mechanism</th><th>Layer</th><th>Notes</th></tr></thead>
+                <tbody>
+                    <tr><td>Kubernetes NetworkPolicy</td><td>L3/L4 in Kubernetes API</td><td>Portable; depends on CNI enforcement</td></tr>
+                    <tr><td>Istio AuthorizationPolicy</td><td>L7 (HTTP/gRPC), identities</td><td>Requires mesh; rich request-level rules</td></tr>
+                    <tr><td>Cilium NetworkPolicy / CNP</td><td>L3/L4/L7 (with features)</td><td>CRDs + eBPF; extra policy types beyond baseline</td></tr>
+                </tbody>
+            </table>
+        </div>
+</div>
 
     <script>
-        function toggleMatrix() {
-            const matrix = document.getElementById('trafficMatrix');
-            matrix.classList.toggle('hidden');
-        }
+        (function () {
+            var tabs = document.querySelectorAll('.tab-btn[role="tab"]');
+            var panels = document.querySelectorAll('.panel[role="tabpanel"]');
+
+            function showTab(id) {
+                for (var i = 0; i < tabs.length; i++) {
+                    var on = tabs[i].getAttribute('data-tab') === id;
+                    tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+                    tabs[i].tabIndex = on ? 0 : -1;
+                }
+                for (var j = 0; j < panels.length; j++) {
+                    var p = panels[j];
+                    if (p.id === 'panel-' + id) {
+                        p.classList.add('active');
+                        p.hidden = false;
+                    } else {
+                        p.classList.remove('active');
+                        p.hidden = true;
+                    }
+                }
+            }
+
+            for (var t = 0; t < tabs.length; t++) {
+                tabs[t].addEventListener('click', function () {
+                    var tid = this.getAttribute('data-tab');
+                    if (tid) showTab(tid);
+                });
+                tabs[t].addEventListener('keydown', function (e) {
+                    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+                    e.preventDefault();
+                    var idx = -1;
+                    for (var k = 0; k < tabs.length; k++) {
+                        if (tabs[k] === this) { idx = k; break; }
+                    }
+                    if (idx < 0) return;
+                    var next = e.key === 'ArrowRight' ? idx + 1 : idx - 1;
+                    if (next < 0) next = tabs.length - 1;
+                    if (next >= tabs.length) next = 0;
+                    var nid = tabs[next].getAttribute('data-tab');
+                    if (nid) showTab(nid);
+                    tabs[next].focus();
+                });
+            }
+
+            document.querySelectorAll('[data-scenario]').forEach(function (wrap) {
+                var btn = wrap.querySelector('.scenario-toggle');
+                var body = wrap.querySelector('.scenario-body');
+                if (!btn || !body) return;
+                btn.addEventListener('click', function () {
+                    var open = !body.classList.contains('open');
+                    body.classList.toggle('open', open);
+                    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                });
+            });
+        })();
     </script>
 </body>
 </html>

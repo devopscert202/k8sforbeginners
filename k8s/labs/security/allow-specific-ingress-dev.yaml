@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  namespace: dev
+  name: allow-specific-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: web-dev
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          access: allowed

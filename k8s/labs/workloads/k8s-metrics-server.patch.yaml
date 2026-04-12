@@ -1,3 +1,10 @@
+# Strategic merge patch for metrics-server Deployment
+# Adds --kubelet-insecure-tls flag (required for self-signed kubelet certs)
+#
+# Usage:
+#   kubectl patch deployment metrics-server -n kube-system --patch-file k8s-metrics-server.patch.yaml
+#
+# This is NOT a standalone manifest -- it patches an existing metrics-server Deployment.
 spec:
   template:
     spec:

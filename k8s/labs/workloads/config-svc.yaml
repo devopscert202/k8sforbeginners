@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: env-var-configmap
-    image: nginx:1.7.9
+    image: nginx:1.25-alpine
     env:
     - name: testenv
       valueFrom:

@@ -12,59 +12,56 @@
       --ink: #112033;
       --muted: #5d6c80;
       --line: #d9e4ee;
+      --kube-blue: #326CE5;
+      --kube-blue-deep: #1d4ed8;
+      --kube-sky: #dbeafe;
       --navy: #0f172a;
       --teal: #0f766e;
       --sky: #0284c7;
-      --blue: #1d4ed8;
+      --blue: #2563eb;
       --green: #15803d;
       --amber: #b45309;
       --rose: #be123c;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
     }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(2,132,199,.12), transparent 24%),
-        radial-gradient(circle at top right, rgba(21,128,61,.10), transparent 22%),
-        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
-      color: var(--ink);
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--slate-900);
       line-height: 1.58;
-      padding: 24px;
+      padding: 20px;
     }
-    .page { max-width: 1420px; margin: 0 auto; }
+    .page { max-width: 1380px; margin: 0 auto; }
     .hero {
-      background: linear-gradient(135deg, #0f172a 0%, #0f766e 42%, #0284c7 100%);
-      color: white;
-      border-radius: 28px;
-      padding: 32px;
-      box-shadow: 0 24px 64px rgba(15,23,42,.18);
-      margin-bottom: 24px;
-      overflow: hidden;
-      position: relative;
-    }
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: auto -60px -60px auto;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,.18), rgba(255,255,255,0));
+            position: relative;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      margin-bottom: 26px;
+      border: 1px solid rgba(50,108,229,0.1);
     }
     .eyebrow {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       padding: 6px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,.15);
-      font-size: .78rem;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 14px;
+      background: var(--kube-sky);
+      color: var(--kube-blue-deep);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
     }
-    h1 { font-size: 2.45rem; line-height: 1.08; margin-bottom: 12px; max-width: 860px; }
-    .hero p { color: rgba(255,255,255,.9); max-width: 980px; }
+    h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.08; margin-bottom: 12px; max-width: 860px; margin-left: auto; margin-right: auto; color: var(--kube-blue); }
+    .hero p { color: var(--muted); max-width: 980px; margin-left: auto; margin-right: auto; }
     .hero-grid, .stats, .grid-3, .grid-2, .timeline, .command-grid { display: grid; gap: 16px; }
-    .hero-grid { grid-template-columns: 1.15fr .95fr; margin-top: 24px; }
+    .hero-grid { grid-template-columns: 1.15fr .95fr; margin-top: 24px; margin-bottom: 24px; }
     .glass, .panel, .tile, .step, .command, .warning {
       background: var(--card);
       border: 1px solid var(--line);
@@ -72,11 +69,8 @@
       box-shadow: 0 12px 28px rgba(15,23,42,.07);
     }
     .glass {
-      background: rgba(255,255,255,.12);
-      border-color: rgba(255,255,255,.14);
-      color: white;
       padding: 18px;
-      box-shadow: none;
+      color: var(--ink);
     }
     .glass h2 { font-size: 1.08rem; margin-bottom: 10px; }
     .glass ul, .tile ul, .command ul { padding-left: 18px; }
@@ -135,7 +129,10 @@
       color: #dbeafe;
       border-radius: 16px;
       padding: 14px;
-      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      overflow-x: hidden;
       font-size: .85rem;
       line-height: 1.55;
       margin-top: 12px;
@@ -166,11 +163,13 @@
     }
     .warning h3, .warning p { color: #8b4d08; }
     .footer-note {
-      color: var(--muted);
       text-align: center;
-      font-size: .92rem;
-      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 18px;
     }
+    .footer-note a { color: #326CE5; text-decoration: none; }
+    .footer-note a:hover { text-decoration: underline; }
     @keyframes appear {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
@@ -181,37 +180,38 @@
     @media (max-width: 700px) {
       body { padding: 14px; }
       .hero, .panel { padding: 18px; }
-      h1 { font-size: 1.85rem; }
+      h1 { font-size: 1.6rem; }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <section class="hero">
-      <div class="eyebrow">Kind Learning Guide</div>
-      <h1>Run Kubernetes Locally with Kind for Learning and Fast Experimentation</h1>
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Run Kubernetes Locally with Kind for Learning and Fast Experimentation</h1>
       <p>Kind makes it easy to spin up a real Kubernetes cluster on a laptop by running nodes as containers. This guide focuses on the best beginner path: understand what Kind is, where it fits, how to install it, how to create a multi-node cluster, and why it should be recommended for learning rather than production.</p>
-      <div class="hero-grid">
-        <div class="glass">
-          <h2>Why Kind is a strong learning choice</h2>
-          <ul>
-            <li>Cluster creation is quick, so practice loops stay short.</li>
-            <li>You can recreate fresh clusters without rebuilding VMs.</li>
-            <li>It supports single-node and multi-node learning scenarios.</li>
-            <li>It fits well with app testing, YAML validation, and CI labs.</li>
-          </ul>
-        </div>
-        <div class="glass">
-          <h2>Recommendation</h2>
-          <ul>
-            <li>Best for local development, labs, demos, and experimentation.</li>
-            <li>Helpful for testing images before pushing to a registry.</li>
-            <li>Good for learning cluster behavior on one machine.</li>
-            <li>Not a production platform recommendation.</li>
-          </ul>
-        </div>
-      </div>
     </section>
+
+    <div class="hero-grid">
+      <div class="glass">
+        <h2>Why Kind is a strong learning choice</h2>
+        <ul>
+          <li>Cluster creation is quick, so practice loops stay short.</li>
+          <li>You can recreate fresh clusters without rebuilding VMs.</li>
+          <li>It supports single-node and multi-node learning scenarios.</li>
+          <li>It fits well with app testing, YAML validation, and CI labs.</li>
+        </ul>
+      </div>
+      <div class="glass">
+        <h2>Recommendation</h2>
+        <ul>
+          <li>Best for local development, labs, demos, and experimentation.</li>
+          <li>Helpful for testing images before pushing to a registry.</li>
+          <li>Good for learning cluster behavior on one machine.</li>
+          <li>Not a production platform recommendation.</li>
+        </ul>
+      </div>
+    </div>
 
     <section class="stats">
       <div class="stat blue"><div class="stat-label">Primary Goal</div><div class="stat-value">Learning</div><div>Kind is ideal when the main objective is understanding Kubernetes safely and quickly.</div></div>
@@ -336,9 +336,7 @@ nodes:
         <div class="tile"><h3>The environment is disposable</h3><p>You can delete and recreate the cluster without complicated teardown work.</p></div>
       </div>
     </section>
-
-    <div class="footer-note">Self-contained HTML for offline viewing, demos, and quick repository walkthroughs.</div>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

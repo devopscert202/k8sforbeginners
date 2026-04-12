@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-default-deny-egress
+  namespace: lab52-ex4
+spec:
+  podSelector:
+    matchLabels:
+      role: frontend
+  policyTypes:
+    - Egress

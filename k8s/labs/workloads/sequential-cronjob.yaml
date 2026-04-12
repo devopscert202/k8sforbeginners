@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sequential-job
+spec:
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: long-task
+            image: busybox:1.36
+            args:
+            - /bin/sh
+            - -c
+            - echo "Starting long task"; sleep 180; echo "Task completed"
+          restartPolicy: OnFailure

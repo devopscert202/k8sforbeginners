@@ -123,15 +123,6 @@ spec:
     - containerPort: 80
 ```
 
-**Commands**:
-
-```bash
-kubectl apply -f pod.yaml
-kubectl apply -f nginx-pod.yaml
-kubectl get pods
-kubectl describe pod nginx-pod
-```
-
 ---
 
 ### Deployment
@@ -164,16 +155,6 @@ spec:
         image: nginx:1.21
         ports:
         - containerPort: 80
-```
-
-**Commands**:
-
-```bash
-kubectl apply -f deployment.yaml
-kubectl get deployments
-kubectl scale deployment/nginx-deployment --replicas=5
-kubectl rollout status deployment/nginx-deployment
-kubectl rollout undo deployment/nginx-deployment
 ```
 
 ---
@@ -281,13 +262,6 @@ spec:
       restartPolicy: OnFailure
 ```
 
-**Commands**:
-
-```bash
-kubectl apply -f job.yaml
-kubectl get jobs
-```
-
 ---
 
 ### CronJob
@@ -347,13 +321,6 @@ spec:
     path: /data/pv-example
 ```
 
-**Commands**:
-
-```bash
-kubectl apply -f pv-example.yaml
-kubectl get pv
-```
-
 ---
 
 ### PersistentVolumeClaim (PVC)
@@ -381,13 +348,6 @@ spec:
       storage: 1Gi
 ```
 
-**Commands**:
-
-```bash
-kubectl apply -f pvc-example.yaml
-kubectl get pvc
-```
-
 ---
 
 ### StorageClass
@@ -409,13 +369,6 @@ metadata:
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: gp2
-```
-
-**Commands**:
-
-```bash
-kubectl apply -f storage-class.yaml
-kubectl get storageclass
 ```
 
 ---
@@ -508,13 +461,6 @@ spec:
           app: backend
 ```
 
-**Commands**:
-
-```bash
-kubectl apply -f network-policy.yaml
-kubectl get networkpolicy
-```
-
 ---
 
 ## Security and Access Control
@@ -561,15 +507,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ```
 
-**Commands**:
-
-```bash
-kubectl apply -f role.yaml
-kubectl apply -f rolebinding.yaml
-kubectl get roles -n dev
-kubectl get rolebindings -n dev
-```
-
 ---
 
 ### ClusterRole & ClusterRoleBinding
@@ -613,15 +550,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ```
 
-**Commands**:
-
-```bash
-kubectl apply -f cluster-role.yaml
-kubectl apply -f cluster-role-binding.yaml
-kubectl get clusterrole
-kubectl get clusterrolebindings
-```
-
 ---
 
 ### ServiceAccount
@@ -658,7 +586,7 @@ metadata:
 
 **Example**:
 
-Place the following YAML on the node's static pod directory (e.g., `/etc/kubernetes/manifests/`):
+The kubelet watches a **static manifest directory** on the node (commonly `/etc/kubernetes/manifests/` on kubeadm-based clusters) and creates Pods from those files without going through the API server’s normal create flow. Illustrative Pod spec:
 
 ```yaml
 apiVersion: v1
@@ -669,12 +597,6 @@ spec:
   containers:
   - name: nginx
     image: nginx:1.21
-```
-
-**Commands**:
-
-```bash
-kubectl get pods --all-namespaces
 ```
 
 ---
@@ -766,7 +688,7 @@ spec:
 
 **Example**:
 
-Create a Pod using a custom scheduler:
+The Pod spec sets **`schedulerName`** to a scheduler other than the default:
 
 ```yaml
 apiVersion: v1
@@ -778,13 +700,6 @@ spec:
   containers:
   - name: nginx
     image: nginx:1.21
-```
-
-**Commands**:
-
-```bash
-kubectl apply -f custom-scheduler-pod.yaml
-kubectl get pods
 ```
 
 ---
@@ -868,3 +783,15 @@ Start with the **Foundational Objects** (Pod, Deployment, Service), then progres
 - Understanding the operator pattern fundamentals
 
 If you're interested in learning about CRDs and extending Kubernetes, consider exploring this topic as an advanced, optional lab after completing Labs 01-42.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 01: Creating pods](../../labmanuals/lab01-basics-creating-pods.md) | Pods as the foundation object and manifest structure. |
+| [Lab 02: Creating services](../../labmanuals/lab02-basics-creating-services.md) | Services, selectors, and exposing workloads. |
+| [Lab 46: YAML manifests](../../labmanuals/lab46-basics-yaml-manifests.md) | Deep dive on authoring and validating YAML for many object kinds. |

@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tuned-probes
+spec:
+  containers:
+  - name: app
+    image: nginx:1.25-alpine
+    ports:
+    - containerPort: 80
+    startupProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 12      # 60s maximum startup time
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 0
+      periodSeconds: 15
+      timeoutSeconds: 2
+      failureThreshold: 2       # Restart after 30s unhealthy
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      timeoutSeconds: 2
+      failureThreshold: 2       # Remove from service after 10s not ready
+      successThreshold: 1       # Add back after 1 success

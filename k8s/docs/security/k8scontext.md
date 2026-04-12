@@ -1,96 +1,48 @@
 # Kubernetes Contexts: Managing Multiple Clusters, Users, and Namespaces
 
 ## Introduction
-When working with Kubernetes, especially in environments involving multiple clusters, namespaces, and user roles, managing access and configurations efficiently is critical. Kubernetes contexts provide a powerful way to manage and switch between configurations seamlessly.
 
-This tutorial explains the concept of Kubernetes contexts, their role in managing clusters, users, and namespaces, and provides practical examples and commands for admins.
+When working with Kubernetes — especially across multiple clusters, namespaces, and user roles — you need a consistent way to tell `kubectl` **which cluster** to connect to, **which credentials** to authenticate with, and **which namespace** to use by default. Kubernetes **contexts** provide exactly that: a named grouping of cluster + user + namespace that you can switch between instantly.
 
 ---
 
 ## Key Concepts
 
-### 1. Kubernetes Configuration (`kubeconfig`)
-The `kubeconfig` file is a YAML file that stores configuration details about:
-- **Clusters**: Represents a specific Kubernetes API server.
-- **Users**: Represents credentials to authenticate with the cluster.
-- **Contexts**: Combines cluster, user, and namespace information for easy switching.
+### Kubeconfig File
 
-#### Default Location
-The default location for the `kubeconfig` file is:
+The `kubeconfig` file is a YAML configuration that stores everything `kubectl` needs to connect to one or more clusters. It has three main sections:
+
+| Section | What it stores | Example |
+|---------|---------------|---------|
+| **clusters** | API server endpoints and CA certificates | `https://dev.k8s.example.com:6443` |
+| **users** | Authentication credentials (certificates, tokens, OIDC) | Client cert for `jane`, token for `ci-bot` |
+| **contexts** | Named combinations of cluster + user + namespace | `dev-context` → dev-cluster + jane + dev namespace |
+
+The file also has a `current-context` field that specifies which context is active.
+
+**Default location**: `~/.kube/config`
+
+You can override it with the `KUBECONFIG` environment variable, or merge multiple files:
+
 ```bash
-~/.kube/config
+export KUBECONFIG=~/.kube/dev-config:~/.kube/prod-config
 ```
 
-You can specify another file using the `KUBECONFIG` environment variable.
+### What Is a Context?
 
----
+A **context** is a named triple:
 
-### 2. Kubernetes Contexts
-A Kubernetes context is a named grouping of:
-- A **cluster**.
-- A **user**.
-- A **namespace**.
-
-Contexts make it easier to switch between multiple Kubernetes environments, such as dev, staging, and production clusters.
-
----
-
-## Why Use Kubernetes Contexts?
-
-1. **Multi-cluster Management**: Seamlessly switch between clusters without modifying the configuration file manually.
-2. **Namespace Isolation**: Target specific namespaces for resource management.
-3. **User Management**: Use different user credentials based on the environment.
-4. **Productivity**: Avoid repetitive configurations and potential mistakes when running commands across different environments.
-
----
-
-## Managing Contexts with `kubectl`
-
-### 1. Viewing Current Context
-To see the current context in use:
-```bash
-kubectl config current-context
+```
+Context = Cluster + User + Namespace
 ```
 
-### 2. Viewing All Contexts
-List all available contexts:
-```bash
-kubectl config get-contexts
-```
+When you run `kubectl config use-context dev-context`, all subsequent `kubectl` commands automatically target that cluster, authenticate as that user, and default to that namespace.
 
-### 3. Switching Contexts
-Switch to a specific context:
-```bash
-kubectl config use-context <context-name>
-```
+### Illustrative Kubeconfig
 
-### 4. Creating a New Context
-Create a context by specifying the cluster, user, and namespace:
-```bash
-kubectl config set-context <context-name> \
-  --cluster=<cluster-name> \
-  --user=<user-name> \
-  --namespace=<namespace>
-```
-
-### 5. Deleting a Context
-Remove a specific context:
-```bash
-kubectl config delete-context <context-name>
-```
-
----
-
-## Example: Managing Contexts
-
-### 1. Setting Up a Kubeconfig File
-Assume you have two clusters:
-- `dev-cluster`
-- `prod-cluster`
-
-Your `~/.kube/config` file might look like this:
 ```yaml
 apiVersion: v1
+kind: Config
 clusters:
 - name: dev-cluster
   cluster:
@@ -102,13 +54,13 @@ contexts:
 - name: dev-context
   context:
     cluster: dev-cluster
-    namespace: development
     user: dev-user
+    namespace: development
 - name: prod-context
   context:
     cluster: prod-cluster
-    namespace: production
     user: prod-user
+    namespace: production
 current-context: dev-context
 users:
 - name: dev-user
@@ -121,123 +73,84 @@ users:
 
 ---
 
-### 2. Switching Between Contexts
-Switch from the dev environment to the prod environment:
-```bash
-kubectl config use-context prod-context
-```
+## Why Contexts Matter
+
+| Use case | How contexts help |
+|----------|-------------------|
+| **Multi-cluster management** | Switch between dev, staging, prod clusters without editing files |
+| **Namespace isolation** | Set a default namespace per context so you don't need `--namespace` every time |
+| **User switching** | Test RBAC permissions by creating a context with a limited user |
+| **CI/CD pipelines** | Each pipeline stage uses a different context (build → deploy-staging → deploy-prod) |
+| **Safety** | Naming contexts clearly (e.g., `PROD-admin`) prevents accidental commands against production |
 
 ---
 
-### 3. Creating a New Context
-Add a QA context for the `qa-cluster`:
-```bash
-kubectl config set-context qa-context \
-  --cluster=qa-cluster \
-  --user=qa-user \
-  --namespace=qa
-```
+## Command Reference
+
+| Command | Purpose |
+|---------|---------|
+| `kubectl config current-context` | Show the active context |
+| `kubectl config get-contexts` | List all contexts (`*` marks active) |
+| `kubectl config use-context <name>` | Switch to a different context |
+| `kubectl config set-context <name> --cluster=... --user=... --namespace=...` | Create or update a context |
+| `kubectl config set-context --current --namespace=<ns>` | Change the default namespace for the current context |
+| `kubectl config rename-context <old> <new>` | Rename a context |
+| `kubectl config delete-context <name>` | Remove a context |
+| `kubectl config view` | Show the full kubeconfig (secrets redacted) |
+| `kubectl config view --minify` | Show only the active context's config |
+| `kubectl config view --raw` | Show the full kubeconfig with raw secrets |
+| `kubectl config get-clusters` | List cluster entries |
+| `kubectl config get-users` | List user entries |
+| `kubectl config set-credentials <name> --token=...` | Add or update user credentials |
+| `kubectl config unset users.<name>` | Remove a user entry |
+| `kubectl config unset clusters.<name>` | Remove a cluster entry |
 
 ---
 
-### 4. Namespace-Specific Operations
-Use the `--namespace` flag to override the default namespace in a context:
-```bash
-kubectl get pods --namespace=staging
-```
+## Contexts and RBAC
 
-Alternatively, modify the current context to change the default namespace:
-```bash
-kubectl config set-context --current --namespace=staging
-```
+Contexts are central to **RBAC testing**. When you create a new user (via client certificates or service account tokens) and bind a Role to them, you verify their permissions by:
 
----
+1. Adding their credentials with `kubectl config set-credentials`
+2. Creating a context that uses those credentials with `kubectl config set-context`
+3. Switching to that context with `kubectl config use-context`
+4. Running commands to confirm what is allowed and what is forbidden
+5. Using `kubectl auth can-i` for quick permission checks
 
-## Best Practices for Managing Contexts
-
-1. **Name Contexts Clearly**: Use descriptive names for contexts (e.g., `dev-context`, `prod-context`) to avoid confusion.
-2. **Organize `kubeconfig` Files**: If managing many clusters, split configurations into multiple `kubeconfig` files and use the `KUBECONFIG` environment variable:
-   ```bash
-   export KUBECONFIG=~/.kube/dev-config:~/.kube/prod-config
-   ```
-3. **Scripts for Context Switching**: Use scripts or aliases for frequently used contexts:
-   ```bash
-   alias kdev="kubectl config use-context dev-context"
-   alias kprod="kubectl config use-context prod-context"
-   ```
+This pattern is used extensively in the RBAC lab linked below.
 
 ---
 
-## Lab Exercise: Managing Contexts
+## Best Practices
 
-### Objective
-Configure and manage Kubernetes contexts for multiple clusters.
-
-### Prerequisites
-1. Access to two Kubernetes clusters (e.g., `dev-cluster` and `prod-cluster`).
-2. A valid `kubeconfig` file.
-
----
-
-### Step 1: Verify Clusters
-List available clusters:
-```bash
-kubectl config get-clusters
-```
-
-### Step 2: Create Contexts
-Set up contexts for each cluster:
-```bash
-kubectl config set-context dev-context \
-  --cluster=dev-cluster \
-  --user=dev-user \
-  --namespace=development
-
-kubectl config set-context prod-context \
-  --cluster=prod-cluster \
-  --user=prod-user \
-  --namespace=production
-```
-
-### Step 3: Switch Contexts
-Switch to the development environment:
-```bash
-kubectl config use-context dev-context
-```
-
-List pods in the `development` namespace:
-```bash
-kubectl get pods
-```
-
-Switch to the production environment:
-```bash
-kubectl config use-context prod-context
-```
-
-List pods in the `production` namespace:
-```bash
-kubectl get pods
-```
-
-### Step 4: Cleanup
-Delete the `dev-context`:
-```bash
-kubectl config delete-context dev-context
-```
+| Practice | Why |
+|----------|-----|
+| **Name contexts clearly** | Use descriptive names like `prod-admin`, `dev-readonly`, `staging-deployer` |
+| **Use aliases for frequent switches** | `alias kdev="kubectl config use-context dev-context"` |
+| **Split kubeconfig files per cluster** | Easier to share, rotate, and revoke access |
+| **Always verify before production commands** | Run `kubectl config current-context` before destructive operations |
+| **Use `--minify` for debugging** | Shows only the active context, removing noise |
+| **Combine with `kubectx`/`kubens`** | Community tools for faster context and namespace switching |
 
 ---
 
-## Summary
+## Interactive Explainer
 
-Kubernetes contexts simplify managing multiple clusters, users, and namespaces by allowing quick and consistent configuration switching. By mastering contexts, administrators can efficiently operate across complex Kubernetes environments.
+- [Kubeconfig & Contexts — Interactive HTML](../../html/kubeconfig-contexts.html) — visual walkthrough of kubeconfig structure, context switching flow, command reference, and real-world scenarios.
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 61: Kubeconfig and Context Management](../../labmanuals/lab61-basics-kubeconfig-contexts.md) | Create, switch, rename, and delete contexts; set default namespaces; merge kubeconfig files; RBAC context switching |
+| [Lab 11: Role-Based Access Control (RBAC)](../../labmanuals/lab11-sec-rbac-security.md) | Full RBAC workflow that uses context switching to test user permissions with client certificates |
 
 ---
 
 ## Additional Resources
 
-- [Kubernetes Official Documentation on Contexts](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#config)
-- [Managing Multiple Clusters with Kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/)
-
-
-
+- [Organize Cluster Access Using kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/)
+- [Configure Access to Multiple Clusters](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/)
+- [kubectl config reference](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#config)

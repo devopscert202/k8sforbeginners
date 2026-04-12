@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Troubleshooting Commands — Cheat Sheet</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --blue-deep: var(--kube-blue-deep);
+            --sky: var(--kube-sky);
+            --green: #16a34a;
+            --signal-amber: #d97706;
+            --signal-rose: #e11d48;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.15;
+        }
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+        .hero .subtitle {
+            max-width: 920px;
+            margin: 0 auto;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .btn {
+            border: 2px solid var(--blue);
+            background: #fff;
+            color: var(--blue-deep);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+        }
+        .btn:hover,
+        .btn:focus-visible {
+            background: var(--sky);
+            outline: none;
+        }
+        .btn.active {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .view {
+            display: none;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 14px rgba(15, 23, 42, 0.08);
+            padding: 24px 26px 28px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+        .view.active { display: block; }
+
+        .view h2 {
+            font-size: 1.15rem;
+            color: var(--slate-900);
+            margin-bottom: 8px;
+            border-bottom: 2px solid var(--sky);
+            padding-bottom: 10px;
+        }
+        .view .intro {
+            color: var(--slate-700);
+            font-size: 0.92rem;
+            margin-bottom: 20px;
+        }
+
+        .cmd-block {
+            margin-bottom: 22px;
+        }
+        .cmd-block:last-child { margin-bottom: 0; }
+        .cmd-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--slate-500);
+            margin-bottom: 8px;
+        }
+        pre.cmd {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 14px;
+            font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+            font-size: 0.84rem;
+            overflow-x: auto;
+            border: 1px solid #334155;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .cmd-desc {
+            margin-top: 10px;
+            color: var(--slate-700);
+            font-size: 0.92rem;
+        }
+        .when {
+            margin-top: 6px;
+            font-size: 0.88rem;
+            color: var(--slate-500);
+        }
+        .when strong { color: var(--slate-700); font-weight: 600; }
+
+        .note {
+            margin-top: 18px;
+            padding: 12px 14px;
+            background: var(--sky);
+            border-radius: 8px;
+            font-size: 0.88rem;
+            color: var(--slate-700);
+            border-left: 4px solid var(--blue);
+        }
+        .note.warn {
+            background: #fff7ed;
+            border-left-color: var(--signal-amber);
+        }
+        .note.danger {
+            background: #fff1f2;
+            border-left-color: var(--signal-rose);
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .nav-tabs { gap: 8px; }
+            .btn { flex: 1 1 calc(50% - 8px); text-align: center; min-width: 140px; }
+            .view { padding: 18px 16px; }
+        }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Troubleshooting Commands</h1>
+            <p class="subtitle">Interactive cheat sheet: copy-ready <code style="background:var(--sky);padding:2px 6px;border-radius:4px;font-size:0.88em;">kubectl</code>, node, and etcd commands with quick “when to use” guidance.</p>
+        </header>
+
+        <nav class="nav-tabs" role="tablist" aria-label="Command categories">
+            <button type="button" id="tab-v1" class="btn active" role="tab" aria-selected="true" aria-controls="v1" data-view="v1">Cluster health</button>
+            <button type="button" id="tab-v2" class="btn" role="tab" aria-selected="false" aria-controls="v2" data-view="v2">Pod debugging</button>
+            <button type="button" id="tab-v3" class="btn" role="tab" aria-selected="false" aria-controls="v3" data-view="v3">Node debugging</button>
+            <button type="button" id="tab-v4" class="btn" role="tab" aria-selected="false" aria-controls="v4" data-view="v4">Networking</button>
+            <button type="button" id="tab-v5" class="btn" role="tab" aria-selected="false" aria-controls="v5" data-view="v5">Storage</button>
+            <button type="button" id="tab-v6" class="btn" role="tab" aria-selected="false" aria-controls="v6" data-view="v6">RBAC &amp; security</button>
+            <button type="button" id="tab-v7" class="btn" role="tab" aria-selected="false" aria-controls="v7" data-view="v7">etcd</button>
+            <button type="button" id="tab-v8" class="btn" role="tab" aria-selected="false" aria-controls="v8" data-view="v8">Logs &amp; events</button>
+        </nav>
+
+        <!-- Tab 1: Cluster Health -->
+        <section id="v1" class="view active" role="tabpanel" aria-labelledby="tab-v1">
+            <h2>Cluster health</h2>
+            <p class="intro">Use these first when the control plane feels slow, workloads fail cluster-wide, or you need a baseline snapshot before deeper debugging.</p>
+
+            <div class="cmd-block">
+                <div class="cmd-label">API &amp; endpoints</div>
+                <pre class="cmd">kubectl cluster-info</pre>
+                <p class="cmd-desc">Shows the Kubernetes control plane URL and (if installed) the cluster DNS service address.</p>
+                <p class="when"><strong>When to use:</strong> Quick sanity check that your kubeconfig points at a live API and core add-ons advertise endpoints.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get nodes -o wide</pre>
+                <p class="cmd-desc">Lists nodes with internal/external IPs, OS image, kernel, container runtime, and readiness.</p>
+                <p class="when"><strong>When to use:</strong> Spot NotReady nodes, wrong zones, or capacity skew before blaming applications.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get componentstatuses</pre>
+                <p class="cmd-desc">Legacy view of scheduler, controller-manager, and etcd health (where the API still exposes ComponentStatus).</p>
+                <p class="when"><strong>When to use:</strong> Familiar smoke test on older clusters; treat as supplemental because the API type is deprecated.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get --raw /healthz</pre>
+                <p class="cmd-desc">Hits the API server’s legacy health endpoint; returns <code>ok</code> when minimally healthy.</p>
+                <p class="when"><strong>When to use:</strong> Fast binary check from any machine with kubeconfig access—good for monitors and curl-style probes.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get --raw /livez</pre>
+                <p class="cmd-desc">Kubernetes live probe endpoint: verifies the process is alive (separate from full readiness).</p>
+                <p class="when"><strong>When to use:</strong> Distinguish “API process up” from “ready to serve traffic” during upgrades or crash loops.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get --raw /readyz</pre>
+                <p class="cmd-desc">Readiness-style check including registered informers and critical post-start hooks.</p>
+                <p class="when"><strong>When to use:</strong> When kubectl errors or webhooks time out—confirms the apiserver finished warming up.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl top nodes</pre>
+                <p class="cmd-desc">Shows CPU and memory usage per node (requires Metrics Server or compatible metrics API).</p>
+                <p class="when"><strong>When to use:</strong> Suspected node pressure, noisy neighbors, or scheduling failures tied to resource starvation.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get events -A --sort-by='.lastTimestamp'</pre>
+                <p class="cmd-desc">Cluster-wide events ordered by most recent activity across all namespaces.</p>
+                <p class="when"><strong>When to use:</strong> After unexplained restarts or FailedScheduling storms—surfaces control-plane and workload signals in one stream.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl cluster-info dump --output-directory=/tmp/dump</pre>
+                <p class="cmd-desc">Exports logs, descriptions, and configs for nodes and control-plane pods into a directory tree.</p>
+                <p class="when"><strong>When to use:</strong> Opening vendor support cases or offline analysis; can be large and sensitive—scrub before sharing.</p>
+            </div>
+
+            <div class="note warn"><strong>Note:</strong> <code>componentstatuses</code> is deprecated; prefer <code>/livez</code>, <code>/readyz</code>, and cloud-provider health signals on supported distros.</div>
+        </section>
+
+        <!-- Tab 2: Pod Debugging -->
+        <section id="v2" class="view" role="tabpanel" aria-labelledby="tab-v2">
+            <h2>Pod debugging</h2>
+            <p class="intro">Drill into workload pods: observe state, stream logs, exec shells, copy files, and attach ephemeral debug containers.</p>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get pods -o wide</pre>
+                <p class="cmd-desc">Pods in the current namespace with node assignment, IPs, and readiness.</p>
+                <p class="when"><strong>When to use:</strong> First step for CrashLoopBackOff, ImagePullBackOff, or pods stuck Pending.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl describe pod &lt;name&gt;</pre>
+                <p class="cmd-desc">Events, conditions, volumes, tolerations, and last status transitions for one pod.</p>
+                <p class="when"><strong>When to use:</strong> Decode scheduling failures, probe failures, mount errors, and quota denials from Kubernetes events.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl logs &lt;pod&gt;
+kubectl logs &lt;pod&gt; -c &lt;container&gt;
+kubectl logs &lt;pod&gt; --previous</pre>
+                <p class="cmd-desc">Current container logs; a specific container in a multi-container pod; or logs from the last crashed instance.</p>
+                <p class="when"><strong>When to use:</strong> Application errors, startup panics, or post-OOM investigation via <code>--previous</code>.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl logs &lt;pod&gt; -f</pre>
+                <p class="cmd-desc">Streams stdout/stderr from the default or selected container like <code>tail -f</code>.</p>
+                <p class="when"><strong>When to use:</strong> Reproducing intermittent bugs or watching rollout behavior in real time.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl logs -l app=myapp --all-containers</pre>
+                <p class="cmd-desc">Aggregates logs from every pod matching a label selector, including sidecars.</p>
+                <p class="when"><strong>When to use:</strong> Microservices with many replicas where you need a single combined trace (may be noisy).</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl exec -it &lt;pod&gt; -- /bin/sh</pre>
+                <p class="cmd-desc">Interactive shell inside a running container (use <code>/bin/bash</code> if available).</p>
+                <p class="when"><strong>When to use:</strong> Inspect files, DNS resolution, or local ports when logs are insufficient—requires shell in the image.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl exec &lt;pod&gt; -- env</pre>
+                <p class="cmd-desc">Prints environment variables visible to the workload (ConfigMaps, Secrets, downward API).</p>
+                <p class="when"><strong>When to use:</strong> Verify injected configuration without redeploying or editing manifests.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl port-forward pod/&lt;name&gt; 8080:80</pre>
+                <p class="cmd-desc">Forwards a local TCP port to a pod port through the API server tunnel.</p>
+                <p class="when"><strong>When to use:</strong> Hit admin endpoints, metrics, or debug ports that are not exposed via Services.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl cp &lt;pod&gt;:/path /local/path</pre>
+                <p class="cmd-desc">Copies files or directories between a container filesystem and your workstation.</p>
+                <p class="when"><strong>When to use:</strong> Grab heap dumps, config snapshots, or core files without SSH to the node.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl debug &lt;pod&gt; --image=busybox --target=&lt;container&gt;</pre>
+                <p class="cmd-desc">Attaches an ephemeral debug container sharing process namespaces with an existing container (cluster/feature dependent).</p>
+                <p class="when"><strong>When to use:</strong> Minimal distroless images where <code>kubectl exec</code> has no shell—inspect processes and filesystem from a toolkit image.</p>
+            </div>
+        </section>
+
+        <!-- Tab 3: Node Debugging -->
+        <section id="v3" class="view" role="tabpanel" aria-labelledby="tab-v3">
+            <h2>Node debugging</h2>
+            <p class="intro">Move from Kubernetes objects to the node: kubelet health, drains, and container runtime introspection.</p>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl describe node &lt;name&gt;</pre>
+                <p class="cmd-desc">Capacity, allocatable resources, taints, conditions (MemoryPressure, DiskPressure, PIDPressure), and recent events.</p>
+                <p class="when"><strong>When to use:</strong> Pods evicted or stuck Pending on specific nodes; correlate with cloud instance status.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl top node &lt;name&gt;</pre>
+                <p class="cmd-desc">CPU and memory utilization for a single node (Metrics API).</p>
+                <p class="when"><strong>When to use:</strong> Confirm hot nodes before cordon/drain or autoscaling changes.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl cordon &lt;node&gt;
+kubectl uncordon &lt;node&gt;</pre>
+                <p class="cmd-desc">Marks the node unschedulable (cordon) or restores scheduling (uncordon).</p>
+                <p class="when"><strong>When to use:</strong> Maintenance windows—cordon stops new pods; uncordon after fixes without deleting workloads.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl drain &lt;node&gt; --ignore-daemonsets --delete-emptydir-data</pre>
+                <p class="cmd-desc">Evicts workloads (respecting PDBs where possible) so the node can be serviced safely.</p>
+                <p class="when"><strong>When to use:</strong> OS patches, hardware swaps, or kubelet upgrades—always review PDBs and local EmptyDir data first.</p>
+            </div>
+
+            <div class="cmd-block">
+                <div class="cmd-label">On the node (SSH / SSM)</div>
+                <pre class="cmd">systemctl status kubelet
+journalctl -u kubelet --since "30 min ago"</pre>
+                <p class="cmd-desc">Shows kubelet service state and recent logs from systemd’s journal.</p>
+                <p class="when"><strong>When to use:</strong> Node NotReady, sandbox creation errors, or CNI plug-in failures reported by kubelet.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">crictl ps
+crictl logs &lt;container-id&gt;
+crictl inspect &lt;container-id&gt;</pre>
+                <p class="cmd-desc">Lists containers managed by the CRI runtime, tails their logs, and dumps low-level JSON state.</p>
+                <p class="when"><strong>When to use:</strong> When kubelet reports sandbox or image errors but kubectl logs are empty or pods are stuck creating.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">crictl images
+crictl rmi --prune</pre>
+                <p class="cmd-desc">Lists images present on the node; prunes unused images to reclaim disk.</p>
+                <p class="when"><strong>When to use:</strong> ImagePullBackOff due to disk pressure, or manual cleanup before a large rollout.</p>
+            </div>
+
+            <div class="note danger"><strong>Caution:</strong> Draining and image pruning can disrupt workloads; coordinate with owners and verify PodDisruptionBudgets.</div>
+        </section>
+
+        <!-- Tab 4: Networking -->
+        <section id="v4" class="view" role="tabpanel" aria-labelledby="tab-v4">
+            <h2>Networking</h2>
+            <p class="intro">Trace Services to backends, validate DNS, test pod-to-service connectivity, and inspect policies and kube-dns.</p>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get svc -o wide</pre>
+                <p class="cmd-desc">ClusterIP, NodePort, LoadBalancer addresses, ports, and selectors for Services.</p>
+                <p class="when"><strong>When to use:</strong> Clients cannot reach a service—confirm types, ports, and external IPs.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get endpoints &lt;svc&gt;</pre>
+                <p class="cmd-desc">Shows IP:port tuples registered for a Service name (Endpoints object).</p>
+                <p class="when"><strong>When to use:</strong> Traffic drops after deploy—empty endpoints mean selectors or readiness probes are wrong.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get endpointslices</pre>
+                <p class="cmd-desc">Scalable view of endpoints grouped by Service with topology hints.</p>
+                <p class="when"><strong>When to use:</strong> Large Services or dual-stack clusters where classic Endpoints are truncated or hard to read.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl exec -it &lt;pod&gt; -- nslookup kubernetes.default</pre>
+                <p class="cmd-desc">Resolves the in-cluster API Service DNS name from inside a workload.</p>
+                <p class="when"><strong>When to use:</strong> Intermittent DNS failures—validates CoreDNS (or kube-dns) reachability from app namespaces.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl exec -it &lt;pod&gt; -- wget -qO- &lt;svc&gt;:&lt;port&gt;
+# or, if curl is present:
+kubectl exec -it &lt;pod&gt; -- curl -sS http://&lt;svc&gt;:&lt;port&gt;/</pre>
+                <p class="cmd-desc">HTTP/TCP checks from a pod to a Service DNS name or IP on a given port.</p>
+                <p class="when"><strong>When to use:</strong> Prove east-west connectivity independent of ingress or external load balancers.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get networkpolicy -A</pre>
+                <p class="cmd-desc">Lists NetworkPolicies and their namespaces—shows whether default-deny or scoped rules exist.</p>
+                <p class="when"><strong>When to use:</strong> Sudden timeouts after enabling policies—compare allowed CIDRs, ports, and pod selectors.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get ingress -A</pre>
+                <p class="cmd-desc">Ingress resources with hosts, classes, and backend Services.</p>
+                <p class="when"><strong>When to use:</strong> North-south routing issues—pairs with controller logs and cloud LB health checks.</p>
+            </div>
+
+            <div class="cmd-block">
+                <div class="cmd-label">On the node</div>
+                <pre class="cmd">iptables -t nat -L KUBE-SERVICES</pre>
+                <p class="cmd-desc">Lists kube-proxy–managed NAT rules for ClusterIP translation (iptables mode).</p>
+                <p class="when"><strong>When to use:</strong> Rare low-level debugging when IPVS/iptables modes mismatch or rules are stale—requires root.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl logs -n kube-system -l k8s-app=kube-dns</pre>
+                <p class="cmd-desc">CoreDNS (legacy label kube-dns) pod logs for the DNS deployment.</p>
+                <p class="when"><strong>When to use:</strong> NXDOMAIN loops, upstream forwarder errors, or high DNS latency cluster-wide.</p>
+            </div>
+        </section>
+
+        <!-- Tab 5: Storage -->
+        <section id="v5" class="view" role="tabpanel" aria-labelledby="tab-v5">
+            <h2>Storage</h2>
+            <p class="intro">Follow volumes from PersistentVolumeClaims through binding to mounts inside running pods.</p>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get pv
+kubectl get pvc</pre>
+                <p class="cmd-desc">Cluster-scoped PersistentVolumes and namespace-scoped claims with status and capacity.</p>
+                <p class="when"><strong>When to use:</strong> Pods stuck ContainerCreating—check whether claims are Bound or Pending.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl describe pv &lt;name&gt;
+kubectl describe pvc &lt;name&gt;</pre>
+                <p class="cmd-desc">Provisioner details, access modes, volume handle, events, and finalizers.</p>
+                <p class="when"><strong>When to use:</strong> CSI provisioning failures, snapshot restore issues, or wrong storage class selection.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get storageclass</pre>
+                <p class="cmd-desc">Available classes, default annotation, reclaim policy, and volume binding mode.</p>
+                <p class="when"><strong>When to use:</strong> PVCs stay Pending—ensure a default exists or the claim requests a valid class.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get volumeattachments</pre>
+                <p class="cmd-desc">Maps volumes to nodes for attach/detach operations performed by CSI/external attacher.</p>
+                <p class="when"><strong>When to use:</strong> Multi-attach errors or volumes stuck attached after node failure.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl exec -it &lt;pod&gt; -- df -h
+kubectl exec -it &lt;pod&gt; -- ls /mount/path</pre>
+                <p class="cmd-desc">Shows mounted filesystems and lists expected paths inside the container.</p>
+                <p class="when"><strong>When to use:</strong> Verify subPath mounts, read-only flags, or disk usage inside the workload.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get events -A --field-selector involvedObject.kind=PersistentVolumeClaim</pre>
+                <p class="cmd-desc">Events tied to PVC objects—provisioning, binding, and resize messages.</p>
+                <p class="when"><strong>When to use:</strong> Faster than scanning all events when only storage binding is suspect.</p>
+            </div>
+
+            <div class="note">Combine with <code>kubectl describe pod</code> volume sections to see which claim backs each mount and whether mount propagation is requested.</div>
+        </section>
+
+        <!-- Tab 6: RBAC and Security -->
+        <section id="v6" class="view" role="tabpanel" aria-labelledby="tab-v6">
+            <h2>RBAC &amp; security</h2>
+            <p class="intro">Answer “can this identity perform this action?” and inspect roles, bindings, and legacy policy objects.</p>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl auth can-i &lt;verb&gt; &lt;resource&gt;
+kubectl auth can-i &lt;verb&gt; &lt;resource&gt; --as=&lt;user&gt;</pre>
+                <p class="cmd-desc">Boolean check for the current context or an impersonated user/service account.</p>
+                <p class="when"><strong>When to use:</strong> CI/CD failures with “forbidden”, or debugging least-privilege ServiceAccounts.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl auth can-i --list</pre>
+                <p class="cmd-desc">Enumerates allowed verbs/resources for the active context (subject to aggregation rules).</p>
+                <p class="when"><strong>When to use:</strong> Auditing overly broad ClusterRoles or comparing dev vs prod kubeconfig permissions.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get clusterroles
+kubectl get clusterrolebindings</pre>
+                <p class="cmd-desc">Global roles and who (users, groups, SAs) is bound to them cluster-wide.</p>
+                <p class="when"><strong>When to use:</strong> Platform-wide incidents—find wildcard rules or unexpected admin bindings.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get roles -n &lt;ns&gt;
+kubectl get rolebindings -n &lt;ns&gt;</pre>
+                <p class="cmd-desc">Namespace-scoped RBAC objects listing local permissions.</p>
+                <p class="when"><strong>When to use:</strong> Team namespaces where only certain workloads fail authorization checks.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl describe clusterrolebinding &lt;name&gt;</pre>
+                <p class="cmd-desc">Subjects attached to a ClusterRoleBinding and the referenced role name.</p>
+                <p class="when"><strong>When to use:</strong> Tracing which Group or ServiceAccount gained cluster-admin via a binding.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get psp
+kubectl get podsecuritypolicy</pre>
+                <p class="cmd-desc">Legacy PodSecurityPolicy objects (removed in Kubernetes 1.25+; only on older clusters).</p>
+                <p class="when"><strong>When to use:</strong> Historical clusters still enforcing PSP—migrate plans toward PSA/PSS or policy engines.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl label nodes &lt;node&gt; --list</pre>
+                <p class="cmd-desc">Prints labels on a node (often used with RBAC or admission that matches node metadata).</p>
+                <p class="when"><strong>When to use:</strong> Debugging NodeRestriction, custom schedulers, or storage topology labels.</p>
+            </div>
+
+            <div class="note warn"><strong>Tip:</strong> Pair <code>can-i</code> with <code>--subresource</code> for exec/log/portforward checks when debugging admission webhooks.</div>
+        </section>
+
+        <!-- Tab 7: etcd -->
+        <section id="v7" class="view" role="tabpanel" aria-labelledby="tab-v7">
+            <h2>etcd</h2>
+            <p class="intro">Operate etcd from control-plane hosts with <code>etcdctl</code>; always prefer snapshots before invasive changes.</p>
+
+            <div class="cmd-block">
+                <div class="cmd-label">Environment (API v3 + TLS)</div>
+                <pre class="cmd">export ETCDCTL_API=3
+etcdctl --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  &lt;subcommand&gt;</pre>
+                <p class="cmd-desc">Typical kubeadm-style paths—replace with your distro’s real certificate locations.</p>
+                <p class="when"><strong>When to use:</strong> Any etcdctl call on a secured cluster; without certs the client will fail TLS handshake.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">etcdctl endpoint health --cluster</pre>
+                <p class="cmd-desc">Reports health for each member—latency and error strings if a peer is down.</p>
+                <p class="when"><strong>When to use:</strong> API timeouts or leader election storms—validates etcd quorum before touching apiserver flags.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">etcdctl endpoint status --cluster -w table</pre>
+                <p class="cmd-desc">Shows member IDs, versions, DB size, raft index, and leader role in tabular form.</p>
+                <p class="when"><strong>When to use:</strong> Capacity planning, defragmentation decisions, or version skew across members.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">etcdctl alarm list</pre>
+                <p class="cmd-desc">Lists active alarms such as NOSPACE or CORRUPT.</p>
+                <p class="when"><strong>When to use:</strong> Writes fail with alarm errors—often disk full or data integrity issues.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">etcdctl get / --prefix --keys-only | head</pre>
+                <p class="cmd-desc">Samples key names under the root prefix (read-only reconnaissance).</p>
+                <p class="when"><strong>When to use:</strong> Confirm connectivity and keyspace layout—avoid broad reads on huge clusters in production peaks.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">etcdctl snapshot save /tmp/etcd-backup.db</pre>
+                <p class="cmd-desc">Creates a consistent point-in-time snapshot file of etcd data.</p>
+                <p class="when"><strong>When to use:</strong> Before upgrades, restores, or manual key edits—store off-node with encryption.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">etcdctl snapshot status /tmp/etcd-backup.db -w table</pre>
+                <p class="cmd-desc">Validates snapshot integrity, revision, and total keys before trusting a file.</p>
+                <p class="when"><strong>When to use:</strong> After backup jobs or copying files across sites—detect corruption early.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">etcdctl snapshot restore /tmp/etcd-backup.db --data-dir=/var/lib/etcd-restored</pre>
+                <p class="cmd-desc">Rebuilds etcd data directory from a snapshot for disaster recovery workflows.</p>
+                <p class="when"><strong>When to use:</strong> Controlled restore procedures—requires stopping etcd members and coordinated cluster rebuild per runbook.</p>
+            </div>
+
+            <div class="note danger"><strong>Warning:</strong> Restores and key mutations can break the control plane; follow your distribution’s documented DR process only.</div>
+        </section>
+
+        <!-- Tab 8: Logs and Events -->
+        <section id="v8" class="view" role="tabpanel" aria-labelledby="tab-v8">
+            <h2>Logs &amp; events</h2>
+            <p class="intro">Tune log volume, focus on warnings, correlate events to objects, and know on-disk log locations for node forensics.</p>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl logs &lt;pod&gt; --tail=100</pre>
+                <p class="cmd-desc">Returns only the last N log lines to avoid dumping huge files.</p>
+                <p class="when"><strong>When to use:</strong> Large long-running pods where full logs overwhelm terminals or CI artifacts.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl logs &lt;pod&gt; --since=1h</pre>
+                <p class="cmd-desc">Restricts output to logs produced within the last hour (supports other durations).</p>
+                <p class="when"><strong>When to use:</strong> Incidents with known start times—skip cold-start noise from days ago.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl logs -n kube-system &lt;component-pod&gt;</pre>
+                <p class="cmd-desc">Fetch logs from control-plane or add-on pods running in kube-system.</p>
+                <p class="when"><strong>When to use:</strong> Scheduler, controller-manager, or CNI pod errors surfaced as cluster events.</p>
+            </div>
+
+            <div class="cmd-block">
+                <div class="cmd-label">On the node</div>
+                <pre class="cmd">journalctl -u kubelet
+journalctl -u containerd</pre>
+                <p class="cmd-desc">Systemd journals for kubelet and the container runtime service.</p>
+                <p class="when"><strong>When to use:</strong> Sandbox or image pull errors beneath Kubernetes—complements <code>crictl</code> output.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get events --sort-by='.metadata.creationTimestamp'</pre>
+                <p class="cmd-desc">Chronological event stream for the current namespace (add <code>-A</code> for all).</p>
+                <p class="when"><strong>When to use:</strong> Reconstruct timelines of scaling, probe failures, or image pulls.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get events --field-selector type=Warning</pre>
+                <p class="cmd-desc">Filters to Warning events only—surfaces abnormal transitions faster.</p>
+                <p class="when"><strong>When to use:</strong> Noisy namespaces; pair with time bounds via <code>--watch</code> during rollouts.</p>
+            </div>
+
+            <div class="cmd-block">
+                <pre class="cmd">kubectl get events --field-selector involvedObject.kind=Pod,involvedObject.name=&lt;pod&gt;</pre>
+                <p class="cmd-desc">Events scoped to a single pod name.</p>
+                <p class="when"><strong>When to use:</strong> Deep dive on one failing pod without scrolling unrelated objects.</p>
+            </div>
+
+            <div class="cmd-block">
+                <div class="cmd-label">On-disk log paths (typical containerd)</div>
+                <pre class="cmd">/var/log/pods/&lt;namespace&gt;_&lt;pod-name&gt;_&lt;uid&gt;/&lt;container&gt;/&lt;n&gt;.log
+/var/log/containers/&lt;pod-name&gt;_&lt;namespace&gt;_&lt;container&gt;-&lt;container-id&gt;.log</pre>
+                <p class="cmd-desc">Symlinked JSON log files written by the container runtime for kubelet/CRI.</p>
+                <p class="when"><strong>When to use:</strong> kubectl log streaming breaks or apiserver is down—tail files directly with elevated access.</p>
+            </div>
+        </section>
+</div>
+
+    <script>
+        (function () {
+            var buttons = document.querySelectorAll('.nav-tabs .btn');
+            var views = document.querySelectorAll('.view');
+
+            function activate(viewId) {
+                views.forEach(function (panel) {
+                    panel.classList.toggle('active', panel.id === viewId);
+                });
+                buttons.forEach(function (btn) {
+                    var on = btn.getAttribute('data-view') === viewId;
+                    btn.classList.toggle('active', on);
+                    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+                });
+                var activePanel = document.getElementById(viewId);
+                if (activePanel) {
+                    try {
+                        history.replaceState(null, '', '#' + viewId);
+                    } catch (e) { /* ignore file:// */ }
+                }
+            }
+
+            buttons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    activate(btn.getAttribute('data-view'));
+                });
+            });
+
+            function syncFromHash() {
+                var h = (location.hash || '').replace(/^#/, '');
+                if (h && document.getElementById(h)) {
+                    activate(h);
+                }
+            }
+            window.addEventListener('hashchange', syncFromHash);
+            syncFromHash();
+        })();
+    </script>
+</body>
+</html>

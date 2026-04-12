@@ -5,35 +5,287 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFS with PV and PVC - Interactive Guide</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: "Segoe UI", system-ui, sans-serif; background: #f5f7fb; color: #0f172a; line-height: 1.6; padding: 20px; }
-        .container { max-width: 1320px; margin: 0 auto; } .hero, .view { background: #fff; border: 1px solid rgba(50,108,229,.12); border-radius: 18px; box-shadow: 0 8px 28px rgba(15,23,42,.08); }
-        .hero { padding: 32px; text-align: center; margin-bottom: 24px; } .eyebrow { display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 6px 12px; border-radius: 999px; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; }
-        h1 { color: #326ce5; margin-bottom: 10px; font-size: clamp(2rem, 4vw, 2.8rem); } .subtitle { max-width: 960px; margin: 0 auto 18px; color: #64748b; } .lead, .note { background: #eff6ff; border-left: 4px solid #326ce5; color: #1e3a8a; border-radius: 12px; padding: 14px 16px; } .lead { max-width: 960px; margin: 0 auto; }
-        .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 0 0 24px; } .btn { border: 2px solid #326ce5; background: #fff; color: #1d4ed8; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; } .btn.active, .btn:hover { background: #326ce5; color: #fff; }
-        .view { display: none; padding: 28px; margin-bottom: 22px; } .view.active { display: block; } h2 { margin-bottom: 16px; font-size: 1.4rem; } .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-        .card, .step { border: 1px solid #dbe3f1; border-radius: 16px; padding: 18px; background: linear-gradient(180deg,#fff,#f8fbff); } .card h3, .step h3 { margin-bottom: 8px; } .card p, .step p { color: #475569; }
-        .steps { display: grid; gap: 14px; } .num { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: #326ce5; color: #fff; font-weight: 800; margin-bottom: 10px; }
-        pre { margin-top: 12px; background: #0f172a; color: #dbeafe; border-radius: 16px; padding: 18px; overflow-x: auto; font-size: .86rem; } .example { margin-bottom: 18px; } table { width: 100%; border-collapse: collapse; } th, td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; } th { background: #326ce5; color: #fff; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --blue-deep: #1d4ed8;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #dbe3f1;
+            --surface: #ffffff;
+            --bg: #f5f7fb;
+            --soft: #eff6ff;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+        }
+        .hero,
+        .view {
+            background: var(--surface);
+            border: 1px solid rgba(50, 108, 229, 0.12);
+            border-radius: 18px;
+            box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+        }
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-block;
+            background: #dbeafe;
+            color: var(--blue-deep);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        h1 {
+            color: var(--kube-blue);
+            margin-bottom: 10px;
+            font-size: clamp(2rem, 4vw, 3rem);
+        }
+        .subtitle {
+            max-width: 960px;
+            margin: 0 auto 18px;
+            color: var(--muted);
+        }
+        .lead,
+        .note {
+            background: var(--soft);
+            border-left: 4px solid var(--blue);
+            color: #1e3a8a;
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .lead {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0 0 24px;
+        }
+        .btn {
+            border: 2px solid var(--blue);
+            background: #fff;
+            color: var(--blue-deep);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn.active,
+        .btn:hover {
+            background: var(--blue);
+            color: #fff;
+        }
+        .view {
+            display: none;
+            padding: 28px;
+            margin-bottom: 22px;
+        }
+        .view.active {
+            display: block;
+        }
+        h2 {
+            margin-bottom: 16px;
+            font-size: 1.4rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 16px;
+        }
+        .card,
+        .step {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+        }
+        .card h3,
+        .step h3 {
+            margin-bottom: 8px;
+        }
+        .card p,
+        .step p {
+            color: #475569;
+        }
+        .steps {
+            display: grid;
+            gap: 14px;
+        }
+        .num {
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--blue);
+            color: #fff;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        pre {
+            margin-top: 12px;
+            background: var(--ink);
+            color: #dbeafe;
+            border-radius: 16px;
+            padding: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+            font-size: 0.86rem;
+        }
+        .example {
+            margin-bottom: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th,
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: var(--blue);
+            color: #fff;
+        }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: #326CE5; text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <section class="hero"><div class="eyebrow">Shared Storage</div><h1>NFS with PV and PVC</h1><p class="subtitle">Use an NFS server with Kubernetes persistent volumes to provide shared storage across Pods and nodes.</p><div class="lead">NFS is one of the clearest ways to teach shared Kubernetes storage because many Pods can mount the same directory, even when they run on different nodes.</div></section>
-        <div class="controls"><button class="btn active" onclick="showView('concept', this)">Concept</button><button class="btn" onclick="showView('flow', this)">Flow</button><button class="btn" onclick="showView('yaml', this)">YAML</button><button class="btn" onclick="showView('compare', this)">Compare</button><button class="btn" onclick="showView('practice', this)">Practice</button></div>
-        <section id="concept-view" class="view active"><h2>Core Concepts</h2><div class="grid">
-            <article class="card"><h3>Shared filesystem</h3><p>An NFS server exports one directory that many Pods can mount through a PV and PVC.</p></article>
-            <article class="card"><h3>ReadWriteMany teaching model</h3><p>NFS is a practical way to demonstrate RWX behavior in labs and on-premises clusters.</p></article>
-            <article class="card"><h3>Centralized data path</h3><p>Data management, backup, and access control are organized around the exported server path.</p></article>
-        </div></section>
-        <section id="flow-view" class="view"><h2>NFS Integration Flow</h2><div class="steps">
-            <article class="step"><div class="num">1</div><h3>Prepare the NFS server</h3><p>Install the server, export a directory, and make sure cluster nodes can reach it.</p></article>
-            <article class="step"><div class="num">2</div><h3>Confirm client access</h3><p>Install NFS client tools and verify a node can mount the exported path.</p></article>
-            <article class="step"><div class="num">3</div><h3>Create the PV</h3><p>Point a PersistentVolume at the server IP and export path.</p></article>
-            <article class="step"><div class="num">4</div><h3>Bind the PVC</h3><p>The claim requests shared storage and binds to the NFS-backed volume.</p></article>
-            <article class="step"><div class="num">5</div><h3>Mount in Pods</h3><p>Many Pods can use the same underlying files across nodes and workloads.</p></article>
-        </div><div class="note"><strong>Key point:</strong> When the lesson is shared writable access rather than simple persistence, NFS explains the behavior more clearly than HostPath.</div></section>
-        <section id="yaml-view" class="view"><h2>Representative YAML</h2>
-            <div class="example"><h3>NFS PV</h3><pre><code>apiVersion: v1
+        <section class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>NFS with PV and PVC</h1>
+            <p class="subtitle">Use an NFS server with Kubernetes persistent volumes to provide shared storage across Pods and nodes.</p>
+            <div class="lead">NFS is one of the clearest ways to teach shared Kubernetes storage because many Pods can mount the same directory, even when they run on different nodes.</div>
+        </section>
+        <div class="controls">
+            <button class="btn active" onclick="showView('concept', this)">Concept</button>
+            <button class="btn" onclick="showView('flow', this)">Flow</button>
+            <button class="btn" onclick="showView('yaml', this)">YAML</button>
+            <button class="btn" onclick="showView('compare', this)">Compare</button>
+            <button class="btn" onclick="showView('practice', this)">Practice</button>
+        </div>
+        <section id="concept-view" class="view active">
+            <h2>Core Concepts</h2>
+            <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+              <strong>Repository YAML Files:</strong>
+              <ul style="margin: 8px 0 0 0;">
+                <li><code>k8s/labs/storage/nfs-pv-pvc.yaml</code> &mdash; NFS PV, PVC, and Pod manifest</li>
+              </ul>
+            </div>
+            <div class="grid">
+                <article class="card">
+                    <h3>Shared filesystem</h3>
+                    <p>An NFS server exports one directory that many Pods can mount through a PV and PVC.</p>
+                </article>
+                <article class="card">
+                    <h3>ReadWriteMany teaching model</h3>
+                    <p>NFS is a practical way to demonstrate RWX behavior in labs and on-premises clusters.</p>
+                </article>
+                <article class="card">
+                    <h3>Centralized data path</h3>
+                    <p>Data management, backup, and access control are organized around the exported server path.</p>
+                </article>
+            </div>
+        </section>
+        <section id="flow-view" class="view">
+            <h2>NFS Integration Flow</h2>
+            <div class="steps">
+                <article class="step">
+                    <div class="num">1</div>
+                    <h3>Prepare the NFS server</h3>
+                    <p>Install the server, export a directory, and make sure cluster nodes can reach it.</p>
+                </article>
+                <article class="step">
+                    <div class="num">2</div>
+                    <h3>Confirm client access</h3>
+                    <p>Install NFS client tools and verify a node can mount the exported path.</p>
+                </article>
+                <article class="step">
+                    <div class="num">3</div>
+                    <h3>Create the PV</h3>
+                    <p>Point a PersistentVolume at the server IP and export path.</p>
+                </article>
+                <article class="step">
+                    <div class="num">4</div>
+                    <h3>Bind the PVC</h3>
+                    <p>The claim requests shared storage and binds to the NFS-backed volume.</p>
+                </article>
+                <article class="step">
+                    <div class="num">5</div>
+                    <h3>Mount in Pods</h3>
+                    <p>Many Pods can use the same underlying files across nodes and workloads.</p>
+                </article>
+            </div>
+            <div class="note"><strong>Key point:</strong> When the lesson is shared writable access rather than simple persistence, NFS explains the behavior more clearly than HostPath.</div>
+        </section>
+        <section id="yaml-view" class="view">
+            <h2>Representative YAML</h2>
+            <div class="example">
+                <h3>NFS PV</h3>
+                <pre><code>apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: nfs-pv
@@ -45,8 +297,11 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   nfs:
     path: /mnt/nfs_share
-    server: 192.168.1.100</code></pre></div>
-            <div class="example"><h3>PVC and Pod</h3><pre><code>apiVersion: v1
+    server: 192.168.1.100</code></pre>
+            </div>
+            <div class="example">
+                <h3>PVC and Pod</h3>
+                <pre><code>apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: nfs-pvc
@@ -71,21 +326,45 @@ spec:
   volumes:
   - name: nfs-volume
     persistentVolumeClaim:
-      claimName: nfs-pvc</code></pre></div>
+      claimName: nfs-pvc</code></pre>
+            </div>
         </section>
-        <section id="compare-view" class="view"><h2>HostPath vs NFS</h2><table>
-            <tr><th>Topic</th><th>HostPath</th><th>NFS</th></tr>
-            <tr><td>Data location</td><td>One node filesystem</td><td>Network share on a server</td></tr>
-            <tr><td>Multi-node access</td><td>No practical shared access</td><td>Yes, designed for it</td></tr>
-            <tr><td>RWX fit</td><td>Poor</td><td>Strong</td></tr>
-            <tr><td>Typical lesson</td><td>Local persistence</td><td>Shared storage</td></tr>
-        </table><div class="note"><strong>Design hint:</strong> NFS is a very effective bridge from simple lab storage to more advanced shared-storage platforms.</div></section>
-        <section id="practice-view" class="view"><h2>How To Use It In Practice</h2><div class="grid">
-            <article class="card"><h3>Cross-node labs</h3><p>Show that the same data remains visible even when Pods run on different nodes.</p></article>
-            <article class="card"><h3>RWX demonstrations</h3><p>Teach why some backends support shared writable access while others do not.</p></article>
-            <article class="card"><h3>Shared file workloads</h3><p>Use NFS when many Pods need to coordinate around common files, logs, or assets.</p></article>
-        </div></section>
-    </div>
-    <script>function showView(view, button){document.querySelectorAll('.view').forEach((s)=>s.classList.remove('active'));document.querySelectorAll('.btn').forEach((b)=>b.classList.remove('active'));document.getElementById(view+'-view').classList.add('active');button.classList.add('active');}</script>
+        <section id="compare-view" class="view">
+            <h2>HostPath vs NFS</h2>
+            <table>
+                <tr><th>Topic</th><th>HostPath</th><th>NFS</th></tr>
+                <tr><td>Data location</td><td>One node filesystem</td><td>Network share on a server</td></tr>
+                <tr><td>Multi-node access</td><td>No practical shared access</td><td>Yes, designed for it</td></tr>
+                <tr><td>RWX fit</td><td>Poor</td><td>Strong</td></tr>
+                <tr><td>Typical lesson</td><td>Local persistence</td><td>Shared storage</td></tr>
+            </table>
+            <div class="note"><strong>Design hint:</strong> NFS is a very effective bridge from simple lab storage to more advanced shared-storage platforms.</div>
+        </section>
+        <section id="practice-view" class="view">
+            <h2>How To Use It In Practice</h2>
+            <div class="grid">
+                <article class="card">
+                    <h3>Cross-node labs</h3>
+                    <p>Show that the same data remains visible even when Pods run on different nodes.</p>
+                </article>
+                <article class="card">
+                    <h3>RWX demonstrations</h3>
+                    <p>Teach why some backends support shared writable access while others do not.</p>
+                </article>
+                <article class="card">
+                    <h3>Shared file workloads</h3>
+                    <p>Use NFS when many Pods need to coordinate around common files, logs, or assets.</p>
+                </article>
+            </div>
+        </section>
+</div>
+    <script>
+        function showView(view, button) {
+            document.querySelectorAll('.view').forEach((section) => section.classList.remove('active'));
+            document.querySelectorAll('.btn').forEach((btn) => btn.classList.remove('active'));
+            document.getElementById(view + '-view').classList.add('active');
+            button.classList.add('active');
+        }
+    </script>
 </body>
 </html>

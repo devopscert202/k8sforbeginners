@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Plane Troubleshooting — k8sforbeginners</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --kube-blue: #326CE5;
+      --kube-blue-deep: #1d4ed8;
+      --kube-sky: #dbeafe;
+      --ink: #1a1a2e;
+      --muted: #64748b;
+      --surface: #ffffff;
+      --panel: #ffffff;
+      --line: #dbe3f1;
+      --mint: #dcfce7;
+      --amber: #fef3c7;
+      --rose: #ffe4e6;
+      --blue: #2563eb;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --blue-deep: var(--kube-blue-deep);
+      --sky: var(--kube-sky);
+      --green: #16a34a;
+      --signal-amber: #d97706;
+      --signal-rose: #e11d48;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--ink);
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 1380px; margin: 0 auto; }
+
+    .hero {
+            position: relative;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      margin-bottom: 26px;
+      border: 1px solid rgba(50,108,229,0.1);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--kube-sky);
+      color: var(--kube-blue-deep);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--kube-blue);
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.15;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 18px;
+    }
+    .footer-note a { color: var(--kube-blue); text-decoration: none; }
+    .footer-note a:hover { text-decoration: underline; }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      justify-content: center;
+    }
+    .btn {
+      font-family: inherit;
+      font-size: 0.88rem;
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--slate-200);
+      background: #fff;
+      color: var(--slate-700);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .btn:hover {
+      border-color: var(--blue);
+      color: var(--blue-deep);
+    }
+    .btn.active {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue-deep);
+    }
+
+    .view {
+      display: none;
+    }
+    .view.active {
+      display: block;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      color: var(--blue-deep);
+      margin-bottom: 0.75rem;
+    }
+    .card h3 {
+      font-size: 1rem;
+      color: var(--slate-700);
+      margin: 1rem 0 0.5rem;
+    }
+    .card p, .card li { color: var(--slate-700); font-size: 0.92rem; }
+    .card ul { margin-left: 1.25rem; margin-top: 0.35rem; }
+    .card li { margin-bottom: 0.35rem; }
+
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1rem 1.1rem;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      overflow-x: hidden;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      margin: 0.65rem 0;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      margin-right: 0.35rem;
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+    }
+    .tag-green { background: #dcfce7; color: var(--green); }
+    .tag-amber { background: #fef3c7; color: var(--signal-amber); }
+    .tag-rose { background: #ffe4e6; color: var(--signal-rose); }
+    .tag-sky { background: var(--sky); color: var(--blue-deep); }
+
+    .flow-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 0.5rem;
+    }
+    .flow-table th, .flow-table td {
+      border: 1px solid var(--slate-200);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+    }
+    .flow-table th {
+      background: var(--sky);
+      color: var(--slate-900);
+    }
+
+    .diagram {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 0.75rem 0;
+      overflow-x: auto;
+    }
+    .diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .ref-item {
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 0.75rem;
+      background: #fafbfc;
+    }
+    .ref-item strong { color: var(--blue-deep); display: block; margin-bottom: 0.25rem; }
+
+    .tree {
+      font-family: ui-monospace, monospace;
+      font-size: 0.82rem;
+      background: #f8fafc;
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      color: var(--slate-700);
+      white-space: pre-wrap;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .tabs { flex-direction: column; align-items: stretch; }
+      .btn { width: 100%; text-align: center; }
+      .ref-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Control Plane Troubleshooting</h1>
+      <p class="subtitle">Interactive guide: architecture, symptoms, checks, and recovery paths for API Server, Scheduler, Controller Manager, and etcd.</p>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Control plane sections">
+      <button type="button" class="btn active" role="tab" aria-selected="true" data-view="v-overview">Overview</button>
+      <button type="button" class="btn" role="tab" aria-selected="false" data-view="v-apiserver">API Server</button>
+      <button type="button" class="btn" role="tab" aria-selected="false" data-view="v-scheduler">Scheduler</button>
+      <button type="button" class="btn" role="tab" aria-selected="false" data-view="v-cm">Controller Manager</button>
+      <button type="button" class="btn" role="tab" aria-selected="false" data-view="v-etcd">etcd</button>
+      <button type="button" class="btn" role="tab" aria-selected="false" data-view="v-quick">Quick Reference</button>
+    </nav>
+
+    <!-- Tab 1: Overview -->
+    <section id="v-overview" class="view active" role="tabpanel">
+      <div class="card">
+        <h2>Control plane architecture</h2>
+        <p>Every control plane component coordinates through the <strong>API Server</strong>. Cluster state lives in <strong>etcd</strong>; controllers and the scheduler read and write desired state via the API.</p>
+        <div class="diagram" aria-label="Architecture diagram">
+          <svg viewBox="0 0 720 280" width="720" height="280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="sh" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.12"/></filter>
+              <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#64748b"/></marker>
+              <marker id="arr2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#334155"/></marker>
+            </defs>
+            <rect x="20" y="100" width="130" height="70" rx="10" fill="#fff" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+            <text x="85" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">kube-apiserver</text>
+            <text x="85" y="150" text-anchor="middle" font-size="10" fill="#64748b">REST + auth</text>
+            <rect x="570" y="95" width="130" height="80" rx="10" fill="#fff" stroke="#16a34a" stroke-width="2" filter="url(#sh)"/>
+            <text x="635" y="125" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d">etcd</text>
+            <text x="635" y="145" text-anchor="middle" font-size="10" fill="#64748b">consistent store</text>
+            <rect x="200" y="30" width="120" height="55" rx="8" fill="#fff" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+            <text x="260" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#b45309">Scheduler</text>
+            <text x="260" y="70" text-anchor="middle" font-size="9" fill="#64748b">binds pods → nodes</text>
+            <rect x="200" y="200" width="150" height="55" rx="8" fill="#fff" stroke="#e11d48" stroke-width="2" filter="url(#sh)"/>
+            <text x="275" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#be123c">Controller Manager</text>
+            <text x="275" y="240" text-anchor="middle" font-size="9" fill="#64748b">reconcile loops</text>
+            <path d="M 320 57 L 400 120" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+            <path d="M 275 200 L 400 145" stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+            <path d="M 150 135 L 200 135" stroke="#2563eb" stroke-width="2" fill="none" marker-end="url(#arr2)"/>
+            <path d="M 500 135 L 570 135" stroke="#16a34a" stroke-width="2" fill="none" marker-end="url(#arr2)"/>
+            <text x="360" y="118" font-size="10" fill="#334155">watch/list/write via API</text>
+            <text x="360" y="155" font-size="10" fill="#334155">persist keys</text>
+          </svg>
+        </div>
+        <p><span class="tag tag-sky">Interaction rule</span> Schedulers and controllers never talk to etcd directly in a standard cluster—they use the API Server, which validates and persists changes.</p>
+      </div>
+      <div class="card">
+        <h2>Quick reference: who does what</h2>
+        <div class="ref-grid">
+          <div class="ref-item"><strong>API Server</strong> Front door for kubectl and components; admission, authn/z, validation; watches.</div>
+          <div class="ref-item"><strong>Scheduler</strong> Assigns unscheduled Pods to Nodes (filters + scores).</div>
+          <div class="ref-item"><strong>Controller Manager</strong> Runs controllers (Deployment, ReplicaSet, Job, Node, etc.).</div>
+          <div class="ref-item"><strong>etcd</strong> Stores all Kubernetes object data; quorum required for writes.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: API Server -->
+    <section id="v-apiserver" class="view" role="tabpanel">
+      <div class="card">
+        <h2>Common failures</h2>
+        <ul>
+          <li><span class="tag tag-rose">OOM</span> API Server killed under memory pressure—check node resources and request limits.</li>
+          <li><span class="tag tag-amber">Certs</span> Expired or mismatched TLS between apiserver ↔ etcd or clients.</li>
+          <li><span class="tag tag-rose">etcd</span> Unreachable or unhealthy—API returns errors or timeouts on writes.</li>
+          <li><span class="tag tag-amber">Port</span> Another process bound to <code>6443</code> (or configured secure port).</li>
+          <li><span class="tag tag-sky">RBAC</span> Misconfigured ClusterRoleBindings—symptoms look like “forbidden” for controllers or users.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Diagnosis flow</h2>
+        <table class="flow-table">
+          <thead><tr><th>Symptom</th><th>Check</th><th>Diagnose</th><th>Fix direction</th></tr></thead>
+          <tbody>
+            <tr><td><code>kubectl</code> hangs / TLS errors</td><td>Certs, connectivity to VIP/LB</td><td>OpenSSL / apiserver logs</td><td>Rotate certs, fix SANs, fix LB</td></tr>
+            <tr><td>500s / timeout on mutating API</td><td>etcd health, disk</td><td>etcdctl, apiserver logs</td><td>Restore quorum, free disk</td></tr>
+            <tr><td>Pod CrashLoop (static pod)</td><td><code>describe</code>, node logs</td><td>OOMKilled, args, mounts</td><td>Increase memory, fix flags</td></tr>
+            <tr><td>“Forbidden” for system accounts</td><td>RBAC objects</td><td><code>auth can-i</code>, audit</td><td>Repair RoleBindings</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Key commands</h2>
+        <pre>kubectl get --raw /healthz
+kubectl get --raw /livez
+kubectl get --raw /readyz</pre>
+        <pre># systemd control plane (many kubeadm clusters)
+sudo journalctl -u kube-apiserver -f
+
+# Pod-based control plane
+kubectl logs -n kube-system kube-apiserver-&lt;node-name&gt; -f</pre>
+        <pre>crictl ps | grep kube-apiserver
+ss -tlnp | grep 6443</pre>
+      </div>
+      <div class="card">
+        <h2>Sample: failing API Server pod</h2>
+        <p><code>kubectl describe pod -n kube-system kube-apiserver-control-plane</code> often shows exit reason, OOM, mount failures, or bad flags.</p>
+        <pre>Name:             kube-apiserver-control-plane
+Namespace:        kube-system
+...
+State:            Waiting
+  Reason:         CrashLoopBackOff
+Last State:       Terminated
+  Reason:         OOMKilled
+  Exit Code:      137
+...
+Events:
+  Warning  BackOff  12s (x15)  kubelet  Back-off restarting failed container kube-apiserver</pre>
+      </div>
+    </section>
+
+    <!-- Tab 3: Scheduler -->
+    <section id="v-scheduler" class="view" role="tabpanel">
+      <div class="card">
+        <h2>Common failures</h2>
+        <ul>
+          <li>Pods stuck in <strong>Pending</strong> with scheduling events.</li>
+          <li>Scheduler static pod / deployment not running on control plane nodes.</li>
+          <li>Control plane or worker <strong>resource pressure</strong> (CPU, memory, ephemeral storage).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Diagnosis</h2>
+        <p>Use events and Pod details—scheduling failures are usually explicit in <code>Events</code>.</p>
+        <pre>kubectl get events -A --sort-by=.lastTimestamp | tail -40
+kubectl describe pod &lt;pod&gt; -n &lt;ns&gt;</pre>
+        <pre>kubectl get pods -n kube-system | grep scheduler
+kubectl logs -n kube-system kube-scheduler-&lt;node-name&gt; --tail=100</pre>
+      </div>
+      <div class="card">
+        <h2>Scenarios</h2>
+        <ul>
+          <li><span class="tag tag-amber">Resources</span> “0/X nodes available: insufficient cpu/memory”—raise limits, add nodes, or reduce requests.</li>
+          <li><span class="tag tag-rose">Taints</span> “didn’t tolerate taint”—add tolerations or remove taints where appropriate.</li>
+          <li><span class="tag tag-sky">Affinity</span> node/pod affinity rules too strict—relax <code>requiredDuringScheduling</code> or fix labels.</li>
+          <li><span class="tag tag-green">PDB</span> PodDisruptionBudget blocking eviction—not a scheduler bug; check voluntary disruption constraints.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Tab 4: Controller Manager -->
+    <section id="v-cm" class="view" role="tabpanel">
+      <div class="card">
+        <h2>Common failures</h2>
+        <ul>
+          <li>ReplicaSet not creating Pods or not matching Deployment generation.</li>
+          <li>Deployment <strong>stuck</strong> progressing—ReplicaSets exist but readiness never converges.</li>
+          <li>Jobs not completing—controller not creating Pods or stuck on backoff limits.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Diagnosis</h2>
+        <p>Correlate Deployment → ReplicaSet → Pod graph with events. Controller-manager logs show sync errors, quota denials, or API errors.</p>
+        <pre>kubectl describe deployment &lt;name&gt; -n &lt;ns&gt;
+kubectl get rs -n &lt;ns&gt; -l app=&lt;label&gt;
+kubectl logs -n kube-system kube-controller-manager-&lt;node-name&gt; --tail=200</pre>
+      </div>
+      <div class="card">
+        <h2>Scenario: “1/3 replicas available”</h2>
+        <ol style="margin-left:1.25rem;color:var(--slate-700);font-size:0.92rem;">
+          <li>Confirm three ReplicaSet Pods exist: <code>kubectl get pods -l app=...</code></li>
+          <li>If Pods exist but not Ready, debug probes, mounts, and image pull—not controller-manager.</li>
+          <li>If fewer than three Pods, check RS spec, quota, and <code>controller-manager</code> logs for sync failures.</li>
+          <li>Check PDB and rollout strategy <code>maxUnavailable</code>—may throttle creation during surge.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Tab 5: etcd -->
+    <section id="v-etcd" class="view" role="tabpanel">
+      <div class="card">
+        <h2>Common failures</h2>
+        <ul>
+          <li><span class="tag tag-rose">Quorum loss</span> Majority of members down—cluster read-only or API failures.</li>
+          <li><span class="tag tag-amber">Latency</span> Slow fsync/disk—watch delays, timeouts.</li>
+          <li><span class="tag tag-amber">Disk</span> Full or high usage—etcd raises alarms, compaction needed.</li>
+          <li><span class="tag tag-sky">Backup/restore</span> Wrong member set, version skew, or corrupt snapshot.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Diagnosis (etcdctl)</h2>
+        <p>Set endpoints and TLS flags to match your cluster. Example with TLS:</p>
+        <pre>export ETCDCTL_API=3
+export ETCDCTL_ENDPOINTS="https://127.0.0.1:2379"
+export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
+export ETCDCTL_CERT=/etc/kubernetes/pki/apiserver-etcd-client.crt
+export ETCDCTL_KEY=/etc/kubernetes/pki/apiserver-etcd-client.key
+
+etcdctl endpoint health
+etcdctl endpoint status -w table
+etcdctl alarm list</pre>
+      </div>
+      <div class="card">
+        <h2>Key metrics (watch in monitoring)</h2>
+        <ul>
+          <li><strong>WAL fsync duration</strong> — sustained spikes imply storage or overload.</li>
+          <li><strong>Backend commit duration</strong> — high values correlate with API slowness.</li>
+          <li>Member <strong>leader changes</strong> — network or resource instability.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Recovery: snapshot restore (high level)</h2>
+        <ol style="margin-left:1.25rem;color:var(--slate-700);font-size:0.92rem;">
+          <li>Stop kube-apiserver (and often etcd members) per your runbook—avoid split-brain.</li>
+          <li>Restore snapshot with <code>etcdctl snapshot restore</code> into clean data dirs for members.</li>
+          <li>Reconcile static pod manifests or systemd units so all members start with consistent state.</li>
+          <li>Start etcd, verify <code>endpoint health</code>, then start API Server; validate with <code>kubectl get nodes</code>.</li>
+        </ol>
+        <p style="margin-top:0.75rem;font-size:0.9rem;">See <a href="./etcd-backup-restore.html">etcd backup &amp; restore</a> for the dedicated walkthrough.</p>
+      </div>
+    </section>
+
+    <!-- Tab 6: Quick Reference -->
+    <section id="v-quick" class="view" role="tabpanel">
+      <div class="card">
+        <h2>Decision tree: what’s broken?</h2>
+        <div class="tree">kubectl errors / TLS?
+  → API Server tab: /healthz, /readyz, certs, port 6443, apiserver logs
+
+All workloads Pending?
+  → Scheduler tab: events, describe pod, scheduler pod logs
+
+Deployments / Jobs not moving?
+  → Controller Manager tab: describe deploy/rs, controller-manager logs
+
+API timeouts + etcd alarms / quorum?
+  → etcd tab: endpoint health, alarms, disk; restore runbook
+
+Pods Ready/Probe issues?
+  → ./health-probes.html</div>
+      </div>
+      <div class="card">
+        <h2>Commands by component</h2>
+        <table class="flow-table">
+          <thead><tr><th>Component</th><th>Commands</th></tr></thead>
+          <tbody>
+            <tr><td>API Server</td><td><code>kubectl get --raw /healthz|/livez|/readyz</code>; <code>journalctl -u kube-apiserver</code>; <code>kubectl logs -n kube-system kube-apiserver-&lt;node&gt;</code>; <code>ss -tlnp | grep 6443</code></td></tr>
+            <tr><td>Scheduler</td><td><code>kubectl get events</code>; <code>kubectl describe pod</code>; <code>kubectl logs -n kube-system kube-scheduler-&lt;node&gt;</code></td></tr>
+            <tr><td>Controller Manager</td><td><code>kubectl describe deploy/rs</code>; <code>kubectl logs -n kube-system kube-controller-manager-&lt;node&gt;</code></td></tr>
+            <tr><td>etcd</td><td><code>etcdctl endpoint health</code>; <code>etcdctl endpoint status</code>; <code>etcdctl alarm list</code>; snapshot restore workflow</td></tr>
+            <tr><td>General</td><td><code>kubectl get pods -n kube-system</code>; <code>crictl ps</code>; node and disk checks on control plane</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Related pages</h2>
+        <ul>
+          <li><a href="./health-probes.html">Health probes (liveness, readiness, startup)</a></li>
+          <li><a href="./cluster-administration.html">Cluster administration</a></li>
+          <li><a href="./etcd-backup-restore.html">etcd backup &amp; restore</a></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>CKA tips (troubleshooting domain)</h2>
+        <ul>
+          <li>Start from <strong>symptoms</strong>: <code>get events</code>, <code>describe</code>, then narrow to the failing component.</li>
+          <li>Know the difference between <code>/livez</code> (running) and <code>/readyz</code> (accepting traffic)—useful under load or startup.</li>
+          <li>For scheduling, quote the exact <strong>event reason</strong> in your answer (e.g. FailedScheduling message).</li>
+          <li>Practice <strong>etcdctl</strong> with TLS env vars; quorum loss is a common exam narrative.</li>
+          <li>Time-box: fix the smallest change that proves the theory (one flag, one taint, one binding).</li>
+        </ul>
+      </div>
+    </section>
+</div>
+
+  <script>
+    (function () {
+      var buttons = document.querySelectorAll('.btn[data-view]');
+      var views = document.querySelectorAll('.view');
+      function show(id) {
+        views.forEach(function (v) {
+          v.classList.toggle('active', v.id === id);
+        });
+        buttons.forEach(function (b) {
+          var on = b.getAttribute('data-view') === id;
+          b.classList.toggle('active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+      }
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          show(btn.getAttribute('data-view'));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

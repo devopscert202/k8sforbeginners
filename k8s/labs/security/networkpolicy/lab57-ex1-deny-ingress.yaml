@@ -1,0 +1,9 @@
+# Lab 57 Exercise 1: Default deny all ingress in netpol-lab
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: netpol-lab
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]

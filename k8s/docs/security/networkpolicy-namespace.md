@@ -1,8 +1,10 @@
-### **Tutorial: Namespace-Level Traffic Isolation Using NetworkPolicy**
+### **Namespace-Level Traffic Isolation Using NetworkPolicy**
 
-This tutorial demonstrates how to use Kubernetes **NetworkPolicy** to block traffic from Pods in other namespaces while allowing traffic from Pods in the same namespace.
+This document explains how Kubernetes **NetworkPolicy** can isolate ingress so Pods accept traffic from workloads in the **same namespace** while blocking ingress from **other namespaces** (when you apply a matching policy in each namespace you want to protect).
 
 ---
+
+> **Related:** [NetworkPolicy Basics](./networkpolicy.md) | [Kubernetes Hardening Guide](./k8s-hardening.md)
 
 ### **Background: Default Kubernetes Behavior**
 
@@ -11,88 +13,31 @@ This tutorial demonstrates how to use Kubernetes **NetworkPolicy** to block traf
    - **Egress**: All Pods can send traffic to any destination.
 
 2. **Inter-namespace Traffic**:
-   - By default, Pods in **namespace A** can freely communicate with Pods in **namespace B** unless a NetworkPolicy is applied to restrict this behavior.
+   - By default, Pods in **namespace A** can freely communicate with Pods in **namespace B** unless a NetworkPolicy selects those Pods and restricts ingress or egress.
 
-3. **Purpose of the Policy**:
-   - This policy ensures **namespace isolation** by allowing traffic only from Pods within the same namespace, effectively blocking all ingress traffic from other namespaces.
-
----
-
-### **Objective**
-
-We will:
-- Apply a NetworkPolicy to block ingress traffic from Pods in other namespaces.
-- Verify communication between Pods within the same namespace and across namespaces.
-- Compare default behavior with behavior after applying the policy.
+3. **Purpose of This Pattern**:
+   - A **same-namespace-only** ingress rule helps achieve **namespace isolation**: workloads only trust peers that share their namespace, which limits lateral movement from other teams or environments.
 
 ---
 
-### **Prerequisites**
+### **Objective (conceptual)**
 
-1. A Kubernetes cluster is running.
-2. Kubernetes CLI tool (`kubectl`) is installed.
-3. A CNI plugin that supports NetworkPolicy (e.g., Calico) is installed.
-
----
-
-### **Steps**
-
-#### **1. Create Namespaces**
-
-We will use two namespaces for this tutorial: `default` and `test`.
-
-```bash
-kubectl create namespace test
-```
-
-Verify the namespaces:
-```bash
-kubectl get namespaces
-```
+- Understand how a policy that pairs an empty `podSelector` with `from.podSelector: {}` limits **ingress sources** to Pods in the same namespace.
+- Contrast default open cluster networking with **deny-by-implication** semantics: once a Pod is selected by a policy, only rules listed in that policy apply to the traffic types the policy declares.
 
 ---
 
-#### **2. Create Pods in Both Namespaces**
+### **Prerequisites (conceptual)**
 
-Create Pods and Services in each namespace:
-
-1. **Default Namespace**:
-   ```bash
-   kubectl run pod1 --image=nginx --labels="app=default-app" --expose --port=80
-   ```
-
-2. **Test Namespace**:
-   ```bash
-   kubectl run pod2 --image=nginx --labels="app=test-app" --namespace=test --expose --port=80
-   ```
-
-Verify that both Pods and Services are running:
-```bash
-kubectl get pods,svc -n default
-kubectl get pods,svc -n test
-```
+1. A Kubernetes cluster with a **CNI that enforces NetworkPolicy** (for example Calico, Cilium, or Kind with a compatible CNI).
+2. Awareness that policies are **additive per Pod**: if multiple policies select a Pod, traffic must satisfy **all** of them for each direction (ingress/egress) that any policy defines.
 
 ---
 
-#### **3. Test Default Behavior**
+### **Illustrative policy: deny ingress from other namespaces**
 
-1. **Check Connectivity From `default` to `test` Namespace**:
-   ```bash
-   kubectl exec pod1 -- curl pod2.test.svc.cluster.local
-   ```
-   **Expected Result**: The request succeeds, showing the NGINX default page.
+The following policy applies to **all Pods in its namespace** (`podSelector: {}`) and allows ingress **only from Pods in that same namespace** (`from: - podSelector: {}`). It does not define egress rules; egress behavior depends on whether other policies exist and on your CNI defaults.
 
-2. **Check Connectivity Within the Same Namespace (`default`)**:
-   ```bash
-   kubectl exec pod1 -- curl pod1.default.svc.cluster.local
-   ```
-   **Expected Result**: The request succeeds.
-
----
-
-#### **4. Apply the Namespace-Level NetworkPolicy**
-
-Create a file `deny-from-other-namespaces.yaml`:
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -107,86 +52,44 @@ spec:
       - podSelector: {}
 ```
 
-Apply the policy:
-```bash
-kubectl apply -f deny-from-other-namespaces.yaml
-```
-
-Verify the policy is applied:
-```bash
-kubectl get networkpolicy -n default
-```
+To get symmetric isolation, apply an equivalent policy in **each** namespace that should be isolated. Traffic from another namespace will not match `podSelector: {}` in the **target** namespace’s rule set (namespace boundaries apply to empty pod selectors).
 
 ---
 
-#### **5. Test the Policy**
+### **Behavior comparison**
 
-1. **Check Connectivity From `default` to `test` Namespace**:
-   ```bash
-   kubectl exec pod2 -- curl pod1.default.svc.cluster.local
-   ```
-   **Expected Result**: The request fails because the NetworkPolicy blocks traffic from other namespaces. Here networkpolicy is applied to default namespace, so pod1 running in that namespace is blocking traffic from pod2 running in other namespace.  For the same behavior for test namespace, apply and test the network policy for test name space also.
+| **Scenario**                       | **Without NetworkPolicy** | **With same-namespace ingress policy** |
+|-------------------------------------|---------------------------|------------------------------------------|
+| Pod in `default` → Pod in `default` | Allowed                   | Allowed                                  |
+| Pod in `default` → Pod in `test`    | Allowed                   | Allowed (unless `test` has its own restrictions) |
+| Pod in `test` → Pod in `default`    | Allowed                   | Denied when policy protects `default`    |
+| Pod in `test` → Pod in `test`       | Allowed                   | Allowed if `test` uses the same pattern  |
 
-2. **Check Connectivity Within the Same Namespace (`default`)**:
-   ```bash
-   kubectl exec pod1 -- curl pod1.default.svc.cluster.local
-   ```
-   **Expected Result**: The request succeeds because the policy allows traffic from Pods in the same namespace.
+Exact results depend on which namespaces have policies and whether Services, NodePort, or external traffic need additional `ingress.from` clauses (namespace selectors, IP blocks, etc.).
 
 ---
 
-### **Analysis: Behavior Comparison**
+### **How the policy works**
 
-| **Scenario**                       | **Without NetworkPolicy** | **With NetworkPolicy** |
-|-------------------------------------|---------------------------|-------------------------|
-| Pod in `default` → Pod in `default` | Allowed                   | Allowed                |
-| Pod in `default` → Pod in `test`    | Allowed                   | Denied  (policy applied on the test namespace)                |
-| Pod in `test` → Pod in `default`    | Allowed                   | Denied   (policy applied on the default namespace)               |
-| Pod in `test` → Pod in `test`       | Allowed                   | Allowed (unaffected)   |
+1. **Default behavior**: Without a NetworkPolicy, Pods are not restricted by Kubernetes’ policy objects (the CNI still routes traffic normally).
 
----
-
-### **How the Policy Works**
-
-1. **Default Behavior**:
-   - Without a NetworkPolicy, Pods can communicate freely across namespaces.
-
-2. **With the `deny-from-other-namespaces` Policy**:
-   - Pods in the `default` namespace can only accept traffic from other Pods in the same namespace (`podSelector: {}` matches all Pods in the namespace).
-   - All ingress traffic from Pods in other namespaces is blocked.
-
----
-
-### **Cleanup**
-
-To remove the resources created during this tutorial:
-
-1. Delete the Pods and Services:
-   ```bash
-   kubectl delete pod pod1 -n default
-   kubectl delete svc pod1 -n default
-   kubectl delete pod pod2 -n test
-   kubectl delete svc pod2 -n test
-   ```
-
-2. Delete the NetworkPolicy:
-   ```bash
-   kubectl delete networkpolicy deny-from-other-namespaces -n default
-   ```
-
-3. Delete the `test` namespace:
-   ```bash
-   kubectl delete namespace test
-   ```
+2. **With `deny-from-other-namespaces` (pattern above)**:
+   - Selected Pods can accept ingress **only** from Pod IPs in the **same namespace** that the policy also allows—here, any Pod in that namespace because both selectors are empty within the namespace.
+   - Ingress from Pods in **other namespaces** does not satisfy `from.podSelector: {}` in the target namespace’s policy plane, so it is dropped for selected Pods.
 
 ---
 
 ### **Conclusion**
 
-By applying the `deny-from-other-namespaces` NetworkPolicy:
-- Traffic between namespaces is blocked, ensuring namespace-level isolation.
-- Traffic within the same namespace is allowed.
-- This demonstrates how NetworkPolicies enforce fine-grained control over network traffic in Kubernetes. 
+This pattern demonstrates **namespace-scoped trust**: fine-grained control over who may connect to workloads without listing every remote Pod by label. Combine with explicit egress policies, DNS allowances, and observability when hardening production clusters.
 
 ---
 
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 13: Advanced Network Policies - Namespace Isolation](../../labmanuals/lab13-sec-network-policies.md) | Create and verify NetworkPolicies on a cluster with a supporting CNI. |
+| [Lab 57: Network Policies — Pod and Application Traffic Control](../../labmanuals/lab57-sec-network-policy-advanced.md) | Explore richer ingress/egress and application-level rules. |

@@ -1,0 +1,30 @@
+# Lab 57 Exercise 6: External traffic with ipBlock/CIDR
+---
+# Egress: restrict frontend to corporate range 10.0.0.0/8 on port 443
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: egress-corporate-only
+  namespace: netpol-lab
+spec:
+  podSelector: { matchLabels: { app: frontend } }
+  policyTypes: [Egress]
+  egress:
+    - to: [{ ipBlock: { cidr: 10.0.0.0/8 } }]
+      ports: [{ protocol: TCP, port: 443 }]
+---
+# Ingress: allow from CIDR range, except untrusted subnet
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingress-from-cidr-with-except
+  namespace: netpol-lab
+spec:
+  podSelector: { matchLabels: { app: frontend } }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+            except: [10.0.1.0/24]
+      ports: [{ protocol: TCP, port: 80 }]

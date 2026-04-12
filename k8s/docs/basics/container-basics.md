@@ -1,64 +1,20 @@
-# **Lab Title**: Apache Container Version Testing with Docker
+# Container basics for Kubernetes learners
+
+Containers are **lightweight, portable units** that package an application with its libraries and configuration so it runs the same way in development, CI, and production. Kubernetes schedules and runs workloads as **Pods**, each of which uses a **container image** as its template.
 
 ---
 
-## **Objective**
+## Images and layers
 
-1. Build Docker images for two versions of a simple Apache-based HTML app.
-2. Run and expose the containers on different ports using `docker run`.
-3. Verify the application version using `curl` and browser.
-4. Understand version control and local testing before container registry or Kubernetes deployment.
+A **container image** is an immutable, layered filesystem snapshot plus metadata (entrypoint, environment defaults, exposed ports). Images are built from a **Dockerfile** (or another build spec) and tagged (for example `myapp:v1`, `myapp:v2`) so you can roll forward, roll back, and promote the same artifact through environments.
 
----
+Typical image properties:
 
-## **Prerequisites**
+- **Base image** — e.g. `httpd:2.4` provides the runtime; your layers add app files.
+- **`COPY` / `ADD`** — place application assets into the image.
+- **`EXPOSE`** — documents intended ports (actual publishing happens at `docker run` or in Kubernetes `containerPort` / Service definitions).
 
-- Docker installed and running.
-- `curl` installed (optional for browser-based verification).
-
----
-
-## **Step 1: Create Application Files**
-
-### **1.1 HTML for Version 1**
-
-Create a file named `index-v1.html` with this content:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Apache HTML Index - Version 1</title>
-</head>
-<body>
-    <h1>Welcome to Apache HTML Index - Version 1</h1>
-</body>
-</html>
-````
-
-### **1.2 HTML for Version 2**
-
-Create a file named `index-v2.html`:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Apache HTML Index - Version 2</title>
-</head>
-<body>
-    <h1>Welcome to Apache HTML Index - Version 2</h1>
-</body>
-</html>
-```
-
----
-
-## **Step 2: Create Dockerfiles**
-
-### **2.1 Dockerfile for Version 1**
-
-Save as `Dockerfile-v1`:
+Illustrative **Dockerfile** fragment (two variants of the same app, different static content):
 
 ```dockerfile
 FROM httpd:2.4
@@ -66,114 +22,43 @@ COPY index-v1.html /usr/local/apache2/htdocs/index.html
 EXPOSE 80
 ```
 
-### **2.2 Dockerfile for Version 2**
+---
 
-Save as `Dockerfile-v2`:
+## Running containers locally (why it matters before Kubernetes)
 
-```dockerfile
-FROM httpd:2.4
-COPY index-v2.html /usr/local/apache2/htdocs/index.html
-EXPOSE 80
-```
+Running a container on your machine with **Docker** (or a compatible runtime) lets you verify:
+
+- the image builds and starts
+- ports and HTTP responses match expectations
+- you can run **multiple versions side by side** on different host ports for quick comparison
+
+That validation is useful **before** you push to a registry or reference the image in a Pod spec. In Kubernetes, you do not run `docker run` on the node for normal workloads; the kubelet and container runtime create containers from the image reference in the Pod.
 
 ---
 
-## **Step 3: Build Docker Images**
+## Containers vs VMs (conceptual)
 
-Run the following commands in the directory containing the Dockerfiles and HTML files:
-
-```bash
-docker build -t apache-html:v1 -f Dockerfile-v1 .
-docker build -t apache-html:v2 -f Dockerfile-v2 .
-```
-
-Verify the images are built:
-
-```bash
-docker images | grep apache-html
-```
+| Aspect | Containers | Traditional VMs |
+|--------|------------|------------------|
+| Isolation | Process + cgroup namespaces; shared kernel | Full guest OS per VM |
+| Startup | Seconds | Often minutes |
+| Density | Higher on same hardware | Lower |
+| Use with K8s | Native workload unit | Nodes may be VMs or bare metal underneath |
 
 ---
 
-## **Step 4: Run the Containers**
+## Relationship to Kubernetes
 
-### **4.1 Run Version 1 on Port 8081**
-
-```bash
-docker run -d --name apache-v1 -p 8081:80 apache-html:v1
-```
-
-### **4.2 Run Version 2 on Port 8082**
-
-```bash
-docker run -d --name apache-v2 -p 8082:80 apache-html:v2
-```
-
-Check running containers:
-
-```bash
-docker ps
-```
+- Kubernetes **pulls** images (from a registry or pre-loaded in tools like Kind) and runs them as containers inside **Pods**.
+- **Tags and digests** matter for reproducible deployments; many teams pin by digest in production.
+- **Multi-stage builds** and minimal base images reduce attack surface and transfer size—relevant to security and policy topics elsewhere in this repo.
 
 ---
 
-## **Step 5: Test with curl or Browser**
+## Hands-On Labs
 
-### **5.1 Test Version 1**
+Practice these concepts with guided lab exercises:
 
-```bash
-curl http://localhost:8081
-```
-
-**Expected Output:**
-
-```html
-<h1>Welcome to Apache HTML Index - Version 1</h1>
-```
-
-Or open in browser: [http://localhost:8081](http://localhost:8081)
-
----
-
-### **5.2 Test Version 2**
-
-```bash
-curl http://localhost:8082
-```
-
-**Expected Output:**
-
-```html
-<h1>Welcome to Apache HTML Index - Version 2</h1>
-```
-
-Or open in browser: [http://localhost:8082](http://localhost:8082)
-
----
-
-## **Step 6: Clean Up**
-
-Stop and remove containers after testing:
-
-```bash
-docker stop apache-v1 apache-v2
-docker rm apache-v1 apache-v2
-```
-
-Optionally, remove the images:
-
-```bash
-docker rmi apache-html:v1 apache-html:v2
-```
-
----
-
-## **Conclusion**
-
-* Built two custom Docker images based on Apache with different HTML content.
-* Used `docker run` to test both versions simultaneously on separate ports.
-* Verified content using `curl` and browser for accurate local validation.
-* This approach is ideal before pushing to a registry or using in Kubernetes.
-
-```
-
+| Lab | Description |
+|-----|-------------|
+| [Lab 04: Docker build and run](../../labmanuals/lab04-basics-docker-build-run.md) | Build images, run containers on different ports, and verify behavior before Kubernetes. |

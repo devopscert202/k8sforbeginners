@@ -6,20 +6,69 @@
     <title>Kubernetes Dashboard - Interactive Guide</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
         body {
             font-family: "Segoe UI", system-ui, sans-serif;
-            background:
-                radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 28%),
-                radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 26%),
-                linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-            color: #0f172a;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
             padding: 20px;
             line-height: 1.6;
         }
-        .container { max-width: 1320px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 28px; }
-        h1 { font-size: 2rem; color: #2563eb; margin-bottom: 8px; }
-        .subtitle { max-width: 850px; margin: 0 auto; color: #64748b; }
+        .container { max-width: 1380px; margin: 0 auto; }
+
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
+        .hero h1 { font-size: clamp(2rem, 4vw, 3rem); color: var(--kube-blue); margin-bottom: 8px; }
+        .subtitle { max-width: 850px; margin: 0 auto; color: var(--muted); }
         .controls { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
         .btn {
             border: 1px solid #bfdbfe; background: white; color: #2563eb; border-radius: 999px;
@@ -117,8 +166,9 @@
         }
         .details-body { padding: 0 18px 18px; }
         pre {
-            background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 16px; overflow-x: auto;
-            font-size: 0.83rem; line-height: 1.55; margin-top: 12px; white-space: pre;
+            background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 16px; overflow-x: hidden;
+            font-size: 0.83rem; line-height: 1.55; margin-top: 12px;
+            white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;
         }
         ul { padding-left: 18px; }
         .tip {
@@ -134,16 +184,35 @@
         @media (max-width: 768px) {
             body { padding: 14px; }
             .card { padding: 20px; }
-            h1 { font-size: 1.6rem; }
+            .hero h1 { font-size: 1.6rem; }
             .flow { flex-direction: column; align-items: stretch; }
             .arrow { align-self: center; transform: rotate(90deg); }
+        }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Kubernetes Dashboard</h1>
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Dashboard</h1>
             <p class="subtitle">Legacy reference for the open-source Kubernetes Dashboard. The upstream project is archived; for the current UI path in this repository, use Headlamp instead.</p>
         </header>
 
@@ -158,7 +227,7 @@
         <div id="overview-view" class="view active">
             <div class="card">
                 <h2 class="section-title">What This Dashboard Is</h2>
-                <p class="section-lead">Kubernetes Dashboard was an open-source, web-based UI for Kubernetes clusters. It is kept here as legacy context. For the current replacement path, see `k8s-headlamp-ui.md` and `k8s-ui-headlamp.html`.</p>
+                <p class="section-lead">Kubernetes Dashboard was an open-source, web-based UI for Kubernetes clusters. It is kept here as legacy context. For the current replacement path, see <code>k8s/docs/workloads/k8s-ui-alternatives.md</code> and the Headlamp page <code>k8s-ui-headlamp.html</code> in this HTML folder.</p>
                 <div class="stats">
                     <div class="stat blue"><div class="label">Type</div><div class="value">Open Source</div><div>It is the community Kubernetes Dashboard project, not a cloud-provider console.</div></div>
                     <div class="stat green"><div class="label">Best For</div><div class="value">Learning + Demo</div><div>Great for exploration, showing resources, and guided walkthroughs.</div></div>
@@ -345,7 +414,7 @@ kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy
                 </div>
             </div>
         </div>
-    </div>
+</div>
     <script>
         function showView(name, button) {
             document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));

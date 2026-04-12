@@ -166,12 +166,22 @@ Kubernetes networking enables communication between containers, Pods, and extern
 
 ### **5. Endpoints and EndpointSlices**
 
-- **Endpoints**:
-  - Represent the IP addresses and ports of Pods backing a Service.
-  - Example: When a Service is created, Kubernetes automatically manages the associated Endpoints.
-- **EndpointSlices**:
-  - A more scalable way to represent endpoints.
-  - Reduces the size of resource objects when dealing with many endpoints.
+When you create a Service with a selector, Kubernetes tracks which Pods are healthy and ready to receive traffic. That tracking data lives in **EndpointSlice** objects.
+
+- **EndpointSlices** (`discovery.k8s.io/v1`):
+  - Store the IP addresses and ports of Pods backing a Service — the "phone book" behind the Service name.
+  - Created and maintained automatically by the EndpointSlice controller (part of kube-controller-manager).
+  - Each slice holds up to **100 endpoints**; additional slices are created as needed.
+  - Only the changed slice is transmitted on updates (**partial updates**), reducing API server and network load.
+  - Carry **topology metadata** (zone, nodeName) for topology-aware routing.
+  - Support **dual-stack** (IPv4 + IPv6) natively.
+  - **kube-proxy** reads them to program iptables/IPVS rules; Ingress controllers and service meshes also consume them.
+- **Endpoints** (legacy, `v1`):
+  - The older API that stores all backend IPs in a single object per Service.
+  - Still populated for backward compatibility, but not preferred by modern controllers.
+  - Scales poorly for large Services (every Pod change retransmits the entire object).
+
+For a deeper dive, see [EndpointSlices](endpointslices.md).
 
 ### **6. Network Policies**
 
@@ -189,11 +199,19 @@ Kubernetes networking enables communication between containers, Pods, and extern
 
 ### **8. Tools for Kubernetes Networking**
 
-- **kubectl get svc**:
-  - Lists services and their cluster IPs and ports.
-- **kubectl get pods -o wide**:
-  - Shows Pods along with their IPs and node assignments.
- 
-  ---
-  
+- **`kubectl get svc`**: Lists Services and their cluster IPs and ports.
+- **`kubectl get pods -o wide`**: Shows Pods with node assignment and Pod IP—useful when correlating Services with backends.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 02: Creating Kubernetes Services](../../labmanuals/lab02-basics-creating-services.md) | Service types, selectors, and in-cluster connectivity. |
+| [Lab 34: Multi-Port Services in Kubernetes](../../labmanuals/lab34-net-multi-port-services.md) | Multi-port Pods and Services and how clients reach each port. |
+| [Lab 45: DNS Configuration in Kubernetes](../../labmanuals/lab45-net-dns-configuration.md) | Cluster DNS behavior, `dnsPolicy`, and custom resolver settings. |
+| [Lab 58: EndpointSlices — Scalable Endpoint Management](../../labmanuals/lab58-net-endpointslices.md) | How Services map to EndpointSlices and related troubleshooting. |
 

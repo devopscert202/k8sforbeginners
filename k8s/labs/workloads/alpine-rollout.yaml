@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: "Initial deployment with alpine:3.19"
+  labels:
+    run: mydep
+  name: mydep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: mydep
+  template:
+    metadata:
+      labels:
+        run: mydep
+    spec:
+      containers:
+        - image: alpine:3.19
+          name: mydep
+          command: ["/bin/sh"]
+          args: ["-c", "while true; do echo 'Container is running'; sleep 3600; done"]
+#alpine:3.17, 3.18, 3.19

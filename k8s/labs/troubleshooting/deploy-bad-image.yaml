@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test
+  labels:
+    lab: "50"
+    exercise: "imagepull"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+        lab: "50"
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:nonexistent-tag-xyz
+          ports:
+            - containerPort: 80

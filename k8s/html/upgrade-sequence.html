@@ -11,34 +11,83 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             padding: 20px;
-            line-height: 1.4;
+            line-height: 1.6;
+            color: var(--ink);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1380px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 25px;
         }
+
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
 
         h1 {
             text-align: center;
-            color: #2d3748;
-            font-size: 26px;
+            color: var(--kube-blue);
+            font-size: clamp(2rem, 4vw, 3rem);
             margin-bottom: 8px;
             padding-bottom: 8px;
-            border-bottom: 3px solid #667eea;
         }
 
         .subtitle {
             text-align: center;
-            color: #718096;
+            color: var(--muted);
             font-size: 13px;
             margin-bottom: 15px;
         }
@@ -192,7 +241,10 @@
             color: #68d391;
             padding: 10px;
             border-radius: 4px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 11px;
             line-height: 1.4;
             margin-top: 6px;
@@ -243,15 +295,6 @@
             display: none;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #e2e8f0;
-            font-size: 12px;
-            color: #718096;
-        }
-
         @media print {
             body {
                 background: white;
@@ -267,12 +310,33 @@
                 box-shadow: none;
             }
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Kubernetes Control Plane & Worker Upgrade Sequence</h1>
-        <div class="subtitle">Complete step-by-step upgrade procedure with commands</div>
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Control Plane & Worker Upgrade Sequence</h1>
+            <p class="subtitle">Complete step-by-step upgrade procedure with commands</p>
+        </header>
 
         <div class="best-practices">
             <h3>Critical Pre-Upgrade Best Practices</h3>
@@ -936,14 +1000,7 @@ kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</pre>
                 </div>
             </div>
         </div>
-
-        <div class="footer">
-            <strong>Kubernetes Upgrade Sequence</strong> |
-            Always backup before upgrading |
-            Upgrade one minor version at a time |
-            Control plane must be upgraded first
-        </div>
-    </div>
+</div>
 
     <script>
         function togglePhase(header) {

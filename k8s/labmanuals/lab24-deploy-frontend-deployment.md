@@ -22,6 +22,16 @@ By the end of this lab, you will be able to:
 - Handle environment-specific configuration
 - Set up proper ingress and routing for frontend apps
 
+## Repository YAML Files
+
+Under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `frontend-app.yaml` | Deployment `frontend-app` (3 replicas, nginx) used in Exercise 1. |
+
+Other exercises build manifests with shell heredocs (`frontend-production.yaml`, ConfigMaps, Ingress, etc.); those filenames are created locally when you run the `cat <<EOF` steps.
+
 ---
 
 ## Frontend Applications in Kubernetes

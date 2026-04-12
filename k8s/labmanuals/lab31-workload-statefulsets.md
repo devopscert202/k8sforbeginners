@@ -809,6 +809,34 @@ kubectl delete pod <pod-name>
 
 ---
 
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/workloads/headless-service.yaml` | Headless Service (`clusterIP: None`) `app-headless` with HTTP and metrics ports for selector `app: stateful-app`; includes comments on per-Pod DNS naming. |
+| `k8s/labs/workloads/statefulset-partition-update.yaml` | Five-replica StatefulSet `canary-app` with `RollingUpdate` partition `3`, headless Service `app-canary`, nginx on port 8080, and `volumeClaimTemplates` (1Gi) for staged image rollouts. |
+| `k8s/labs/workloads/postgres-statefulset.yaml` | PostgreSQL 16 stack: ConfigMap/Secret, headless + ClusterIP Services, StatefulSet with initContainer for data dir permissions, probes, 5Gi PVC template, optional client Pod `postgres-client`. |
+| `k8s/labs/workloads/redis-statefulset.yaml` | Three-replica Redis 7.2 StatefulSet with ConfigMap-mounted `redis.conf`, headless + ClusterIP Services, probes, and 1Gi volume claims per replica. |
+| `k8s/labs/workloads/basic-statefulset.yaml` | Headless Service `nginx-headless` + StatefulSet `web` (nginx 1.25, 3 replicas, no PVCs). |
+| `k8s/labs/workloads/statefulset-with-storage.yaml` | Headless `nginx-storage` + StatefulSet `web-storage` with `volumeClaimTemplates` (1Gi per Pod). |
+| `k8s/labs/workloads/mysql-statefulset.yaml` | MySQL 8.0 single-replica StatefulSet with PVC template and probes. |
+
+You can apply these directly (from repo root; ensure storage classes and capacity match your cluster):
+
+```bash
+kubectl apply -f k8s/labs/workloads/headless-service.yaml
+kubectl apply -f k8s/labs/workloads/statefulset-partition-update.yaml
+kubectl apply -f k8s/labs/workloads/postgres-statefulset.yaml
+kubectl apply -f k8s/labs/workloads/redis-statefulset.yaml
+kubectl apply -f k8s/labs/workloads/basic-statefulset.yaml
+kubectl apply -f k8s/labs/workloads/statefulset-with-storage.yaml
+kubectl apply -f k8s/labs/workloads/mysql-statefulset.yaml
+```
+
+---
+
 ## Key Takeaways
 
 1. **Stable Identity**: StatefulSets provide stable Pod names (web-0, web-1) and DNS hostnames

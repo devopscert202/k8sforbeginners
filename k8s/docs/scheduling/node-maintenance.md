@@ -1,6 +1,6 @@
-## **Kubernetes Cordon, Drain, and Uncordon Lab Tutorial**
+## **Kubernetes cordon, drain, and uncordon**
 
-This lab tutorial explores how to use the Kubernetes commands `cordon`, `drain`, and `uncordon` to manage node scheduling during maintenance or upgrades. It includes an overview, concepts, benefits, real-world use cases, and step-by-step implementation.
+**Cordon**, **drain**, and **uncordon** are node lifecycle operations used during maintenance, upgrades, or node removal. They adjust whether the scheduler may place new Pods on a node and whether existing workloads should be evicted.
 
 ---
 
@@ -9,143 +9,64 @@ This lab tutorial explores how to use the Kubernetes commands `cordon`, `drain`,
 1. [Overview](#overview)  
 2. [Concepts](#concepts)  
 3. [Benefits](#benefits)  
-4. [Use Cases](#use-cases)  
-5. [Real-World Scenarios](#real-world-scenarios)  
-6. [Lab Implementation](#lab-implementation)  
-    - [Step 1: Preparing the Cluster](#step-1-preparing-the-cluster)  
-    - [Step 2: Cordon a Node](#step-2-cordon-a-node)  
-    - [Step 3: Drain a Node](#step-3-drain-a-node)  
-    - [Step 4: Uncordon a Node](#step-4-uncordon-a-node)  
-7. [Verification Steps](#verification-steps)  
-8. [Summary Table](#summary-table)  
+4. [Use cases](#use-cases)  
+5. [Real-world scenarios](#real-world-scenarios)  
+6. [Behavior summary](#behavior-summary)  
+7. [Summary table](#summary-table)  
 
 ---
 
 ### **Overview**
 
-Cordon, drain, and uncordon are critical node lifecycle management commands in Kubernetes. These commands allow cluster administrators to manage scheduling on nodes during maintenance or updates without disrupting application availability.
+These commands let administrators **prepare** a node (stop new scheduling), **empty** it safely (evict Pods subject to disruption budgets and policies), and **return** it to service. They complement **taints** and workload controllers that recreate evicted Pods elsewhere.
 
 ---
 
 ### **Concepts**
 
-- **Cordon**: Marks a node as unschedulable, preventing new pods from being scheduled there while leaving existing pods unaffected.  
-- **Drain**: Evicts all running pods from a node and marks it as unschedulable, making it ready for maintenance or decommissioning.  
-- **Uncordon**: Marks a node as schedulable again, allowing pods to be scheduled.  
+- **Cordon**: Marks a node **unschedulable** (`SchedulingDisabled`). Running Pods stay; no new Pods are assigned except in unusual cases (static Pods, some DaemonSets).
+- **Drain**: Evicts Pods from the node (respecting **PodDisruptionBudgets** when possible) and leaves the node unschedulable—typical before maintenance or decommission.
+- **Uncordon**: Clears the unschedulable state so normal scheduling resumes.
+
+Common flags on **drain** include `--ignore-daemonsets` (DaemonSet Pods are not evicted by default behavior expectations) and `--force` for Pods with no controller (use with care). Always review cluster-specific runbooks: managed offerings may integrate node replacement with these patterns.
 
 ---
 
 ### **Benefits**
 
-1. **Controlled Maintenance**: Perform node upgrades or hardware fixes without risking application downtime.  
-2. **Pod Rescheduling**: Automatically migrate workloads to other nodes, ensuring high availability.  
-3. **Cluster Health Management**: Temporarily isolate problematic nodes without disrupting running workloads.  
-4. **Zero-Downtime Updates**: Enable rolling updates and seamless node lifecycle management.  
+1. **Controlled maintenance**: Reduce risk during OS patches, kubelet upgrades, or hardware work.  
+2. **Rescheduling**: ReplicaSets, Deployments, and StatefulSets recreate Pods on healthy nodes.  
+3. **Isolation**: Temporarily steer traffic away from a suspect node without immediate eviction (cordon-only).  
+4. **Rolling node operations**: Combine with cluster autoscaler or manual scale-in after drains.
 
 ---
 
-### **Use Cases**
+### **Use cases**
 
-1. **Node Maintenance**: Upgrade the OS or Kubernetes version on a node.  
-2. **Scaling Down Clusters**: Drain workloads from nodes before removing them from a cluster.  
-3. **Hardware Replacement**: Replace faulty hardware while keeping services operational.  
-4. **Load Balancing**: Temporarily shift workloads from an overloaded node to others.  
-
----
-
-### **Real-World Scenarios**
-
-- **Cloud Node Lifecycle**: Drain nodes during automatic scaling events in managed Kubernetes clusters.  
-- **On-Premises Clusters**: Isolate nodes for hardware diagnostics or RAID configuration updates.  
-- **Rolling Updates**: Upgrade or patch nodes sequentially in a production environment.  
+1. **Node maintenance**: Kernel, container runtime, or kubelet updates.  
+2. **Scale-down**: Drain before removing a node from the pool.  
+3. **Hardware replacement**: Evict workloads before power or disk work.  
+4. **Load relief**: Cordon an overloaded node so new Pods land elsewhere while you investigate.
 
 ---
 
-### **Lab Implementation**
+### **Real-world scenarios**
 
-#### **Step 1: Preparing the Cluster**
-
-1. **Ensure you have a running Kubernetes cluster** with at least 3 nodes:
-   - `master`: Control plane node.
-   - `worker-node-1`: First worker node.
-   - `worker-node-2`: Second worker node.  
-2. Install `kubectl` on your local machine.
-
-#### **Step 2: Cordon a Node**
-
-1. Mark `worker-node-1` as unschedulable:  
-   ```bash
-   kubectl cordon worker-node-1
-   ```
-
-2. Verify the node status:  
-   ```bash
-   kubectl get nodes
-   ```
-   Output:
-   ```
-   NAME             STATUS                     ROLES    AGE    VERSION
-   master           Ready                      control   10d    v1.27.4
-   worker-node-1    Ready,SchedulingDisabled   <none>   10d    v1.27.4
-   worker-node-2    Ready                      <none>   10d    v1.27.4
-   ```
+- **Managed cloud**: Node repair or image rollouts may cordon/drain automatically; understanding the semantics helps interpret node conditions.  
+- **On-premises**: Sequential drain across workers while keeping the control plane available.  
+- **Upgrades**: One node at a time, verifying cluster capacity for displaced Pods.
 
 ---
 
-#### **Step 3: Drain a Node**
+### **Behavior summary**
 
-1. Evict pods from `worker-node-1`:  
-   ```bash
-   kubectl drain worker-node-1 --ignore-daemonsets --force
-   ```
-
-   - `--ignore-daemonsets`: Ensures daemonsets are not evicted.
-   - `--force`: Forces eviction for pods that lack a disruption budget.
-
-2. Verify pod rescheduling:
-   ```bash
-   kubectl get pods -o wide
-   ```
-   The pods should now be running on `worker-node-2`.
+After **cordon**, `kubectl get nodes` shows `SchedulingDisabled` while the node can still be `Ready`. After **drain**, workloads should appear on other nodes unless constraints (taints, resources, PDBs) block eviction—then the command reports errors and may require policy or capacity fixes. **Uncordon** only affects scheduling; it does not move Pods back.
 
 ---
 
-#### **Step 4: Uncordon a Node**
+### **Example Pod spec (context only)**
 
-1. Mark `worker-node-1` as schedulable:  
-   ```bash
-   kubectl uncordon worker-node-1
-   ```
-
-2. Verify the node status:  
-   ```bash
-   kubectl get nodes
-   ```
-   Output:
-   ```
-   NAME             STATUS    ROLES    AGE    VERSION
-   master           Ready     control   10d    v1.27.4
-   worker-node-1    Ready     <none>   10d    v1.27.4
-   worker-node-2    Ready     <none>   10d    v1.27.4
-   ```
-
----
-
-### **Verification Steps**
-
-1. **Confirm Node Status**:
-   - Ensure nodes correctly reflect their schedulable or unschedulable states.  
-   - Use `kubectl describe node <node-name>` to check the `Conditions` and `Taints`.
-
-2. **Validate Pod Rescheduling**:
-   - Verify that pods from drained nodes are rescheduled to other available nodes.
-
-3. **Check Node Workloads**:
-   - After uncordoning, deploy a new pod to verify it can schedule on the previously unschedulable node.
-
----
-
-### **Example YAML for Pod Deployment**
+Any standard Pod or Deployment can be used to observe rescheduling when nodes are drained; the scheduling outcome depends on labels, affinity, resources, and PDBs—not on a special Pod shape:
 
 ```yaml
 apiVersion: v1
@@ -160,24 +81,22 @@ spec:
     - containerPort: 80
 ```
 
-- Deploy the pod:  
-  ```bash
-  kubectl apply -f sample-pod.yaml
-  ```
-
-- Confirm the pod's node placement after draining and uncordoning:
-  ```bash
-  kubectl get pods -o wide
-  ```
-
 ---
 
 ### **Summary Table**
 
-| **Command**       | **Purpose**                                         | **Effect on Pods**                                   | **Usage**                        |  
+| **Command**       | **Purpose**                                         | **Effect on Pods**                                   | **Typical use**                        |  
 |--------------------|-----------------------------------------------------|-----------------------------------------------------|----------------------------------|  
-| `kubectl cordon`   | Mark a node as unschedulable                        | Existing pods are unaffected; new pods aren't scheduled | Preparing a node for maintenance |  
-| `kubectl drain`    | Evict pods and mark a node as unschedulable         | Running pods are rescheduled to other nodes         | Node decommissioning/upgrades    |  
-| `kubectl uncordon` | Mark a node as schedulable again                    | Allows new pods to be scheduled                     | Post-maintenance actions         |  
+| `kubectl cordon`   | Mark a node unschedulable                           | Existing pods usually stay; new pods are not scheduled | Prepare for maintenance           |  
+| `kubectl drain`    | Evict pods and leave node unschedulable             | Running pods are terminated/evicted and recreated elsewhere | Maintenance or node removal       |  
+| `kubectl uncordon` | Mark node schedulable again                         | Allows new pods to be scheduled                     | After maintenance completes       |  
 
-This tutorial provides a structured, practical way to understand and apply cordon, drain, and uncordon operations in a Kubernetes cluster.
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 08: Cluster Administration with kubeadm](../../labmanuals/lab08-cluster-administration.md) | Node operations, cluster admin tasks, and related kubectl practice |

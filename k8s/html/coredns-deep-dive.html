@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreDNS Deep Dive — Kubernetes</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --kube-blue: #326CE5;
+    --kube-blue-deep: #1d4ed8;
+    --kube-sky: #dbeafe;
+    --ink: #1a1a2e;
+    --muted: #64748b;
+    --surface: #ffffff;
+    --panel: #ffffff;
+    --line: #dbe3f1;
+    --mint: #dcfce7;
+    --amber: #fef3c7;
+    --rose: #ffe4e6;
+    --blue: #2563eb;
+    --slate-900: #0f172a;
+    --slate-700: #334155;
+    --slate-500: #64748b;
+    --slate-200: #e2e8f0;
+    --blue-deep: var(--kube-blue-deep);
+    --sky: var(--kube-sky);
+    --green: #16a34a;
+}
+body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+    color: var(--ink);
+    padding: 20px;
+    line-height: 1.6;
+}
+.container { max-width: 1380px; margin: 0 auto; }
+
+.hero {
+            position: relative;
+    text-align: center;
+    background: white;
+    border-radius: 16px;
+    padding: 34px 32px 28px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+    margin-bottom: 26px;
+    border: 1px solid rgba(50,108,229,0.1);
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--kube-sky);
+    color: var(--kube-blue-deep);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+}
+
+.footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 18px;
+}
+.footer-note a { color: var(--kube-blue); text-decoration: none; }
+.footer-note a:hover { text-decoration: underline; }
+
+.hero h1 { font-size: clamp(2rem, 4vw, 3rem); color: var(--kube-blue); margin-bottom: 8px; }
+.subtitle { color: var(--muted); font-size: 0.95rem; }
+
+.tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 8px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--slate-200);
+}
+.tab-btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+    padding: 10px 12px;
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    background: #f8fafc;
+    color: var(--slate-700);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.tab-btn:hover { background: var(--sky); color: var(--blue-deep); }
+.tab-btn[aria-selected="true"] {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue-deep);
+}
+
+.panel {
+    display: none;
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 24px;
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+    margin-bottom: 12px;
+}
+.panel.active { display: block; }
+
+.panel h2 {
+    font-size: 1.15rem;
+    color: var(--blue);
+    margin-bottom: 12px;
+}
+.panel p, .panel li { color: var(--slate-700); margin-bottom: 10px; font-size: 0.95rem; }
+.panel ul { margin-left: 1.25rem; margin-bottom: 12px; }
+
+.callout {
+    background: var(--sky);
+    border-left: 4px solid var(--blue);
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0;
+    font-size: 0.92rem;
+    color: var(--slate-700);
+}
+
+pre, .code {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow-x: hidden;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    margin: 12px 0;
+}
+
+.split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+}
+.split .block {
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #f8fafc;
+}
+.split .block h3 { font-size: 0.9rem; color: var(--blue-deep); margin-bottom: 8px; }
+
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 12px 0;
+}
+table.data th, table.data td {
+    border: 1px solid var(--slate-200);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+table.data th { background: #f1f5f9; color: var(--slate-900); }
+.tag-def { background: #dcfce7; color: #166534; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+.diagram-wrap {
+    margin: 16px 0;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed var(--slate-200);
+    overflow-x: auto;
+}
+
+.flow-steps { margin: 14px 0; }
+.flow-step {
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.flow-step:hover { border-color: var(--blue); }
+.flow-step.open {
+    border-color: var(--green);
+    box-shadow: 0 2px 10px rgba(22, 163, 74, 0.15);
+}
+.flow-step .num {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-right: 8px;
+}
+.flow-step.open .num { background: var(--green); }
+.flow-detail {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--slate-200);
+    font-size: 0.9rem;
+    color: var(--slate-700);
+}
+.flow-step.open .flow-detail { display: block; }
+
+.tree-note { font-size: 0.85rem; color: var(--slate-500); margin-top: 8px; }
+
+@media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .tab-btn { min-width: 100%; font-size: 0.85rem; }
+    pre, .code { font-size: 0.72rem; }
+}
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>CoreDNS Deep Dive</h1>
+        <p class="subtitle">Architecture, Corefile, Plugins, and Troubleshooting</p>
+    </header>
+
+    <div class="tab-bar" role="tablist" aria-label="CoreDNS topics">
+        <button type="button" class="tab-btn" role="tab" id="tab-0" aria-selected="true" aria-controls="panel-0" data-i="0">Architecture</button>
+        <button type="button" class="tab-btn" role="tab" id="tab-1" aria-selected="false" aria-controls="panel-1" data-i="1">Corefile</button>
+        <button type="button" class="tab-btn" role="tab" id="tab-2" aria-selected="false" aria-controls="panel-2" data-i="2">Plugins</button>
+        <button type="button" class="tab-btn" role="tab" id="tab-3" aria-selected="false" aria-controls="panel-3" data-i="3">DNS Records</button>
+        <button type="button" class="tab-btn" role="tab" id="tab-4" aria-selected="false" aria-controls="panel-4" data-i="4">Resolution Flow</button>
+        <button type="button" class="tab-btn" role="tab" id="tab-5" aria-selected="false" aria-controls="panel-5" data-i="5">Customization</button>
+        <button type="button" class="tab-btn" role="tab" id="tab-6" aria-selected="false" aria-controls="panel-6" data-i="6">Commands</button>
+        <button type="button" class="tab-btn" role="tab" id="tab-7" aria-selected="false" aria-controls="panel-7" data-i="7">Troubleshooting</button>
+    </div>
+
+    <section class="panel active" role="tabpanel" id="panel-0" aria-labelledby="tab-0">
+        <h2>Architecture</h2>
+        <p>CoreDNS is the cluster DNS server. The kubelet programs each Pod’s <code>/etc/resolv.conf</code> so application DNS queries reach the cluster DNS Service. CoreDNS Pods usually run in <code>kube-system</code> and are exposed through the <code>kube-dns</code> Service (ClusterIP is commonly <code>10.96.0.10</code> on kubeadm-style clusters—yours may differ).</p>
+        <ul>
+            <li><strong>kubelet</strong> injects <code>nameserver</code> with the cluster DNS IP, a <code>search</code> list (namespace + <code>svc.cluster.local</code> + <code>cluster.local</code>), and <code>options ndots:5</code> for Pods using <code>dnsPolicy: ClusterFirst</code> (default).</li>
+            <li>The Service name <code>kube-dns</code> is historical; endpoints still target CoreDNS today. Labels like <code>k8s-app=kube-dns</code> remain common in manifests.</li>
+            <li>ClusterIP for DNS is configurable via <code>--cluster-dns</code> on the kubelet or equivalent; always verify with <code>cat /etc/resolv.conf</code> inside a Pod.</li>
+        </ul>
+        <div class="callout">Resolution path: workload → OS resolver → cluster DNS Service → CoreDNS Pod → kubernetes plugin answer, or <strong>forward</strong> to upstream resolvers.</div>
+        <div class="diagram-wrap">
+            <svg viewBox="0 0 720 200" width="100%" height="200" xmlns="http://www.w3.org/2000/svg" aria-label="DNS resolution chain">
+                <defs>
+                    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#334155"/></marker>
+                </defs>
+                <rect x="10" y="60" width="100" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+                <text x="60" y="95" text-anchor="middle" font-size="11" fill="#0f172a" font-family="Segoe UI,sans-serif">Pod</text>
+                <text x="60" y="112" text-anchor="middle" font-size="9" fill="#334155" font-family="Segoe UI,sans-serif">getaddrinfo</text>
+                <line x1="110" y1="100" x2="155" y2="100" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+                <rect x="155" y="55" width="115" height="90" rx="8" fill="#fff" stroke="#64748b"/>
+                <text x="212" y="88" text-anchor="middle" font-size="10" fill="#0f172a" font-family="Segoe UI,sans-serif">/etc/resolv.conf</text>
+                <text x="212" y="105" text-anchor="middle" font-size="8" fill="#334155" font-family="Segoe UI,sans-serif">nameserver + search</text>
+                <text x="212" y="122" text-anchor="middle" font-size="8" fill="#334155" font-family="Segoe UI,sans-serif">ndots:5</text>
+                <line x1="270" y1="100" x2="315" y2="100" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+                <rect x="315" y="50" width="130" height="100" rx="8" fill="#e0f2fe" stroke="#2563eb"/>
+                <text x="380" y="85" text-anchor="middle" font-size="10" fill="#0f172a" font-family="Segoe UI,sans-serif">Service kube-dns</text>
+                <text x="380" y="102" text-anchor="middle" font-size="9" fill="#334155" font-family="Segoe UI,sans-serif">ClusterIP (e.g. 10.96.0.10)</text>
+                <text x="380" y="120" text-anchor="middle" font-size="8" fill="#334155" font-family="Segoe UI,sans-serif">UDP/TCP :53</text>
+                <line x1="445" y1="100" x2="490" y2="100" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+                <rect x="490" y="55" width="110" height="90" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+                <text x="545" y="92" text-anchor="middle" font-size="10" fill="#0f172a" font-family="Segoe UI,sans-serif">CoreDNS Pod</text>
+                <text x="545" y="110" text-anchor="middle" font-size="8" fill="#334155" font-family="Segoe UI,sans-serif">kube-system</text>
+                <line x1="600" y1="100" x2="645" y2="100" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+                <rect x="645" y="55" width="65" height="40" rx="6" fill="#fef3c7" stroke="#d97706"/>
+                <text x="677" y="80" text-anchor="middle" font-size="9" fill="#0f172a" font-family="Segoe UI,sans-serif">Answer</text>
+                <rect x="645" y="105" width="65" height="40" rx="6" fill="#fce7f3" stroke="#e11d48"/>
+                <text x="677" y="130" text-anchor="middle" font-size="8" fill="#0f172a" font-family="Segoe UI,sans-serif">Upstream</text>
+            </svg>
+        </div>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1" hidden>
+        <h2>Corefile</h2>
+        <p>The Corefile is CoreDNS configuration. In Kubernetes it is usually stored in the <code>coredns</code> ConfigMap in <code>kube-system</code> and mounted into each CoreDNS Pod. Edits require a rolling restart (or <code>reload</code> plugin) to take effect; invalid syntax can prevent Pods from becoming Ready.</p>
+        <p>Server blocks start with a zone and port (here <code>.:53</code> for the root zone on port 53). Plugins run in a chain; order matters for which plugin handles a query first.</p>
+        <pre id="corefile-pre">.:53 {
+    errors
+    health { lameduck 5s }
+    ready
+    kubernetes cluster.local in-addr.arpa ip6.arpa {
+        pods insecure
+        fallthrough in-addr.arpa ip6.arpa
+        ttl 30
+    }
+    prometheus :9153
+    forward . /etc/resolv.conf { max_concurrent 1000 }
+    cache 30
+    loop
+    reload
+    loadbalance
+}</pre>
+        <div class="split">
+            <div class="block"><h3>errors / health / ready</h3><p><strong>errors</strong> logs DNS errors. <strong>health</strong> exposes a health HTTP endpoint; <code>lameduck</code> delays shutdown. <strong>ready</strong> signals readiness when plugins are ready—used with readiness probes.</p></div>
+            <div class="block"><h3>kubernetes</h3><p>Authoritative for <code>cluster.local</code> and reverse zones. <code>pods insecure</code> enables Pod DNS names. <code>fallthrough</code> passes unmatched reverse queries on. <code>ttl</code> sets record TTL.</p></div>
+            <div class="block"><h3>prometheus</h3><p>Exposes metrics on <code>:9153</code> for scraping (not DNS traffic).</p></div>
+            <div class="block"><h3>forward</h3><p>Forwards queries not answered by <code>kubernetes</code> to resolvers listed in the Pod’s <code>/etc/resolv.conf</code> (often node DNS). <code>max_concurrent</code> limits in-flight upstream queries.</p></div>
+            <div class="block"><h3>cache</h3><p>Caches responses (here 30 seconds) to reduce load and latency.</p></div>
+            <div class="block"><h3>loop / reload / loadbalance</h3><p><strong>loop</strong> detects forwarding loops. <strong>reload</strong> reloads Corefile on change. <strong>loadbalance</strong> randomizes answer order for A/AAAA records.</p></div>
+        </div>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+        <h2>Plugins</h2>
+        <p class="tree-note"><span class="tag-def">DEFAULT</span> appears in the stock Kubernetes Corefile unless you removed it.</p>
+        <table class="data">
+            <thead><tr><th>Plugin</th><th>Purpose</th><th>When to use</th><th>Example</th><th></th></tr></thead>
+            <tbody>
+                <tr><td>kubernetes</td><td>Cluster DNS names for Services, Pods, endpoints</td><td>Always for in-cluster names</td><td><code>kubernetes cluster.local { pods verified }</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>forward</td><td>Upstream resolution</td><td>External names, stub zones</td><td><code>forward . 8.8.8.8</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>cache</td><td>Response cache</td><td>Reduce latency/load</td><td><code>cache 30</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>errors</td><td>Error logging</td><td>Operations visibility</td><td><code>errors</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>health</td><td>Liveness-style health</td><td>Kubelet probes</td><td><code>health { lameduck 5s }</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>ready</td><td>Readiness endpoint</td><td>Rollouts</td><td><code>ready</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>log</td><td>Query logging</td><td>Debug (noisy in prod)</td><td><code>log</code></td><td></td></tr>
+                <tr><td>loop</td><td>Detect resolution loops</td><td>Safety with custom forwards</td><td><code>loop</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>prometheus</td><td>Metrics</td><td>Observability</td><td><code>prometheus :9153</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>reload</td><td>Hot reload Corefile</td><td>ConfigMap edits</td><td><code>reload</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>loadbalance</td><td>Shuffle A/AAAA</td><td>Simple client-side spread</td><td><code>loadbalance</code></td><td><span class="tag-def">DEFAULT</span></td></tr>
+                <tr><td>rewrite</td><td>Name translation</td><td>Legacy names, migrations</td><td><code>rewrite name exact a.internal b.svc.cluster.local</code></td><td></td></tr>
+                <tr><td>hosts</td><td>Static hosts file</td><td>Overrides, test records</td><td><code>hosts { 10.0.0.5 api.local fallthrough }</code></td><td></td></tr>
+                <tr><td>template</td><td>Pattern-based answers</td><td>Custom PTR/SRV logic</td><td><code>template IN A { answer "{name} 60 IN A 10.1.2.3" }</code></td><td></td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
+        <h2>DNS Records</h2>
+        <p>CoreDNS (via the <code>kubernetes</code> plugin) synthesizes records from the API. Examples use placeholder IPs and names.</p>
+        <table class="data">
+            <thead><tr><th>Type</th><th>Example</th><th>Resolves to</th></tr></thead>
+            <tbody>
+                <tr><td>A (Service)</td><td><code>my-svc.my-ns.svc.cluster.local</code></td><td>ClusterIP of the Service (or EndpointSlice-backed virtual IP)</td></tr>
+                <tr><td>A (headless)</td><td><code>my-headless.my-ns.svc.cluster.local</code></td><td>All ready Pod IPs for that Service (no single ClusterIP)</td></tr>
+                <tr><td>A (Pod)</td><td><code>10-244-1-5.my-ns.pod.cluster.local</code></td><td>Pod IP (when enabled; dashed IPv4 in name)</td></tr>
+                <tr><td>SRV</td><td><code>_http._tcp.my-svc.my-ns.svc.cluster.local</code></td><td>Port and target hostnames for named ports</td></tr>
+                <tr><td>CNAME</td><td><code>external.my-ns.svc.cluster.local</code> (ExternalName)</td><td>CNAME to external hostname per Service <code>externalName</code></td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-4" aria-labelledby="tab-4" hidden>
+        <h2>Resolution Flow</h2>
+        <p>Click each step to expand details. Example query: <code>my-svc.my-ns.svc.cluster.local</code>.</p>
+        <div class="flow-steps" id="flow-root"></div>
+        <div class="callout"><strong>ndots:5</strong> — If the name has fewer than 5 dots, the resolver tries <em>search suffixes</em> first (e.g. <code>my-ns.svc.cluster.local</code>) before treating the name as absolute. A name with 5+ dots is queried as FQDN first. This is why <code>my-svc</code> becomes <code>my-svc.my-ns.svc.cluster.local</code> when your namespace is <code>my-ns</code> and search list includes <code>svc.cluster.local</code>.</div>
+        <p><strong>Search expansion:</strong> With <code>search my-ns.svc.cluster.local svc.cluster.local cluster.local</code>, a lookup for <code>my-svc</code> tries <code>my-svc.my-ns.svc.cluster.local</code>, then <code>my-svc.svc.cluster.local</code>, then <code>my-svc.cluster.local</code> until one succeeds.</p>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-5" aria-labelledby="tab-5" hidden>
+        <h2>Customization</h2>
+        <h3 style="font-size:1rem;color:var(--slate-700);margin:14px 0 8px">hosts plugin — static entries</h3>
+        <pre>example.com:53 {
+    hosts {
+        10.0.0.99 api.example.com
+        fallthrough
+    }
+    forward . /etc/resolv.conf
+}</pre>
+        <h3 style="font-size:1rem;color:var(--slate-700);margin:14px 0 8px">Stub domain — forward a zone</h3>
+        <pre>corp.internal:53 {
+    forward . 10.10.10.10 10.10.10.11
+}</pre>
+        <h3 style="font-size:1rem;color:var(--slate-700);margin:14px 0 8px">rewrite — translate names</h3>
+        <pre>rewrite stop {
+    name regex (.*)\.old\.svc\.cluster\.local {1}.new.svc.cluster.local
+}</pre>
+        <h3 style="font-size:1rem;color:var(--slate-700);margin:14px 0 8px">Custom zone server block</h3>
+        <pre>lab.local:53 {
+    file /etc/coredns/zones/lab.db
+}</pre>
+        <h3 style="font-size:1rem;color:var(--slate-700);margin:14px 0 8px">Per-Pod dnsConfig / dnsPolicy</h3>
+        <div style="background:#eff6ff;border-left:4px solid #2563eb;padding:10px 14px;border-radius:4px;margin-bottom:12px;font-size:0.88rem;">
+            <strong>Repository YAML files</strong> (ready to apply from <code>k8s/labs/networking/</code>):
+            <ul style="margin:4px 0 0 1.2rem;">
+                <li><code>dnsdefault.yaml</code> — Pod with <code>dnsPolicy: Default</code> (uses node DNS)</li>
+                <li><code>dnspolicy.yaml</code> — Pod with <code>hostNetwork: true</code> + <code>dnsPolicy: ClusterFirstWithHostNet</code></li>
+                <li><code>dnsconfig.yaml</code> — Pod with <code>dnsPolicy: None</code> + custom <code>dnsConfig</code> (nameservers, searches, ndots)</li>
+            </ul>
+        </div>
+        <pre>apiVersion: v1
+kind: Pod
+spec:
+  dnsPolicy: ClusterFirst
+  dnsConfig:
+    nameservers: ["169.254.20.10"]
+    searches: ["my-ns.svc.cluster.local", "svc.cluster.local"]
+    options:
+      - name: ndots
+        value: "2"
+      - name: single-request-reopen
+        value: ""</pre>
+        <p>With <code>dnsPolicy: None</code>, you must supply a full resolver picture yourself (nameservers required):</p>
+        <pre>spec:
+  dnsPolicy: None
+  dnsConfig:
+    nameservers: ["10.96.0.10"]
+    searches: ["default.svc.cluster.local", "svc.cluster.local", "cluster.local"]
+    options:
+      - name: ndots
+        value: "5"</pre>
+        <ul>
+            <li><strong>ClusterFirst</strong> — Use cluster DNS first; fall back to host resolv.conf upstream path via CoreDNS <code>forward</code>.</li>
+            <li><strong>Default</strong> — Use node’s resolv.conf (not cluster DNS as default nameserver).</li>
+            <li><strong>None</strong> — Only what you put in <code>dnsConfig</code> (must set nameservers).</li>
+            <li><strong>ClusterFirstWithHostNet</strong> — For Pods with <code>hostNetwork: true</code>, still use cluster DNS like ClusterFirst.</li>
+        </ul>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-6" aria-labelledby="tab-6" hidden>
+        <h2>Commands</h2>
+        <p>Inspect CoreDNS configuration, traffic path, and rollout. Replace <code>debug</code> with a Pod name in your namespace that has shell tools (<code>nslookup</code>, <code>dig</code>, or <code>getent</code>).</p>
+        <p class="tree-note">Tip: <code>kubectl get svc -n kube-system kube-dns -o wide</code> shows the ClusterIP your nodes and Pods should reference.</p>
+        <pre>kubectl get configmap coredns -n kube-system -o yaml</pre>
+        <pre>kubectl logs -n kube-system -l k8s-app=kube-dns</pre>
+        <pre>kubectl exec -it debug -- nslookup my-svc.my-ns.svc.cluster.local</pre>
+        <pre>kubectl exec -it debug -- cat /etc/resolv.conf</pre>
+        <pre>kubectl get endpoints kube-dns -n kube-system</pre>
+        <pre>kubectl rollout restart deployment coredns -n kube-system</pre>
+    </section>
+
+    <section class="panel" role="tabpanel" id="panel-7" aria-labelledby="tab-7" hidden>
+        <h2>Troubleshooting</h2>
+        <ul>
+            <li><strong>1. DNS fails completely</strong> — Check CoreDNS Pods running, <code>kube-dns</code> Service exists, Endpoints point to CoreDNS, and Pod can reach ClusterIP:53 (CNI / NetworkPolicy).</li>
+            <li><strong>2. External DNS fails</strong> — Verify <code>forward</code> targets (often node resolv.conf). Test upstream from a node. Corporate DNS or firewall may block.</li>
+            <li><strong>3. Intermittent failures</strong> — Inspect CoreDNS logs for errors; <code>loop</code> plugin detects mis-forwarding. Check CoreDNS replica count and node resource pressure.</li>
+            <li><strong>4. Slow DNS</strong> — Review <code>cache</code> TTLs; reduce excessive lookups by fixing <code>ndots</code> or using FQDNs; on some systems <code>options single-request-reopen</code> in <code>dnsConfig</code> helps glibc dual-stack timeouts.</li>
+            <li><strong>5. Cross-namespace names</strong> — Use FQDN or correct search order; ensure NetworkPolicy allows UDP/TCP 53 to DNS Service.</li>
+            <li><strong>6. NetworkPolicy blocking DNS</strong> — If using deny-all egress, add a DNS allow rule. See <code>k8s/labs/security/deny-all-ingress.yaml</code> and <a href="network-policy.html">network-policy.html</a> for ready-made patterns.</li>
+        </ul>
+        <h3 style="font-size:1rem;color:var(--blue);margin:16px 0 8px">Decision tree: DNS not working?</h3>
+        <div class="diagram-wrap">
+            <svg viewBox="0 0 640 320" width="100%" height="320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DNS troubleshooting flow">
+                <rect x="200" y="8" width="240" height="36" rx="6" fill="#2563eb" stroke="#1d4ed8"/>
+                <text x="320" y="32" text-anchor="middle" fill="#fff" font-size="12" font-family="Segoe UI,sans-serif">DNS not working?</text>
+                <line x1="320" y1="44" x2="320" y2="58" stroke="#334155" stroke-width="2"/>
+                <rect x="210" y="58" width="220" height="34" rx="6" fill="#e2e8f0" stroke="#64748b"/>
+                <text x="320" y="80" text-anchor="middle" fill="#0f172a" font-size="10" font-family="Segoe UI,sans-serif">CoreDNS Pods Ready?</text>
+                <line x1="320" y1="92" x2="320" y2="104" stroke="#334155"/>
+                <line x1="320" y1="98" x2="120" y2="98" stroke="#334155"/><line x1="120" y1="98" x2="120" y2="112" stroke="#334155"/>
+                <line x1="320" y1="98" x2="520" y2="98" stroke="#334155"/><line x1="520" y1="98" x2="520" y2="112" stroke="#334155"/>
+                <rect x="40" y="112" width="160" height="40" rx="6" fill="#fee2e2" stroke="#e11d48"/>
+                <text x="120" y="132" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">Fix Deployment /</text>
+                <text x="120" y="144" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">image / resources</text>
+                <rect x="440" y="112" width="160" height="40" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+                <text x="520" y="132" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">kube-dns Service +</text>
+                <text x="520" y="144" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">Endpoints OK?</text>
+                <line x1="520" y1="152" x2="520" y2="168" stroke="#334155"/>
+                <rect x="440" y="168" width="160" height="36" rx="6" fill="#e2e8f0" stroke="#64748b"/>
+                <text x="520" y="190" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">Pod resolv.conf → ClusterIP?</text>
+                <line x1="520" y1="204" x2="520" y2="218" stroke="#334155"/>
+                <rect x="430" y="218" width="180" height="36" rx="6" fill="#e2e8f0" stroke="#64748b"/>
+                <text x="520" y="240" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">NetworkPolicy / CNI to :53?</text>
+                <line x1="520" y1="254" x2="520" y2="268" stroke="#334155"/>
+                <rect x="400" y="268" width="240" height="40" rx="6" fill="#fef3c7" stroke="#d97706"/>
+                <text x="520" y="288" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">Still broken → logs, forward</text>
+                <text x="520" y="300" text-anchor="middle" fill="#0f172a" font-size="9" font-family="Segoe UI,sans-serif">plugin, upstream resolver</text>
+            </svg>
+        </div>
+    </section>
+</div>
+
+<script>
+(function () {
+    var steps = [
+        { title: 'App calls getaddrinfo (or resolver library)', detail: 'The application uses the OS resolver API. The query may be for a short name or FQDN.' },
+        { title: 'OS reads /etc/resolv.conf', detail: 'nameserver points at kube-dns ClusterIP. search lists namespace and cluster suffixes. ndots controls when the name is treated as absolute vs expanded.' },
+        { title: 'Query sent to kube-dns ClusterIP', detail: 'UDP/TCP port 53 to the Service VIP. kube-proxy or eBPF delivers to a healthy CoreDNS backend Pod.' },
+        { title: 'CoreDNS kubernetes plugin matches', detail: 'For names under cluster.local, the plugin answers from the Kubernetes API (Services, Pods, etc.). Returns A/AAAA/SRV/CNAME as appropriate.' },
+        { title: 'If not matched → forward upstream', detail: 'The forward plugin sends the query to resolvers in CoreDNS Pod /etc/resolv.conf (typically the node DNS). Answers flow back to the Pod.' }
+    ];
+
+    var tabBtns = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.panel');
+
+    function showTab(index) {
+        for (var i = 0; i < tabBtns.length; i++) {
+            var on = i === index;
+            tabBtns[i].setAttribute('aria-selected', on ? 'true' : 'false');
+            panels[i].classList.toggle('active', on);
+            if (on) panels[i].removeAttribute('hidden');
+            else panels[i].setAttribute('hidden', 'hidden');
+        }
+    }
+
+    for (var t = 0; t < tabBtns.length; t++) {
+        tabBtns[t].addEventListener('click', function () {
+            var idx = parseInt(this.getAttribute('data-i'), 10);
+            if (!isNaN(idx)) showTab(idx);
+        });
+    }
+
+    var flowRoot = document.getElementById('flow-root');
+    if (flowRoot) {
+        for (var s = 0; s < steps.length; s++) {
+            var row = document.createElement('div');
+            row.className = 'flow-step';
+            row.setAttribute('role', 'button');
+            row.setAttribute('tabindex', '0');
+            var head = document.createElement('div');
+            var num = document.createElement('span');
+            num.className = 'num';
+            num.textContent = String(s + 1);
+            var ttl = document.createElement('strong');
+            ttl.textContent = steps[s].title;
+            head.appendChild(num);
+            head.appendChild(ttl);
+            var det = document.createElement('div');
+            det.className = 'flow-detail';
+            det.textContent = steps[s].detail;
+            row.appendChild(head);
+            row.appendChild(det);
+            function toggle(ev) {
+                var open = row.classList.toggle('open');
+                row.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+            row.addEventListener('click', toggle);
+            row.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle();
+                }
+            });
+            row.setAttribute('aria-expanded', 'false');
+            flowRoot.appendChild(row);
+        }
+    }
+})();
+</script>
+</body>
+</html>

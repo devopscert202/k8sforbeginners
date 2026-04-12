@@ -11,32 +11,82 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             padding: 20px;
             line-height: 1.6;
+            color: var(--ink);
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1380px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            padding: 30px;
         }
 
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
         h1 {
-            color: #326CE5;
+            color: var(--kube-blue);
             text-align: center;
             margin-bottom: 10px;
-            font-size: 2.5em;
+            font-size: clamp(2rem, 4vw, 3rem);
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
+            color: var(--muted);
             margin-bottom: 30px;
             font-size: 1.1em;
         }
@@ -298,7 +348,7 @@
 
         .strategy-info {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -585,7 +635,7 @@
 
         .comparison-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -629,7 +679,7 @@
             }
 
             h1 {
-                font-size: 1.8em;
+                font-size: 1.6rem;
             }
 
             .pod {
@@ -650,12 +700,33 @@
                 min-width: 200px;
             }
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Kubernetes Rolling Update Strategy</h1>
-        <p class="subtitle">Interactive visualization of pod replacement during deployment updates</p>
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>🚀 Kubernetes Rolling Update Strategy</h1>
+            <p class="subtitle">Interactive visualization of pod replacement during deployment updates</p>
+        </header>
 
         <div class="controls">
             <button class="btn btn-primary" id="playBtn">
@@ -986,7 +1057,7 @@
             <p>✅ <strong>Easy Rollback:</strong> Old ReplicaSet retained for quick reversions</p>
             <p>✅ <strong>Automatic Traffic Distribution:</strong> Service handles load balancing automatically</p>
         </div>
-    </div>
+</div>
 
     <div class="tooltip" id="tooltip"></div>
 

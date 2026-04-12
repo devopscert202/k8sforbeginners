@@ -162,35 +162,14 @@
 4. **Custom Database:**
    - Allows users to maintain their vulnerability database for custom rules.
 
-### How to Use Trivy
-1. **Installation:**
-   ```bash
-   curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-   ```
+### Using Trivy in Practice
+Trivy installs via package managers, the project’s install script, Docker, or as the Trivy Operator in-cluster; see the [Trivy documentation](https://aquasecurity.github.io/trivy/) for platform-specific setup. Typical usage patterns include scanning **container images** before they are promoted, scanning **Kubernetes workloads** against the live cluster API, and scanning **IaC and manifests** (including Helm charts) for misconfigurations. In CI/CD, a common pattern is to fail the pipeline when critical or high-severity findings exceed your policy threshold—for example:
 
-2. **Basic Image Scan:**
-   ```bash
-   trivy image nginx:latest
-   ```
-
-3. **Kubernetes Cluster Scanning:**
-   ```bash
-   trivy k8s cluster --report summary
-   ```
-
-4. **Configuration Scanning:**
-   ```bash
-   trivy config --path ./kubernetes-manifests/
-   ```
-
-5. **Integration with CI/CD:**
-   - Add Trivy as a step in CI pipelines to block builds with critical vulnerabilities.
-   - Example:
-     ```yaml
-     steps:
-       - name: Trivy Scan
-         run: trivy image my-app:latest
-     ```
+```yaml
+steps:
+  - name: Trivy Scan
+    run: trivy image my-app:latest
+```
 
 ### Best Practices
 1. **Regular Scanning:** Schedule scans for all Kubernetes workloads and configurations.
@@ -198,13 +177,11 @@
 3. **Custom Rules:** Define custom severity thresholds and exclude non-relevant findings.
 
 ### Advanced Use Cases
-1. **Helm Chart Scanning:** Validate Helm charts for misconfigurations.
-   ```bash
-   trivy fs /path/to/helm/chart
-   ```
-2. **Custom Policies with Rego:** Integrate Trivy with OPA for advanced policy checks.
-3. **CI/CD Alerts:** Automatically notify teams of vulnerabilities via Slack or email integrations.
+1. **Filesystem and Helm chart scanning:** Point Trivy at chart directories or rendered manifests to catch misconfigurations before deploy.
+2. **Custom policies with Rego:** Combine Trivy findings with OPA/Gatekeeper or other policy engines for organization-specific rules.
+3. **CI/CD alerts:** Route scan results to chat or ticketing systems so owners can triage without blocking every build on low-severity noise.
 
+---
 
 # Conclusion and Further Reading
 
@@ -213,7 +190,17 @@ DevSecOps in Kubernetes is no longer optional but a critical necessity in ensuri
 
 ---
 
-## Further Reading on Kuberentes Security
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 15: Container Image Scanning with Trivy](../../labmanuals/lab15-sec-image-scanning-trivy.md) | Install Trivy, scan images and cluster resources, and interpret reports. |
+
+---
+
+## Further Reading on Kubernetes Security
 
 ### DevSecOps Tools Documentation
 1. [Kube-Bench Documentation](https://github.com/aquasecurity/kube-bench)

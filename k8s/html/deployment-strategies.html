@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,10 +18,15 @@
             --mint: #dcfce7;
             --amber: #fef3c7;
             --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
         }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #f5f6fa;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             color: var(--ink);
             line-height: 1.6;
             padding: 20px;
@@ -31,6 +36,7 @@
             margin: 0 auto;
         }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -144,7 +150,7 @@
         .concept-grid,
         .practice-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 18px;
         }
         .card {
@@ -184,7 +190,7 @@
         }
         .flow-track {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
             gap: 18px;
         }
         .flow-step {
@@ -233,7 +239,10 @@
             color: #dbeafe;
             border-radius: 16px;
             padding: 18px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 0.88rem;
             line-height: 1.55;
             border: 1px solid rgba(148,163,184,0.18);
@@ -271,18 +280,38 @@
             font-size: 0.9rem;
             margin-top: 18px;
         }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
         @media (max-width: 900px) {
             body { padding: 14px; }
             .hero, .view { padding: 22px; }
             .controls { justify-content: flex-start; }
+        }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
-            <div class="eyebrow">Interactive Kubernetes Explainer</div>
-            <h1>Deployment Strategies</h1>
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Deployment Strategies</h1>
             <p class="subtitle">Interactive guide to recreate, rolling update, blue-green, and canary release strategies.</p>
             <div class="lead-panel">
                 <p>Release strategy is about balancing simplicity, user impact, rollback speed, and operational risk.</p>
@@ -436,8 +465,7 @@
 </div>
 
         </section>
-
-    </div>
+</div>
 
     <script>
         const buttons = document.querySelectorAll('.btn');

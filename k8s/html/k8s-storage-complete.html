@@ -7,7 +7,11 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --blue: #326ce5;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
             --blue-deep: #1d4ed8;
             --ink: #0f172a;
             --muted: #64748b;
@@ -18,7 +22,7 @@
         }
         body {
             font-family: "Segoe UI", system-ui, sans-serif;
-            background: var(--bg);
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             color: var(--ink);
             line-height: 1.6;
             padding: 20px;
@@ -30,7 +34,16 @@
             border-radius: 18px;
             box-shadow: 0 8px 28px rgba(15,23,42,0.08);
         }
-        .hero { padding: 32px; margin-bottom: 24px; text-align: center; }
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
         .eyebrow {
             display: inline-block;
             background: #dbeafe;
@@ -43,7 +56,7 @@
             text-transform: uppercase;
             margin-bottom: 14px;
         }
-        h1 { font-size: clamp(2rem, 4vw, 3rem); color: var(--blue); margin-bottom: 10px; }
+        h1 { font-size: clamp(2rem, 4vw, 3rem); color: var(--kube-blue); margin-bottom: 10px; }
         .subtitle { max-width: 980px; margin: 0 auto 18px; color: var(--muted); }
         .lead {
             max-width: 980px;
@@ -68,7 +81,7 @@
         .view { display: none; padding: 28px; margin-bottom: 22px; }
         .view.active { display: block; }
         h2 { font-size: 1.4rem; margin-bottom: 16px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 16px; }
         .card, .step, .practice {
             border: 1px solid var(--line);
             border-radius: 16px;
@@ -87,7 +100,10 @@
             color: #dbeafe;
             padding: 18px;
             border-radius: 16px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 0.86rem;
             border: 1px solid rgba(148,163,184,0.2);
             margin-top: 12px;
@@ -102,13 +118,21 @@
             border-left: 4px solid var(--blue); color: #1e3a8a;
         }
         @media (max-width: 768px) { body { padding: 14px; } .hero, .view { padding: 20px; } }
-    </style>
+            .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: #326CE5; text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
     <div class="container">
         <section class="hero">
-            <div class="eyebrow">Storage Fundamentals</div>
-            <h1>Kubernetes Storage Overview</h1>
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Storage Overview</h1>
             <p class="subtitle">Interactive summary of ephemeral and persistent storage, PV and PVC binding, StorageClasses, CSI, snapshots, and shared-storage design choices.</p>
             <div class="lead">Kubernetes storage is a layered model: Pod-scoped volumes, cluster-scoped persistent resources, and backend-specific provisioning. The best storage choice starts with workload lifecycle and access requirements rather than vendor preference.</div>
         </section>
@@ -201,7 +225,7 @@ spec:
                 <article class="practice"><h3>Recovery planning</h3><p>Decide on reclaim, cleanup, backup, and snapshot strategy before the first application depends on the volume.</p></article>
             </div>
         </section>
-    </div>
+</div>
 
     <script>
         function showView(view, button) {

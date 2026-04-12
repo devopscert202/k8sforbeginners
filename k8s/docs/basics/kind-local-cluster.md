@@ -115,34 +115,19 @@ Before using Kind, make sure you have:
 - enough local CPU, memory, and disk space
 - internet access for pulling images
 
-Basic checks:
-
-```bash
-kubectl version --client
-kind version
-docker version
-```
+Basic checks include confirming **`kubectl`**, **`kind`**, and your container engine are installed and that the daemon is running.
 
 ---
 
-## Basic Setup Flow
+## Typical workflows (conceptual)
 
-### 1. Create a cluster
+- **Single-node cluster**: `kind create cluster` provisions a default cluster and merges kubeconfig context so `kubectl` works immediately; `kind delete cluster` tears it down.
+- **Verification**: `kubectl cluster-info` and `kubectl get nodes` confirm the API is reachable and nodes are **Ready**.
+- **Multi-node**: A small **Kind cluster config** lists `control-plane` and `worker` roles; you pass it with `kind create cluster --name … --config …` (see the lab for a full example file).
+- **Local images**: Kind clusters do not see your host Docker daemon’s image store automatically; **`kind load docker-image`** (or building inside Kind’s nodes) is the usual pattern for testing private or locally built images.
+- **Cleanup**: Deleting the named cluster returns resources on the machine—important when repeating labs.
 
-```bash
-kind create cluster
-```
-
-### 2. Verify it
-
-```bash
-kubectl cluster-info
-kubectl get nodes
-```
-
-### 3. Create a multi-node cluster if needed
-
-Example config:
+Example **multi-node** config shape (illustrative):
 
 ```yaml
 kind: Cluster
@@ -151,24 +136,6 @@ nodes:
 - role: control-plane
 - role: worker
 - role: worker
-```
-
-Create it with:
-
-```bash
-kind create cluster --name kind-lab --config kind-multinode.yaml
-```
-
-### 4. Load a local image
-
-```bash
-kind load docker-image myapp:dev --name kind-lab
-```
-
-### 5. Delete when finished
-
-```bash
-kind delete cluster --name kind-lab
 ```
 
 ---
@@ -208,10 +175,17 @@ If your goal is **learning Kubernetes**, Kind is one of the best starting points
 
 ---
 
-## Related Content
+## Hands-On Labs
 
-- Lab manual: [../../labmanuals/lab05-install-kind-local-kubernetes.md](../../labmanuals/lab05-install-kind-local-kubernetes.md)
-- HTML guide: [../../html/kind-local-kubernetes.html](../../html/kind-local-kubernetes.html)
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 05: Install Kind (local Kubernetes)](../../labmanuals/lab05-install-kind-local-kubernetes.md) | Step-by-step Kind install, cluster create/delete, multi-node config, and kubeconfig usage. |
+
+## Related HTML
+
+- [Kind local Kubernetes (interactive)](../../html/kind-local-kubernetes.html)
 
 ## Sources
 

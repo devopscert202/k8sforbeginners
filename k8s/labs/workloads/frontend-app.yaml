@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: frontend-app
-        image: nginx:1.16.1
+        image: nginx:1.25-alpine
         ports:
         - containerPort: 80

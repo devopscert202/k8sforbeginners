@@ -10,25 +10,72 @@
             padding: 0;
             box-sizing: border-box;
         }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            padding: 20px;
             min-height: 100vh;
+            line-height: 1.6;
+            color: var(--ink);
         }
         .container {
-            max-width: 1000px;
+            max-width: 1380px;
             margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            padding: 20px;
         }
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
         h1 {
             text-align: center;
-            color: #2c3e50;
+            color: var(--kube-blue);
             margin-bottom: 15px;
-            font-size: 24px;
+            font-size: clamp(2rem, 4vw, 3rem);
         }
         .intro {
             background: #e8f4f8;
@@ -177,7 +224,10 @@
             color: #abb2bf;
             padding: 12px;
             border-radius: 4px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 11px;
             line-height: 1.4;
             margin: 0;
@@ -229,11 +279,32 @@
             font-weight: bold;
             margin: 0 4px;
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Service Load Balancing During Rolling Update</h1>
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Service Load Balancing During Rolling Update</h1>
+        </header>
 
         <div class="intro">
             <strong>Zero-Downtime Deployments:</strong> During a rolling update, the Service continuously routes traffic to healthy pods. As new v2 pods become ready, they're added to the endpoint list. Old v1 pods are removed only after graceful termination. This ensures 100% availability throughout the rollout.
@@ -460,7 +531,7 @@ spec:
                 <li><strong>Session Affinity:</strong> Can be configured with <code>sessionAffinity: ClientIP</code> for sticky sessions</li>
             </ul>
         </div>
-    </div>
+</div>
 
     <script>
         let currentStage = 1;

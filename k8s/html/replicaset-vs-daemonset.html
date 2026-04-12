@@ -8,33 +8,50 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
-      --navy: #0f172a; --blue: #1d4ed8; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --kube-blue: #326CE5; --kube-blue-deep: #1d4ed8; --kube-sky: #dbeafe;
+      --navy: #0f172a; --blue: #2563eb; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
     }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(29,78,216,.1), transparent 24%),
-        radial-gradient(circle at top right, rgba(109,40,217,.08), transparent 22%),
-        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
-      color: var(--ink); line-height: 1.55; padding: 24px;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--slate-900); line-height: 1.55; padding: 20px;
     }
-    .page { max-width: 1420px; margin: 0 auto; }
+    .page { max-width: 1380px; margin: 0 auto; }
     .hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
-      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+            position: relative;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      margin-bottom: 26px;
+      border: 1px solid rgba(50,108,229,0.1);
     }
     .eyebrow {
-      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
-      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--kube-sky);
+      color: var(--kube-blue-deep);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
     }
-    h1 { font-size: 2.4rem; line-height: 1.12; margin-bottom: 12px; }
-    .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
+    h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.12; margin-bottom: 12px; color: var(--kube-blue); }
+    .hero p { max-width: 980px; margin-left: auto; margin-right: auto; color: var(--muted); }
     .hero-grid, .stats, .compare-grid, .lane, .mapping-grid, .steps-grid, .command-grid, .qa-grid { display: grid; gap: 16px; }
-    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
+    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; margin-bottom: 24px; }
     .hero-card, .panel, .compare-card, .swimlane, .map-card, .step-card, .command-card, .qa-card, .warning {
       background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
     }
-    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card { padding: 18px; color: var(--ink); }
     .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
     .hero-card ul, .compare-card ul { padding-left: 18px; }
     .hero-card li + li, .compare-card li + li { margin-top: 6px; }
@@ -94,45 +111,54 @@
     th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
     th { background: #f8fbff; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
     tr:last-child td { border-bottom: none; }
-    pre { background: var(--navy); color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: auto; font-size: .85rem; line-height: 1.55; margin-top: 12px; }
+    pre { background: var(--navy); color: #dbeafe; border-radius: 16px; padding: 14px; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; overflow-x: hidden; font-size: .85rem; line-height: 1.55; margin-top: 12px; }
     .warning { background: linear-gradient(180deg, #fff9ee 0%, #fff3d9 100%); border-color: #f2cf84; }
     .warning h3, .warning p { color: #8a4b08; }
     @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 18px;
+    }
+    .footer-note a { color: #326CE5; text-decoration: none; }
+    .footer-note a:hover { text-decoration: underline; }
     @media (max-width: 1150px) {
       .hero-grid, .stats, .compare-grid, .mapping-grid, .steps-grid, .command-grid, .qa-grid, .cluster-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 700px) {
       body { padding: 14px; }
       .hero, .panel { padding: 18px; }
-      h1 { font-size: 1.85rem; }
+      h1 { font-size: 1.6rem; }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <section class="hero">
-      <div class="eyebrow">Workload Controller Comparison</div>
-      <h1>ReplicaSet vs DaemonSet</h1>
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>ReplicaSet vs DaemonSet</h1>
       <p>This page answers a very common classroom question: both controllers create Pods automatically, so what is the real difference? The clean answer is that ReplicaSet maintains a desired <strong>number of Pods</strong>, while DaemonSet maintains <strong>Pod presence on nodes</strong>.</p>
-      <div class="hero-grid">
-        <div class="hero-card">
-          <h2>Best quick answer</h2>
-          <ul>
-            <li>ReplicaSet asks: how many copies of this app should be running?</li>
-            <li>DaemonSet asks: which nodes should each run a copy?</li>
-            <li>Count versus coverage is the key mental model.</li>
-          </ul>
-        </div>
-        <div class="hero-card">
-          <h2>Why learners mix them up</h2>
-          <ul>
-            <li>Both are controllers under `apps/v1`.</li>
-            <li>Both keep recreating Pods when reality drifts from desired state.</li>
-            <li>Both are often discussed near Deployments and other workload types.</li>
-          </ul>
-        </div>
-      </div>
     </section>
+
+    <div class="hero-grid">
+      <div class="hero-card">
+        <h2>Best quick answer</h2>
+        <ul>
+          <li>ReplicaSet asks: how many copies of this app should be running?</li>
+          <li>DaemonSet asks: which nodes should each run a copy?</li>
+          <li>Count versus coverage is the key mental model.</li>
+        </ul>
+      </div>
+      <div class="hero-card">
+        <h2>Why learners mix them up</h2>
+        <ul>
+          <li>Both are controllers under `apps/v1`.</li>
+          <li>Both keep recreating Pods when reality drifts from desired state.</li>
+          <li>Both are often discussed near Deployments and other workload types.</li>
+        </ul>
+      </div>
+    </div>
 
     <section class="stats">
       <div class="stat green"><div class="stat-label">ReplicaSet thinks in</div><div class="stat-value">Count</div><div>Maintain a target number of matching Pods anywhere in the cluster.</div></div>
@@ -389,7 +415,7 @@ spec:
         <div class="qa-card"><h3>What is the easiest memory trick?</h3><p>ReplicaSet equals replicas of an app. DaemonSet equals daemon on each node.</p></div>
       </div>
     </section>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

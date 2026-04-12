@@ -21,6 +21,18 @@ By the end of this lab, you will be able to:
 - Understand scaling policies and behaviors
 - Implement autoscaling best practices
 
+## Repository YAML Files
+
+Under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `app-hpa.yaml` | Service + Deployment `php-apache` with CPU requests (`registry.k8s.io/hpa-example`). |
+| `hpa.yaml` | HorizontalPodAutoscaler `php-apache` (v1, CPU 50%). |
+| `metricsserver.yaml` | Optional local Metrics Server install manifest (see also Lab 36). |
+| `memory-app.yaml` | Deployment `memory-app` with CPU and memory requests/limits for v2 HPA. |
+| `memory-hpa.yaml` | HorizontalPodAutoscaler `memory-app-hpa` (autoscaling/v2, CPU + memory + behavior). |
+
 ---
 
 ## What is Horizontal Pod Autoscaling?

@@ -1,24 +1,33 @@
-# Deploying WordPress and MySQL on Kubernetes
+# WordPress and MySQL on Kubernetes
 
 ## Introduction
-WordPress is one of the most popular open-source content management systems (CMS) used for creating dynamic websites and blogs. It is highly customizable, easy to use, and widely supported by the developer community. 
 
-MySQL, on the other hand, is a powerful open-source relational database management system. It is often used alongside WordPress to store website content such as posts, user data, and configurations.
+**WordPress** is a widely used open-source CMS for websites and blogs. **MySQL** is a common relational database for WordPress content, users, and configuration.
 
-In this tutorial, we will set up a WordPress site with a MySQL database on a Kubernetes lab cluster. By the end of this guide, you will understand the basics of deploying applications on Kubernetes and be able to verify your WordPress site.
+On Kubernetes, a minimal lab-style stack usually includes:
 
-### Prerequisites
-Before starting, you should have:
-1. A basic understanding of Kubernetes concepts like Deployments, Services, and Pods.
-2. Access to a Kubernetes lab cluster.
-3. The `kubectl` CLI tool installed and configured to interact with your lab cluster.
+- **Deployments** for MySQL and WordPress (each runs in Pods).
+- **Services** so WordPress can resolve the database by **DNS name** (for example `mysql`) and so users can reach the web tier (often **NodePort** or **Ingress** in labs).
 
-## Step-by-Step Deployment
+This page explains the **architecture and manifest shape**. Applying manifests, choosing node addresses, and completing the WordPress install wizard are covered in the linked lab.
 
-### 1. MySQL Deployment
-Let's start by deploying MySQL, which will serve as the database for WordPress. Below is the YAML configuration for the MySQL Deployment and Service.
+---
 
-#### MySQL Deployment (`mysql.yaml`)
+## Architecture (conceptual)
+
+1. **MySQL Deployment** — one replica is typical in introductory examples; production would address storage, backups, and high availability separately.
+2. **MySQL Service** — stable cluster DNS name and port **3306** for the WordPress Pod.
+3. **WordPress Deployment** — web tier Pods with environment variables pointing at the MySQL Service and database credentials.
+4. **WordPress Service** — exposes HTTP (port **80**) to the cluster or externally depending on `type` (NodePort, LoadBalancer, or ClusterIP + Ingress).
+
+**Security note**: Example manifests often embed passwords in `env` for clarity. Prefer **Secrets** (or external secret management) for real clusters.
+
+---
+
+## Illustrative manifests
+
+### MySQL Deployment
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -46,13 +55,11 @@ spec:
           value: database1
 ```
 
-- **`replicas`**: Specifies the number of Pod replicas to maintain.
-- **`image`**: Specifies the Docker image for MySQL version 5.6.
-- **Environment variables**:
-  - `MYSQL_ROOT_PASSWORD`: Sets the root password for MySQL. This password is crucial for administrative access to the database.
-  - `MYSQL_DATABASE`: Creates a new database (`database1`) for WordPress to use.
+- **`replicas`**: Pod count for the database tier (tutorials often use `1`).
+- **`MYSQL_ROOT_PASSWORD` / `MYSQL_DATABASE`**: Bootstrap credentials and schema name for WordPress to use.
 
-#### MySQL Service (`mysql-service.yaml`)
+### MySQL Service
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -68,13 +75,10 @@ spec:
       targetPort: 3306
 ```
 
-- **`type: NodePort`**: Exposes the MySQL service on a specific port to allow external access.
-- **`port` and `targetPort`**: Specifies that traffic should be directed to port 3306, the default MySQL port.
+- **`type`**: `NodePort` is common in labs for direct browser or host access; **ClusterIP** is typical when only in-cluster workloads talk to MySQL.
 
-### 2. WordPress Deployment
-Next, we will deploy WordPress, which will connect to the MySQL database.
+### WordPress Deployment
 
-#### WordPress Deployment (`wordpress.yaml`)
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -106,13 +110,11 @@ spec:
           value: database1
 ```
 
-- **Environment variables**:
-  - `WORDPRESS_DB_HOST`: Specifies the MySQL service name (`mysql`). This allows WordPress to locate the database within the Kubernetes cluster.
-  - `WORDPRESS_DB_PASSWORD`: Uses the root password defined in the MySQL Deployment to authenticate database connections.
-  - `WORDPRESS_DB_USER`: Sets the MySQL username (default: `root`) for database access.
-  - `WORDPRESS_DB_NAME`: Specifies the database name (`database1`) that WordPress will use to store its data.
+- **`WORDPRESS_DB_HOST`**: Kubernetes **Service** name for MySQL; the cluster DNS name resolves to the Service VIP.
+- Other variables must **match** the credentials and database name configured for MySQL.
 
-#### WordPress Service (`wordpress-service.yaml`)
+### WordPress Service
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -128,38 +130,26 @@ spec:
       targetPort: 80
 ```
 
-- **`type: NodePort`**: Exposes the WordPress service on a port accessible externally.
-- **`port` and `targetPort`**: Routes traffic to port 80, where WordPress serves its content.
+---
 
-### 3. Deploy the Resources
-Apply the YAML files to your Kubernetes lab cluster:
-```bash
-kubectl apply -f mysql.yaml
-kubectl apply -f mysql-service.yaml
-kubectl apply -f wordpress.yaml
-kubectl apply -f wordpress-service.yaml
-```
-Verify that the Pods and Services are running:
-```bash
-kubectl get pods
-kubectl get svc
-```
+## Operations and limitations
 
-### 4. Access the WordPress Site
-Once the WordPress and MySQL services are up and running, you can access the WordPress site via the `NodePort` assigned to the `wordpress-service`.
+- **Persistence**: Without **PersistentVolumeClaims**, database data lives in the container filesystem and is lost if the Pod is rescheduled unless the platform adds implicit storage. Treat lab YAML as **ephemeral**.
+- **Scaling**: Scaling WordPress replicas without shared file storage breaks uploaded media unless you add object storage or a shared volume pattern.
+- **Exposure**: Prefer **Ingress** or cloud **LoadBalancer** in production instead of ad hoc NodePort URLs.
 
-Find the NodePort:
-```bash
-kubectl get svc wordpress-service
-```
-Open your browser and navigate to `http://<NodeIP>:<NodePort>` to see the WordPress installation page.
-
-### 5. Verify Connectivity
-Ensure that WordPress can connect to the MySQL database:
-1. Fill out the installation form on the WordPress setup page.
-2. Use the database details provided in the YAML configurations.
-3. Complete the WordPress installation and verify that the site is functional.
+---
 
 ## Conclusion
-Congratulations! You have successfully deployed a WordPress site with a MySQL database on your Kubernetes lab cluster. This tutorial demonstrated how to define Kubernetes resources, manage deployments, and expose services for external access. With these skills, you can explore further Kubernetes concepts and host more complex applications.
 
+WordPress on Kubernetes demonstrates **multi-tier applications**: stable naming via Services, environment-based configuration, and separate controllers for the web and data tiers. Guided steps to apply these resources and validate the site are in the lab manual.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 41: WordPress on Kubernetes](../../labmanuals/lab41-adv-wordpress-on-kubernetes.md) | Deploy MySQL and WordPress, expose Services, and complete setup with hands-on verification. |

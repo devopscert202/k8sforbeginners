@@ -1,0 +1,45 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ts-quiz-a-pending
+  labels:
+    lab: "50"
+    quiz: "true"
+    case: "A"
+spec:
+  containers:
+    - name: app
+      image: nginx:1.25-alpine
+      resources:
+        requests:
+          cpu: "500"
+        limits:
+          cpu: "500"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ts-quiz-b-image
+  labels:
+    lab: "50"
+    quiz: "true"
+    case: "B"
+spec:
+  containers:
+    - name: app
+      image: nginx:definitely-not-a-real-tag
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ts-quiz-c-crash
+  labels:
+    lab: "50"
+    quiz: "true"
+    case: "C"
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["/bin/sh", "-c", "echo failing && exit 42"]

@@ -132,67 +132,27 @@ Services use **selectors** to associate with Pods dynamically. When Pods are rep
 
 ### **4.1 DNS for Services and Pods**
 
-The Kubernetes DNS system automatically creates DNS records for Services and Pods, enabling simpler and consistent connectivity.
+After Services give you stable cluster IPs, **cluster DNS** (typically CoreDNS) publishes names so clients can resolve Services (for example `service-name.namespace.svc.cluster.local`) instead of hardcoding addresses. Pod DNS naming is also available when the cluster is configured for it.
 
-#### Features:
-- **Service DNS**: `service-name.namespace.svc.cluster.local`
-- **Pod DNS**: Optional, enabled with a specific feature flag.
-
-#### Example:
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: example
-spec:
-  clusterIP: None
-  ports:
-  - port: 80
-```
-
-Clients can use `example.default.svc.cluster.local` to connect.
+For a comprehensive guide, see [DNS policy and Kubernetes DNS](./dnspolicy-k8s.md).
 
 ---
 
 ## **5. Advanced Networking Components**
 
 ### **5.1 EndpointSlices**
-EndpointSlices enhance the scalability of network endpoints. They divide a Service's endpoints into smaller groups.
 
-#### Features:
-- Scalability for large clusters.
-- Lower API server load.
+For Services with selectors, the control plane must track which Pod backends are ready; **EndpointSlices** (`discovery.k8s.io/v1`) store those IP:port endpoints in chunks the API server and **kube-proxy** can update efficiently, replacing the older monolithic Endpoints object at scale.
+
+For a comprehensive guide, see [EndpointSlices](./endpointslices.md).
 
 ---
 
 ### **5.2 Ingress and Ingress Controllers**
-**Ingress**:
-- Manages HTTP and HTTPS traffic to cluster applications.
-- Rules define how traffic is routed to Services.
 
-**Ingress Controllers**:
-- Examples: NGINX, Traefik, HAProxy.
-- Required for Ingress functionality.
+**Ingress** resources describe HTTP and HTTPS routing (hostnames, paths, TLS) from outside the cluster to cluster **Services**; they only take effect when an **Ingress controller** (for example NGINX, Traefik, or HAProxy) is installed to reconcile those rules into real load balancing and proxy configuration.
 
-#### Example:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: web-ingress
-spec:
-  rules:
-  - host: example.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: web-service
-            port:
-              number: 80
-```
+For a comprehensive guide, see [Ingress controllers](./ingresscontroller.md).
 
 ---
 
@@ -273,3 +233,15 @@ Kubernetes supports dual-stack networking to enable Pods and Services to use bot
 ## **8. Conclusion**
 
 This guide has outlined the foundational and advanced networking features of Kubernetes. Mastering these concepts enables developers to deploy and manage scalable, secure, and efficient containerized applications.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 02: Creating Kubernetes Services](../../labmanuals/lab02-basics-creating-services.md) | Service types, selectors, and cluster networking fundamentals. |
+| [Lab 34: Multi-Port Services in Kubernetes](../../labmanuals/lab34-net-multi-port-services.md) | Multiple container and Service ports, naming, and NodePort patterns. |
+| [Lab 58: EndpointSlices — Scalable Endpoint Management](../../labmanuals/lab58-net-endpointslices.md) | Auto-generated slices, custom backends, and endpoint troubleshooting. |

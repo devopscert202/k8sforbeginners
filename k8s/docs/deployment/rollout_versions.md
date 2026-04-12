@@ -1,113 +1,31 @@
-# **Lab Title**: Kubernetes Deployment with Rolling Updates and Rollbacks
+# Kubernetes Deployment rollouts, revisions, and rollbacks
 
----
+## Objective (conceptual)
+Deployments manage replicated application Pods and change them through **rolling updates**: new Pods are brought up gradually while old ones terminate, bounded by `maxSurge` and `maxUnavailable`. Each template change creates a new **ReplicaSet** and a new **revision** in rollout history. Operators can **pause**, **resume**, **inspect history**, and **roll back** when a release misbehaves—without rebuilding images if the previous image tag is still available in the registry.
 
-## **Objective**
-1. Build Docker images for two versions of a simple Apache-based application.
-2. Push the images to a container registry.
-3. Deploy the application to Kubernetes using the created images.
-4. Perform a rollout to update the application from v1 to v2.
-5. Demonstrate rollback to the previous version in case of issues.
-6. Verify updates and rollbacks using the same service.
+## How rolling updates relate to ReplicaSets
+- The Deployment controller owns one or more ReplicaSets keyed by the Pod template hash.
+- The **active** ReplicaSet matches `spec.template`; older ReplicaSets may retain scaled-to-zero replicas for rollback.
+- A **Service** selecting the same labels continues to route to Ready endpoints as the new Pods pass readiness checks.
 
----
+## Revisions and change tracking
+- `kubectl rollout history deployment/<name>` shows revision numbers and, if set, the **change-cause** annotation (`kubernetes.io/change-cause`) documenting why a rollout happened.
+- `kubectl rollout status deployment/<name>` streams progress until the new ReplicaSet is complete or a deadline is hit.
 
-## **Prerequisites**
-- Docker installed.
-- Kubernetes cluster running.
-- kubectl CLI installed and configured.
-- A container registry account (e.g., Docker Hub).
-- NodePort access for services.
+## Changing the running version
+- **Declarative**: edit `spec.template` (often `image`) and apply the Deployment manifest.
+- **Imperative**: `kubectl set image deployment/<name> <container>=<image:tag>` updates the template and starts a rollout.
+- **Record / annotations**: recording via `--record` on `set image` is deprecated; prefer explicit `change-cause` annotations in Git or CI.
 
----
+## Rollback behavior
+- `kubectl rollout undo deployment/<name>` moves the Deployment back to the previous revision.
+- `kubectl rollout undo deployment/<name> --to-revision=<N>` selects a specific historical revision.
+- Rollback restores the **previous Pod template** (including image and env); it does not magically recover corrupted external state.
 
-## **Step 1: Build Docker Images**
+## Illustrative Deployment and Service
 
-### **1.1 Create the Application Files**
+**Deployment** (two replicas, simple HTTP image):
 
-#### **Version 1 - HTML File**
-Create a file named `index-v1.html` with the following content:
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Apache HTML Index - Version 1</title>
-</head>
-<body>
-    <h1>Welcome to Apache HTML Index - Version 1</h1>
-</body>
-</html>
-```
-
-#### **Version 2 - HTML File**
-Create a file named `index-v2.html` with the following content:
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Apache HTML Index - Version 2</title>
-</head>
-<body>
-    <h1>Welcome to Apache HTML Index - Version 2</h1>
-</body>
-</html>
-```
-
----
-
-### **1.2 Create Dockerfiles**
-
-#### **Dockerfile for Version 1**
-Save the following content in a file named `Dockerfile-v1`:
-```Dockerfile
-FROM httpd:2.4
-COPY index-v1.html /usr/local/apache2/htdocs/index.html
-EXPOSE 80
-```
-
-#### **Dockerfile for Version 2**
-Save the following content in a file named `Dockerfile-v2`:
-```Dockerfile
-FROM httpd:2.4
-COPY index-v2.html /usr/local/apache2/htdocs/index.html
-EXPOSE 80
-```
-
----
-
-### **1.3 Build the Images**
-
-Run the following commands to build the Docker images:
-
-```bash
-docker build -t karthickponcloud/k8slabs:apache_v1 -f Dockerfile-v1 .
-docker build -t karthickponcloud/k8slabs:apache_v2 -f Dockerfile-v2 .
-```
-
----
-
-### **1.4 Push the Images to a Registry**
-
-1. Log in to Docker Hub. Here you use your login credentials to Docker Hub. Sign Up for free and create a repository like k8slabs.
-   ```bash
-   docker login
-   ```
-
-2. Push the images:
-   ```bash
-   docker push karthickponcloud/k8slabs:apache_v1
-   docker push karthickponcloud/k8slabs:apache_v2
-   ```
-
-Verify the images are available in the registry.
-
----
-
-## **Step 2: Deploy the Application**
-
-### **2.1 Deployment YAML**
-
-Create a file named `deployment.yaml` with the following content:
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -127,16 +45,13 @@ spec:
     spec:
       containers:
       - name: apache-container
-        image: karthickponcloud/k8slabs:apache_v1
+        image: example.registry/apache:v1
         ports:
         - containerPort: 80
 ```
 
----
+**Service** (example `NodePort` for lab-style clusters):
 
-### **2.2 Service YAML**
-
-Create a file named `service.yaml` with the following content:
 ```yaml
 apiVersion: v1
 kind: Service
@@ -152,120 +67,21 @@ spec:
   type: NodePort
 ```
 
----
+Updating `spec.template.spec.containers[0].image` (or using `kubectl set image`) triggers a new rollout; the Service continues to match `app: apache` throughout.
 
-### **2.3 Apply the Configuration**
-
-1. Apply the deployment and service manifests:
-   ```bash
-   kubectl apply -f deployment.yaml
-   kubectl apply -f service.yaml
-   ```
-
-2. Verify the resources:
-   ```bash
-   kubectl get deployments
-   kubectl get pods
-   kubectl get svc
-   ```
-
-3. Access the application:
-   - Note the `NodePort` from `kubectl get svc`.
-   - Open `http://<Node_IP>:<NodePort>` in a browser. You should see the **Version 1** page.
+## Operational commands (reference)
+- `kubectl get deploy,rs,pods`
+- `kubectl describe deployment <name>`
+- `kubectl rollout history deployment/<name>`
+- `kubectl rollout pause|resume deployment/<name>`
 
 ---
 
-## **Step 3: Rollout Update**
+## Hands-On Labs
 
-### **3.1 Update Deployment**
+Practice these concepts with guided lab exercises:
 
-Update the deployment image to **Version 2**:
-```bash
-kubectl set image deployment/apache-deployment apache-container=karthickponcloud/k8slabs:apache_v2 --record
-
-```
-Annotate the deployment as record option will be deprecated:
-```bash
-kubectl annotate deployment/apache-deployment  kubernetes.io/change-cause="Apache version 2"
-```
----
-
-### **3.2 Verify Rollout**
-
-1. Check the rollout status:
-   ```bash
-   kubectl rollout status deployment/apache-deployment
-   ```
-
-2. Verify the pods:
-   ```bash
-   kubectl get pods
-   ```
-
-3. Refresh the browser at `http://<Node_IP>:<NodePort>`. You should see the **Version 2** page.
-
----
-
-## **Step 4: Rollback**
-
-### **4.1 Rollback to Previous Version**
-
-If there’s an issue with Version 2, rollback to Version 1:
-```bash
-kubectl rollout undo deployment/apache-deployment
-```
-
----
-
-### **4.2 Verify Rollback**
-
-1. Check the rollout status:
-   ```bash
-   kubectl rollout status deployment/apache-deployment
-   ```
-
-2. Verify the image:
-   ```bash
-   kubectl describe deployment apache-deployment | grep Image
-   ```
-
-3. Refresh the browser. You should see the **Version 1** page.
-
----
-
-## **Step 5: Rollout History**
-
-View the deployment history:
-```bash
-kubectl rollout history deployment/apache-deployment
-```
-You’ll see revisions and change details.
-
-Alternatively, --to-revision parameter is used to undo the deployment and point a particular version from the history
-```bash
-kubectl rollout undo deployment/apache-deployment --to-revision=2
-```
-
-Above command will undo the deployment and directly going back to version 2 in the history. You may verify the deployment by accessing the service.
-
----
-
-## **Step 6: Cleanup**
-
-Remove the resources after completing the lab:
-```bash
-kubectl delete -f deployment.yaml
-kubectl delete -f service.yaml
-```
-
----
-
-## **Conclusion**
-
-1. **Built and pushed images** for Apache HTML pages (v1 and v2).
-2. **Deployed the application** to Kubernetes with NodePort service.
-3. **Performed a rolling update** to switch from v1 to v2 without downtime.
-4. **Demonstrated rollback** to the previous version in case of issues.
-5. Used **rollout history** to track changes.
-
-This lab demonstrated how Kubernetes enables smooth application management with rolling updates and rollbacks.
+| Lab | Description |
+|-----|-------------|
+| [Lab 22: Kubernetes Deployment Strategies](../../labmanuals/lab22-deploy-deployment-strategies.md) | Deployments, Services, scaling, and rolling updates |
+| [Lab 23: Deployment Strategies and Rollouts](../../labmanuals/lab23-deploy-deployment-rollouts.md) | Rollouts, history, rollback, and rollout controls |

@@ -19,6 +19,22 @@ By the end of this lab, you will be able to:
 
 ---
 
+## Repository YAML Files
+
+> Declarative examples from this lab live under `k8s/labs/security/`. Create `db-credentials` with Exercise 1 before applying Pods that reference it (`secret-env-pod.yaml`, `secret-envfrom-pod.yaml`, `secret-vol-pod.yaml`). Images use pinned tags (`busybox:1.36`); `private-image-pod.yaml` uses a placeholder image that will not pull unless your registry credentials match.
+
+| File | Description | Exercise |
+|------|-------------|----------|
+| [`app-secret.yaml`](../labs/security/app-secret.yaml) | Opaque Secret with base64 `data` keys | Exercise 2 |
+| [`api-secret.yaml`](../labs/security/api-secret.yaml) | Opaque Secret with `stringData` | Exercise 3 |
+| [`secret-env-pod.yaml`](../labs/security/secret-env-pod.yaml) | Pod with `secretKeyRef` env vars | Exercise 4 |
+| [`secret-envfrom-pod.yaml`](../labs/security/secret-envfrom-pod.yaml) | Pod with `envFrom` + `secretRef` | Exercise 5 |
+| [`secret-vol-pod.yaml`](../labs/security/secret-vol-pod.yaml) | Pod mounting Secret as files | Exercise 6 |
+| [`private-image-pod.yaml`](../labs/security/private-image-pod.yaml) | Pod with `imagePullSecrets` (illustrative) | Exercise 8 |
+| [`immutable-secret.yaml`](../labs/security/immutable-secret.yaml) | `immutable: true` Opaque Secret | Exercise 10 |
+
+---
+
 ## What is a Secret?
 
 A **Secret** is a Kubernetes object that holds a small amount of sensitive data — passwords, tokens, keys, or certificates. Secrets keep these values separate from Pod specs and container images.

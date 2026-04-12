@@ -18,6 +18,18 @@ By the end of this lab, you will be able to:
 - Monitor and troubleshoot batch workloads
 - Clean up completed Jobs automatically
 
+## Repository YAML Files
+
+Under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `jobs.yaml` | Job `pi` (Perl calculates π to 2000 digits). |
+| `onemin-job.yaml` | Longer-running sample Job `one-minute-job` (busybox sleep). |
+| `cronjob.yaml` | CronJob `hello-cronjob` every 5 minutes (also used in Lab 29). |
+
+Other sample Jobs/CronJobs in this lab (`failing-job.yaml`, `parallel-job.yaml`, `backup-cronjob.yaml` for `backup-job`, `ttl-job.yaml`) are created inline with `cat <<EOF` in the exercises.
+
 ---
 
 ## What is a Job?

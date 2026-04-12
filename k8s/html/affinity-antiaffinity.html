@@ -20,16 +20,22 @@
             --green: #22c55e;
             --red: #dc2626;
             --purple: #7c3aed;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
         }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #f5f6fa;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             color: var(--ink);
             line-height: 1.6;
             padding: 20px;
         }
         .container { max-width: 1380px; margin: 0 auto; }
         .hero {
+            position: relative;
             text-align: center;
             background: white;
             border-radius: 16px;
@@ -81,7 +87,7 @@
             border-left: 4px solid var(--kube-blue); background: #eff6ff; color: #1e3a8a;
             padding: 14px 16px; border-radius: 12px; margin-top: 18px;
         }
-        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
         .card {
             background: linear-gradient(180deg, #ffffff, #f8fbff); border: 1px solid var(--line);
             border-top: 4px solid #326CE5; border-radius: 16px; padding: 20px; min-height: 160px;
@@ -102,14 +108,14 @@
         .card-purple { border-top-color: var(--purple); }
         .card p { color: #475569; font-size: 0.95rem; }
         .card h3 { color: var(--ink); margin-bottom: 8px; font-size: 1.05rem; }
-        .analogy { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 18px; }
+        .analogy { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; margin-top: 18px; }
         .analogy-card {
             background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
             border: 1px solid rgba(50,108,229,0.18); border-radius: 16px; padding: 22px 18px 18px;
         }
         .analogy-card h3 { font-size: 1rem; margin-bottom: 10px; color: var(--kube-blue-deep); }
         .analogy-card p { color: #475569; font-size: 0.95rem; }
-        .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+        .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
         .type-card { border-radius: 16px; padding: 22px; border: 2px solid var(--line); background: linear-gradient(180deg, #ffffff, #f8fbff); }
         .type-card h3 { font-size: 1.1rem; margin-bottom: 10px; }
         .type-card p { color: #475569; font-size: 0.92rem; margin-bottom: 8px; }
@@ -138,7 +144,8 @@
         }
         pre {
             margin-top: 10px; background: #0f172a; color: #dbeafe; border-radius: 16px;
-            padding: 18px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55;
+            padding: 18px; overflow-x: hidden; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;
+            font-size: 0.88rem; line-height: 1.55;
             border: 1px solid rgba(148,163,184,0.18);
         }
         code { font-family: Consolas, 'Cascadia Code', monospace; }
@@ -147,7 +154,7 @@
         th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; font-size: 0.92rem; }
         th { background: linear-gradient(180deg, #326CE5, #2557be); color: white; font-weight: 700; }
         tbody tr:nth-child(even) { background: #f8fbff; }
-        .practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+        .practice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 18px; }
         .practice-card .card-badge { background: var(--mint); color: #166534; }
         .practice-card { border-top-color: var(--green); }
         .desc-box { background: #eff6ff; border-radius: 14px; padding: 16px 18px; color: #1e3a8a; border-left: 4px solid var(--kube-blue); margin-top: 16px; }
@@ -157,13 +164,21 @@
             .controls { justify-content: flex-start; }
             .constraint-row { grid-template-columns: 1fr; }
         }
-    </style>
+            .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
     <div class="container">
         <header class="hero">
-            <div class="eyebrow">Interactive Kubernetes Explainer</div>
-            <h1>Affinity and Anti-Affinity</h1>
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Affinity and Anti-Affinity</h1>
             <p class="subtitle">Control where Pods land in your cluster — attract them to specific nodes, co-locate them with other Pods, or spread them apart for high availability.</p>
             <div class="lead-panel">
                 <p>Kubernetes provides three affinity mechanisms: <strong>Node Affinity</strong> (attract Pods to nodes by node labels), <strong>Pod Affinity</strong> (co-locate Pods together), and <strong>Pod Anti-Affinity</strong> (spread Pods apart). Each supports hard requirements and soft preferences.</p>
@@ -187,6 +202,15 @@
                 <div class="section-kicker">Core Mental Model</div>
                 <h2>Why Do You Need Affinity Rules?</h2>
             </div></div>
+            <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+                <strong>Repository YAML Files:</strong>
+                <ul style="margin: 8px 0 0 0;">
+                    <li><code>k8s/labs/scheduling/affinity/node-affinity.yaml</code> — Pod with required node affinity matching node labels (e.g. <code>env=production</code>).</li>
+                    <li><code>k8s/labs/scheduling/affinity/node-affinity-2.yaml</code> — Pod with required node affinity targeting nodes labeled <code>env=staging</code>.</li>
+                    <li><code>k8s/labs/scheduling/affinity/pod-anti-affinity.yaml</code> — Pod anti-affinity to spread Pods across nodes or topology domains.</li>
+                    <li><code>k8s/labs/scheduling/affinity/pod-anti-affinity-2.yaml</code> — Second anti-affinity example with different constraints.</li>
+                </ul>
+            </div>
             <div class="concept-grid">
                 <article class="card">
                     <div class="card-badge">The problem</div>
@@ -780,7 +804,7 @@ spec:
                 </article>
             </div>
         </section>
-    </div>
+</div>
 
     <script>
         document.getElementById('main-tabs').addEventListener('click', function(e) {

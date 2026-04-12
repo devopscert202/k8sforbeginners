@@ -20,6 +20,22 @@ By the end of this lab, you will be able to:
 
 ---
 
+## Repository YAML Files
+
+> The `k8s/labs/networking/` directory contains ready-made manifests used in this lab. Apply them directly to save time during training:
+>
+> | File | Description | Exercise |
+> |------|-------------|----------|
+> | [`dnsdefault.yaml`](../../labs/networking/dnsdefault.yaml) | Pod with `dnsPolicy: Default` (node DNS) | Exercise 3 |
+> | [`dnspolicy.yaml`](../../labs/networking/dnspolicy.yaml) | Pod with `hostNetwork` + `ClusterFirstWithHostNet` | Exercise 4 |
+> | [`dnsconfig.yaml`](../../labs/networking/dnsconfig.yaml) | Pod with `dnsPolicy: None` (custom DNS) | Exercise 5 |
+> | [`hostaliases.yaml`](../../labs/networking/hostaliases.yaml) | Pod with custom `/etc/hosts` via hostAliases | Exercise 6 |
+> | [`custom-dns-working.yaml`](../../labs/networking/custom-dns-working.yaml) | Working custom DNS with Google/Cloudflare resolvers | Exercise 5 |
+> | [`hostalias-test.yaml`](../../labs/networking/hostalias-test.yaml) | Long-running Pod with hostAliases for testing | Exercise 6 |
+> | [`dns-debug.yaml`](../../labs/networking/dns-debug.yaml) | DNS debug Pod with `dig`, `host`, `nslookup` tools | Exercise 7 |
+
+---
+
 ## Understanding Kubernetes DNS
 
 ### What is Kubernetes DNS?
@@ -453,7 +469,13 @@ kubectl exec dnscustomconfig -- nslookup google.com
 
 ### Step 6: Create a Working Custom DNS Config
 
-Let's create a Pod with valid DNS servers:
+Let's create a Pod with valid DNS servers. A pre-built manifest is available:
+
+```bash
+kubectl apply -f k8s/labs/networking/custom-dns-working.yaml
+```
+
+Or create inline:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -464,7 +486,7 @@ metadata:
 spec:
   containers:
   - name: test
-    image: busybox
+    image: busybox:1.36
     command: ["sleep", "3600"]
   dnsPolicy: "None"
   dnsConfig:
@@ -579,7 +601,13 @@ fe00::2 ip6-allrouters
 
 ### Step 5: Test with a Long-Running Pod
 
-Create a test Pod with hostAliases:
+Create a test Pod with hostAliases. A pre-built manifest is available:
+
+```bash
+kubectl apply -f k8s/labs/networking/hostalias-test.yaml
+```
+
+Or create inline:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -598,7 +626,7 @@ spec:
     - "db.internal"
   containers:
   - name: test
-    image: busybox
+    image: busybox:1.36
     command: ["sleep", "3600"]
 EOF
 ```
@@ -722,7 +750,13 @@ forward . /etc/resolv.conf
 
 ### DNS Debug Pod
 
-Create a comprehensive DNS testing Pod:
+Create a comprehensive DNS testing Pod. A pre-built manifest is available:
+
+```bash
+kubectl apply -f k8s/labs/networking/dns-debug.yaml
+```
+
+Or create inline:
 
 ```bash
 cat <<EOF | kubectl apply -f -

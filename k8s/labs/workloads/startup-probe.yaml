@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: startup
+  name: startup-demo
+spec:
+  containers:
+  - name: slow-app
+    image: busybox:1.36
+    args:
+    - /bin/sh
+    - -c
+    - |
+      echo "Starting slow initialization..."
+      sleep 60
+      echo "Initialization complete"
+      touch /tmp/ready
+      sleep 3600
+    startupProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/ready
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      failureThreshold: 30  # 30 * 5 = 150s maximum startup time
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/ready
+      initialDelaySeconds: 0
+      periodSeconds: 10
+    readinessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/ready
+      initialDelaySeconds: 0
+      periodSeconds: 5

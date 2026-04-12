@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CKA Troubleshooting Scenarios — k8sforbeginners</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --kube-blue: #326CE5;
+      --kube-blue-deep: #1d4ed8;
+      --kube-sky: #dbeafe;
+      --ink: #1a1a2e;
+      --muted: #64748b;
+      --surface: #ffffff;
+      --panel: #ffffff;
+      --line: #dbe3f1;
+      --mint: #dcfce7;
+      --amber: #fef3c7;
+      --rose: #ffe4e6;
+      --blue: #2563eb;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
+      --blue-deep: var(--kube-blue-deep);
+      --sky: var(--kube-sky);
+      --green: #16a34a;
+      --signal-amber: #d97706;
+      --signal-rose: #e11d48;
+    }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--ink);
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 1380px; margin: 0 auto; }
+
+    .hero {
+            position: relative;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      margin-bottom: 26px;
+      border: 1px solid rgba(50,108,229,0.1);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--kube-sky);
+      color: var(--kube-blue-deep);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--kube-blue);
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.15;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 18px;
+    }
+    .footer-note a { color: var(--kube-blue); text-decoration: none; }
+    .footer-note a:hover { text-decoration: underline; }
+
+    .intro {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      padding: 1.1rem 1.35rem;
+      margin-bottom: 1.25rem;
+      border-left: 4px solid var(--blue);
+    }
+    .intro p {
+      color: var(--slate-700);
+      font-size: 0.92rem;
+    }
+    .intro p + p { margin-top: 0.65rem; }
+
+    .scenarios-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.1rem;
+    }
+    @media (min-width: 900px) {
+      .scenarios-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .scenario-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+      padding: 1.15rem 1.35rem;
+      border-left: 4px solid var(--blue);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .scenario-card.intermediate {
+      border-left-color: var(--signal-amber);
+    }
+
+    .scenario-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.75rem;
+      justify-content: space-between;
+    }
+    .scenario-header h2 {
+      font-size: 1.05rem;
+      color: var(--slate-900);
+      font-weight: 650;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.28rem 0.55rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .badge.beginner {
+      background: var(--sky);
+      color: var(--blue-deep);
+    }
+    .badge.intermediate {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .problem {
+      color: var(--slate-700);
+      font-size: 0.92rem;
+    }
+    .problem strong { color: var(--slate-900); }
+
+    .scenario-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .toggle-btn {
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      padding: 0.5rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--slate-200);
+      background: #fff;
+      color: var(--slate-700);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .toggle-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue-deep);
+    }
+    .toggle-btn[aria-expanded="true"] {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue-deep);
+    }
+    .toggle-btn[data-toggle="solution"][aria-expanded="true"] {
+      background: var(--green);
+      border-color: #15803d;
+    }
+
+    .collapsible-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.35s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+    .collapsible-panel.is-open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .collapsible-panel > .collapsible-inner {
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .panel-section {
+      padding-top: 0.35rem;
+    }
+    .panel-section h3 {
+      font-size: 0.88rem;
+      color: var(--slate-700);
+      font-weight: 650;
+      margin-bottom: 0.45rem;
+    }
+    .panel-section p,
+    .panel-section li {
+      color: var(--slate-700);
+      font-size: 0.88rem;
+    }
+    .panel-section ul {
+      margin-left: 1.15rem;
+      margin-top: 0.35rem;
+    }
+    .panel-section li { margin-bottom: 0.3rem; }
+
+    .label-rc { color: var(--signal-rose); font-weight: 650; }
+    .label-fix { color: var(--green); font-weight: 650; }
+
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      overflow-x: hidden;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      margin: 0.5rem 0 0;
+      font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    }
+
+    .tip-bar {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      background: var(--sky);
+      border-radius: 10px;
+      font-size: 0.86rem;
+      color: var(--slate-700);
+    }
+    .tip-bar strong { color: var(--blue-deep); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>CKA Troubleshooting Scenarios</h1>
+      <p class="subtitle">CKA Troubleshooting Domain — 30% of the exam</p>
+    </header>
+
+    <section class="intro" aria-label="How to use this page">
+      <p>
+        Use these cards like short exam drills: read the <strong>problem</strong>, try to list what you would check,
+        then reveal <strong>investigation</strong> steps and the <strong>solution</strong>. In the real CKA, you work
+        on a live cluster; here the focus is the diagnostic story—symptoms, commands, root cause, and fix.
+      </p>
+      <p>
+        Buttons toggle panels with a smooth open/close animation. You can open investigation and solution at the same time
+        if you want to compare.
+      </p>
+    </section>
+
+    <div class="scenarios-grid">
+
+      <!-- Scenario 1 -->
+      <article class="scenario-card beginner" data-scenario="1">
+        <div class="scenario-header">
+          <h2>1. Broken kubelet</h2>
+          <span class="badge beginner">Beginner</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> A worker node shows <code>NotReady</code>. The scheduler avoids it and pods are not placed on this node.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="1" data-toggle="investigation" aria-expanded="false" aria-controls="panel-1-investigation">
+            Show Investigation
+          </button>
+          <button type="button" class="toggle-btn" data-scenario="1" data-toggle="solution" aria-expanded="false" aria-controls="panel-1-solution">
+            Show Solution
+          </button>
+        </div>
+        <div class="collapsible-panel" id="panel-1-investigation" data-scenario="1" data-panel="investigation" role="region" aria-label="Investigation steps scenario 1">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <p>Confirm node state and kubelet health from the control plane and on the node.</p>
+              <pre>kubectl get nodes
+kubectl describe node worker-1</pre>
+              <p>SSH to the worker and inspect the kubelet service:</p>
+              <pre>ssh worker-1
+sudo systemctl status kubelet
+sudo journalctl -u kubelet -n 50 --no-pager</pre>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-1-solution" data-scenario="1" data-panel="solution" role="region" aria-label="Solution scenario 1">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> The kubelet service is stopped (or failed to start).</p>
+              <p><span class="label-fix">Fix:</span> Start kubelet and enable it on boot.</p>
+              <pre>sudo systemctl start kubelet
+sudo systemctl enable kubelet</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 2 -->
+      <article class="scenario-card beginner" data-scenario="2">
+        <div class="scenario-header">
+          <h2>2. Static pod not running</h2>
+          <span class="badge beginner">Beginner</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> A static pod for a monitoring agent should run on every node, but on <code>worker-2</code> the mirror pod never appears (or stays failed).
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="2" data-toggle="investigation" aria-expanded="false" aria-controls="panel-2-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="2" data-toggle="solution" aria-expanded="false" aria-controls="panel-2-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-2-investigation" data-scenario="2" data-panel="investigation" role="region" aria-label="Investigation steps scenario 2">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <p>Static pods are defined by files on the node. Verify the manifest directory and kubelet configuration.</p>
+              <ul>
+                <li>List files under the static pod path (often <code>/etc/kubernetes/manifests/</code> on kubeadm clusters).</li>
+                <li>Check kubelet config for <code>staticPodPath</code> if the path is non-standard.</li>
+                <li>Validate YAML syntax; kubelet logs often mention parse errors.</li>
+              </ul>
+              <pre>ls -la /etc/kubernetes/manifests/
+sudo grep -R staticPodPath /var/lib/kubelet/config.yaml /etc/kubernetes/kubelet.conf 2>/dev/null
+sudo journalctl -u kubelet -n 80 --no-pager | tail -40</pre>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-2-solution" data-scenario="2" data-panel="solution" role="region" aria-label="Solution scenario 2">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> The manifest file has a YAML syntax error—for example a missing colon after a key—so kubelet refuses to create the pod.</p>
+              <p><span class="label-fix">Fix:</span> Correct the manifest on disk. Kubelet watches the directory and will recreate the static pod automatically.</p>
+              <pre>sudo nano /etc/kubernetes/manifests/monitoring-agent.yaml
+# Fix the YAML (e.g. ensure key: value pairs are valid)
+sudo systemctl restart kubelet   # only if needed; usually not</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 3 -->
+      <article class="scenario-card intermediate" data-scenario="3">
+        <div class="scenario-header">
+          <h2>3. API server certificate expired</h2>
+          <span class="badge intermediate">Intermediate</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> <code>kubectl</code> fails with: <em>Unable to connect to the server: x509: certificate has expired or is not yet valid</em>.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="3" data-toggle="investigation" aria-expanded="false" aria-controls="panel-3-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="3" data-toggle="solution" aria-expanded="false" aria-controls="panel-3-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-3-investigation" data-scenario="3" data-panel="investigation" role="region" aria-label="Investigation steps scenario 3">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <p>Inspect certificate dates on the control plane node and use kubeadm’s built-in check.</p>
+              <pre>openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -dates
+kubeadm certs check-expiration</pre>
+              <p>Compare <code>notAfter</code> with the current time. If the API server cert is past expiry, clients using that cert will fail TLS.</p>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-3-solution" data-scenario="3" data-panel="solution" role="region" aria-label="Solution scenario 3">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> The API server serving certificate has expired.</p>
+              <p><span class="label-fix">Fix:</span> Renew the apiserver certificate with kubeadm, then restart the API server (static pod or systemd unit depending on install).</p>
+              <pre>kubeadm certs renew apiserver
+# If kube-apiserver is a static pod, moving the manifest aside and back can restart it;
+# or delete the pod mirror so kubelet recreates it.
+sudo mv /etc/kubernetes/manifests/kube-apiserver.yaml /tmp/
+sleep 3
+sudo mv /tmp/kube-apiserver.yaml /etc/kubernetes/manifests/</pre>
+              <p>Restore admin kubeconfig trust if needed after rotation in your environment; kubeadm typically updates server certs in place.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 4 -->
+      <article class="scenario-card beginner" data-scenario="4">
+        <div class="scenario-header">
+          <h2>4. DNS not resolving</h2>
+          <span class="badge beginner">Beginner</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> Pods reach external IPs, but <code>nslookup kubernetes.default</code> (or similar) fails inside pods.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="4" data-toggle="investigation" aria-expanded="false" aria-controls="panel-4-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="4" data-toggle="solution" aria-expanded="false" aria-controls="panel-4-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-4-investigation" data-scenario="4" data-panel="investigation" role="region" aria-label="Investigation steps scenario 4">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <p>Check CoreDNS (or kube-dns) pods and logs in <code>kube-system</code>.</p>
+              <pre>kubectl get pods -n kube-system -l k8s-app=kube-dns
+kubectl get pods -n kube-system -l app.kubernetes.io/name=coredns
+kubectl logs -n kube-system deploy/coredns --tail=80</pre>
+              <p>If a specific pod is crashing, describe it and read events.</p>
+              <pre>kubectl describe pod -n kube-system -l k8s-app=kube-dns</pre>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-4-solution" data-scenario="4" data-panel="solution" role="region" aria-label="Solution scenario 4">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> CoreDNS pods are in <code>CrashLoopBackOff</code> because the Corefile contains a misconfiguration—here, a <code>loop</code> plugin that creates a forwarding loop.</p>
+              <p><span class="label-fix">Fix:</span> Edit the CoreDNS ConfigMap, remove or replace the problematic <code>loop</code> plugin, then restart CoreDNS pods.</p>
+              <pre>kubectl edit configmap coredns -n kube-system
+# In the Corefile block, remove the `loop` plugin line or fix upstreams
+kubectl delete pods -n kube-system -l k8s-app=kube-dns</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 5 -->
+      <article class="scenario-card intermediate" data-scenario="5">
+        <div class="scenario-header">
+          <h2>5. NetworkPolicy blocking traffic</h2>
+          <span class="badge intermediate">Intermediate</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> After a new NetworkPolicy was applied, a frontend pod can no longer reach the backend Service—even though endpoints and selectors looked fine before.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="5" data-toggle="investigation" aria-expanded="false" aria-controls="panel-5-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="5" data-toggle="solution" aria-expanded="false" aria-controls="panel-5-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-5-investigation" data-scenario="5" data-panel="investigation" role="region" aria-label="Investigation steps scenario 5">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <p>List policies in the namespace, read rules, and test connectivity from a pod.</p>
+              <pre>kubectl get networkpolicy -n app
+kubectl describe networkpolicy deny-all-ingress -n app
+kubectl exec -n app deploy/frontend -- curl -sS -m 2 http://backend.app.svc.cluster.local</pre>
+              <p>Remember: some CNI implementations enforce default-deny once an ingress policy selects pods, unless another policy explicitly allows traffic.</p>
+              <p style="font-size:0.88rem;color:#64748b;margin-top:8px;">&#128194; <strong>Repo reference:</strong> See <code>k8s/labs/security/deny-all-ingress.yaml</code> and <code>allow-ingress.yaml</code> for ready-made deny/allow policy examples. Also see <code>deny-from-other-namespaces.yaml</code> for namespace isolation.</p>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-5-solution" data-scenario="5" data-panel="solution" role="region" aria-label="Solution scenario 5">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> A default-deny ingress NetworkPolicy was added, but no policy allows traffic from the frontend pods to the backend pods.</p>
+              <p><span class="label-fix">Fix:</span> Add an allow rule with matching labels (and namespace if cross-namespace). Example based on <code>k8s/labs/security/allow-ingress.yaml</code>:</p>
+              <pre>apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+      ports:
+        - protocol: TCP
+          port: 8080</pre>
+              <p>Adjust labels, ports, and add <code>namespaceSelector</code> if the client lives in another namespace.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 6 -->
+      <article class="scenario-card beginner" data-scenario="6">
+        <div class="scenario-header">
+          <h2>6. PVC not binding</h2>
+          <span class="badge beginner">Beginner</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> A pod stays <code>Pending</code>. Events mention the persistent volume claim is not bound.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="6" data-toggle="investigation" aria-expanded="false" aria-controls="panel-6-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="6" data-toggle="solution" aria-expanded="false" aria-controls="panel-6-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-6-investigation" data-scenario="6" data-panel="investigation" role="region" aria-label="Investigation steps scenario 6">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <pre>kubectl get pvc -A
+kubectl get pv
+kubectl describe pvc data-vol -n dev</pre>
+              <p>Look for <code>StorageClass</code> mismatches, missing provisioner, or quota issues in the PVC events.</p>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-6-solution" data-scenario="6" data-panel="solution" role="region" aria-label="Solution scenario 6">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> The PVC requests <code>storageClassName: fast</code>, but no StorageClass named <code>fast</code> exists (or no default can satisfy it).</p>
+              <p><span class="label-fix">Fix:</span> Create the <code>fast</code> StorageClass, or change the PVC to use an existing class (e.g. <code>standard</code>).</p>
+              <pre>kubectl get storageclass
+# Option A: create StorageClass `fast` for your provisioner
+# Option B: patch PVC
+kubectl patch pvc data-vol -n dev -p '{"spec":{"storageClassName":"standard"}}'</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 7 -->
+      <article class="scenario-card intermediate" data-scenario="7">
+        <div class="scenario-header">
+          <h2>7. Deployment not rolling out</h2>
+          <span class="badge intermediate">Intermediate</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> <code>kubectl rollout status deployment/web</code> hangs. Only one of three new pods becomes available.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="7" data-toggle="investigation" aria-expanded="false" aria-controls="panel-7-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="7" data-toggle="solution" aria-expanded="false" aria-controls="panel-7-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-7-investigation" data-scenario="7" data-panel="investigation" role="region" aria-label="Investigation steps scenario 7">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <pre>kubectl get pods -l app=web -o wide
+kubectl describe deployment web
+kubectl get rs -l app=web
+kubectl describe rs web-7d9c8f4b5c</pre>
+              <p>Check new ReplicaSet pod events for <code>ImagePullBackOff</code>, <code>CrashLoopBackOff</code>, or probe failures.</p>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-7-solution" data-scenario="7" data-panel="solution" role="region" aria-label="Solution scenario 7">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> New pods fail because the image tag is wrong—often <code>ImagePullBackOff</code>—so the rollout cannot reach desired availability.</p>
+              <p><span class="label-fix">Fix:</span> Point the deployment to a valid image, or undo the rollout.</p>
+              <pre>kubectl set image deployment/web web=nginx:1.25
+kubectl rollout status deployment/web
+
+# Or revert the bad change
+kubectl rollout undo deployment/web</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 8 -->
+      <article class="scenario-card intermediate" data-scenario="8">
+        <div class="scenario-header">
+          <h2>8. Node disk pressure evictions</h2>
+          <span class="badge intermediate">Intermediate</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> Pods disappear from a node with eviction messages about low ephemeral storage.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="8" data-toggle="investigation" aria-expanded="false" aria-controls="panel-8-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="8" data-toggle="solution" aria-expanded="false" aria-controls="panel-8-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-8-investigation" data-scenario="8" data-panel="investigation" role="region" aria-label="Investigation steps scenario 8">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <pre>kubectl describe node worker-3 | sed -n '/Conditions/,/Addresses/p'</pre>
+              <p>Look for <code>DiskPressure</code> = <code>True</code>. On the node, check filesystem usage.</p>
+              <pre>df -h
+sudo du -sh /var/lib/containerd/* 2>/dev/null | sort -h | tail</pre>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-8-solution" data-scenario="8" data-panel="solution" role="region" aria-label="Solution scenario 8">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> Container logs, layers, and images consumed too much local ephemeral storage; the kubelet evicts pods to protect the node.</p>
+              <p><span class="label-fix">Fix:</span> Free space (prune unused images), tune log rotation, and cap per-pod ephemeral storage where appropriate.</p>
+              <pre>sudo crictl rmi --prune
+# Configure kubelet/container runtime log rotation per your distro
+# In pod specs, set resources.limits.ephemeral-storage</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 9 -->
+      <article class="scenario-card intermediate" data-scenario="9">
+        <div class="scenario-header">
+          <h2>9. Scheduler not running</h2>
+          <span class="badge intermediate">Intermediate</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> New pods remain <code>Pending</code>. Events include messages like <em>no nodes available to schedule pods</em> even though nodes are Ready.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="9" data-toggle="investigation" aria-expanded="false" aria-controls="panel-9-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="9" data-toggle="solution" aria-expanded="false" aria-controls="panel-9-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-9-investigation" data-scenario="9" data-panel="investigation" role="region" aria-label="Investigation steps scenario 9">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <p>Verify control plane pods, especially the scheduler, in <code>kube-system</code> (or static manifests on the control plane node).</p>
+              <pre>kubectl get pods -n kube-system | grep -E 'scheduler|kube-scheduler'</pre>
+              <p>If nothing is running, SSH to the control plane and list static pod manifests:</p>
+              <pre>ls -la /etc/kubernetes/manifests/</pre>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-9-solution" data-scenario="9" data-panel="solution" role="region" aria-label="Solution scenario 9">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> The scheduler static pod manifest was removed or corrupted, so no component is assigning pods to nodes.</p>
+              <p><span class="label-fix">Fix:</span> Restore <code>/etc/kubernetes/manifests/kube-scheduler.yaml</code> from backup or official documentation for your Kubernetes version, then let kubelet recreate the pod.</p>
+              <pre>sudo cp /root/backup/kube-scheduler.yaml /etc/kubernetes/manifests/kube-scheduler.yaml
+sudo chmod 600 /etc/kubernetes/manifests/kube-scheduler.yaml</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Scenario 10 -->
+      <article class="scenario-card beginner" data-scenario="10">
+        <div class="scenario-header">
+          <h2>10. RBAC permission denied</h2>
+          <span class="badge beginner">Beginner</span>
+        </div>
+        <p class="problem">
+          <strong>What you see:</strong> A developer cannot list pods in namespace <code>dev</code>. API error: <em>User dev-user cannot list resource pods in namespace dev</em>.
+        </p>
+        <div class="scenario-actions">
+          <button type="button" class="toggle-btn" data-scenario="10" data-toggle="investigation" aria-expanded="false" aria-controls="panel-10-investigation">Show Investigation</button>
+          <button type="button" class="toggle-btn" data-scenario="10" data-toggle="solution" aria-expanded="false" aria-controls="panel-10-solution">Show Solution</button>
+        </div>
+        <div class="collapsible-panel" id="panel-10-investigation" data-scenario="10" data-panel="investigation" role="region" aria-label="Investigation steps scenario 10">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <h3>Investigation</h3>
+              <pre>kubectl auth can-i list pods -n dev --as=dev-user
+kubectl get rolebindings,clusterrolebindings -n dev
+kubectl describe rolebinding dev-readonly -n dev</pre>
+              <p>Confirm which Role or ClusterRole is referenced and whether that Role exists.</p>
+              <pre>kubectl get role -n dev</pre>
+            </div>
+          </div>
+        </div>
+        <div class="collapsible-panel" id="panel-10-solution" data-scenario="10" data-panel="solution" role="region" aria-label="Solution scenario 10">
+          <div class="collapsible-inner">
+            <div class="panel-section">
+              <p><span class="label-rc">Root cause:</span> A RoleBinding points to a Role name that does not exist in the namespace (or has no matching rules).</p>
+              <p><span class="label-fix">Fix:</span> Create the missing Role with the right verbs/resources, or correct the RoleBinding’s <code>roleRef</code>.</p>
+              <pre>apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: dev
+  name: pod-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]</pre>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="tip-bar" role="note">
+      <strong>Exam tip:</strong> For troubleshooting items, start from symptoms → <code>kubectl describe</code> / events → narrow to one component (kubelet, DNS, scheduler, storage, policy, RBAC). Write the minimal fix command or manifest edit the question asks for.
+    </div>
+</div>
+
+  <script>
+    (function () {
+      var BTN_SHOW_INV = 'Show Investigation';
+      var BTN_HIDE_INV = 'Hide Investigation';
+      var BTN_SHOW_SOL = 'Show Solution';
+      var BTN_HIDE_SOL = 'Hide Solution';
+
+      function findPanel(scenarioId, panelKind) {
+        return document.querySelector(
+          '.collapsible-panel[data-scenario="' + scenarioId + '"][data-panel="' + panelKind + '"]'
+        );
+      }
+
+      function setPanelOpen(panel, open) {
+        if (!panel) return;
+        panel.classList.toggle('is-open', open);
+      }
+
+      function syncButton(btn, open) {
+        var kind = btn.getAttribute('data-toggle');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (kind === 'investigation') {
+          btn.textContent = open ? BTN_HIDE_INV : BTN_SHOW_INV;
+        } else if (kind === 'solution') {
+          btn.textContent = open ? BTN_HIDE_SOL : BTN_SHOW_SOL;
+        }
+      }
+
+      document.addEventListener('click', function (ev) {
+        var btn = ev.target.closest('.toggle-btn');
+        if (!btn || !btn.hasAttribute('data-scenario')) return;
+
+        var scenarioId = btn.getAttribute('data-scenario');
+        var panelKind = btn.getAttribute('data-toggle');
+        if (!panelKind) return;
+
+        var panel = findPanel(scenarioId, panelKind);
+        if (!panel) return;
+
+        var willOpen = !panel.classList.contains('is-open');
+        setPanelOpen(panel, willOpen);
+        syncButton(btn, willOpen);
+      });
+    })();
+  </script>
+</body>
+</html>

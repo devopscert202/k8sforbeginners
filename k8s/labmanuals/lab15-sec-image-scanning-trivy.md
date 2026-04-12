@@ -809,6 +809,6 @@ trivy image --ignore-unfixed <image>
 
 **Lab Created**: March 2026
 **Compatible with**: Trivy 0.50+, Kubernetes 1.24+
-**Based on**: labs/security/image_scanning.md
+**Based on**: docs/security/k8s-vulnerabilities.md
 **Tested on**: Linux, macOS, Windows
 **Estimated Time**: 60-75 minutes

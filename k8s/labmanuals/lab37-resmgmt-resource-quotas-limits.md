@@ -189,7 +189,7 @@ requests.memory  0     1Gi
 
 ### Step 1: Review the First Pod Manifest
 
-Let's examine `resourcequota_pod1.yaml`:
+Let's examine `resourcequota-pod1.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -231,7 +231,7 @@ This pod should deploy successfully!
 Apply the manifest:
 
 ```bash
-kubectl apply -f resourcequota_pod1.yaml
+kubectl apply -f resourcequota-pod1.yaml
 ```
 
 Expected output:
@@ -313,7 +313,7 @@ requests.memory  600Mi  1Gi
 
 ### Step 1: Review the Second Pod Manifest
 
-Let's examine `resourcequota_pod2.yaml`:
+Let's examine `resourcequota-pod2.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -346,12 +346,12 @@ This pod should **FAIL** to deploy due to quota limits!
 Try to apply the manifest:
 
 ```bash
-kubectl apply -f resourcequota_pod2.yaml
+kubectl apply -f resourcequota-pod2.yaml
 ```
 
 Expected output:
 ```
-Error from server (Forbidden): error when creating "resourcequota_pod2.yaml": pods "quota-mem-cpu-demo-2" is forbidden: exceeded quota: mem-cpu-demo, requested: requests.memory=600Mi, used: requests.memory=600Mi, limited: requests.memory=1Gi
+Error from server (Forbidden): error when creating "resourcequota-pod2.yaml": pods "quota-mem-cpu-demo-2" is forbidden: exceeded quota: mem-cpu-demo, requested: requests.memory=600Mi, used: requests.memory=600Mi, limited: requests.memory=1Gi
 ```
 
 **Understanding the error:**

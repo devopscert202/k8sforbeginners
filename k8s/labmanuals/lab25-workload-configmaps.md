@@ -16,6 +16,17 @@ By the end of this lab, you will be able to:
 - Use specific keys from ConfigMaps
 - Understand different ways to consume ConfigMap data
 
+## Repository YAML Files
+
+Under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `configmap.yaml` | ConfigMap `example-configmap` with sample database keys. |
+| `configpod.yaml` | Pod `pod-env-var` injecting the ConfigMap via `envFrom`. |
+| `config-svc.yaml` | Pod `pod-env12` with a single key mapped to `testenv`. |
+| `configfile.yaml` | Pod `testconfig` mounting the ConfigMap as files under `/tmp/myenvs/`. |
+
 ---
 
 ## What is a ConfigMap?

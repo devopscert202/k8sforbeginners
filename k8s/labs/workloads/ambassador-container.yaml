@@ -1,0 +1,44 @@
+# Ambassador pattern: a sidecar that proxies connections to the outside world
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ambassador-example
+  labels:
+    app: ambassador-demo
+spec:
+  containers:
+  - name: app
+    image: busybox:1.36
+    command:
+    - /bin/sh
+    - -c
+    - |
+      while true; do
+        echo "App: requesting via ambassador on localhost:9090..."
+        wget -q -O- http://localhost:9090/ 2>/dev/null || echo "ambassador not ready"
+        sleep 10
+      done
+  - name: ambassador
+    image: nginx:1.25-alpine
+    ports:
+    - containerPort: 9090
+    volumeMounts:
+    - name: nginx-conf
+      mountPath: /etc/nginx/conf.d
+  volumes:
+  - name: nginx-conf
+    configMap:
+      name: ambassador-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ambassador-config
+data:
+  default.conf: |
+    server {
+      listen 9090;
+      location / {
+        proxy_pass http://httpbin.org/get;
+      }
+    }

@@ -11,38 +11,81 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            color: #2c3e50;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
             padding: 20px;
             line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1380px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, #326ce5 0%, #5a8fe8 100%);
-            color: white;
-            padding: 30px;
+        .hero {
+            position: relative;
             text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
         }
 
-        .header h1 {
-            font-size: 32px;
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
             margin-bottom: 10px;
         }
 
-        .header p {
+        .subtitle {
             font-size: 16px;
-            opacity: 0.95;
+            color: var(--muted);
         }
 
         .nav-tabs {
@@ -217,14 +260,33 @@
             border-radius: 4px;
             border: 2px solid #dee2e6;
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Kubernetes Pod Communication</h1>
-            <p>Understanding Network Architecture and Traffic Flow</p>
-        </div>
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Pod Communication</h1>
+            <p class="subtitle">Understanding Network Architecture and Traffic Flow</p>
+        </header>
 
         <div class="nav-tabs">
             <button class="tab-button active" onclick="showView('pod-to-pod')">Pod-to-Pod (Same Node)</button>
@@ -689,7 +751,7 @@ kubectl logs -n kube-system -l app=flannel
                 </div>
             </div>
         </div>
-    </div>
+</div>
 
     <script>
         function showView(viewId) {

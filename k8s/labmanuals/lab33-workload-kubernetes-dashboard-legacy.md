@@ -8,7 +8,7 @@ The Kubernetes Dashboard project was officially retired and archived on **Januar
 
 For the current UI learning path in this repository, use:
 
-- [Headlamp overview](../docs/workloads/k8s-headlamp-ui.md)
+- [Kubernetes UIs: landscape and alternatives](../docs/workloads/k8s-ui-alternatives.md)
 - [Lab 32: Headlamp Kubernetes UI](./lab32-workload-headlamp-kubernetes-ui.md)
 - [Headlamp HTML reference](../html/k8s-ui-headlamp.html)
 
@@ -89,7 +89,7 @@ If you have older notes that say:
 
 map them to the Headlamp content in this repo:
 
-- [Headlamp overview](../docs/workloads/k8s-headlamp-ui.md)
+- [Kubernetes UIs: landscape and alternatives](../docs/workloads/k8s-ui-alternatives.md)
 - [Lab 32: Headlamp lab manual](./lab32-workload-headlamp-kubernetes-ui.md)
 - [Headlamp HTML walkthrough](../html/k8s-ui-headlamp.html)
 
@@ -100,6 +100,22 @@ map them to the Headlamp content in this repo:
 - Archived Kubernetes Dashboard repository note: https://github.com/kubernetes/dashboard
 - Headlamp overview: https://headlamp.dev/docs/latest/
 - Headlamp in-cluster install: https://headlamp.dev/docs/latest/installation/in-cluster/
+
+---
+
+## Repository YAML Files
+
+The following pre-built YAML manifests are available in the repository for this lab:
+
+| File | Description |
+|------|-------------|
+| `k8s/labs/workloads/k8s-dashboard.yaml` | Legacy RBAC helper: `ServiceAccount` `admin-user` in namespace `kubernetes-dashboard` and a `ClusterRoleBinding` to `cluster-admin`. Apply only after the Dashboard namespace exists (e.g. after Helm install); then use `kubectl create token admin-user -n kubernetes-dashboard` for UI login. |
+
+You can apply this directly (ensure the `kubernetes-dashboard` namespace exists first):
+
+```bash
+kubectl apply -f k8s/labs/workloads/k8s-dashboard.yaml
+```
 
 ---
 

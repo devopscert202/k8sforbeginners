@@ -21,9 +21,9 @@ When you have multiple containers in a Pod, you can use a shared volume, such as
 ## 1.5 Real-World Scenario
 Imagine a Pod that has two containers: one that generates logs and another that analyzes these logs. The logs are stored in a shared volume, which allows the analyzing container to access and process them in real-time.
 
-## 1.6 Implementation Example
+## 1.6 Example: `emptyDir` shared by two containers
 
-Here’s an example YAML where two containers share the same volume within a Pod. One container writes a file, while the other reads it.
+One container writes `index.html`; the other serves or reads it from the same mount:
 
 ```yaml
 apiVersion: v1
@@ -48,37 +48,7 @@ spec:
     emptyDir: {}
 ```
 
-## 1.7 Verification Steps
-
-1. **Deploy the Pod**:  
-   Apply the YAML configuration to your Kubernetes cluster using:
-   ```bash
-   kubectl apply -f data-sharing-pod.yaml
-   ```
-
-2. **Check Pod Status**:  
-   Verify that the Pod is running:
-   ```bash
-   kubectl get pods
-   ```
-
-3. **Verify Shared Data**:
-   - Enter the first container to check if the file was created:
-     ```bash
-     kubectl exec -it data-sharing-pod -c app-container-1 -- /bin/bash
-     cat /usr/share/nginx/html/index.html
-     ```
-   - Enter the second container to verify the shared data:
-     ```bash
-     kubectl exec -it data-sharing-pod -c app-container-2 -- /bin/bash
-     cat /usr/share/nginx/html/index.html
-     ```
-
-This YAML file defines a Kubernetes pod (`data-sharing-pod`) with two containers (`app-container-1` and `app-container-2`) sharing a directory mounted as a volume using `emptyDir`.
-
-Both containers should display the content `Shared data from app-container-2`, indicating that the data was successfully shared between the containers in the same Pod.
-
-----
+---
 
 ### Explanation of Components
 
@@ -104,34 +74,31 @@ Both containers should display the content `Shared data from app-container-2`, i
     - All containers in the pod can read from and write to this directory via their respective `volumeMounts`.
     - The directory exists **only as long as the pod is running**. Once the pod is deleted, the contents of the `emptyDir` volume are lost.
 
-### Why `emptyDir` is Called a Volume Without a Filesystem?
-1. **No Predefined Filesystem**:
-   - `emptyDir` does not persist data outside the pod lifecycle or across nodes. It's simply a temporary directory with no additional filesystem features like persistence or replication.
-   - It uses the underlying host's native filesystem for storage.
-
-2. **Lightweight Temporary Storage**:
-   - Unlike other volume types like `PersistentVolume` or `hostPath`, `emptyDir` is designed for temporary sharing of data among containers in the same pod.
-
-3. **Lifecycle**:
-   - The directory is created fresh when the pod starts, and it's destroyed when the pod stops or is deleted.
+### Why `emptyDir` is ephemeral
+1. **No predefined durable filesystem**: `emptyDir` does not persist data outside the Pod lifecycle or across nodes. It is a temporary directory on the node.
+2. **Lightweight temporary storage**: Unlike PersistentVolumes or hostPath used for durability, `emptyDir` is meant for scratch space and intra-Pod sharing.
+3. **Lifecycle**: Created when the Pod starts and removed when the Pod is deleted or rescheduled (contents do not follow the Pod to another node).
 
 ### Use Cases for `emptyDir`
-1. **Shared Data Between Containers**:
-   - For example, in this YAML, `app-container-2` generates the `index.html` file, and `app-container-1` serves it using `nginx`.
-
-2. **Temporary Cache or Scratch Space**:
-   - Use it for temporary file processing, caching intermediate data, or logs shared across containers.
-
-3. **Ephemeral Data**:
-   - Ideal for data that doesn’t need to persist after the pod’s lifecycle, such as temporary results or data pipelines.
+1. **Shared data between containers**: e.g. one container writes files another serves or processes.
+2. **Temporary cache or scratch space**: Intermediate build or batch steps.
+3. **Ephemeral data**: Data that must not survive Pod deletion.
 
 ### Benefits of `emptyDir`
-- **Simplicity**: Easy to set up without requiring additional configurations.
-- **Speed**: As it's local to the node, it's faster compared to network-based storage.
-- **Ephemeral Nature**: Automatically cleaned up when the pod is deleted.
+- **Simplicity**: No PV/PVC required.
+- **Speed**: Local to the node.
+- **Automatic cleanup**: Removed with the Pod.
 
 ### Limitations
-- **No Persistence**: Data is lost when the pod is deleted or restarted.
-- **Tied to the Node**: If the pod is rescheduled to another node, the `emptyDir` content cannot move with it.
+- **No persistence** after Pod deletion or node loss.
+- **Not shared across nodes**: If the Pod moves, the volume is new and empty on the new node.
 
-This configuration is ideal for scenarios where containers in a pod need to exchange temporary files or data during runtime.
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 38: Basic Storage Volumes in Kubernetes](../../labmanuals/lab38-storage-basic-volumes.md) | emptyDir, hostPath, and sharing data between containers |

@@ -76,60 +76,6 @@ Kubectl can interact with a control plane that is:
 
 # Control Plane and Worker Node Version Compatibility: Important Tips and Notes
 
-
-## Key Compatibility Rules
-
-1. **Control Plane Version ≥ Worker Node Version**
-   - The control plane must always be the same version or newer than the worker nodes.
-   - Worker nodes cannot run a version higher than the control plane.
-
-   **Example**:
-   - **Allowed**: Control Plane `v1.28.x`, Worker Node `v1.27.x`
-   - **Not Allowed**: Control Plane `v1.28.x`, Worker Node `v1.29.x`
-
-2. **Kubelet Version Compatibility**
-   - Kubelet on worker nodes must be the same version as the control plane or at most one minor version behind.
-   - **Rule**:  
-     `Control Plane ≤ Kubelet ≤ Control Plane + 1 minor version`
-
-   **Example**:
-   - If the control plane is `v1.28.x`:  
-     Allowed kubelet versions: `v1.27.x` (lagging) or `v1.28.x` (matching).
-
-3. **kubectl Version Compatibility**
-   - `kubectl` can communicate with the control plane within ±1 minor version.
-   - **Rule**:  
-     `Control Plane - 1 ≤ kubectl ≤ Control Plane + 1 minor version`
-
-   **Example**:
-   - If the control plane is `v1.28.x`:  
-     Allowed kubectl versions: `v1.27.x`, `v1.28.x`, or `v1.29.x`.
-
----
-
-## Do’s
-
-1. **Upgrade Control Plane First**
-   - Always start with upgrading the control plane before worker nodes. This ensures the cluster's stability and avoids breaking compatibility.
-   - Use `kubeadm` to apply the upgrade to the control plane:
-     ```bash
-     kubeadm upgrade apply <version>
-     ```
-
-2. **Upgrade Worker Nodes Gradually**
-   - Upgrade worker nodes one at a time to minimize downtime and reduce the risk of errors impacting the entire cluster.
-   - Drain and cordon each node before upgrading:
-     ```bash
-     kubectl cordon <node-name>
-     kubectl drain <node-name> --ignore-daemonsets
-     ```
-
-3. **Keep kubeadm, kubelet, and kubectl Aligned**
-   - Use the same minor version for `kubeadm`, `kubelet`, and `kubectl` where possible. Update `kubeadm` first, then `kubelet`, and final
-
-
----
-
 ## Key Compatibility Rules
 
 1. **Control Plane Version ≥ Worker Node Version**
@@ -241,6 +187,7 @@ Kubectl can interact with a control plane that is:
     selector:
       matchLabels:
         app: my-app
+  ```
 
 ---
 
@@ -321,5 +268,14 @@ No. Kubernetes does not support skipping versions. For example:
 
 ---
 
-By following this guide, you can plan and execute Kubernetes upgrades confidently, ensuring compatibility and avoiding downtime.
+## Hands-On Labs
 
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 40: Kubernetes Cluster Upgrades with kubeadm](../../labmanuals/lab40-upgrade-cluster-upgrades.md) | End-to-end kubeadm upgrade workflow, drain/cordon, and validation |
+
+---
+
+By following this guide, you can plan and execute Kubernetes upgrades confidently, ensuring compatibility and avoiding downtime.

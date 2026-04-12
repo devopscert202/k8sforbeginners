@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EndpointSlices — Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1380px;
+            margin: 0 auto;
+        }
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f1ff;
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 1.03rem;
+            color: var(--muted);
+            max-width: 980px;
+            margin: 0 auto 18px;
+        }
+        .lead-panel {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            border: 1px solid rgba(50,108,229,0.12);
+            border-radius: 14px;
+            padding: 18px 20px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .lead-panel p {
+            color: #334155;
+            font-size: 0.98rem;
+        }
+        .lead-panel a {
+            color: var(--kube-blue-deep);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .lead-panel a:hover {
+            color: var(--kube-blue);
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0 0 24px;
+        }
+        .btn {
+            border: 2px solid #326CE5;
+            background: white;
+            color: var(--kube-blue-deep);
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+        }
+        .btn:hover,
+        .btn.active {
+            background: var(--kube-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(50,108,229,0.3);
+            transform: translateY(-2px);
+        }
+        .view {
+            display: none;
+            background: var(--panel);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 26px;
+            border: 1px solid rgba(15,23,42,0.04);
+        }
+        .view.active { display: block; }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .section-head h2 {
+            color: var(--ink);
+            font-size: 1.45rem;
+        }
+        .section-kicker {
+            color: var(--kube-blue-deep);
+            text-transform: uppercase;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+        .section-note {
+            border-left: 4px solid var(--kube-blue);
+            background: #eff6ff;
+            color: #1e3a8a;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 18px;
+        }
+        .concept-grid,
+        .practice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-top: 4px solid #326CE5;
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 170px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover,
+        .flow-step:hover,
+        .example-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(15,23,42,0.1);
+        }
+        .card-badge {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .practice-card .card-badge {
+            background: var(--mint);
+            color: #166534;
+        }
+        .practice-card {
+            border-top-color: #22c55e;
+        }
+        .card p {
+            color: #475569;
+        }
+        .flow-track {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 18px;
+        }
+        .flow-step {
+            position: relative;
+            border-radius: 16px;
+            padding: 22px 18px 18px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-number {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--kube-blue);
+            color: white;
+            font-weight: 800;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 20px rgba(50,108,229,0.22);
+        }
+        .flow-step h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+        .flow-step p {
+            color: #475569;
+            font-size: 0.95rem;
+        }
+        .example-stack {
+            display: grid;
+            gap: 18px;
+        }
+        .example-card {
+            border: 1px solid rgba(15,23,42,0.08);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        pre {
+            margin-top: 10px;
+            background: #0f172a;
+            color: #dbeafe;
+            border-radius: 16px;
+            padding: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            border: 1px solid rgba(148,163,184,0.18);
+        }
+        code {
+            font-family: Consolas, 'Cascadia Code', monospace;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        th {
+            background: linear-gradient(180deg, #326CE5, #2557be);
+            color: white;
+            font-weight: 700;
+        }
+        tbody tr:nth-child(even) {
+            background: #f8fbff;
+        }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+        /* SVG Diagram Styles */
+        .diagram-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid var(--line);
+        }
+        .diagram-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .diagram-btn {
+            padding: 8px 16px;
+            border: 2px solid #326CE5;
+            background: white;
+            color: var(--kube-blue-deep);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .diagram-btn:hover,
+        .diagram-btn.active {
+            background: var(--kube-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+        .svg-diagram {
+            display: none;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .svg-diagram.active {
+            display: block;
+        }
+        .diagram-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .diagram-node:hover rect,
+        .diagram-node:hover ellipse,
+        .diagram-node:hover circle {
+            filter: brightness(1.1);
+            stroke-width: 3;
+        }
+        .diagram-arrow {
+            transition: all 0.3s ease;
+        }
+        .diagram-node:hover ~ .diagram-arrow {
+            stroke-width: 3;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            max-width: 250px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .tooltip.show {
+            opacity: 1;
+        }
+        @media (max-width: 900px) {
+            body { padding: 14px; }
+            .hero, .view { padding: 22px; }
+            .controls { justify-content: flex-start; }
+        }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>EndpointSlices</h1>
+            <p class="subtitle">Every Service needs to know which Pods are healthy and ready to receive traffic. EndpointSlices are the directory that maps a Service name to real Pod IP addresses.</p>
+            <div class="lead-panel">
+                <p>When you create a Service with a selector, Kubernetes automatically creates <strong>EndpointSlice</strong> objects that list the IP addresses and ports of every matching, ready Pod. Components like <strong>kube-proxy</strong> read these slices to program iptables/IPVS rules so traffic reaching the Service ClusterIP gets forwarded to healthy backends. EndpointSlices replaced the older, monolithic Endpoints object — they split large lists into chunks of 100, support partial updates, and carry topology metadata (zone, node) for smarter routing.</p>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" data-view="concept">Concept</button>
+            <button class="btn" data-view="diagram">Diagrams</button>
+            <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="examples">Examples</button>
+            <button class="btn" data-view="comparison">Compare</button>
+            <button class="btn" data-view="practice">Practice</button>
+        </div>
+
+        <section id="concept" class="view active">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Core Model</div>
+                    <h2>Understand the Concept First</h2>
+                </div>
+            </div>
+            <div class="concept-grid">
+            <article class="card" style="border-top-color:#10b981;">
+                <div class="card-badge" style="background:#dcfce7;color:#166534;">What is an EndpointSlice?</div>
+                <p>A Kubernetes API object (<code>discovery.k8s.io/v1</code>) that stores the <strong>IP addresses and ports</strong> of Pods backing a Service. Think of a Service as the published name and EndpointSlices as the phone book of healthy backends behind it. kube-proxy reads these to route traffic.</p>
+            </article>
+            <article class="card" style="border-top-color:#10b981;">
+                <div class="card-badge" style="background:#dcfce7;color:#166534;">Who creates them?</div>
+                <p>For any Service with a <strong>selector</strong>, the EndpointSlice controller (in kube-controller-manager) creates and updates slices automatically as Pods start, stop, or fail probes. You can also create <strong>custom</strong> slices for external backends.</p>
+            </article>
+            <article class="card">
+                <div class="card-badge">Chunked for scale (max 100)</div>
+                <p>Instead of one giant Endpoints object, backends are split into slices of up to 100 entries each. A Service with 350 Pods gets 4 slices — updates touch only the changed slice.</p>
+            </article>
+            <article class="card">
+                <div class="card-badge">Efficient partial updates</div>
+                <p>Only the EndpointSlices that actually change are transmitted and reconciled, reducing load on the API server and watchers compared to full replacement.</p>
+            </article>
+            <article class="card">
+                <div class="card-badge">Topology-aware routing</div>
+                <p>Each endpoint carries <code>zone</code>, <code>nodeName</code>, and optional <code>hints</code> so kube-proxy and service meshes can prefer same-zone traffic for lower latency.</p>
+            </article>
+            <article class="card">
+                <div class="card-badge">Dual-stack native</div>
+                <p>IPv4 and IPv6 addresses get separate EndpointSlices per address family, enabling clean dual-stack networking without workarounds.</p>
+            </article>
+            </div>
+        </section>
+
+        <section id="diagram" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Visual Architecture</div>
+                    <h2>Interactive Flow Diagrams</h2>
+                </div>
+            </div>
+
+            <div class="diagram-controls">
+                <button class="diagram-btn active" data-diagram="endpointslice-structure">EndpointSlice Structure</button>
+                <button class="diagram-btn" data-diagram="endpointslice-scaling">EndpointSlice Scaling</button>
+            </div>
+
+            <div class="diagram-container">
+                <!-- EndpointSlice Structure: Service → labels → EndpointSlice → Pods -->
+                <svg class="svg-diagram active" id="endpointslice-structure" viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrowhead-es" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#326CE5" />
+                        </marker>
+                    </defs>
+                    <text x="500" y="38" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">EndpointSlice Structure</text>
+                    <text x="500" y="58" text-anchor="middle" fill="#64748b" font-size="12">Service selects Pods by labels; EndpointSlices list ready Pod IPs for kube-proxy and other consumers</text>
+
+                    <!-- Service -->
+                    <g class="diagram-node" data-tooltip="ClusterIP Service provides a stable virtual IP; its selector determines which Pods are backends">
+                        <rect x="40" y="120" width="150" height="100" rx="8" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <text x="115" y="155" text-anchor="middle" fill="white" font-weight="bold" font-size="15">Service</text>
+                        <text x="115" y="175" text-anchor="middle" fill="white" font-weight="bold" font-size="13">(ClusterIP)</text>
+                        <text x="115" y="200" text-anchor="middle" fill="#d1fae5" font-size="11">my-service:80</text>
+                    </g>
+
+                    <line x1="190" y1="170" x2="248" y2="170" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead-es)" class="diagram-arrow"/>
+                    <text x="219" y="158" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="600">selector</text>
+
+                    <!-- Label match -->
+                    <g class="diagram-node" data-tooltip="Pods with labels matching the Service selector are included; the EndpointSlice controller mirrors that membership">
+                        <rect x="250" y="115" width="200" height="110" rx="8" fill="#dbeafe" stroke="#326CE5" stroke-width="2"/>
+                        <text x="350" y="142" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Label match</text>
+                        <rect x="265" y="152" width="170" height="28" rx="4" fill="white" stroke="#326CE5" stroke-width="1"/>
+                        <text x="350" y="171" text-anchor="middle" fill="#334155" font-size="11">app=myapp, tier=web</text>
+                        <text x="350" y="205" text-anchor="middle" fill="#64748b" font-size="10" font-style="italic">Pods that match become endpoints</text>
+                    </g>
+
+                    <line x1="450" y1="170" x2="508" y2="170" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead-es)" class="diagram-arrow"/>
+                    <text x="479" y="158" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="600">owned by</text>
+
+                    <!-- EndpointSlice -->
+                    <g class="diagram-node" data-tooltip="EndpointSlice objects (discovery.k8s.io/v1) hold up to 100 endpoints per slice, linked to the Service via labels">
+                        <rect x="510" y="105" width="220" height="130" rx="8" fill="#dbeafe" stroke="#326CE5" stroke-width="2"/>
+                        <text x="620" y="135" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="15">EndpointSlice</text>
+                        <text x="620" y="158" text-anchor="middle" fill="#334155" font-size="11">my-service-abc12</text>
+                        <rect x="525" y="168" width="190" height="22" rx="3" fill="white" stroke="#326CE5" stroke-width="1"/>
+                        <text x="620" y="183" text-anchor="middle" fill="#334155" font-size="10">endpoints[].addresses</text>
+                        <rect x="525" y="195" width="190" height="22" rx="3" fill="white" stroke="#326CE5" stroke-width="1"/>
+                        <text x="620" y="210" text-anchor="middle" fill="#334155" font-size="10">ports, conditions, hints</text>
+                    </g>
+
+                    <line x1="730" y1="170" x2="788" y2="170" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead-es)" class="diagram-arrow"/>
+                    <text x="759" y="158" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="600">routes to</text>
+
+                    <!-- Pod IPs -->
+                    <g class="diagram-node" data-tooltip="Ready Pod IP:port entries are what kube-proxy programs into iptables or IPVS">
+                        <ellipse cx="870" cy="150" rx="58" ry="38" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="870" y="145" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod</text>
+                        <text x="870" y="162" text-anchor="middle" fill="#ede9fe" font-size="10">10.244.1.5</text>
+                    </g>
+                    <g class="diagram-node" data-tooltip="Each backend Pod contributes an endpoint entry when Ready">
+                        <ellipse cx="870" cy="230" rx="58" ry="38" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="870" y="225" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod</text>
+                        <text x="870" y="242" text-anchor="middle" fill="#ede9fe" font-size="10">10.244.1.6</text>
+                    </g>
+                    <g class="diagram-node" data-tooltip="Large Services span multiple EndpointSlices when there are more than 100 backends">
+                        <ellipse cx="870" cy="310" rx="58" ry="38" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="870" y="305" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Pod</text>
+                        <text x="870" y="322" text-anchor="middle" fill="#ede9fe" font-size="10">10.244.1.7</text>
+                    </g>
+
+                    <line x1="730" y1="185" x2="805" y2="150" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead-es)" class="diagram-arrow"/>
+                    <line x1="730" y1="195" x2="812" y2="230" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead-es)" class="diagram-arrow"/>
+                    <line x1="730" y1="205" x2="805" y2="310" stroke="#326CE5" stroke-width="2" marker-end="url(#arrowhead-es)" class="diagram-arrow"/>
+
+                    <rect x="50" y="355" width="900" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+                    <text x="500" y="378" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="12">At a glance</text>
+                    <text x="500" y="398" text-anchor="middle" fill="#334155" font-size="11">The Service defines selection; EndpointSlices materialize the live set of Pod IPs for dataplane programming.</text>
+                </svg>
+
+                <!-- EndpointSlice Scaling Diagram -->
+                <svg class="svg-diagram" id="endpointslice-scaling" viewBox="0 0 1000 550" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Title -->
+                    <text x="500" y="40" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">EndpointSlice Scaling Pattern</text>
+
+                    <!-- Small Scale Scenario -->
+                    <rect x="50" y="70" width="420" height="200" rx="8" fill="#f0f9ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="260" y="95" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Small Scale (&lt; 100 endpoints)</text>
+
+                    <g class="diagram-node" data-tooltip="Single EndpointSlice for small services">
+                        <rect x="180" y="115" width="160" height="120" rx="8" fill="#dbeafe" stroke="#326CE5" stroke-width="2"/>
+                        <text x="260" y="135" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="13">EndpointSlice</text>
+                        <text x="260" y="155" text-anchor="middle" fill="#334155" font-size="11">my-service-abc123</text>
+                        <rect x="195" y="165" width="130" height="20" rx="3" fill="white" stroke="#326CE5" stroke-width="1"/>
+                        <text x="260" y="178" text-anchor="middle" fill="#334155" font-size="10">Pod 1: 10.244.1.5:80</text>
+                        <rect x="195" y="190" width="130" height="20" rx="3" fill="white" stroke="#326CE5" stroke-width="1"/>
+                        <text x="260" y="203" text-anchor="middle" fill="#334155" font-size="10">Pod 2: 10.244.1.6:80</text>
+                        <text x="260" y="225" text-anchor="middle" fill="#64748b" font-size="10" font-style="italic">... up to 100 endpoints</text>
+                    </g>
+
+                    <!-- Large Scale Scenario -->
+                    <rect x="530" y="70" width="420" height="400" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="740" y="95" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="14">Large Scale (100+ endpoints)</text>
+
+                    <g class="diagram-node" data-tooltip="First EndpointSlice (100 endpoints)">
+                        <rect x="570" y="115" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="640" y="133" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice 1</text>
+                        <text x="640" y="150" text-anchor="middle" fill="#92400e" font-size="10">my-service-slice1</text>
+                        <text x="640" y="168" text-anchor="middle" fill="#92400e" font-size="10">Pods 1-100</text>
+                        <text x="640" y="183" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">100 endpoints</text>
+                        <text x="640" y="198" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">FULL</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Second EndpointSlice (100 endpoints)">
+                        <rect x="730" y="115" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="800" y="133" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice 2</text>
+                        <text x="800" y="150" text-anchor="middle" fill="#92400e" font-size="10">my-service-slice2</text>
+                        <text x="800" y="168" text-anchor="middle" fill="#92400e" font-size="10">Pods 101-200</text>
+                        <text x="800" y="183" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">100 endpoints</text>
+                        <text x="800" y="198" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">FULL</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Third EndpointSlice (100 endpoints)">
+                        <rect x="570" y="225" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="640" y="243" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice 3</text>
+                        <text x="640" y="260" text-anchor="middle" fill="#92400e" font-size="10">my-service-slice3</text>
+                        <text x="640" y="278" text-anchor="middle" fill="#92400e" font-size="10">Pods 201-300</text>
+                        <text x="640" y="293" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">100 endpoints</text>
+                        <text x="640" y="308" text-anchor="middle" fill="#059669" font-size="9" font-weight="bold">FULL</text>
+                    </g>
+
+                    <g class="diagram-node" data-tooltip="Partial EndpointSlice with remaining endpoints">
+                        <rect x="730" y="225" width="140" height="90" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="800" y="243" text-anchor="middle" fill="#d97706" font-weight="bold" font-size="12">EndpointSlice N</text>
+                        <text x="800" y="260" text-anchor="middle" fill="#92400e" font-size="10">my-service-sliceN</text>
+                        <text x="800" y="278" text-anchor="middle" fill="#92400e" font-size="10">Pods 301-...</text>
+                        <text x="800" y="293" text-anchor="middle" fill="#d97706" font-size="10" font-weight="600">45 endpoints</text>
+                        <text x="800" y="308" text-anchor="middle" fill="#2563eb" font-size="9" font-weight="bold">PARTIAL</text>
+                    </g>
+
+                    <text x="740" y="350" text-anchor="middle" fill="#92400e" font-size="11" font-weight="600">Automatically scaled to</text>
+                    <text x="740" y="370" text-anchor="middle" fill="#92400e" font-size="11" font-weight="600">multiple slices as service grows</text>
+
+                    <!-- Benefits Box -->
+                    <rect x="570" y="390" width="300" height="65" rx="6" fill="white" stroke="#10b981" stroke-width="2"/>
+                    <text x="720" y="410" text-anchor="middle" fill="#059669" font-weight="bold" font-size="12">Benefits of EndpointSlices</text>
+                    <text x="720" y="428" text-anchor="middle" fill="#334155" font-size="10">• Reduced API server load</text>
+                    <text x="720" y="443" text-anchor="middle" fill="#334155" font-size="10">• Better scalability for large services</text>
+                </svg>
+            </div>
+
+            <div class="section-note">Hover over diagram elements for detailed tooltips. Click the buttons above to switch between different architectural views.</div>
+        </section>
+
+        <section id="flow" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Lifecycle Flow</div>
+                    <h2>From Ready Pod to Routed Traffic</h2>
+                </div>
+            </div>
+            <div class="flow-track">
+            <article class="flow-step">
+                <div class="step-number">1</div>
+                <h3>Pod starts and becomes Ready</h3>
+                <p>A Pod is scheduled, passes readiness probes, and receives a cluster IP on the Pod network.</p>
+            </article>
+            <article class="flow-step">
+                <div class="step-number">2</div>
+                <h3>EndpointSlice controller detects the change</h3>
+                <p>The built-in controller watches Pods and Services and reconciles when labels or readiness change.</p>
+            </article>
+            <article class="flow-step">
+                <div class="step-number">3</div>
+                <h3>Controller updates (or creates) EndpointSlice</h3>
+                <p>Matching backends are added, removed, or moved to another slice when the 100-endpoint limit requires it.</p>
+            </article>
+            <article class="flow-step">
+                <div class="step-number">4</div>
+                <h3>kube-proxy reads updated EndpointSlice</h3>
+                <p>The node-level proxy watches EndpointSlices for Services it must implement locally.</p>
+            </article>
+            <article class="flow-step">
+                <div class="step-number">5</div>
+                <h3>iptables/IPVS rules updated for traffic routing</h3>
+                <p>Dataplane rules are rewritten so Service VIP traffic reaches the current set of Pod IPs.</p>
+            </article>
+            </div>
+
+            <div class="section-note">This path is the same idea on every node: EndpointSlices are the source of truth kube-proxy uses to program forwarding rules.</div>
+        </section>
+
+        <section id="examples" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">YAML and Commands</div>
+                    <h2>Examples You Can Recognize Quickly</h2>
+                </div>
+            </div>
+            <div class="example-stack">
+            <section class="example-card">
+                <div class="section-kicker">EndpointSlice YAML pattern</div>
+                <pre><code>apiVersion: discovery.k8s.io/v1<br>kind: EndpointSlice<br>metadata:<br>  name: my-service-abc12<br>  labels:<br>    kubernetes.io/service-name: my-service<br>addressType: IPv4<br>endpoints:<br>  - addresses: ["10.244.1.5"]<br>    conditions:<br>      ready: true<br>ports:<br>  - name: http<br>    port: 80<br>    protocol: TCP</code></pre>
+            </section>
+            <section class="example-card">
+                <div class="section-kicker">Useful inspection commands</div>
+                <pre><code>kubectl get endpointslices<br>kubectl get endpointslices -A<br>kubectl describe endpointslice &lt;name&gt;<br>kubectl get endpointslice -o yaml<br>kubectl get svc my-service -o wide</code></pre>
+            </section>
+            </div>
+        </section>
+
+        <section id="comparison" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Decision Guide</div>
+                    <h2>Endpoints vs EndpointSlices</h2>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+<thead><tr>
+<th>Aspect</th>
+<th>Endpoints (legacy)</th>
+<th>EndpointSlices</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Max size</td>
+<td>Unlimited in one object (grows unbounded)</td>
+<td>Up to 100 endpoints per slice; multiple slices per Service</td>
+</tr>
+<tr>
+<td>Scalability</td>
+<td>Poor for very large backend sets</td>
+<td>Excellent; work is sharded across smaller objects</td>
+</tr>
+<tr>
+<td>Update efficiency</td>
+<td>Full object replacement typical</td>
+<td>Partial updates per changed slice</td>
+</tr>
+<tr>
+<td>Dual-stack</td>
+<td>No native dual-stack model</td>
+<td>Yes (IPv4 / IPv6 via addressType and addresses)</td>
+</tr>
+<tr>
+<td>Topology</td>
+<td>No standard zone/node hints on Endpoints</td>
+<td>Yes (zone, node name, and other hints for consumers)</td>
+</tr>
+<tr>
+<td>API</td>
+<td>core/v1 Endpoints</td>
+<td>discovery.k8s.io/v1 EndpointSlice</td>
+</tr>
+</tbody></table></div>
+
+            <div class="section-note">For standard Services, Kubernetes creates and manages EndpointSlices for you; you rarely hand-write them unless integrating external backends.</div>
+        </section>
+
+        <section id="practice" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Use It Well</div>
+                    <h2>Practice and Real-World Thinking</h2>
+                </div>
+            </div>
+            <div class="practice-grid">
+            <article class="card practice-card">
+                <div class="card-badge">Auto-managed for standard services</div>
+                <p>Let the controller own EndpointSlices for typical selector-based Services; verify with <code>kubectl get endpointslices</code> when debugging.</p>
+            </article>
+            <article class="card practice-card">
+                <div class="card-badge">Custom slices for external services</div>
+                <p>Custom EndpointSlices (or mirrored endpoints) can represent backends outside the cluster while still fitting the Service model.</p>
+            </article>
+            <article class="card practice-card">
+                <div class="card-badge">Monitor endpoint health</div>
+                <p>Watch EndpointSlice changes and <code>conditions.ready</code> to correlate rollout issues with missing or not-ready backends.</p>
+            </article>
+            </div>
+        </section>
+</div>
+
+    <script>
+        const buttons = document.querySelectorAll('.btn');
+        const views = document.querySelectorAll('.view');
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const viewId = button.dataset.view;
+                buttons.forEach((item) => item.classList.remove('active'));
+                views.forEach((view) => view.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        // Diagram switching
+        const diagramButtons = document.querySelectorAll('.diagram-btn');
+        const diagrams = document.querySelectorAll('.svg-diagram');
+
+        diagramButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const diagramId = button.dataset.diagram;
+                diagramButtons.forEach((item) => item.classList.remove('active'));
+                diagrams.forEach((diagram) => diagram.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(diagramId).classList.add('active');
+            });
+        });
+
+        // Tooltip functionality
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        document.body.appendChild(tooltip);
+
+        const diagramNodes = document.querySelectorAll('.diagram-node');
+        diagramNodes.forEach((node) => {
+            node.addEventListener('mouseenter', (e) => {
+                const tooltipText = node.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    tooltip.textContent = tooltipText;
+                    tooltip.classList.add('show');
+                }
+            });
+
+            node.addEventListener('mousemove', (e) => {
+                tooltip.style.left = (e.pageX + 15) + 'px';
+                tooltip.style.top = (e.pageY + 15) + 'px';
+            });
+
+            node.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
+            });
+        });
+    </script>
+</body>
+</html>

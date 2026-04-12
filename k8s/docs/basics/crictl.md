@@ -1,21 +1,14 @@
-# CRI-based Kubernetes Operations with `crictl` - Lab Guide for Learners
+# CRI-based Kubernetes operations with `crictl`
 
 ## Table of Contents
 
-1. [Background: Why `containerd` and not Docker?](#background)
-2. [Understanding `containerd`](#understanding-containerd)
-3. [What is `crictl`?](#what-is-crictl)
-4. [Installing `crictl`](#installing-crictl)
-5. [Using `crictl`: Common Operations](#using-crictl)
-
-   * [View Pods](#view-pods)
-   * [View Containers](#view-containers)
-   * [View Images](#view-images)
-   * [Logs, Exec, Stats](#logs-exec-stats)
-   * [Troubleshooting Node Issues](#troubleshooting-node-issues)
-6. [Comparison: `crictl` vs `docker`](#comparison-table)
-7. [Hands-On Lab Exercises](#hands-on-lab-exercises)
-8. [Summary](#summary)
+1. [Background: Why `containerd` and not Docker?](#1-background-why-containerd-and-not-docker)
+2. [Understanding `containerd`](#2-understanding-containerd)
+3. [What is `crictl`?](#3-what-is-crictl)
+4. [Installing `crictl`](#4-installing-crictl)
+5. [Using `crictl`: Common Operations](#5-using-crictl-common-operations)
+6. [Comparison: `crictl` vs `docker`](#6-comparison-crictl-vs-docker)
+7. [Summary](#7-summary)
 
 ---
 
@@ -54,20 +47,7 @@ Official site: [https://containerd.io](https://containerd.io)
 
 ## 4. Installing `crictl`
 
-```bash
-# Download the binary
-VERSION="v1.28.0"
-curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
-
-# Extract and move
-sudo tar -C /usr/local/bin -xzf crictl-$VERSION-linux-amd64.tar.gz
-```
-
-Optionally, configure default runtime endpoint:
-
-```bash
-echo 'runtime-endpoint: unix:///run/containerd/containerd.sock' | sudo tee /etc/crictl.yaml
-```
+Typical pattern: download the release binary for your OS/architecture and install it on the node where you troubleshoot. Configure the **runtime endpoint** (for example containerd’s socket) in `/etc/crictl.yaml` or via flags so the CLI talks to the same runtime the kubelet uses.
 
 ---
 
@@ -112,7 +92,7 @@ crictl rmi <image>            # Remove image
 
 ---
 
-## 6. Comparison Table: `crictl` vs `docker`
+## 6. Comparison: `crictl` vs `docker`
 
 | Operation           | `docker`                   | `crictl`                   |
 | ------------------- | -------------------------- | -------------------------- |
@@ -127,44 +107,19 @@ crictl rmi <image>            # Remove image
 
 ---
 
-## 7. Hands-On Lab Exercises
-
-### Lab 1: List All Pods and Inspect One
-
-```bash
-crictl pods
-crictl inspectp <podID>
-```
-
-### Lab 2: Find Container of a Pod and Check Logs
-
-```bash
-crictl ps -a | grep nginx
-crictl logs <cid>
-```
-
-### Lab 3: Troubleshoot Node Container Issues
-
-```bash
-crictl info
-crictl stats
-crictl exec -it <cid> sh
-```
-
-### Lab 4: Remove Unused Containers and Images
-
-```bash
-crictl ps -a
-crictl rm <cid>
-crictl images
-crictl rmi <image>
-```
-
----
-
-## 8. Summary
+## 7. Summary
 
 * `crictl` is an essential tool when working on Kubernetes nodes with CRI-compliant runtimes like `containerd`.
 * It provides visibility into the low-level container and pod management.
-* Understanding and practicing with `crictl` ensures you're comfortable even when `kubectl` isn't enough.
+* Understanding `crictl` helps when `kubectl` shows cluster intent but you need runtime-level evidence on a specific node.
 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 59: Container Runtime Interface — crictl](../../labmanuals/lab59-basics-crictl.md) | Install, configure, and use `crictl` for node-level container and pod troubleshooting |
+| [Lab 03: kubectl Essentials](../../labmanuals/lab03-basics-kubectl-essentials.md) | Cluster-level interaction and troubleshooting workflows that complement node-level CRI tools |

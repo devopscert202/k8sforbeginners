@@ -1,1118 +1,523 @@
 # Kubernetes Troubleshooting Guide
 
-- [Kubernetes Troubleshooting Guide](#kubernetes-troubleshooting-guide)
-  * [Introduction](#introduction)
-- [Kubernetes Troubleshooting Areas](#kubernetes-troubleshooting-areas)
-  * [Section 1: Troubleshooting Kubernetes Cluster](#section-1--troubleshooting-kubernetes-cluster)
-    + [Areas to Troubleshoot](#areas-to-troubleshoot)
-    + [Possible Scenarios](#possible-scenarios)
-    + [Steps and Commands to Troubleshoot](#steps-and-commands-to-troubleshoot)
-      - [1. View Nodes in the Cluster](#1-view-nodes-in-the-cluster)
-      - [2. Fetch Cluster Information](#2-fetch-cluster-information)
-      - [3. Obtain a Cluster Dump](#3-obtain-a-cluster-dump)
-      - [4. Explore Dump Command Options](#4-explore-dump-command-options)
-      - [5. Generate Namespace-Specific Dump](#5-generate-namespace-specific-dump)
-      - [6. Check Cluster Component Health](#6-check-cluster-component-health)
-    + [Things to Check](#things-to-check)
-  * [Section 2: Understanding Kubernetes Logging Architecture](#section-2--understanding-kubernetes-logging-architecture)
-    + [Areas to Troubleshoot](#areas-to-troubleshoot-1)
-    + [Possible Scenarios](#possible-scenarios-1)
-    + [Steps and Commands to Troubleshoot](#steps-and-commands-to-troubleshoot-1)
-      - [Step 1: Get Help with Logging](#step-1--get-help-with-logging)
-      - [Step 2: Create a Pod and View Logs](#step-2--create-a-pod-and-view-logs)
-      - [Step 3: Advanced Log Options](#step-3--advanced-log-options)
-    + [Things to Check](#things-to-check-1)
-    + [Tools and Prerequisites](#tools-and-prerequisites)
-  * [Section 3: Understanding Cluster and Node Logs](#section-3--understanding-cluster-and-node-logs)
-    + [Areas to Troubleshoot](#areas-to-troubleshoot-2)
-    + [Possible Scenarios](#possible-scenarios-2)
-    + [Steps and Commands to Troubleshoot](#steps-and-commands-to-troubleshoot-2)
-      - [Step 1: View Control-Plane Component Logs](#step-1--view-control-plane-component-logs)
-      - [Step 2: View Controller Manager Logs](#step-2--view-controller-manager-logs)
-      - [Step 3: View etcd Logs](#step-3--view-etcd-logs)
-      - [Step 4: View Worker Node Logs](#step-4--view-worker-node-logs)
-    + [Things to Check](#things-to-check-2)
-    + [Tools and Prerequisites](#tools-and-prerequisites-1)
-  * [Section 4: Troubleshooting Node Readiness](#section-4--troubleshooting-node-readiness)
-    + [Areas to Troubleshoot](#areas-to-troubleshoot-3)
-    + [Possible Scenarios](#possible-scenarios-3)
-    + [Steps and Commands to Troubleshoot](#steps-and-commands-to-troubleshoot-3)
-      - [Step 1: Check the Node Status on the Master Node](#step-1--check-the-node-status-on-the-master-node)
-      - [Step 2: Disable the Worker Node and Diagnose](#step-2--disable-the-worker-node-and-diagnose)
-      - [Step 3: Fix the Worker Node](#step-3--fix-the-worker-node)
-    + [Things to Check](#things-to-check-3)
-    + [Tools and Prerequisites](#tools-and-prerequisites-2)
-  * [Section 5: Understanding Container Logs](#section-5--understanding-container-logs)
-      - [Steps to Check Container Logs:](#steps-to-check-container-logs-)
-  * [Section 6: Analyzing Pod Logs and Troubleshooting Pod Issues](#section-6--analyzing-pod-logs-and-troubleshooting-pod-issues)
-      - [6.1 Configure and Verify Nginx Deployment](#61-configure-and-verify-nginx-deployment)
-      - [6.2 Tainting Worker Nodes and Deployment Failures](#62-tainting-worker-nodes-and-deployment-failures)
-      - [6.3 Troubleshooting Incorrect Image Names](#63-troubleshooting-incorrect-image-names)
-      - [6.4 Pod and Container Status Issues and Fixes](#64-pod-and-container-status-issues-and-fixes)
-  * [Section 7: Understanding Application Troubleshooting](#section-7--understanding-application-troubleshooting)
-      - [7.1 Setup and Diagnose the Application Pod](#71-setup-and-diagnose-the-application-pod)
-      - [7.2 Troubleshooting the Application Pod](#72-troubleshooting-the-application-pod)
-      - [7.3 Common Pod Troubleshooting Scenarios](#73-common-pod-troubleshooting-scenarios)
-      - [7.4 Additional Troubleshooting Tools](#74-additional-troubleshooting-tools)
-  * [Section 8: Handling Component Failure Threshold](#section-8--handling-component-failure-threshold)
-      - [8.1 Check the Cluster Health Information](#81-check-the-cluster-health-information)
-  * [Section 9: Troubleshooting Networking Issues](#section-9--troubleshooting-networking-issues)
-      - [9.1 Create an HTTPD Pod](#91-create-an-httpd-pod)
-      - [9.2 Create an HTTPD Service](#92-create-an-httpd-service)
-      - [9.3 Check Labels for All Pods](#93-check-labels-for-all-pods)
-      - [9.4 Modify and Create a New Service](#94-modify-and-create-a-new-service)
-  * [Additional Reading](#additional-reading)
-  * [Importance of Troubleshooting Skills](#importance-of-troubleshooting-skills)
-
-
----
-
 ## Introduction
 
-Kubernetes, while immensely powerful, can present a variety of challenges during day-to-day operations. From application deployment issues to cluster-level failures, having a structured approach to diagnosing and resolving these problems is essential. This troubleshooting guide aims to assist users in identifying common issues encountered in Kubernetes environments and provides actionable steps to resolve them effectively.
+Kubernetes failures range from application misconfiguration to cluster-wide outages. A structured path—**symptoms → cluster health → nodes → workloads → networking and storage → applications**—narrows root cause faster than random `kubectl` commands.
 
-By following this guide, you will gain insights into:
-- Diagnosing pod-related issues.
-- Investigating cluster health and node failures.
-- Resolving networking and service connectivity problems.
-- Debugging persistent storage and volume-related errors.
-- Troubleshooting authentication and role-based access control (RBAC).
+This guide is **reference material**: what to check, why it matters, and diagnostic signals. Managed clusters (**AWS EKS**, **Azure AKS**, **Google GKE**) add provider control planes, IAM, and cloud networking; use provider docs when symptoms point outside the data plane you manage.
 
-This guide builds upon practical lab exercises to ensure a hands-on understanding of Kubernetes troubleshooting. Use it as a reference for identifying and resolving issues in real-world scenarios. The structure of this document will evolve as we incorporate detailed steps and case studies from provided lab materials.
+**Cloud troubleshooting (official):**
 
-# Kubernetes Troubleshooting Areas
+- [AWS EKS troubleshooting](https://docs.aws.amazon.com/eks/latest/userguide/troubleshooting.html)
+- [Azure AKS troubleshooting](https://learn.microsoft.com/en-us/azure/aks/troubleshooting)
+- [Google GKE troubleshooting](https://cloud.google.com/kubernetes-engine/docs/troubleshooting)
 
-## Section 1: Troubleshooting Kubernetes Cluster
+For guided exercises, use **Hands-On Labs** at the end (Labs 49–55).
 
-### Areas to Troubleshoot
+---
 
-- Cluster health and configuration.
-- Node statuses and connectivity.
-- Namespace-specific issues.
+## Diagnosis approach
 
-### Possible Scenarios
+Start broad, then narrow:
 
-- The cluster is unresponsive or partially operational.
-- Nodes are not in a ready state.
-- Namespace-specific issues causing resource unavailability.
+| Goal | Command |
+|------|---------|
+| Node status | `kubectl get nodes` |
+| Workloads everywhere | `kubectl get pods -A` |
+| Recent cluster events | `kubectl get events -A` (add `--sort-by='.lastTimestamp'` as needed) |
+| API reachability | `kubectl cluster-info` · `kubectl get --raw /healthz` |
+| Legacy component view | `kubectl get componentstatus` (deprecated; prefer `kube-system` pod health) |
 
-### Steps and Commands to Troubleshoot
+**Things to check:** Are nodes `Ready`? Any `CrashLoopBackOff` or long `Pending`? Do events mention scheduling, image pull, or volume attach?
 
-#### 1. View Nodes in the Cluster
+> **Q:** How do I tell if the problem is control plane vs worker nodes?  
+> **A:** Control plane: API errors, `kubectl` timeouts, unhealthy `kube-apiserver` / `etcd` / scheduler / controller-manager (logs on control plane nodes, or `kube-system` pods). Workers: `NotReady` nodes, kubelet/CNI/runtime errors—use `kubectl describe node <name>` and `journalctl -u kubelet` on the node.
 
-**Command:**
+> **Q:** Why do Kubernetes events matter?  
+> **A:** They record state changes and failures (scheduling, pulls, probes, evictions). Use `kubectl describe pod|node|deployment …` and `kubectl get events` to see *why* something failed, not only *that* it failed.
 
-```bash
-kubectl get nodes
+> **Q:** A deployment’s pods never schedule—where do I look?  
+> **A:** `kubectl describe pod <pod>` for `FailedScheduling` messages; check resource requests vs `kubectl describe nodes`; taints/tolerations and affinity; PVC binding if volumes are required.
+
+> **Q:** How do I chase an intermittent cluster issue?  
+> **A:** Enable or raise log verbosity on affected components, correlate with metrics (Prometheus, metrics-server), and compare timestamps across kubelet, API, and app logs.
+
+---
+
+## Cluster
+
+**Typical scenarios:** unresponsive API, upgrade stuck halfway, etcd or scheduler issues, cluster-wide `Pending`, frequent evictions.
+
+### Command reference
+
+| Goal | Command |
+|------|---------|
+| Node status | `kubectl get nodes` |
+| Cluster endpoints | `kubectl cluster-info` |
+| Broad diagnostics | `kubectl cluster-info dump` (optional: `-n <namespace>`) |
+| API health | `kubectl get --raw /healthz` |
+| Control-plane load (if metrics-server) | `kubectl top pod -n kube-system` |
+| etcd (where you have access) | `etcdctl endpoint health` · `etcdctl endpoint status` |
+
+**Things to check:** Node `Ready` state, API latency, etcd quorum and disk, events for control-plane or CNI failures.
+
+> **Q:** The cluster feels hung—how do I verify the control plane?  
+> **A:** `kubectl get --raw /healthz`; inspect API server logs (`journalctl -u kube-apiserver` on self-managed nodes); verify etcd connectivity and health; ensure `kube-system` control-plane pods are running.
+
+> **Q:** API server is unavailable—common causes?  
+> **A:** OOM, network partition, bad certs, or etcd failure. Check API server logs, etcd health, and resource pressure in `kube-system`.
+
+> **Q:** `kubeadm init` failed—what next?  
+> **A:** Re-read `kubeadm` output; check `/var/log/kubelet.log` and container logs; verify network, DNS, swap disabled, and CNI ready to install.
+
+> **Q:** etcd lost quorum—recovery outline?  
+> **A:** Identify surviving members (`etcdctl member list`); restore from snapshot if needed (`etcdctl snapshot restore`); re-form quorum and restart control plane components per your install guide.
+
+> **Q:** etcd shows split-brain or inconsistent members?  
+> **A:** `etcdctl member list` and logs (`journalctl -u etcd`); remove failed members with `etcdctl member remove <id>`; add/replace members with `etcdctl member add` only following your runbook so quorum is preserved.
+
+> **Q:** Control plane node disk full?  
+> **A:** `df -h`; large paths often include `/var/lib/etcd`, container logs, and image store; free space, rotate logs, `etcdctl defrag` if appropriate, then resize disk.
+
+> **Q:** kube-apiserver slow or pods cannot reach the API?  
+> **A:** From the pod network, verify routes to the API VIP/IP; check kube-proxy and any corporate proxy; API server logs and certificates in `/etc/kubernetes/pki`.
+
+> **Q:** Kubernetes Dashboard unreachable?  
+> **A:** `kubectl get svc -n kubernetes-dashboard`; pod logs; RBAC for the logged-in identity; expose via supported pattern (Ingress, port-forward)—avoid insecure defaults in production.
+
+> **Q:** All pods are `Pending` cluster-wide?  
+> **A:** `kubectl get events`; confirm nodes are `Ready` and schedulable; verify CNI pods are healthy; check for total resource starvation.
+
+> **Q:** API server is slow—what to inspect?  
+> **A:** API server logs for slow requests; `etcdctl endpoint status` for latency; watch etcd disk I/O; metrics for API/etcd CPU and memory.
+
+> **Q:** Upgrade failed mid-way?  
+> **A:** Check component versions and installer logs (`kubeadm` or cloud upgrade history); validate API and etcd health; roll back using vendor procedure and backups.
+
+> **Q:** Pods are evicted often?  
+> **A:** `kubectl describe pod` for eviction reason; `kubectl describe node` for `DiskPressure` / `MemoryPressure`; tune requests/limits and kubelet eviction thresholds.
+
+### Component failure signals
+
+Kubernetes tolerates some skew between components, but repeated restarts, etcd quorum loss, or sustained API latency are high risk. Watch `kubectl get events -A`, `kube-system` pod restarts, and node conditions.
+
+> **Q:** kube-scheduler is not scheduling—how to debug?  
+> **A:** `kubectl describe pod` for events; `kubectl get nodes`; scheduler logs (`kubectl logs -n kube-system` for static-pod setups, or `journalctl -u kube-scheduler`); check taints, requests, and PriorityClass.
+
+> **Q:** kube-controller-manager looks stuck?  
+> **A:** Controller-manager logs; API connectivity; `kubectl top pod -n kube-system` if metrics available; watch reconciliation delays in metrics.
+
+> **Q:** etcd using too much memory?  
+> **A:** `etcdctl endpoint status`; consider `etcdctl defrag`; reduce write churn; scale or resize etcd per guidance.
+
+> **Q:** Cluster autoscaler not adding nodes?  
+> **A:** `kubectl logs -n kube-system` for the autoscaler deployment; pending pods and unschedulable reasons; cloud quotas, IAM, and node pool limits.
+
+> **Q:** kube-proxy appears broken on a node?  
+> **A:** `kubectl get pods -n kube-system -o wide | grep kube-proxy` and that node’s kube-proxy logs; validate CNI and dataplane (iptables, IPVS, or eBPF) for the cluster; ensure no local firewall rules block Service CIDR traffic.
+
+> **Q:** Namespace deletion is stuck?  
+> **A:** `kubectl get namespace <ns> -o yaml` for `status.phase` and finalizers; remove blocking finalizers only when you understand the consequences: `kubectl patch namespace <ns> -p '{"spec":{"finalizers":[]}}' --type=merge`.
+
+> **Q:** PVs left behind after namespace delete?  
+> **A:** Check `persistentVolumeReclaimPolicy` on PVs (`Retain` vs `Delete`); `kubectl get pv`; clean up orphaned volumes per storage and compliance policy.
+
+---
+
+## Nodes
+
+**Concept:** A node is `Ready` when kubelet reports healthy, the runtime is up, and the network plugin succeeds. Loss of API connectivity or kubelet failure usually flips `NotReady`.
+
+### Logs and on-node tools
+
+**Control plane:** API server, scheduler, controller-manager, etcd—often under `/var/log/pods/…` or `journalctl` for systemd-managed services.
+
+**Workers:** `journalctl -u kubelet` for registration, CNI, image pull, and PLEG messages. Pod log files also appear under `/var/log/pods/`.
+
+**`crictl`:** On the node, `crictl ps -a`, `crictl logs <container-id>` (with `--tail`) help when the API is unreliable.
+
+| Symptom | On-node checks |
+|---------|----------------|
+| NotReady | `systemctl status kubelet` · `journalctl -u kubelet` · CNI pods |
+| Disk pressure | `df -h` · kubelet eviction messages · image and log growth |
+| Join failures | kubelet logs · API server logs for TLS/bootstrap · `kubeadm` logs |
+
+> **Q:** Which logs for node connectivity problems?  
+> **A:** `journalctl -u kubelet`; CNI plugin logs (Calico, Cilium, etc.); host network (`dmesg`, `/var/log/syslog` or journal) for interface errors.
+
+> **Q:** Node won’t join the cluster?  
+> **A:** Kubelet logs on the new node; API server logs for certificate or auth errors; `kubeadm join` output if used.
+
+> **Q:** NotReady due to networking?  
+> **A:** From the node, verify reachability to the API server; check CNI and kube-proxy; firewall routes between node and control plane.
+
+> **Q:** NotReady due to memory pressure?  
+> **A:** `kubectl top node`; evict or reschedule workloads; add capacity or reduce limits.
+
+> **Q:** NotReady—missing CNI?  
+> **A:** Reinstall or fix CNI manifests; confirm configs under `/etc/cni/net.d/`.
+
+> **Q:** kubelet keeps crashing?  
+> **A:** `journalctl -u kubelet`; validate `/var/lib/kubelet/config.yaml`; check disk and memory; `systemctl restart kubelet` after fixing root cause.
+
+> **Q:** `kubectl drain` fails?  
+> **A:** `kubectl describe node` for blocking pods; DaemonSets without tolerations; use `--ignore-daemonsets` and only `--force` when eviction policy allows.
+
+---
+
+## Logging
+
+**Concept:** Applications should log to **stdout/stderr**. The runtime captures streams; node agents or DaemonSets may forward to centralized systems (Loki, ELK, cloud logging).
+
+**`kubectl logs`:** Pod- and container-scoped; `--tail`, `--since`, `--previous` (after crash), `--all-containers` for multi-container pods.
+
+**Illustrative pod (continuous log output):**
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: counter
+spec:
+  containers:
+  - name: count
+    image: busybox:1.28
+    args: [/bin/sh, -c, 'i=0; while true; do echo "$i: $(date)"; i=$((i+1)); sleep 1; done']
 ```
 
-Provides an overview of all nodes and their statuses.
+**Architecture checklist:** node-level collection → agent health → aggregation path (network, auth, buffering) → retention and rotation.
 
-#### 2. Fetch Cluster Information
+> **Q:** How do I confirm a node logging agent (e.g. Fluentd) is healthy?  
+> **A:** `kubectl get pods -n kube-system` (or agent namespace); read agent pod logs; validate config maps for namespace filters.
 
-**Command:**
+> **Q:** One app’s logs never reach the central system?  
+> **A:** Agent filters/labels for that namespace; verify `kubectl logs` works for the pod (proves the container emits logs).
 
-```bash
-kubectl cluster-info
-```
+> **Q:** Log pipeline is slow?  
+> **A:** CPU/memory on forwarders; network RTT to the sink; batch sizes and buffering.
 
-Details about the cluster's control plane and components.
+> **Q:** Truncated or missing container logs?  
+> **A:** Runtime log driver opts (`max-size`, `max-file`); kubelet rotation settings; disk space on the node.
 
-#### 3. Obtain a Cluster Dump
+> **Q:** Best practices for long-term logs?  
+> **A:** Central store with retention policy; rotation on nodes; object storage for archives where appropriate.
 
-**Command:**
-
-```bash
-kubectl cluster-info dump
-```
-
-Generates diagnostic information about the cluster's state.
-
-#### 4. Explore Dump Command Options
-
-**Command:**
+**Filtering component logs (example):**
 
 ```bash
-kubectl cluster-info dump --help
+kubectl logs -l k8s-app=kube-proxy -n kube-system
 ```
 
-Displays available options for generating a cluster dump.
+**Rotation (node / runtime):** kubelet flags such as `--container-log-max-size` and `--container-log-max-backups` (names vary by version) cap per-container log files. For Docker’s `json-file` driver, analogous settings live in `daemon.json`:
 
-#### 5. Generate Namespace-Specific Dump
+```json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+```
 
-**Command:**
+---
+
+## Pods
+
+**Representative deployment (labels and image wiring):**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+```
+
+**Taints:** `NoSchedule` blocks scheduling unless the pod tolerates the taint—remove taint or add toleration deliberately.
+
+**Images:** `ImagePullBackOff` / `ErrImagePull`—wrong image, tag, registry auth, or missing `imagePullSecrets`. Details appear in `kubectl describe pod`.
+
+| Status | Common causes | Where to look |
+|--------|----------------|---------------|
+| `CrashLoopBackOff` | Bad command, app panic, failing probes | `kubectl logs`, `describe`, `logs --previous` |
+| `Pending` | Resources, taints, affinity, unbound PVC | Events in `describe`, `kubectl get nodes`, quotas |
+| `Terminating` | Finalizers, stuck volume detach | `kubectl get pod -o yaml` (finalizers) |
+| `ContainerCreating` | Image pull, mount, CNI | `describe` events |
+
+> **Q:** Pod in `CrashLoopBackOff`?  
+> **A:** `kubectl describe pod`; `kubectl logs <pod> --previous`; verify env, command, dependencies, and probes.
+
+> **Q:** Pod stuck `Pending`?  
+> **A:** `kubectl describe pod` for `FailedScheduling`; match requests to node capacity; check taints, affinity, PVCs, and ResourceQuota.
+
+> **Q:** Multi-container pod logs?  
+> **A:** `kubectl logs <pod> -c <container>` per container; correlate timestamps.
+
+> **Q:** Job stuck `Active` or too many pods?  
+> **A:** Inspect Job `parallelism`, `completions`, `backoffLimit`; pod logs; resource availability.
+
+> **Q:** Init container failing?  
+> **A:** `kubectl logs <pod> -c <init-container-name>`; resources and command correctness.
+
+> **Q:** Pod stuck `Terminating`?  
+> **A:** Finalizers in pod YAML; stuck volume detach; patch finalizers only when safe.
+
+> **Q:** What are Kubernetes *events* on a pod?  
+> **A:** Short-lived records of scheduling, pulls, mounts, kills. `kubectl describe pod <pod> -n <ns>` shows them at the bottom; cluster-wide: `kubectl get events -A`.
+
+> **Q:** Frequent `Evicted` events?  
+> **A:** Node pressure—`kubectl describe node`; align pod requests/limits with real usage.
+
+> **Q:** DaemonSet missing on some nodes?  
+> **A:** `nodeSelector` / affinity vs node labels; taints without tolerations; `describe` events on the DaemonSet pods.
+
+**Advanced tools:** `kubectl debug` (ephemeral debug containers), **netshoot** image for network probes from a pod, **Lens** or similar UIs for visualization—use what your environment permits.
+
+---
+
+## Networking
+
+**Services and endpoints:** Selectors must match pod labels, and endpoints only include **Ready** pods. A typo in labels yields empty Endpoints and connection failures.
+
+**Illustrative Pod + Service (labels must match selector):**
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: httpd-pod
+  labels:
+    app: httpd-demo
+spec:
+  containers:
+  - name: web
+    image: httpd
+    ports:
+    - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-service
+spec:
+  selector:
+    app: httpd-demo
+  ports:
+  - port: 80
+    targetPort: 80
+```
+
+| Goal | Command |
+|------|---------|
+| Services | `kubectl get svc` |
+| Endpoints | `kubectl get endpoints <service>` · `kubectl describe endpoints <service>` |
+| Labels | `kubectl get pods --show-labels` |
+| NetworkPolicy | `kubectl describe networkpolicy <name> -n <ns>` |
+| DNS / CoreDNS | `kubectl get pods -n kube-system -l k8s-app=kube-dns` (or your DNS label set) |
+
+**Pod-exec connectivity checks** (image must include the tool):
+
+| Goal | Example |
+|------|---------|
+| DNS | `kubectl exec -it <pod> -- nslookup <service>` · `dig <service>.<ns>.svc.cluster.local` |
+| HTTP / TCP | `kubectl exec -it <pod> -- wget -qO- http://<host>:<port>` |
+| Latency path | `kubectl exec -it <pod> -- ping <ip>` · `traceroute <ip>` (if installed) |
+| Same-namespace Service | `kubectl get endpoints <svc> -n <ns>` then test pod IP or Service DNS |
+
+From a debug pod (with needed tools): `curl`/`wget` to ClusterIP or DNS name; `nslookup` / `dig` for DNS.
+
+> **Q:** DNS resolution fails inside the cluster?  
+> **A:** CoreDNS pods running and healthy; `kubectl logs` on CoreDNS; from a test pod: `nslookup kubernetes.default` or `dig <service>.<ns>.svc.cluster.local`.
+
+> **Q:** Service unreachable inside the cluster?  
+> **A:** `kubectl get svc` and `kubectl describe endpoints <svc>`; NetworkPolicies; kube-proxy / dataplane health; test from a peer pod with `curl`.
+
+> **Q:** Ingress misroutes traffic?  
+> **A:** `kubectl describe ingress`; ingress controller logs; DNS to the right front-end IP; verify backend Service and port.
+
+> **Q:** LoadBalancer has no external access?  
+> **A:** `kubectl get svc` for `EXTERNAL-IP`; cloud provider events for LB provisioning; security groups / firewall; backend endpoints Ready.
+
+> **Q:** NetworkPolicy blocks expected traffic?  
+> **A:** `kubectl describe networkpolicy`; confirm pod labels and namespaces match rules; temporarily relax in non-production to confirm.
+
+> **Q:** Calico (example CNI) pod-to-pod issues?  
+> **A:** Calico pod logs; `calicoctl get policy` (if installed) for conflicting rules.
+
+> **Q:** Multi-port Service—only one port works?  
+> **A:** `kubectl describe svc` lists every `Port`; confirm container `ports` and `targetPort` for each; test the secondary port with `curl`/`nc` to the pod IP.
+
+> **Q:** NodePort works on one node but not from a pod on another node?  
+> **A:** NodePort should be reachable on every node via kube-proxy; check `kube-system` kube-proxy pods and logs; verify host firewall and cloud security groups for the NodePort range.
+
+> **Q:** `hostNetwork: true` pod not reachable on the expected address?  
+> **A:** `kubectl describe pod` for the host IP and ports; port conflicts on the node; host firewall rules.
+
+> **Q:** `connection refused` in app logs?  
+> **A:** Service port vs container port; endpoints empty; target pod not listening; NetworkPolicy or upstream dependency down.
+
+**External dependencies:** From the pod, test `curl`/`nc` to the dependency; verify egress allowed (NetworkPolicy, firewall, cloud NAT); validate credentials and URLs.
+
+---
+
+## Applications
+
+**Approach:** Confirm scheduling (`get`/`describe` pod), then logs and `exec` (if the image has tools), then readiness/liveness probes, then Service alignment.
+
+**Common themes:** wrong image or env; readiness failing so endpoints stay empty; dependencies unreachable; `OOMKilled` from tight memory limits.
+
+**Tools:** `kubectl logs -f`, `kubectl exec`, `kubectl port-forward` for local testing without exposing Services.
+
+> **Q:** Application not responding?  
+> **A:** `kubectl get pods -n <ns>`; `kubectl logs`; probe configuration in the manifest; from the pod: `curl` to localhost or the Service.
+
+> **Q:** Deployment failing on bad image?  
+> **A:** `kubectl describe deployment` / pod events; verify image name, tag, registry auth, and `imagePullSecrets`.
+
+> **Q:** Readiness probe always failing?  
+> **A:** `kubectl describe pod`; `kubectl exec` to run the same check as the probe (path, port, command).
+
+> **Q:** No application logs?  
+> **A:** Confirm process runs (`kubectl exec … ps`); ensure the app writes to stdout/stderr; check for logging sidecars misconfigured.
+
+> **Q:** HPA not scaling?  
+> **A:** `kubectl describe hpa`; metrics-server or custom metrics availability; requests/limits set so CPU metrics are meaningful.
+
+> **Q:** Liveness probe causes restart loops?  
+> **A:** Loosen timeouts/period, or fix the check so it matches real startup time; read restart counts and `describe` events.
+
+> **Q:** Rolling update causes downtime?  
+> **A:** `kubectl rollout status`; maxUnavailable / maxSurge; readiness must pass before old pods terminate—`kubectl rollout pause` while fixing the app.
+
+> **Q:** Helm install fails?  
+> **A:** `helm install --dry-run --debug`; fix values and chart requirements; correlate with `kubectl get events`.
+
+**Monitoring (typical stack):** Prometheus for scrape storage, Grafana for dashboards, Loki for logs, kube-state-metrics for Kubernetes object metrics—use these to correlate spikes with logs and events.
+
+**Example:** install a common observability bundle with Helm (adjust repo/chart versions for your environment):
 
 ```bash
-kubectl cluster-info -n <namespace> dump
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack
 ```
 
-For example, to diagnose issues in the `test` namespace:
+> **Q:** Prometheus not scraping node or pod targets?  
+> **A:** Prometheus targets UI or config; ServiceMonitors/PodMonitors; network from Prometheus to exporters; RBAC for `discovery`.
 
-```bash
-kubectl cluster-info -n test dump
-```
+> **Q:** Grafana shows gaps in graphs?  
+> **A:** Prometheus retention and disk; datasource URL; clock skew between components.
 
-#### 6. Check Cluster Component Health
+> **Q:** HPA scales too fast and causes flapping?  
+> **A:** `kubectl describe hpa`; tune `behavior.scaleUp` / `scaleDown` stabilization windows and policies in the HPA spec.
 
-**Command:**
+> **Q:** `kubectl apply` fails with a server error?  
+> **A:** `kubectl apply --dry-run=client -f <file>` for schema issues; API server logs for admission or conversion webhooks.
 
-```bash
-kubectl get componentstatus
-```
-
-Reports the health of cluster components such as etcd, scheduler, and controller-manager.
-
-### Things to Check
-
-- Are all nodes in a `Ready` state?
-- Is the control plane accessible using `kubectl cluster-info`?
-- Are specific namespaces experiencing issues?
-- Are cluster components reporting healthy statuses?
-
-By following these steps, you can effectively diagnose and resolve common Kubernetes cluster issues.
+> **Q:** Cluster-wide ConfigMap change broke apps—how to roll back?  
+> **A:** Re-apply the last known good manifest from version control; restart or roll workloads that cache ConfigMap data in memory.
 
 ---
 
-## Section 2: Understanding Kubernetes Logging Architecture
+## Quick FAQ (cross-cutting scenarios)
 
-### Areas to Troubleshoot
+Concise answers for patterns that span multiple layers:
 
-- Application logs and debugging.
-- Container-level logging.
-- Namespace-wide log aggregation.
+> **Q:** StatefulSet won’t scale or attach volumes?  
+> **A:** PVC binding per ordinal; events on new pods; headless Service for stable network identity; storage class and provisioner health.
 
-### Possible Scenarios
+> **Q:** PVC stuck `Pending`?  
+> **A:** Matching PV or dynamic provisioner; StorageClass `volumeBindingMode`; provisioner logs.
 
-- Logs are not accessible for a specific pod or container.
-- Need to debug application behavior using logs.
-- Cluster-wide log monitoring requirements.
+> **Q:** PV stuck `Released`?  
+> **A:** Reclaim policy and claimRef; may need manual cleanup or recycle per policy.
 
-### Steps and Commands to Troubleshoot
+> **Q:** `hostPath` volume—pod cannot see files?  
+> **A:** Path exists on the *scheduled* node; permissions; `hostPath` is node-local and not portable.
 
-#### Step 1: Get Help with Logging
+> **Q:** Volume snapshot fails?  
+> **A:** `VolumeSnapshot` / `VolumeSnapshotClass` correctness; CSI driver logs; backend support for snapshots.
 
-**Command:**
+> **Q:** NFS PVC latency is high?  
+> **A:** NFS server health and network path; `iperf` or similar between node and server; compare storage class IOPS if applicable.
 
-```bash
-kubectl logs --help
-```
+> **Q:** Data not persisting after pod restart?  
+> **A:** Confirm volume type (`emptyDir` vs PVC); PVC still bound; app writing to the mounted path.
 
-Displays available options and flags for fetching logs.
+> **Q:** High restart count?  
+> **A:** `kubectl describe pod` for back-off; logs for OOM or probe failures; fix app or limits.
 
-#### Step 2: Create a Pod and View Logs
+> **Q:** Webhook or admission errors after upgrade?  
+> **A:** API server logs; webhook service reachability and TLS; update webhook for new API versions.
 
-1. Create a YAML file for the pod: **Command:**
+> **Q:** CSI volume fails to mount?  
+> **A:** CSI driver pod logs; `describe pod` events; storage class and secret alignment.
 
-   ```bash
-   vi busybox.yaml
-   ```
+> **Q:** Custom operator not reconciling?  
+> **A:** Operator pod logs; CRD and RBAC; reconcile errors in metrics or logs.
 
-   Add the following content to the file:
+> **Q:** Service mesh breaks pod traffic?  
+> **A:** Sidecar logs (e.g. Envoy); mesh policy; compare with direct cluster IP tests.
 
-   ```yaml
-   apiVersion: v1
-   kind: Pod
-   metadata:
-     name: counter
-   spec:
-     containers:
-     - name: count
-       image: busybox:1.28
-       args: [/bin/sh, -c, 'i=0; while true; do echo "$i: $(date)"; i=$((i+1)); sleep 1; done']
-   ```
+> **Q:** Cluster-wide performance degradation?  
+> **A:** `kubectl top node`; etcd and API latency; noisy neighbors; control plane sizing.
 
-2. Deploy the pod and fetch logs: **Command:**
+> **Q:** Intermittent HTTP 503 from an Ingress or Service?  
+> **A:** Backend pod logs and restarts; readiness failures; empty endpoints; Ingress controller logs.
 
-   ```bash
-   kubectl apply -f busybox.yaml
-   kubectl logs counter
-   ```
+> **Q:** Container runtime upgrade broke nodes?  
+> **A:** `journalctl -u containerd` or `docker`; validate `/etc/containerd/config.toml` / Docker daemon config; roll back runtime if needed.
 
-3. Retrieve the last five lines of logs: **Command:**
+> **Q:** Projected volume pod won’t start?  
+> **A:** Each projected source (Secret, ConfigMap, downwardAPI) must exist and be readable; check pod events.
 
-   ```bash
-   kubectl logs counter --tail=5
-   ```
+> **Q:** Suspected memory leak in an app?  
+> **A:** Heap or language profilers (e.g. Go `pprof`); correlate with container memory metrics and OOM events.
 
-#### Step 3: Advanced Log Options
-
-1. Fetch logs from all containers in a namespace: **Command:**
-
-   ```bash
-   kubectl logs counter --all-containers
-   ```
-
-2. Fetch logs from a specific time range: **Command:**
-
-   ```bash
-   kubectl logs counter --since=<timespan>
-   ```
-
-   Example: To retrieve logs from the last hour:
-
-   ```bash
-   kubectl logs counter --since=1h
-   ```
-
-### Things to Check
-
-- Are logs being generated by the pod/container?
-- Is the `kubectl logs` command correctly targeting the pod or namespace?
-- Are appropriate log filters, such as `--tail` or `--since`, being applied?
-
-### Tools and Prerequisites
-
-- Tools: `kubectl`, `kubeadm`, `kubelet`, `containerd`.
-- Prerequisite: A functioning Kubernetes cluster.
-
-By following these steps, you can effectively monitor and troubleshoot application logs in Kubernetes, ensuring better visibility into system behavior and application performance.
+> **Q:** Suspected DDoS or abusive traffic to a public Service?  
+> **A:** Identify sources via cloud flow logs or LB metrics; tighten NetworkPolicy and ingress rules; use cloud WAF or DDoS protection where available.
 
 ---
 
-## Section 3: Understanding Cluster and Node Logs
+## Hands-On Labs
 
-### Areas to Troubleshoot
+Practice these concepts with guided lab exercises:
 
-- Control-plane component logs.
-- Worker node logs.
-- Logs from services like the API server, controller manager, etcd, and kubelet.
-
-### Possible Scenarios
-
-- Control-plane components are unresponsive or showing errors.
-- Worker nodes are not functioning as expected.
-- Logs are inaccessible or incomplete.
-
-### Steps and Commands to Troubleshoot
-
-#### Step 1: View Control-Plane Component Logs
-1. Navigate to the logs directory:
-   **Command:**
-   ```bash
-   cd /var/log/pods
-   ls
-   ```
-   Lists all the components and their directories.
-
-2. Navigate to the API server logs:
-   **Command:**
-   ```bash
-   cd kube-system_kube-apiserver-<master-node>_<unique-id>/kube-apiserver
-   ```
-
-3. View the latest log file:
-   **Command:**
-   ```bash
-   ls -la
-   sudo cat 0.log
-   ```
-
-#### Step 2: View Controller Manager Logs
-1. Navigate to the controller manager logs directory:
-   **Command:**
-   ```bash
-   cd kube-system_kube-controller-manager-<master-node>_<unique-id>/kube-controller-manager
-   ```
-
-2. View the logs:
-   **Command:**
-   ```bash
-   ls -la
-   sudo cat 0.log
-   ```
-
-#### Step 3: View etcd Logs
-1. Navigate to the etcd logs directory:
-   **Command:**
-   ```bash
-   cd kube-system_etcd-<master-node>_<unique-id>/etcd
-   ```
-
-2. View the logs:
-   **Command:**
-   ```bash
-   ls -la
-   sudo cat 0.log
-   ```
-
-#### Step 4: View Worker Node Logs
-1. View the kubelet service logs:
-   **Command:**
-   ```bash
-   sudo journalctl -xu kubelet -n
-   ```
-   Press `q` to exit the log viewer.
-
-2. View pod logs on the worker node:
-   **Command:**
-   ```bash
-   cd /var/log/pods/
-   ls
-   ```
-   Navigate into specific pod directories to view logs.
-
-### Things to Check
-
-- Are control-plane component logs accessible and free of errors?
-- Are kubelet service logs showing any issues on worker nodes?
-- Is the logging directory structure consistent across nodes?
-
-### Tools and Prerequisites
-
-- Tools: `kubeadm`, `kubectl`, `kubelet`, `containerd`.
-- Prerequisite: A functioning Kubernetes cluster.
-
-By following these steps, you can inspect and troubleshoot control-plane and worker node logs, ensuring smooth cluster operations.
+| Lab | Description |
+|-----|-------------|
+| [Lab 49: Cluster and Control Plane Troubleshooting](../../labmanuals/lab49-ts-cluster-control-plane.md) | API server, etcd, scheduler, and control-plane debugging |
+| [Lab 50: Troubleshooting Pod Failures](../../labmanuals/lab50-ts-pod-failures.md) | Image pull, crash loops, and pod lifecycle issues |
+| [Lab 51: Kubelet and Node Troubleshooting](../../labmanuals/lab51-ts-kubelet-node.md) | Node readiness, kubelet, and runtime on workers |
+| [Lab 52: Network Troubleshooting](../../labmanuals/lab52-ts-networking.md) | Services, DNS, and cluster networking |
+| [Lab 53: Workload and Application Debugging](../../labmanuals/lab53-ts-workload-debugging.md) | Deployments, probes, and application-level diagnosis |
+| [Lab 54: Troubleshooting Commands Practice](../../labmanuals/lab54-ts-commands-reference.md) | `kubectl` debugging command drills |
+| [Lab 55: CKA Troubleshooting Practice Scenarios](../../labmanuals/lab55-ts-cka-scenarios.md) | Exam-style troubleshooting scenarios |
 
 ---
 
-## Section 4: Troubleshooting Node Readiness
+## Additional reading
 
-### Areas to Troubleshoot
-
-- Node readiness and status.
-- Kubelet service issues on worker nodes.
-- Node transitioning between `Not Ready` and `Ready`.
-
-### Possible Scenarios
-
-- Worker node status shows `Not Ready`.
-- Kubelet service on a worker node is inactive or malfunctioning.
-- Issues after restarting or disabling a worker node.
-
-### Steps and Commands to Troubleshoot
-
-#### Step 1: Check the Node Status on the Master Node
-1. View the status of all nodes in the cluster:
-   **Command:**
-   ```bash
-   kubectl get nodes
-   ```
-
-2. Identify the problematic worker node (e.g., `worker-node-2`) from the output.
-
-#### Step 2: Disable the Worker Node and Diagnose
-1. Stop the kubelet service on the worker node:
-   **Command:**
-   ```bash
-   sudo service kubelet stop
-   ```
-
-2. Verify the kubelet service status:
-   **Command:**
-   ```bash
-   sudo service kubelet status
-   ```
-   (Press `q` to exit the status viewer.)
-
-3. Check the node's status from the master node after stopping the kubelet service:
-   **Command:**
-   ```bash
-   kubectl get nodes
-   ```
-   The node status should show `Not Ready`.
-
-4. Describe the node to diagnose the problem:
-   **Command:**
-   ```bash
-   kubectl describe node worker-node-2.example.com
-   ```
-
-#### Step 3: Fix the Worker Node
-1. Start the kubelet service on the worker node:
-   **Command:**
-   ```bash
-   sudo systemctl start kubelet
-   ```
-
-2. Verify the kubelet service status:
-   **Command:**
-   ```bash
-   sudo systemctl status kubelet
-   ```
-   (Press `q` to exit the status viewer.)
-
-3. After a few minutes, recheck the node's status from the master node:
-   **Command:**
-   ```bash
-   kubectl get nodes
-   ```
-   The node status should now display `Ready`.
-
-### Things to Check
-
-- Is the kubelet service running correctly on the worker node?
-- Are there any errors in the output of `kubectl describe node`?
-- Does the node transition back to `Ready` after restarting the kubelet service?
-
-### Tools and Prerequisites
-
-- Tools: `kubeadm`, `kubectl`, `kubelet`, `containerd`.
-- Prerequisite: A functioning Kubernetes cluster.
-
-By following these steps, you can successfully diagnose and resolve issues causing a worker node to transition from `Not Ready` to `Ready`.
+- [Kubernetes documentation](https://kubernetes.io/docs/home/)
+- [Kubernetes documentation — debug cluster](https://kubernetes.io/docs/tasks/debug/debug-cluster/)
+- [Kubernetes networking concepts](https://kubernetes.io/docs/concepts/services-networking/)
+- [CKA certification](https://www.cncf.io/certification/certified-kubernetes-administrator/)
 
 ---
 
+## Why this skill matters
 
-## Section 5: Understanding Container Logs
-
-In this section, you will learn how to check and access container logs using `crictl` commands. These logs are crucial for troubleshooting and understanding container behavior.
-
-#### Steps to Check Container Logs:
-
-1. **Navigate to Worker Node:**
-   - Log in to the worker-node-2 in the LMS dashboard.
-
-2. **Fetch the Container ID:**
-   - Use the following command to fetch the container ID:
-     ```bash
-     sudo crictl ps -a
-     ```
-
-3. **Access and View Container Logs:**
-   - To view the logs of a specific container, use the following command:
-     ```bash
-     sudo crictl logs <container_id>
-     ```
-     Replace `<container_id>` with the actual container ID from the previous command.
-
-4. **Retrieve the Latest Log Entry:**
-   - If you need to retrieve the most recent log entry, use the following command:
-     ```bash
-     sudo crictl logs --tail=1 <container_id>
-     ```
-     This will return the latest log entry for the specified container.
-
-By following these steps, you have successfully demonstrated how to use `crictl` commands to monitor container logs and troubleshoot container-related issues.
-
----
-
-## Section 6: Analyzing Pod Logs and Troubleshooting Pod Issues
-
-In this section, you will analyze pod logs, troubleshoot common pod and container issues, and explore scenarios such as tainting nodes, incorrect image names, and various pod/container status problems.
-
----
-
-#### 6.1 Configure and Verify Nginx Deployment
-
-Follow the steps to configure and deploy an Nginx application in Kubernetes.
-
-1. **Create a Configuration File for Nginx Deployment:**
-   - Create a file `nginx.yaml` for your Nginx deployment:
-     ```bash
-     vi nginx.yaml
-     ```
-
-   2. **Insert the Nginx Deployment Configuration:**
-      Insert the following YAML configuration:
-      ```yaml
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        labels:
-          app: nginx
-        name: nginx
-      spec:
-        replicas: 1
-        selector:
-          matchLabels:
-            app: nginx
-        template:
-          metadata:
-            labels:
-              app: nginx
-          spec:
-            containers:
-            - image: nginx
-              name: nginx
-      ```
-
-   3. **Create the Nginx Deployment:**
-      ```bash
-      kubectl create -f nginx.yaml
-      ```
-
-   4. **Verify the Deployment and Pod Status:**
-      ```bash
-      kubectl get deployments
-      kubectl get pods
-      ```
-
-   5. **View the Logs of the Nginx Pod:**
-      ```bash
-      kubectl logs nginx-7854ff8877-mvrtr
-      ```
-
----
-
-#### 6.2 Tainting Worker Nodes and Deployment Failures
-
-1. **Taint the Worker Node:**
-   - Taint the worker node to prevent any pods from being scheduled on it:
-     ```bash
-     kubectl taint nodes worker-node-1 key=value:NoSchedule
-     ```
-
-2. **Check Deployment Status:**
-   - After tainting the node, check the status of the deployment and pods:
-     ```bash
-     kubectl get deployments
-     kubectl get pods
-     ```
-     **Expected Outcome:** The pod(s) will not be scheduled, and the deployment will not reach the "READY" state.
-
-3. **Troubleshooting the Issue:**
-   - To resolve the issue, you can either:
-     - Remove the taint from the node:
-       ```bash
-       kubectl taint nodes worker-node-1 key=value:NoSchedule-
-       ```
-     - Or, you can add a toleration in your Nginx deployment YAML to allow the pod to be scheduled on tainted nodes:
-       ```yaml
-       spec:
-         template:
-           spec:
-             tolerations:
-             - key: "key"
-               operator: "Equal"
-               value: "value"
-               effect: "NoSchedule"
-       ```
-
----
-
-#### 6.3 Troubleshooting Incorrect Image Names
-
-1. **Use an Incorrect Image Name:**
-   - Modify your `nginx.yaml` to use a non-existent image (e.g., `nginx:wrongtag`):
-     ```yaml
-     containers:
-     - image: nginx:wrongtag
-       name: nginx
-     ```
-
-2. **Check the Pod Status:**
-   - After applying the deployment with the incorrect image, check the pod status:
-     ```bash
-     kubectl get pods
-     ```
-
-   **Expected Outcome:** The pod will be stuck in `ImagePullBackOff` or `ErrImagePull` status.
-
-3. **Troubleshoot the Image Pull Error:**
-   - To troubleshoot, you can describe the pod to get more information:
-     ```bash
-     kubectl describe pod nginx-7854ff8877-mvrtr
-     ```
-     Look for error messages related to the image pull. In this case, it will indicate that the image does not exist.
-
-4. **Fix the Issue:**
-   - Update the deployment YAML to use the correct image tag:
-     ```yaml
-     containers:
-     - image: nginx:latest
-       name: nginx
-     ```
-
-   - Apply the changes:
-     ```bash
-     kubectl apply -f nginx.yaml
-     ```
-
-   - Verify the pod status:
-     ```bash
-     kubectl get pods
-     ```
-
----
-
-#### 6.4 Pod and Container Status Issues and Fixes
-
-Here are some common pod and container status issues you may encounter, along with troubleshooting steps and fixes.
-
-1. **Pod Status: CrashLoopBackOff**
-   - **Cause:** The container within the pod repeatedly crashes (often due to application errors).
-   - **Troubleshooting:**
-     ```bash
-     kubectl describe pod <pod_name>
-     kubectl logs <pod_name>
-     ```
-     - Look for error messages in the logs and investigate the container's behavior.
-   - **Fix:** Modify the deployment YAML or the container configuration to fix the application errors. You might need to adjust resource limits, environment variables, or code.
-
-2. **Pod Status: Pending**
-   - **Cause:** The pod cannot be scheduled because there are not enough resources available.
-   - **Troubleshooting:**
-     ```bash
-     kubectl describe pod <pod_name>
-     ```
-     - Check the events section for resource allocation issues.
-   - **Fix:** Ensure that the node has enough resources (CPU, memory) or scale up your cluster if necessary.
-
-3. **Pod Status: Terminating**
-   - **Cause:** The pod is stuck in the `Terminating` state due to an issue with the deletion process (e.g., finalizers not completing).
-   - **Troubleshooting:**
-     ```bash
-     kubectl get pod <pod_name> -o yaml
-     ```
-     - Check for the `finalizers` field and any associated issues.
-   - **Fix:** Force delete the pod if necessary:
-     ```bash
-     kubectl delete pod <pod_name> --force --grace-period=0
-     ```
-
-4. **Container Status: Waiting (Reason: ContainerCreating)**
-   - **Cause:** The container is waiting for necessary resources or dependencies.
-   - **Troubleshooting:**
-     ```bash
-     kubectl describe pod <pod_name>
-     ```
-     - Check the events section for more information on why the container is stuck in this state.
-   - **Fix:** Ensure the required resources (e.g., images, volumes) are available and accessible.
-
-5. **Container Status: Running (but Application is Not Responding)**
-   - **Cause:** The container is running, but the application inside it is not behaving as expected (e.g., not starting, crashing).
-   - **Troubleshooting:**
-     ```bash
-     kubectl logs <pod_name> -c <container_name>
-     kubectl exec -it <pod_name> -- /bin/bash
-     ```
-     - Use the logs and interactive shell to investigate the application inside the container.
-   - **Fix:** Modify the application configuration, fix any application-level issues, or redeploy the pod.
-
----
-
-By following these steps, you can troubleshoot various pod and container issues, including node tainting, incorrect image names, and common status problems, ensuring your Kubernetes deployments run smoothly.
-
----
-Here is the revised **Section 7: Understanding Application Troubleshooting** with all instances of "k8slearning" replaced with "ckacourse":
-
----
-
-## Section 7: Understanding Application Troubleshooting
-
-In this section, you will learn how to set up a Kubernetes application pod, diagnose potential issues, and implement corrections to ensure successful deployment and smooth operation of the application.
-
----
-
-#### 7.1 Setup and Diagnose the Application Pod
-
-This section outlines the steps to create a pod, verify its state, diagnose issues, and apply fixes.
-
-1. **Create the Application Pod Deployment:**
-
-   1.1 **Create the `issue-pod.yaml` File:**
-   - Draft the following YAML code to create a pod and save it in a file called `issue-pod.yaml`:
-     ```bash
-     vi issue-pod.yaml
-     ```
-     ```yaml
-     apiVersion: v1
-     kind: Pod
-     metadata:
-       name: openshift
-       labels:
-         Podlabel: ckacourse
-     spec:
-       containers:
-       - name: mycontainer
-         image: docker.io/openshift
-         ports:
-         - containerPort: 80
-     ```
-     **Objective:** To create a Kubernetes pod for troubleshooting application issues.
-
-2. **Deploy the Pod:**
-
-   1.2 **Create the Pod:**
-   - Deploy the `issue-pod.yaml` file to the Kubernetes cluster:
-     ```bash
-     kubectl create -f issue-pod.yaml
-     ```
-
-3. **Verify the Pod Status:**
-
-   1.3 **Check the Pod Status:**
-   - To verify if the pod is running correctly, use the following command:
-     ```bash
-     kubectl get pods
-     ```
-     **Expected Outcome:** The pod may be stuck in a `Pending`, `CrashLoopBackOff`, or `ContainerCreating` state, indicating an issue.
-
-4. **Retrieve Events and Pod Details:**
-
-   1.4 **Check Events for Errors:**
-   - To diagnose any cluster-wide or pod-specific issues, view the events:
-     ```bash
-     kubectl get events
-     ```
-
-   1.5 **Describe the Pod:**
-   - To get detailed information about the pod and potential error messages, use:
-     ```bash
-     kubectl describe pod openshift
-     ```
-
-   **Expected Outcome:** You may encounter errors in the `Events` section, such as image pull errors, insufficient resources, or other configuration issues.
-
----
-
-#### 7.2 Troubleshooting the Application Pod
-
-Once you have diagnosed the issue with the pod, the next step is to troubleshoot and resolve it.
-
-1. **Change the Container Image:**
-
-   1.6 **Edit the Pod's Service Image:**
-   - If the issue is related to an incorrect image, edit the pod definition to change the container image. For example, change the image from `docker.io/openshift` to `openshift/helloopenshift`:
-     ```bash
-     kubectl edit pod openshift
-     ```
-     - This will open the pod configuration in your default editor. Update the image field as follows:
-       ```yaml
-       image: openshift/helloopenshift
-       ```
-
-2. **Verify Changes to the Pod:**
-
-   1.7 **Confirm the Changes:**
-   - After editing the pod, check the pod status to confirm that it is now running:
-     ```bash
-     kubectl get pods
-     ```
-     **Expected Outcome:** The pod should now be in the `Running` state if the issue has been resolved.
-
----
-
-#### 7.3 Common Pod Troubleshooting Scenarios
-
-Here are some common pod-related issues you may encounter, along with troubleshooting steps and fixes.
-
-1. **Pod Status: CrashLoopBackOff**
-   - **Cause:** The container inside the pod repeatedly crashes, often due to an application issue (e.g., missing dependencies, incorrect configurations).
-   - **Troubleshooting:**
-     ```bash
-     kubectl describe pod openshift
-     kubectl logs openshift
-     ```
-     - Look for errors in the logs and the `Events` section of the description.
-   - **Fix:** Modify the container's configuration, fix the application issue, or update the container image.
-
-2. **Pod Status: ImagePullBackOff or ErrImagePull**
-   - **Cause:** The container image is either incorrect or unavailable.
-   - **Troubleshooting:**
-     ```bash
-     kubectl describe pod openshift
-     ```
-     - Look for error messages related to the image pull.
-   - **Fix:** Ensure the correct image name and tag are used in the pod configuration. Update the pod definition if needed:
-     ```bash
-     kubectl edit pod openshift
-     ```
-
-3. **Pod Status: Pending**
-   - **Cause:** The pod cannot be scheduled due to insufficient resources or other node issues.
-   - **Troubleshooting:**
-     ```bash
-     kubectl describe pod openshift
-     kubectl get nodes
-     ```
-     - Check for resource allocation issues (e.g., memory, CPU) in the pod description and node status.
-   - **Fix:** Adjust the resource requests and limits in the pod configuration, or scale the cluster to accommodate the pod.
-
-4. **Pod Status: Terminating**
-   - **Cause:** The pod is stuck in the `Terminating` state due to issues with resource cleanup or finalizer blocks.
-   - **Troubleshooting:**
-     ```bash
-     kubectl get pod openshift -o yaml
-     ```
-     - Look for any hanging finalizer blocks preventing the pod from terminating.
-   - **Fix:** Force delete the pod if necessary:
-     ```bash
-     kubectl delete pod openshift --force --grace-period=0
-     ```
-
-5. **Container Status: Waiting (Reason: ContainerCreating)**
-   - **Cause:** The container is waiting for necessary resources (e.g., storage or network connectivity) or dependencies.
-   - **Troubleshooting:**
-     ```bash
-     kubectl describe pod openshift
-     ```
-     - Check for any missing resources or dependencies in the `Events` section.
-   - **Fix:** Ensure that the required resources (such as persistent volumes or network configurations) are available.
-
----
-
-#### 7.4 Additional Troubleshooting Tools
-
-1. **Use `kubectl logs -f` to Follow Logs in Real-Time:**
-   - If your pod is running but the application inside it is not responding, follow the logs to monitor its output:
-     ```bash
-     kubectl logs -f openshift
-     ```
-
-2. **Use `kubectl exec` to Access the Container:**
-   - To further diagnose an issue, you can access the container and interact with it:
-     ```bash
-     kubectl exec -it openshift -- /bin/bash
-     ```
-     This allows you to troubleshoot the application from inside the pod.
-
-By following these steps, you will be able to set up a Kubernetes pod, diagnose any issues, and apply fixes to resolve problems that may arise during deployment. These troubleshooting techniques are essential for ensuring that your Kubernetes applications run smoothly.
-
----
-
-## Section 8: Handling Component Failure Threshold
-
-In this section, you will learn how to check the health of your Kubernetes cluster, including the nodes and overall cluster health status, and how to diagnose issues that may arise due to component failures.
-
----
-
-#### 8.1 Check the Cluster Health Information
-
-This section outlines the steps to gather information about the health of the cluster, including nodes and configuration.
-
-1. **Check the Nodes in the Cluster:**
-
-   1.1 **View Cluster Nodes:**
-   - To get detailed information about the nodes in the cluster, execute the following command:
-     ```bash
-     kubectl get nodes
-     ```
-     **Objective:** To view the list of nodes in the cluster, their status, and health. This provides an overview of the cluster's node-level health.
-
-   **Expected Outcome:**
-   - The command should display the nodes along with their status (e.g., `Ready`, `NotReady`), version, and other relevant details.
-   
-   Example output:
-   ```bash
-   NAME              STATUS   ROLES    AGE   VERSION
-   worker-node-1     Ready    <none>   5d    v1.20.0
-   worker-node-2     NotReady <none>   5d    v1.20.0
-   master-node-1     Ready    master   5d    v1.20.0
-   ```
-
-2. **Dump Cluster Information and Check Health:**
-
-   1.2 **Generate and View Cluster Health Dump:**
-   - To get a comprehensive collection of diagnostic information about the cluster's health, use the following commands:
-     ```bash
-     kubectl cluster-info dump > dump.json
-     vi dump.json
-     ```
-     **Objective:** To gather detailed cluster configuration, resource usage, and status in a JSON file for further analysis.
-
-   **Expected Outcome:**
-   - The `dump.json` file contains a wealth of information, including details about nodes, pods, namespaces, and cluster components, which can be used for diagnosing potential failures.
-
-   Example:
-   - The contents of `dump.json` will include details like:
-     - Cluster configuration
-     - Node and pod status
-     - Component health (e.g., API server, controller manager, scheduler)
-   
-   **Tip:** Use `vi` or any text editor to search through the file for any error or warning messages regarding component health.
-
-3. **Interpret Cluster Health Information:**
-
-   - After obtaining the cluster dump, you may encounter different failure scenarios:
-     - **Component Failure:** If the dump contains error logs or `NotReady` status for critical components (e.g., API server, controller manager), further investigation is needed.
-     - **Node Failures:** Nodes marked as `NotReady` might indicate issues such as resource exhaustion, network partitioning, or configuration issues.
-
-4. **Addressing Node Failures:**
-
-   - If a node is in the `NotReady` state, use the following to investigate further:
-     ```bash
-     kubectl describe node <node-name>
-     ```
-     This command provides detailed information on the node’s condition, including events that may indicate why it is not in a `Ready` state.
-
-By following these steps, you can successfully gather diagnostic information about your Kubernetes cluster, enabling you to identify and resolve issues related to node health, component failures, or configuration errors. Regularly checking cluster health is essential for maintaining a highly available and reliable Kubernetes environment.
-
----
-
-## Section 9: Troubleshooting Networking Issues
-
-In this section, you will learn how to troubleshoot networking issues by setting up an `httpd` pod, creating an `httpd` service, checking pod labels, and testing the service connectivity.
-
----
-
-#### 9.1 Create an HTTPD Pod
-
-1. **Install the Metrics API:**
-   - To begin troubleshooting networking issues, you need to install the metrics API:
-     ```bash
-     kubectl apply -f https://github.com/kubernetes-sigs/metricsserver/releases/latest/download/components.yaml
-     ```
-
-   **Objective:** Set up the necessary components to monitor and troubleshoot pod networking in the cluster.
-
-2. **Create the HTTPD Pod:**
-   1.2 Create a YAML file for the `httpd-pod` with the following content:
-   ```bash
-   vim network-issue.yaml
-   ```
-   ```yaml
-   apiVersion: v1
-   kind: Pod
-   metadata:
-     name: httpd-pod
-     labels:
-       mycka: ckacourse-network-1
-   spec:
-     containers:
-     - name: mycontainer
-       image: docker.io/httpd
-       ports:
-       - containerPort: 80
-   ```
-
-   1.3 Execute the following command to create the pod:
-   ```bash
-   kubectl create -f network-issue.yaml
-   ```
-
-   **Expected Outcome:** The pod should be created and running. Check the pod status using:
-   ```bash
-   kubectl get pods
-   ```
-
----
-
-#### 9.2 Create an HTTPD Service
-
-1. **Create the HTTPD Service:**
-   2.1 Create a YAML file for the `httpd` service:
-   ```bash
-   vi network-issue-svc.yaml
-   ```
-   ```yaml
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: httpd-service
-   spec:
-     selector:
-       mycka: ckacourse-network-1
-     ports:
-     - protocol: TCP
-       port: 18080
-       targetPort: 80
-   ```
-
-   2.2 Execute the following command to create the service:
-   ```bash
-   kubectl create -f network-issue-svc.yaml
-   ```
-
-   **Expected Outcome:** The service should be created and accessible. Check the service status:
-   ```bash
-   kubectl get svc
-   ```
-
----
-
-#### 9.3 Check Labels for All Pods
-
-1. **Check Pod Labels:**
-   3.1 To view the labels for all pods, run the following command:
-   ```bash
-   kubectl get pods --show-labels
-   ```
-
-2. **Get Endpoints:**
-   3.2 To check the service endpoints, execute:
-   ```bash
-   kubectl get svc -o wide
-   kubectl get endpoints
-   ```
-
-3. **Verify Service Connectivity:**
-   3.3 Use the following command to verify if the service is responding correctly. Replace `172.16.232.199` with your cluster's `httpd-service` cluster IP:
-   ```bash
-   curl 172.16.232.199:80
-   ```
-
-4. **Delete the Service:**
-   3.4 Delete the `httpd-service`:
-   ```bash
-   kubectl get svc
-   kubectl delete svc httpd-service
-   ```
-
----
-
-#### 9.4 Modify and Create a New Service
-
-1. **Modify Service YAML:**
-   3.5 Edit the `network-issue-svc.yaml` file to use a different network name:
-   ```bash
-   vi network-issue-svc.yaml
-   ```
-   ```yaml
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: httpd-service
-   spec:
-     selector:
-       mycka: ckacourse-network-2
-     ports:
-     - protocol: TCP
-       port: 18080
-       targetPort: 80
-   ```
-
-2. **Create the Modified Service:**
-   3.6 Create the new service:
-   ```bash
-   kubectl create -f network-issue-svc.yaml
-   ```
-
-3. **Check the Pod Labels Again:**
-   3.7 List the pods with their labels:
-   ```bash
-   kubectl get pods --show-labels
-   ```
-
-4. **Retrieve the Cluster IP and Endpoints:**
-   3.8 Retrieve the service's cluster IP and endpoints:
-   ```bash
-   kubectl get svc -o wide
-   kubectl get endpoints
-   ```
-
-5. **Verify Service Connectivity:**
-   3.9 Access the service again using `curl`:
-   ```bash
-   curl 172.16.232.199:8080
-   ```
-
----
-
-By following these steps, you will have successfully set up an `httpd` pod and service, performed troubleshooting steps, and verified the network connectivity within your Kubernetes environment.
-
----
-
-## Additional Reading
-
-For more in-depth understanding, you can refer to the following resources:
-
-- [Kubernetes Documentation - Troubleshooting](https://kubernetes.io/docs/tasks/debug/debug-cluster/)
-- [Kubernetes Networking Concepts](https://kubernetes.io/docs/concepts/services-networking/)
-- [CKA Exam Preparation Guide](https://www.cncf.io/certification/certified-kubernetes-administrator/)
-
----
-
-## Importance of Troubleshooting Skills
-
-In a **job** or **interview** scenario, troubleshooting skills are highly valued as they demonstrate your ability to solve complex problems under pressure. For example, during an interview for a Kubernetes-related position, employers will often ask you to troubleshoot a Kubernetes cluster or application failure. Having hands-on experience in diagnosing and fixing issues with networking, pods, containers, and services will set you apart.
-
-In the **CKA exam**, troubleshooting is a key component. You'll be asked to resolve cluster issues, network failures, and pod-related problems. Having practiced these scenarios will not only help you pass the exam but also prepare you for real-world challenges as a Kubernetes administrator.
-
-
-By regularly practicing troubleshooting scenarios, you can ensure you're well-prepared for both the CKA exam and practical job situations.
-
----
-
+Narrowing failures from symptoms to root cause is a core platform skill. The CKA exam stresses cluster, workload, and networking recovery. Repeated practice on real clusters (see the labs above) builds fluency with `describe`, events, logs, and node-level tools under pressure.

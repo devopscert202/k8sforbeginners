@@ -193,3 +193,15 @@ spec:
 
 By understanding these concepts, Kubernetes administrators can deploy and manage workloads effectively, ensuring high availability, scalability, and optimized resource usage. Each concept plays a vital role in the Kubernetes ecosystem, and selecting the right one depends on the specific use case and application requirements.
 
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 21: Pod lifecycle and multi-container Pods](../../labmanuals/lab21-pod-lifecycle-multi-container.md) | Pods, init containers, sidecars, and lifecycle behavior. |
+| [Lab 28: Jobs and batch workloads](../../labmanuals/lab28-workload-jobs-batch.md) | Run-to-completion Jobs and batch patterns. |
+| [Lab 29: CronJobs](../../labmanuals/lab29-workload-cronjobs.md) | Scheduled CronJobs and Job history. |
+| [Lab 31: StatefulSets](../../labmanuals/lab31-workload-statefulsets.md) | Stateful workloads with stable identity and storage. |

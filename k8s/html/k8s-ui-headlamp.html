@@ -8,33 +8,50 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #f5f7fb; --card: #fff; --ink: #122033; --muted: #5f6f82; --line: #d7e0ec;
-      --navy: #0f172a; --blue: #1d4ed8; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --kube-blue: #326CE5; --kube-blue-deep: #1d4ed8; --kube-sky: #dbeafe;
+      --navy: #0f172a; --blue: #2563eb; --sky: #0284c7; --green: #15803d; --amber: #b45309; --rose: #be123c; --violet: #6d28d9;
+      --slate-900: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-200: #e2e8f0;
     }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(29,78,216,.1), transparent 24%),
-        radial-gradient(circle at top right, rgba(109,40,217,.08), transparent 22%),
-        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
-      color: var(--ink); line-height: 1.55; padding: 24px;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      color: var(--slate-900); line-height: 1.55; padding: 20px;
     }
-    .page { max-width: 1420px; margin: 0 auto; }
+    .page { max-width: 1380px; margin: 0 auto; }
     .hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 45%, #6d28d9 100%);
-      color: white; border-radius: 28px; padding: 30px; box-shadow: 0 22px 60px rgba(15,23,42,.22); margin-bottom: 24px;
+            position: relative;
+      text-align: center;
+      background: white;
+      border-radius: 16px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+      margin-bottom: 26px;
+      border: 1px solid rgba(50,108,229,0.1);
     }
     .eyebrow {
-      display: inline-block; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.14);
-      font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--kube-sky);
+      color: var(--kube-blue-deep);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
     }
-    h1 { font-size: 2.4rem; line-height: 1.12; margin-bottom: 12px; }
-    .hero p { max-width: 980px; color: rgba(255,255,255,.88); }
+    h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.12; margin-bottom: 12px; color: var(--kube-blue); }
+    .hero p { max-width: 980px; margin-left: auto; margin-right: auto; color: var(--muted); }
     .hero-grid, .stats, .stack-grid, .lane, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { display: grid; gap: 16px; }
-    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; }
+    .hero-grid { grid-template-columns: 1.2fr 1fr; margin-top: 22px; margin-bottom: 24px; }
     .hero-card, .panel, .stack-card, .swimlane, .map-card, .step-card, .command-card, .namespace-card, .warning {
       background: var(--card); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 12px 28px rgba(15,23,42,.07);
     }
-    .hero-card { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.12); color: white; padding: 18px; box-shadow: none; }
+    .hero-card { padding: 18px; color: var(--ink); }
     .hero-card h2 { font-size: 1.08rem; margin-bottom: 10px; }
     .hero-card ul, .stack-card ul { padding-left: 18px; }
     .hero-card li + li, .stack-card li + li { margin-top: 6px; }
@@ -76,40 +93,49 @@
     .map-card, .step-card, .command-card, .namespace-card, .warning { padding: 18px; }
     .token { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .74rem; font-weight: 800; margin-right: 6px; margin-bottom: 8px; }
     .user { background: #dbeafe; color: #1d4ed8; } .group { background: #ede9fe; color: #6d28d9; } .ns { background: #dcfce7; color: #166534; } .cluster { background: #ffedd5; color: #9a3412; }
-    pre { background: var(--navy); color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: auto; font-size: .85rem; line-height: 1.55; margin-top: 12px; }
+    pre { background: var(--navy); color: #dbeafe; border-radius: 16px; padding: 14px; overflow-x: hidden; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; font-size: .85rem; line-height: 1.55; margin-top: 12px; }
     .warning { background: linear-gradient(180deg, #fff9ee 0%, #fff3d9 100%); border-color: #f2cf84; }
     .warning h3, .warning p { color: #8a4b08; }
     @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 18px;
+    }
+    .footer-note a { color: #326CE5; text-decoration: none; }
+    .footer-note a:hover { text-decoration: underline; }
     @media (max-width: 1150px) { .hero-grid, .stats, .stack-grid, .mapping-grid, .steps-grid, .command-grid, .namespace-grid { grid-template-columns: 1fr; } .stack-arrow { display: none; } }
-    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.85rem; } }
+    @media (max-width: 700px) { body { padding: 14px; } .hero, .panel { padding: 18px; } h1 { font-size: 1.6rem; } }
   </style>
 </head>
 <body>
   <div class="page">
     <section class="hero">
-      <div class="eyebrow">Headlamp In-Cluster Guide</div>
-      <h1>Headlamp UI on a 3-Node Kubernetes VM Cluster</h1>
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Headlamp UI on a 3-Node Kubernetes VM Cluster</h1>
       <p>Headlamp provides a current web UI path for Kubernetes clusters. This document covers the official in-cluster installation path from the archived Dashboard background through Helm install, service exposure, token-based access, UI validation, and the next production-ready access model.</p>
-      <div class="hero-grid">
-        <div class="hero-card">
-          <h2>Why Headlamp now</h2>
-          <ul>
-            <li>The archived Kubernetes Dashboard repository says the project is no longer maintained and asks users to consider Headlamp instead.</li>
-            <li>Headlamp has active official documentation for in-cluster deployment, plugins, ingress, OIDC, and desktop use.</li>
-            <li>That makes it the better UI direction for new Kubernetes documentation and cluster setup guidance.</li>
-          </ul>
-        </div>
-        <div class="hero-card">
-          <h2>Scope</h2>
-          <ul>
-            <li>Helm-based in-cluster installation into `kube-system`</li>
-            <li>Port-forward access for VM-based labs</li>
-            <li>ServiceAccount token login for controlled lab access</li>
-            <li>UI testing from cluster overview through workloads and logs</li>
-          </ul>
-        </div>
-      </div>
     </section>
+
+    <div class="hero-grid">
+      <div class="hero-card">
+        <h2>Why Headlamp now</h2>
+        <ul>
+          <li>The archived Kubernetes Dashboard repository says the project is no longer maintained and asks users to consider Headlamp instead.</li>
+          <li>Headlamp has active official documentation for in-cluster deployment, plugins, ingress, OIDC, and desktop use.</li>
+          <li>That makes it the better UI direction for new Kubernetes documentation and cluster setup guidance.</li>
+        </ul>
+      </div>
+      <div class="hero-card">
+        <h2>Scope</h2>
+        <ul>
+          <li>Helm-based in-cluster installation into `kube-system`</li>
+          <li>Port-forward access for VM-based labs</li>
+          <li>ServiceAccount token login for controlled lab access</li>
+          <li>UI testing from cluster overview through workloads and logs</li>
+        </ul>
+      </div>
+    </div>
 
     <section class="stats">
       <div class="stat blue"><div class="stat-label">Cluster Shape</div><div class="stat-value">3 Nodes</div><div>One control plane VM and two worker VMs provide the lab target for the in-cluster install.</div></div>
@@ -375,7 +401,7 @@ kubectl logs deployment/headlamp -n kube-system</pre></div>
         <div class="namespace-card"><span class="token cluster">Direction</span><h3>Production next step is clear</h3><p>The temporary access model is understood, and ingress plus OIDC is identified as the better production architecture.</p></div>
       </div>
     </section>
-  </div>
+</div>
 
   <script>
     const buttons = document.querySelectorAll('.filter');

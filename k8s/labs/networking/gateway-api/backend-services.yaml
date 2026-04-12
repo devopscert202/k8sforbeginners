@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: echo
-        image: hashicorp/http-echo:latest
+        image: hashicorp/http-echo:0.2.3
         args:
         - "-text=App1 Blue - Version 1.0"
         - "-listen=:8080"
@@ -59,7 +59,7 @@ spec:
     spec:
       containers:
       - name: echo
-        image: hashicorp/http-echo:latest
+        image: hashicorp/http-echo:0.2.3
         args:
         - "-text=App1 Green - Version 2.0"
         - "-listen=:8080"
@@ -134,7 +134,7 @@ spec:
     spec:
       containers:
       - name: echo
-        image: hashicorp/http-echo:latest
+        image: hashicorp/http-echo:0.2.3
         args:
         - "-text=App2 - Hello from Application 2"
         - "-listen=:8080"

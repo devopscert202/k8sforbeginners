@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: configured-job
+spec:
+  schedule: "*/10 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: app
+            image: busybox:1.36
+            args:
+            - /bin/sh
+            - -c
+            - echo "Environment: $ENVIRONMENT, API Key: $API_KEY"
+            env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: cronjob-config
+                  key: ENVIRONMENT
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cronjob-secret
+                  key: API_KEY
+          restartPolicy: OnFailure

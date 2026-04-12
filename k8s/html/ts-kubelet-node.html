@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubelet &amp; Node Troubleshooting — Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --blue-deep: var(--kube-blue-deep);
+            --sky: var(--kube-sky);
+            --green: #16a34a;
+            --signal-amber: #d97706;
+            --signal-rose: #e11d48;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.15;
+        }
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+        .hero .subtitle {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .btn {
+            border: 2px solid var(--blue);
+            background: #fff;
+            color: var(--blue-deep);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+        }
+        .btn:hover {
+            background: var(--sky);
+            transform: translateY(-1px);
+        }
+        .btn.active {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        .view {
+            display: none;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+            padding: 24px 26px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+        }
+        .view.active { display: block; }
+
+        .view h2 {
+            color: var(--blue-deep);
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--sky);
+        }
+        .view h3 {
+            color: var(--slate-700);
+            font-size: 1.02rem;
+            margin: 18px 0 10px;
+        }
+        .view p, .view li { color: var(--slate-700); font-size: 0.95rem; }
+        .view ul, .view ol { margin: 8px 0 12px 1.25rem; }
+        .view li { margin-bottom: 6px; }
+
+        .callout {
+            background: var(--sky);
+            border-left: 4px solid var(--blue);
+            padding: 12px 14px;
+            border-radius: 0 8px 8px 0;
+            margin: 14px 0;
+            font-size: 0.92rem;
+            color: var(--slate-700);
+        }
+        .callout.warn { background: #fff7ed; border-left-color: var(--signal-amber); }
+        .callout.danger { background: #fff1f2; border-left-color: var(--signal-rose); }
+        .callout.ok { background: #f0fdf4; border-left-color: var(--green); }
+
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            margin: 10px 0 16px;
+            border: 1px solid #334155;
+        }
+        pre code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 18px;
+            font-size: 0.9rem;
+        }
+        th, td {
+            border: 1px solid var(--slate-200);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: var(--sky);
+            color: var(--blue-deep);
+            font-weight: 700;
+        }
+        tr:nth-child(even) td { background: #f8fafc; }
+
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 12px;
+            margin: 14px 0;
+        }
+        .arch-item {
+            background: #f8fafc;
+            border: 1px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 14px;
+        }
+        .arch-item strong { color: var(--blue); display: block; margin-bottom: 6px; }
+
+        .flow-list {
+            counter-reset: step;
+            list-style: none;
+            margin-left: 0 !important;
+        }
+        .flow-list li {
+            position: relative;
+            padding-left: 36px;
+            margin-bottom: 12px;
+        }
+        .flow-list li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 26px;
+            height: 26px;
+            background: var(--blue);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .view { padding: 16px; }
+            .btn { flex: 1 1 calc(50% - 8px); text-align: center; }
+            th, td { font-size: 0.82rem; padding: 8px; }
+        }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubelet &amp; Node Troubleshooting</h1>
+            <p class="subtitle">Interactive reference for node health, kubelet failures, the container runtime, resource pressure, and join issues — with practical commands and diagnosis flows.</p>
+        </header>
+
+        <nav class="controls" aria-label="Section tabs">
+            <button type="button" class="btn active" data-view="v1" aria-selected="true">Overview</button>
+            <button type="button" class="btn" data-view="v2" aria-selected="false">Node NotReady</button>
+            <button type="button" class="btn" data-view="v3" aria-selected="false">Kubelet Failures</button>
+            <button type="button" class="btn" data-view="v4" aria-selected="false">Container Runtime</button>
+            <button type="button" class="btn" data-view="v5" aria-selected="false">Resource Pressure</button>
+            <button type="button" class="btn" data-view="v6" aria-selected="false">Node Join</button>
+        </nav>
+
+        <!-- Tab 1: Overview -->
+        <section id="v1" class="view active" role="tabpanel">
+            <h2>Overview: node architecture &amp; API communication</h2>
+            <p>A Kubernetes <strong>node</strong> runs user workloads. The control plane schedules Pods onto nodes; on each node, several daemons keep that node healthy and able to run containers.</p>
+
+            <div class="arch-grid">
+                <div class="arch-item">
+                    <strong>kubelet</strong>
+                    Registers the node with the API server, watches Pod specs assigned to this node, talks to the container runtime via CRI, and reports node/Pod status and metrics.
+                </div>
+                <div class="arch-item">
+                    <strong>Container runtime (containerd)</strong>
+                    Pulls images, creates sandboxes and containers, and manages low-level lifecycle. kubelet does not talk to Docker directly on modern clusters — it uses the CRI (often containerd or CRI-O).
+                </div>
+                <div class="arch-item">
+                    <strong>kube-proxy</strong>
+                    Maintains network rules (iptables/IPVS or similar) so Services reach the right Pods on this node. Not the same as kubelet, but part of the “node agent” picture for networking.
+                </div>
+            </div>
+
+            <h3>How kubelet talks to the API server</h3>
+            <ul>
+                <li>kubelet uses client credentials (for example <code>/etc/kubernetes/kubelet.conf</code>) to authenticate to the API server (typically port <strong>6443</strong> on the control plane).</li>
+                <li>It establishes a watch/list relationship for Pods bound to this node and reports status updates (node conditions, Pod phase, container state).</li>
+                <li>If connectivity or certificates break, the node may flip to <strong>NotReady</strong> while workloads already running may behave inconsistently with the control plane’s view.</li>
+            </ul>
+
+            <h3>Node conditions (common)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Condition</th>
+                        <th>True means</th>
+                        <th>Typical checks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Ready</strong></td>
+                        <td>Node is healthy enough to accept new Pods (kubelet is up, runtime OK, networking OK).</td>
+                        <td><code>kubectl describe node</code> → Conditions; kubelet &amp; runtime service status on the node.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MemoryPressure</strong></td>
+                        <td>Node is low on memory; kubelet may evict Pods.</td>
+                        <td><code>free -m</code>, cgroup/memory, kubelet eviction logs.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DiskPressure</strong></td>
+                        <td>Disk space or inodes are tight (often image/container layers or logs).</td>
+                        <td><code>df -h</code>, <code>df -i</code>, image cleanup with <code>crictl</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PIDPressure</strong></td>
+                        <td>Too many processes / PIDs; kubelet may throttle or evict.</td>
+                        <td>Process count, <code>sysctl</code> kernel.pid_max, workload churn.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>NetworkUnavailable</strong></td>
+                        <td>Network plugin has not configured the node network (varies by CNI).</td>
+                        <td>CNI pods, CNI logs, node routes and interfaces.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Quick checks (control plane)</h3>
+            <pre><code>kubectl get nodes
+kubectl get nodes -o wide
+kubectl describe node &lt;node-name&gt;</code></pre>
+            <div class="callout ok">Start with <code>get nodes</code> for Ready/NotReady, then <code>describe node</code> for Conditions, capacity, taints, and recent events.</div>
+        </section>
+
+        <!-- Tab 2: Node NotReady -->
+        <section id="v2" class="view" role="tabpanel">
+            <h2>Node NotReady: causes &amp; diagnosis</h2>
+            <p>When a node shows <strong>NotReady</strong>, the scheduler should stop placing new Pods there (unless tolerations override). Existing Pods may keep running, but the control plane cannot rely on kubelet heartbeats.</p>
+
+            <h3>Common causes</h3>
+            <ul>
+                <li><strong>kubelet stopped or crashing</strong> — no heartbeats to the API server.</li>
+                <li><strong>Container runtime down</strong> — kubelet cannot run containers; node may report runtime errors.</li>
+                <li><strong>Network partition</strong> — kubelet cannot reach the API server (firewall, wrong endpoint, broken route).</li>
+                <li><strong>Expired or invalid certificates</strong> — TLS handshake or auth failures in kubelet logs.</li>
+            </ul>
+
+            <h3>Diagnosis flow</h3>
+            <ol class="flow-list">
+                <li><strong>From the control plane:</strong> <code>kubectl get nodes</code> and <code>kubectl describe node &lt;name&gt;</code>. Read <em>Conditions</em> (Ready, MemoryPressure, …) and <em>Events</em> at the bottom.</li>
+                <li><strong>On the node (SSH or console):</strong> <code>systemctl status kubelet</code> and <code>systemctl status containerd</code> (or <code>crio</code> if using CRI-O).</li>
+                <li><strong>Recent kubelet logs:</strong>
+                    <pre><code>journalctl -u kubelet --since "10 min ago" --no-pager</code></pre>
+                </li>
+            </ol>
+
+            <h3>Sample: NotReady in <code>kubectl describe node</code></h3>
+            <pre><code>Conditions:
+  Type                 Status  LastHeartbeatTime                 Reason                       Message
+  ----                 ------  -----------------                 ------                       -------
+  Ready                False   Mon, 05 Apr 2026 10:22:11 +0000   KubeletNotReady              container runtime is down...
+  MemoryPressure       False   Mon, 05 Apr 2026 10:21:50 +0000   KubeletHasSufficientMemory   kubelet has sufficient memory
+  DiskPressure         False   Mon, 05 Apr 2026 10:21:50 +0000   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  ...
+Events:
+  Warning  NodeNotReady  kubelet  Node is not ready</code></pre>
+
+            <h3>Fix steps (match cause to command)</h3>
+            <table>
+                <thead>
+                    <tr><th>Cause</th><th>Remediation (examples)</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>kubelet failed / wedged</td>
+                        <td><pre><code>sudo systemctl restart kubelet
+sudo systemctl status kubelet</code></pre></td>
+                    </tr>
+                    <tr>
+                        <td>containerd (or CRI) not running</td>
+                        <td><pre><code>sudo systemctl restart containerd
+sudo systemctl status containerd</code></pre></td>
+                    </tr>
+                    <tr>
+                        <td>Certificates expired (kubeadm clusters)</td>
+                        <td><pre><code>sudo kubeadm certs check-expiration
+sudo kubeadm certs renew all
+# Then restart control plane components and kubelet per your install docs</code></pre></td>
+                    </tr>
+                    <tr>
+                        <td>Network to API server</td>
+                        <td>Verify <code>/etc/kubernetes/kubelet.conf</code> server URL, DNS, firewall, and routes; from node: <code>curl -k https://&lt;apiserver&gt;:6443/version</code> (with correct certs if needed).</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="callout warn">After cert renewal, you may need to copy updated kubeconfig files to nodes or restart static pods — follow your distribution’s kubeadm documentation.</div>
+        </section>
+
+        <!-- Tab 3: Kubelet failures -->
+        <section id="v3" class="view" role="tabpanel">
+            <h2>Kubelet failures: config, logs, bootstrap</h2>
+
+            <h3>Service will not start</h3>
+            <ul>
+                <li>Verify kubelet static config: <code>/var/lib/kubelet/config.yaml</code> (or path set by your unit file).</li>
+                <li>Verify API client kubeconfig: <code>/etc/kubernetes/kubelet.conf</code> (server URL, credentials, CA).</li>
+                <li>Check for typos in cgroup driver matching the runtime (often <code>systemd</code>).</li>
+            </ul>
+            <pre><code>sudo systemctl status kubelet -l
+sudo journalctl -u kubelet -b --no-pager | tail -80</code></pre>
+
+            <h3>Common log error phrases</h3>
+            <table>
+                <thead>
+                    <tr><th>Message pattern</th><th>What to check</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>unable to load bootstrap kubeconfig</code></td>
+                        <td>TLS bootstrap: path to bootstrap kubeconfig, token, and API server reachability; file permissions.</td>
+                    </tr>
+                    <tr>
+                        <td><code>failed to run kubelet</code></td>
+                        <td>Often invalid flags, bad config.yaml, or cgroup/runtime mismatch — read the next lines of the log for the underlying error.</td>
+                    </tr>
+                    <tr>
+                        <td><code>node ... not found</code></td>
+                        <td>Node object missing in API (name mismatch, cluster reset, or RBAC/bootstrap timing). Confirm <code>--hostname-override</code> / cloud provider node name alignment.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>TLS bootstrap issues</h3>
+            <p>During bootstrap, kubelet uses a bootstrap kubeconfig and token to request a signed client cert. Failures usually mean wrong token, wrong API address, clock skew, or CSR approval not happening.</p>
+            <pre><code># Follow logs during bootstrap
+sudo journalctl -u kubelet -f</code></pre>
+
+            <h3>Flags &amp; configuration troubleshooting</h3>
+            <ul>
+                <li>Inspect the systemd unit: <code>systemctl cat kubelet</code> for <code>EnvironmentFile</code> and dropped-in overrides.</li>
+                <li>Confirm <code>kubelet --version</code> matches your cluster’s supported skew policy.</li>
+                <li>Some installs also write <code>/var/log/kubelet.log</code> — check if your distro redirects journal only.</li>
+            </ul>
+            <pre><code>kubelet --version
+sudo journalctl -u kubelet -f</code></pre>
+            <div class="callout">Prefer fixing <code>config.yaml</code> and systemd drop-ins over ad-hoc CLI flags; kubeadm and most installers manage flags via config.</div>
+        </section>
+
+        <!-- Tab 4: Container runtime -->
+        <section id="v4" class="view" role="tabpanel">
+            <h2>Container runtime (containerd / CRI-O)</h2>
+            <p>kubelet speaks CRI to the runtime. If the runtime socket is wrong or the daemon is down, Pods cannot start and the node may go NotReady.</p>
+
+            <h3>containerd not running</h3>
+            <pre><code>sudo systemctl status containerd
+sudo systemctl restart containerd
+sudo crictl info</code></pre>
+            <p><code>crictl info</code> should show CRI version and a healthy response when the socket is correct.</p>
+
+            <h3>Image pull at the runtime layer</h3>
+            <pre><code>sudo crictl pull docker.io/library/nginx:alpine
+sudo crictl images</code></pre>
+            <div class="callout warn">Image pull errors in <code>kubectl describe pod</code> often mirror what you will see when pulling the same reference with <code>crictl pull</code> on the node.</div>
+
+            <h3>Socket path (containerd)</h3>
+            <p>Default CRI socket is often <code>/run/containerd/containerd.sock</code>. kubelet must be configured to use the same socket your runtime exposes (see kubelet or cri plugin config).</p>
+            <pre><code>ls -l /run/containerd/containerd.sock</code></pre>
+
+            <h3>CRI-O (alternative commands)</h3>
+            <pre><code>sudo systemctl status crio
+sudo crictl --runtime-endpoint unix:///var/run/crio/crio.sock version</code></pre>
+            <p>Socket path may be <code>/var/run/crio/crio.sock</code> depending on version and OS packaging.</p>
+
+            <h3>Debugging with crictl</h3>
+            <pre><code>sudo crictl ps -a
+sudo crictl pods
+sudo crictl logs &lt;container-id&gt;
+sudo crictl inspect &lt;container-id&gt;</code></pre>
+            <p>Use <code>crictl inspect</code> for JSON detail (mounts, labels, sandbox) when kubelet or the CNI reports sandbox errors.</p>
+        </section>
+
+        <!-- Tab 5: Resource pressure -->
+        <section id="v5" class="view" role="tabpanel">
+            <h2>Resource pressure: disk, memory, PID, eviction</h2>
+            <p>kubelet monitors node resources and sets <strong>pressure conditions</strong>. When thresholds are crossed, it can <strong>evict</strong> Pods to protect the node.</p>
+
+            <h3>DiskPressure</h3>
+            <ul>
+                <li>kubelet compares filesystem usage against <em>eviction thresholds</em> (defaults exist; you can tune them).</li>
+                <li>Check free space and inodes: <code>df -h</code> and <code>df -i</code>.</li>
+                <li>Remove unused images at the runtime layer:
+                    <pre><code>sudo crictl rmi --prune</code></pre>
+                </li>
+                <li>Also audit large container logs and emptyDir volumes on the node.</li>
+            </ul>
+
+            <h3>MemoryPressure</h3>
+            <ul>
+                <li>Check memory: <code>free -m</code> and host / cgroup metrics.</li>
+                <li><strong>Eviction order (QoS classes):</strong> kubelet generally evicts <strong>BestEffort</strong> Pods first, then <strong>Burstable</strong> (by usage above requests), and is least likely to evict <strong>Guaranteed</strong> Pods that stay within requests.</li>
+            </ul>
+
+            <h3>PIDPressure</h3>
+            <ul>
+                <li>Rapid fork/exec churn (many short-lived containers, runaway processes) can exhaust PIDs.</li>
+                <li>Rough process count: <code>ps aux | wc -l</code> (interpretation varies by OS).</li>
+                <li>Review <code>kernel.pid_max</code> and workload patterns; reduce noisy DaemonSets or buggy loops.</li>
+            </ul>
+
+            <h3>Eviction signals &amp; soft/hard thresholds</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Signal</th>
+                        <th>Soft threshold</th>
+                        <th>Hard threshold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>memory.available</td>
+                        <td>Eviction after grace period if pressure persists; Pods terminated if node still starved.</td>
+                        <td>Immediate eviction pressure when available memory falls below hard limit.</td>
+                    </tr>
+                    <tr>
+                        <td>nodefs.available / imagefs.available</td>
+                        <td>Soft: throttle + eventual eviction with grace period.</td>
+                        <td>Hard: stronger eviction / refusal to accept new Pods depending on state.</td>
+                    </tr>
+                    <tr>
+                        <td>pid.available</td>
+                        <td>Soft: similar grace-period behavior for PID scarcity.</td>
+                        <td>Hard: more aggressive reaction to low PIDs.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Exact percentages and behavior depend on kubelet version and your <code>KubeletConfiguration</code>.</p>
+
+            <h3>Configure eviction in kubelet config</h3>
+            <p>Edit <code>/var/lib/kubelet/config.yaml</code> (or the file referenced by your kubelet service) under <code>evictionHard</code>, <code>evictionSoft</code>, <code>evictionSoftGracePeriod</code>, and <code>evictionMinimumReclaim</code>. Example pattern:</p>
+            <pre><code>apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+evictionHard:
+  memory.available: "200Mi"
+  nodefs.available: "10%"
+  imagefs.available: "15%"
+evictionSoft:
+  memory.available: "500Mi"
+evictionSoftGracePeriod:
+  memory.available: "1m30s"</code></pre>
+            <div class="callout danger">Test threshold changes in non-production first. Overly aggressive values cause unnecessary evictions; overly loose values risk node instability.</div>
+        </section>
+
+        <!-- Tab 6: Node join failures -->
+        <section id="v6" class="view" role="tabpanel">
+            <h2>Node join failures (<code>kubeadm join</code>)</h2>
+            <p>Worker nodes run <code>kubeadm join</code> to obtain cluster credentials and start kubelet against the control plane. Failures usually fall into token, TLS trust, network, or “already joined” categories.</p>
+
+            <h3>Common failure modes</h3>
+            <ul>
+                <li><strong>Join token expired</strong> — bootstrap tokens are time-limited.</li>
+                <li><strong>Wrong CA certificate hash</strong> — <code>discovery-token-ca-cert-hash</code> does not match the cluster CA.</li>
+                <li><strong>Port 6443 unreachable</strong> — firewall, wrong API advertise address, or NAT/routing issues.</li>
+                <li><strong>kubelet already configured</strong> — leftover <code>/etc/kubernetes</code> state from a previous join attempt.</li>
+            </ul>
+
+            <h3>Diagnosis</h3>
+            <pre><code># On control plane: list tokens (requires appropriate access)
+sudo kubeadm token list
+
+# From the joining node: test API reachability
+nc -zv &lt;control-plane-host&gt; 6443
+# or
+curl -vk https://&lt;control-plane-host&gt;:6443/version</code></pre>
+            <p>If TCP fails, fix networking before re-running join. If TLS fails, verify CA hash and server certificate.</p>
+
+            <h3>Reset and rejoin</h3>
+            <p>On a failed worker, clean local kubeadm state and join again with a fresh token:</p>
+            <pre><code>sudo kubeadm reset -f
+sudo systemctl restart kubelet
+
+# On control plane: create a new token (example)
+sudo kubeadm token create --print-join-command</code></pre>
+            <p>Copy the printed <code>kubeadm join ...</code> line and run it on the worker.</p>
+
+            <h3>Certificate issues during join</h3>
+            <ul>
+                <li>Ensure system time is synchronized (NTP) on both control plane and worker.</li>
+                <li>Confirm you use the current CA hash from the join command output, not an old screenshot.</li>
+                <li>For manual discovery, verify <code>ca.crt</code> you trust matches the cluster.</li>
+            </ul>
+
+            <h3>Pre-flight check failures (examples)</h3>
+            <table>
+                <thead>
+                    <tr><th>Symptom</th><th>Direction</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Port 10250 / 10248 / swap / br_netfilter</td>
+                        <td>kubeadm preflights enforce host prerequisites — enable required kernel modules, disable swap (or configure kubelet allow), open firewall ports per docs.</td>
+                    </tr>
+                    <tr>
+                        <td>Container runtime not running</td>
+                        <td>Start <code>containerd</code> or <code>crio</code> and confirm CRI socket before join.</td>
+                    </tr>
+                    <tr>
+                        <td>Hostname / MAC conflicts</td>
+                        <td>Ensure unique node name and stable network identity for the cloud provider or kubeadm.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="callout ok">Keep a short runbook: <code>token list</code> → <code>nc -zv</code> → <code>journalctl -u kubelet</code> → <code>kubeadm reset</code> + new join command.</div>
+        </section>
+</div>
+
+    <script>
+        (function () {
+            var buttons = document.querySelectorAll('.btn[data-view]');
+            var views = document.querySelectorAll('.view');
+            function show(viewId) {
+                views.forEach(function (v) {
+                    v.classList.toggle('active', v.id === viewId);
+                });
+                buttons.forEach(function (b) {
+                    var on = b.getAttribute('data-view') === viewId;
+                    b.classList.toggle('active', on);
+                    b.setAttribute('aria-selected', on ? 'true' : 'false');
+                });
+            }
+            buttons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    show(btn.getAttribute('data-view'));
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

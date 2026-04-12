@@ -10,34 +10,76 @@
             padding: 0;
             box-sizing: border-box;
         }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
             padding: 20px;
-            line-height: 1.4;
+            line-height: 1.6;
+            color: var(--ink);
         }
         .container {
-            max-width: 1200px;
+            max-width: 1380px;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        .header {
-            background: linear-gradient(135deg, #326CE5 0%, #2557C7 100%);
-            color: white;
-            padding: 20px 30px;
+        .hero {
+            position: relative;
             text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
         }
-        .header h1 {
-            font-size: 24px;
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 12px;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
             margin-bottom: 5px;
         }
-        .header p {
+        .subtitle {
             font-size: 13px;
-            opacity: 0.95;
+            color: var(--muted);
         }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        .footer-note a { color: var(--kube-blue); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
         .content {
             padding: 25px 30px;
         }
@@ -198,9 +240,11 @@
             color: #f8f8f2;
             padding: 12px 15px;
             border-radius: 6px;
-            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
             font-size: 12px;
-            white-space: pre;
             margin: 8px 0;
             border-left: 4px solid #326CE5;
         }
@@ -285,14 +329,33 @@
                 transform: rotate(90deg);
             }
         }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Kubernetes Cordon & Drain Workflow</h1>
-            <p>Node Maintenance & Pod Migration Guide</p>
-        </div>
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+<h1>Kubernetes Cordon & Drain Workflow</h1>
+            <p class="subtitle">Node Maintenance & Pod Migration Guide</p>
+        </header>
 
         <div class="content">
             <div class="tabs">
@@ -628,7 +691,7 @@ kubectl uncordon worker-node-2</pre>
                 </div>
             </div>
         </div>
-    </div>
+</div>
 
     <script>
         function showTab(tabName) {

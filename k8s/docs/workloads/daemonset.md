@@ -1,42 +1,42 @@
 # 🧩 Kubernetes DaemonSet Tutorial
 
-## 📌 Introduction
+## Introduction
 
-A **DaemonSet** in Kubernetes ensures that **a specific pod runs on every (or selected) node** in the cluster.
-As new nodes are added, the DaemonSet automatically schedules pods on them. When nodes are removed, the corresponding pods are cleaned up.
+A **DaemonSet** in Kubernetes ensures that **a specific Pod runs on every (or selected) node** in the cluster.
+As new nodes are added, the DaemonSet automatically schedules Pods on them. When nodes are removed, the corresponding Pods are cleaned up.
 
 DaemonSets are essential for **node-level workloads** where each node needs its own agent, service, or helper process.
 
 ---
 
-## 🔧 Common Use Cases
+## Common use cases
 
-* **Monitoring agents**
-  Run a metrics collector (e.g., Prometheus Node Exporter, Datadog Agent) on each node.
+* **Monitoring agents**  
+  Run a metrics collector (for example, Prometheus Node Exporter or a vendor agent) on each node.
 
-* **Log collection**
-  Collect node and container logs with tools like Fluentd, Filebeat, or Logstash.
+* **Log collection**  
+  Collect node and container logs with tools like Fluent Bit, Fluentd, or similar.
 
-* **Networking**
-  Run node-level networking agents (CNI plugins, kube-proxy, service mesh sidecars).
+* **Networking**  
+  Run node-level networking components (CNI plugins, kube-proxy, or mesh node agents).
 
-* **Storage drivers**
-  Deploy CSI (Container Storage Interface) node components that manage storage volumes.
-
----
-
-## ⭐ Key Features of DaemonSets
-
-* **One pod per node** (or subset of nodes if `nodeSelector`/affinity used).
-* **Auto-updates with cluster changes**: new nodes get pods automatically.
-* **Rolling updates** supported (update DaemonSet image with minimal disruption).
-* **Simplifies management** of cluster-wide node agents.
+* **Storage drivers**  
+  Deploy CSI node plugins or other per-node storage helpers.
 
 ---
 
-## 📝 Example: Minimal DaemonSet
+## Key features
 
-Here’s a simple `DaemonSet` that deploys `nginx` on every schedulable node.
+* **One Pod per node** (or a subset of nodes when constrained with `nodeSelector`, affinity, or taints/tolerations).
+* **Cluster lifecycle awareness**: new nodes receive Pods automatically.
+* **Rolling updates**: update the DaemonSet Pod template with controlled rollouts.
+* **Operational simplicity**: one declared object represents “this workload on every targeted node.”
+
+---
+
+## Example: minimal DaemonSet
+
+A minimal DaemonSet runs one Pod per schedulable node that matches its placement rules:
 
 ```yaml
 apiVersion: apps/v1
@@ -64,90 +64,25 @@ spec:
           name: http
 ```
 
----
-
-## 🚀 Step 1: Create the DaemonSet
-
-Save the manifest as `daemonset-simple.yaml` and apply it:
-
-```bash
-kubectl apply -f daemonset-simple.yaml
-```
+In practice you verify a DaemonSet by checking that Pod count matches the number of (eligible) nodes and that each Pod is assigned to a different node; hands-on labs cover `kubectl` inspection, updates, and cleanup.
 
 ---
 
-## 🔍 Step 2: Verify the DaemonSet
+## Summary
 
-Check the DaemonSet status:
+* **DaemonSets** run a Pod on **every targeted node**.
+* They fit **cluster-wide agents** (monitoring, logging, networking, storage).
+* They adapt automatically when nodes join or leave the cluster.
+* Updates use the same controller patterns as other workloads (for example, rolling update of the Pod template).
 
-```bash
-kubectl get daemonset node-nginx-simple
-```
-
-List the pods created:
-
-```bash
-kubectl get pods -l app=node-nginx-simple -o wide
-```
-
-👉 You should see **one pod per node**.
-
-Describe the DaemonSet for more details:
-
-```bash
-kubectl describe daemonset node-nginx-simple
-```
+Use a DaemonSet when you need **consistent per-node execution** rather than a fixed replica count independent of node count.
 
 ---
 
-## 🧪 Step 3: Test the DaemonSet
+## Hands-On Labs
 
-Pick any pod name:
+Practice these concepts with guided lab exercises:
 
-```bash
-POD=$(kubectl get pods -l app=node-nginx-simple -o jsonpath='{.items[0].metadata.name}')
-```
-
-Forward port `80` from that pod to your local machine:
-
-```bash
-kubectl port-forward "$POD" 8080:80
-```
-
-Open another terminal and test:
-
-```bash
-curl -sI http://localhost:8080 | head -n 1
-# Expected: HTTP/1.1 200 OK
-```
-
-Stop the port-forward with `CTRL+C`.
-
----
-
-## 🧹 Step 4: Cleanup
-
-Delete the DaemonSet:
-
-```bash
-kubectl delete -f daemonset-simple.yaml
-```
-
-Verify pods are gone:
-
-```bash
-kubectl get pods -l app=node-nginx-simple
-```
-
----
-
-## 📖 Summary
-
-* **DaemonSets** run a pod on **every node** (or selected nodes).
-* Useful for **cluster-wide agents** (monitoring, logging, networking, storage).
-* Automatically adapts when nodes are added or removed.
-* Simple to manage and update via `kubectl set image` and rolling updates.
-* The example showed how to deploy an `nginx` container as a DaemonSet, verify it, test accessibility, and clean up.
-
-👉 Use DaemonSets whenever you need **node-level consistency** in your Kubernetes cluster.
-
+| Lab | Description |
+|-----|-------------|
+| [Lab 26: DaemonSets](../../labmanuals/lab26-workload-daemonsets.md) | Deploy and inspect DaemonSets, relate Pods to nodes, and practice updates on a multi-node cluster. |

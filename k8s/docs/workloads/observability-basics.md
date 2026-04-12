@@ -1,12 +1,12 @@
-# Observability Basics in Kubernetes
+# Observability basics in Kubernetes
 
 ## Overview
 
-**Observability** is the ability to understand the internal state of your system by examining its outputs. In Kubernetes, observability consists of three pillars: **metrics**, **logs**, and **traces**.
+**Observability** is the ability to infer internal system state from external outputs. In Kubernetes, observability is often described with three pillars: **metrics**, **logs**, and **traces**.
 
 ---
 
-## The Three Pillars
+## The three pillars
 
 ```mermaid
 graph TB
@@ -30,50 +30,64 @@ graph TB
     style G fill:#95E1D3,color:#000
 ```
 
+Near-real-time **CPU and memory** for scheduling and autoscaling are exposed separately through the **Metrics API** and **Metrics Server** (covered below). Broader dashboards, alerting, and history usually build on **Prometheus**, **Grafana**, log pipelines, and trace backends.
+
 ---
 
-## 1. Metrics (What's Happening?)
+## Metrics Server
 
-Metrics provide numerical measurements over time.
+**Metrics Server** is an in-cluster component that **aggregates resource usage** (CPU and memory) from kubelets and exposes it through the **Metrics API**. That API backs **`kubectl top`** and supports **Horizontal Pod Autoscaler (HPA)** when scaling on CPU or memory.
 
-### Metrics Server
+### Use cases
 
-**Purpose**: Provides basic CPU and memory metrics for Pods and nodes.
+- **Real-time utilization**: View current CPU/memory for nodes and Pods (`kubectl top` style workflows).
+- **Autoscaling**: Supply resource metrics to HPA so replica counts can track demand.
+- **Troubleshooting**: Spot hot nodes or mis-sized containers when requests/limits and actual usage diverge.
+- **Capacity planning**: Reason about headroom and sizing using recent utilization (Metrics Server retains only short-term data; long-term planning usually needs Prometheus or cloud monitoring).
 
-**Installation**:
-```bash
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-```
+### Architecture and Metrics API flow
 
-**Usage**:
-```bash
-# View node metrics
-kubectl top nodes
+1. **Kubelet** exposes container and node metrics via **`/stats/summary`** and related endpoints.
+2. **Metrics Server** scrapes those summaries, normalizes them, and serves the **Metrics API** (`metrics.k8s.io`), which is aggregated into the API server like other extension APIs.
+3. **Consumers**—the HPA controller, **`kubectl top`**, and UIs that call the Metrics API—read node and Pod **resource** metrics through that path.
 
-# View pod metrics
-kubectl top pods -A
+On many clusters, Metrics Server runs as a **Deployment** in `kube-system` (or similar), with a **Service**, **APIService** registration for `metrics.k8s.io`, and **RBAC** so it can reach kubelets and expose metrics securely.
 
-# View pod metrics in a namespace
-kubectl top pods -n production
-```
+**TLS** between Metrics Server and kubelets must be trusted. Lab clusters sometimes need extra flags or configuration depending on how the kubelet presents its serving certificate.
 
-### Prometheus
+Metrics Server answers **“what is usage right now?”** for scheduling and autoscaling. It is **not** a full monitoring platform: limited retention, no rich query language, and no long-term alerting by itself. Installation, verification, and common lab-cluster fixes belong in guided labs rather than here.
 
-**Purpose**: Industry-standard metrics collection and alerting.
+### Relationship to other observability tools
 
-**Key Components**:
-- **Prometheus Server**: Scrapes and stores metrics
-- **Alertmanager**: Handles alerts
-- **Exporters**: Expose metrics from applications
-- **Grafana**: Visualize metrics
+| **Tool** | **Role** | **Compared to Metrics Server** |
+|----------|----------|--------------------------------|
+| **Prometheus** | Scrapes metrics, rules, alerting | Historical TSDB and PromQL; often paired with Grafana |
+| **Grafana Agent / Alloy** | Collect and forward metrics | Heavier or lighter paths to a backend |
+| **OpenTelemetry** | Metrics, traces, logs | Vendor-neutral instrumentation and pipelines |
+| **cAdvisor** | Container metrics | Often scraped by Prometheus |
+| **Cloud vendor monitoring** | Managed metrics for AKS/EKS/GKE | Integrated dashboards and alarms |
 
-**Quick Start with Prometheus Operator**:
-```bash
-# Install Prometheus Operator
-kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+Commercial platforms (Datadog, Sysdig, and others) also ingest Kubernetes metrics and add APM, security, or fleet features.
 
-# Create ServiceMonitor to scrape your app
-kubectl apply -f - <<EOF
+---
+
+## Prometheus, Grafana, and richer monitoring
+
+Beyond resource metrics, teams typically want numeric time series (rates, histograms, gauges) for dashboards, alerting, and custom autoscaling signals.
+
+### Prometheus (typical pattern)
+
+**Purpose**: Pull-based collection, rule evaluation, and alerting; often the **metrics backbone** for Kubernetes.
+
+**Common pieces**
+- **Prometheus server**: scrape targets, store samples
+- **Alertmanager**: route and dedupe alerts
+- **Exporters / kube-state-metrics**: expose cluster and app metrics
+- **Grafana**: visualize Prometheus (and other) data sources
+
+**ServiceMonitor example** (Prometheus Operator style): declares how an app’s metrics port should be discovered.
+
+```yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -87,50 +101,129 @@ spec:
   endpoints:
   - port: metrics
     interval: 30s
-EOF
 ```
 
-**Common Metrics to Monitor**:
-- **CPU usage**: `container_cpu_usage_seconds_total`
-- **Memory usage**: `container_memory_working_set_bytes`
-- **Request rate**: `http_requests_total`
-- **Error rate**: `http_requests_errors_total`
-- **Latency**: `http_request_duration_seconds`
+**Examples of useful series** (names vary by exporter)
+- Container CPU: `container_cpu_usage_seconds_total`
+- Container memory working set: `container_memory_working_set_bytes`
+- HTTP: `http_requests_total`, error and latency histograms
 
 ---
 
-## 2. Logs (Why Did It Happen?)
+## Example: composing metrics + visualization
 
-Logs provide detailed event information.
+The following YAML sketches **separate** Deployments for Prometheus and Grafana in an `observability` namespace. It illustrates **how** components might be wired (ConfigMap-mounted Prometheus config, Services on 9090/3000); applying it to a live cluster, persistence, and secrets are operational concerns covered in labs or runbooks.
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: observability
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+    - job_name: 'kubernetes-pods'
+      kubernetes_sd_configs:
+      - role: pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.51.0
+        args:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: config
+          mountPath: /etc/prometheus
+      volumes:
+      - name: config
+        configMap:
+          name: prometheus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  selector:
+    app: prometheus
+  ports:
+  - port: 9090
+    targetPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.4.0
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: observability
+spec:
+  selector:
+    app: grafana
+  ports:
+  - port: 3000
+    targetPort: 3000
+```
+
+---
+
+## Logging (why did it happen?)
+
+Logs are discrete events with timestamps and (ideally) structured fields.
 
 ### kubectl logs
 
-**Basic log viewing**:
-```bash
-# View logs for a pod
-kubectl logs <pod-name>
+`kubectl logs` streams **stdout/stderr** from a container. It is ideal for **quick triage** but not a durable log archive. Production setups **centralize** logs with an agent (DaemonSet or sidecar) shipping to object storage, Elasticsearch, Loki, or a vendor backend.
 
-# View logs for a specific container
-kubectl logs <pod-name> -c <container-name>
+### Fluent Bit (illustrative DaemonSet pattern)
 
-# Follow logs (tail -f equivalent)
-kubectl logs -f <pod-name>
+Agents often run on **every node**, mount host log paths read-only, parse and forward lines:
 
-# View previous container logs (after restart)
-kubectl logs <pod-name> --previous
-
-# View last N lines
-kubectl logs <pod-name> --tail=100
-
-# View logs from all pods in a deployment
-kubectl logs -l app=my-app --all-containers=true
-```
-
-### Fluent Bit (Log Forwarder)
-
-**Purpose**: Lightweight log processor and forwarder.
-
-**Example DaemonSet**:
 ```yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -165,51 +258,22 @@ spec:
           path: /var/lib/docker/containers
 ```
 
-### Structured Logging
+### Structured logging
 
-**Best Practice**: Use structured logging (JSON format):
-
-```go
-// Application code example (Go)
-log.WithFields(log.Fields{
-  "user_id": userID,
-  "action": "login",
-  "status": "success",
-}).Info("User logged in")
-```
-
-**Output**:
-```json
-{
-  "time": "2026-03-14T10:30:00Z",
-  "level": "info",
-  "msg": "User logged in",
-  "user_id": "12345",
-  "action": "login",
-  "status": "success"
-}
-```
+Structured logs (often **JSON**) let you filter by `level`, `trace_id`, `user_id`, and so on without fragile regex.
 
 ---
 
-## 3. Traces (How Did It Flow?)
+## Tracing (how did the request flow?)
 
-Traces show the flow of requests through distributed systems.
+Traces connect spans across services for latency and dependency analysis.
 
 ### OpenTelemetry
 
-**Purpose**: Vendor-neutral observability framework for traces, metrics, and logs.
+**Purpose**: Vendor-neutral instrumentation and export for metrics, traces, and logs.
 
-**OpenTelemetry Operator Installation**:
-```bash
-# Install cert-manager (required)
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
+**Instrumentation resource** (illustrative): configures exporters, propagators, and sampling.
 
-# Install OpenTelemetry Operator
-kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
-```
-
-**Example: Auto-Instrumentation**:
 ```yaml
 apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
@@ -223,10 +287,11 @@ spec:
     - baggage
   sampler:
     type: parentbased_traceidratio
-    argument: "0.1"  # Sample 10% of traces
+    argument: "0.1"
 ```
 
-**Annotate Deployment for Auto-Instrumentation**:
+**Pod template annotation** (concept): operators can inject instrumentation based on annotations on the workload.
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -243,181 +308,15 @@ spec:
         image: my-java-app:1.0
 ```
 
-### Jaeger (Tracing Backend)
+### Jaeger / Tempo
 
-**Quick Start**:
-```bash
-# Install Jaeger Operator
-kubectl create namespace observability
-kubectl apply -f https://github.com/jaegertracing/jaeger-operator/releases/latest/download/jaeger-operator.yaml -n observability
-
-# Deploy Jaeger instance
-kubectl apply -f - <<EOF
-apiVersion: jaegertracing.io/v1
-kind: Jaeger
-metadata:
-  name: simplest
-  namespace: observability
-EOF
-
-# Access Jaeger UI
-kubectl port-forward -n observability svc/simplest-query 16686:16686
-# Open http://localhost:16686
-```
+Backends store trace spans and provide a UI. Deployment choices (operator vs Helm vs cloud) vary; the important idea is **correlating** traces with logs and metrics via shared identifiers.
 
 ---
 
-## Complete Observability Stack Example
+## Application instrumentation example
 
-```yaml
-# Namespace for observability components
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: observability
-
-# Prometheus for metrics
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: prometheus-config
-  namespace: observability
-data:
-  prometheus.yml: |
-    global:
-      scrape_interval: 15s
-    scrape_configs:
-    - job_name: 'kubernetes-pods'
-      kubernetes_sd_configs:
-      - role: pod
-      relabel_configs:
-      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-        action: keep
-        regex: true
-      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-        action: replace
-        target_label: __metrics_path__
-        regex: (.+)
-      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-        action: replace
-        regex: ([^:]+)(?::\d+)?;(\d+)
-        replacement: $1:$2
-        target_label: __address__
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: prometheus
-  namespace: observability
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: prometheus
-  template:
-    metadata:
-      labels:
-        app: prometheus
-    spec:
-      containers:
-      - name: prometheus
-        image: prom/prometheus:v2.51.0
-        args:
-        - '--config.file=/etc/prometheus/prometheus.yml'
-        - '--storage.tsdb.path=/prometheus'
-        ports:
-        - containerPort: 9090
-        volumeMounts:
-        - name: config
-          mountPath: /etc/prometheus
-        - name: storage
-          mountPath: /prometheus
-      volumes:
-      - name: config
-        configMap:
-          name: prometheus-config
-      - name: storage
-        emptyDir: {}
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: prometheus
-  namespace: observability
-spec:
-  selector:
-    app: prometheus
-  ports:
-  - port: 9090
-    targetPort: 9090
-
-# Grafana for visualization
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: grafana
-  namespace: observability
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: grafana
-  template:
-    metadata:
-      labels:
-        app: grafana
-    spec:
-      containers:
-      - name: grafana
-        image: grafana/grafana:10.4.0
-        ports:
-        - containerPort: 3000
-        env:
-        - name: GF_SECURITY_ADMIN_PASSWORD
-          value: admin
-        volumeMounts:
-        - name: storage
-          mountPath: /var/lib/grafana
-      volumes:
-      - name: storage
-        emptyDir: {}
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: grafana
-  namespace: observability
-spec:
-  selector:
-    app: grafana
-  ports:
-  - port: 3000
-    targetPort: 3000
-  type: LoadBalancer
-```
-
-**Access the stack**:
-```bash
-# Apply the stack
-kubectl apply -f observability-stack.yaml
-
-# Port-forward Prometheus
-kubectl port-forward -n observability svc/prometheus 9090:9090
-
-# Port-forward Grafana
-kubectl port-forward -n observability svc/grafana 3000:3000
-# Login: admin/admin
-```
-
----
-
-## Application Instrumentation Example
+Annotations and ports expose metrics to scrapers; environment variables can point OpenTelemetry exporters at collectors.
 
 ```yaml
 apiVersion: apps/v1
@@ -434,7 +333,6 @@ spec:
       labels:
         app: instrumented-app
       annotations:
-        # Prometheus scraping annotations
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/metrics"
@@ -448,15 +346,10 @@ spec:
         - containerPort: 9090
           name: metrics
         env:
-        # OpenTelemetry configuration
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: "http://otel-collector:4318"
         - name: OTEL_SERVICE_NAME
           value: "instrumented-app"
-        - name: OTEL_TRACES_SAMPLER
-          value: "parentbased_traceidratio"
-        - name: OTEL_TRACES_SAMPLER_ARG
-          value: "0.1"
         resources:
           requests:
             memory: "128Mi"
@@ -468,71 +361,51 @@ spec:
 
 ---
 
-## Best Practices
+## Best practices (concise)
 
-### 1. Metrics
+### Metrics
 
-✅ **Use labels wisely** - Keep cardinality under control
-✅ **Set up alerts** - Don't just collect, act on metrics
-✅ **Monitor the 4 golden signals**: Latency, Traffic, Errors, Saturation
-✅ **Use ServiceMonitors** - Automate Prometheus target discovery
+- Control **label cardinality**; exploding labels break TSDBs.
+- Alert on **user-visible** symptoms and **golden signals** (latency, traffic, errors, saturation).
+- Prefer **ServiceMonitor** or equivalent discovery over hand-edited scrape lists.
 
-### 2. Logs
+### Logs
 
-✅ **Use structured logging** - JSON format for easy parsing
-✅ **Include context** - trace_id, user_id, request_id
-✅ **Set appropriate log levels** - INFO for production
-✅ **Centralize logs** - Don't rely on kubectl logs
-✅ **Implement log rotation** - Prevent disk space issues
+- Prefer **structured** logs and stable field names.
+- Include **request/trace** correlation IDs when traces are in use.
+- **Centralize** and set retention; do not rely only on node-local files.
 
-### 3. Traces
+### Traces
 
-✅ **Sample appropriately** - 100% sampling is expensive
-✅ **Propagate context** - Use W3C Trace Context
-✅ **Trace critical paths** - Not everything needs tracing
-✅ **Set span attributes** - Add useful metadata
+- Use **sampling**; full capture is expensive at scale.
+- Propagate **W3C Trace Context** (or your mesh’s equivalent) across services.
 
-### 4. General
+### General
 
-✅ **Start simple** - Metrics server → Prometheus → Full stack
-✅ **Monitor what matters** - Focus on user-facing metrics
-✅ **Set SLOs** - Define service level objectives
-✅ **Test your observability** - Ensure it works during incidents
-✅ **Use dashboards** - Visualize for quick insights
+- Grow complexity gradually: **Metrics Server → Prometheus/Grafana → full stack**.
+- **Test** dashboards and alerts during calm periods, not only during incidents.
 
 ---
 
-## Troubleshooting with Observability
+## Troubleshooting with observability (conceptual)
 
-### Scenario 1: High Latency
-
-```bash
-# 1. Check metrics - identify slow pods
-kubectl top pods -n production
-
-# 2. Check traces - find slow operations
-# View in Jaeger UI: http://localhost:16686
-
-# 3. Check logs - look for errors
-kubectl logs -n production -l app=my-app --tail=100 | grep ERROR
-```
-
-### Scenario 2: High Error Rate
-
-```bash
-# 1. Check metrics - error rate spike
-# Query Prometheus: rate(http_requests_errors_total[5m])
-
-# 2. Check logs - what errors?
-kubectl logs -n production -l app=my-app --tail=1000 | grep -i error
-
-# 3. Check traces - which endpoints?
-# Filter in Jaeger: service=my-app status=error
-```
+- **High latency**: Use metrics to find hot Pods or nodes; traces to find slow spans; logs around the same time window for errors.
+- **Error spikes**: Metrics for error rate; logs for stack traces; traces to see which routes fail.
 
 ---
 
-## Additional Resources
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 36: Metrics Server](../../labmanuals/lab36-observe-metrics-server.md) | Deploy or verify Metrics Server, use `kubectl top`, explore the Metrics API, and relate metrics to HPA behavior. |
+| [Lab 30: Horizontal Pod Autoscaling](../../labmanuals/lab30-workload-hpa.md) | Use resource metrics from the Metrics API with HPA for CPU- and memory-driven scaling. |
+
+---
+
+## Additional resources
 
 - [Prometheus Documentation](https://prometheus.io/docs/)
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/)
@@ -544,12 +417,9 @@ kubectl logs -n production -l app=my-app --tail=1000 | grep -i error
 
 ## Summary
 
-✅ **Three Pillars**: Metrics (what), Logs (why), Traces (how)
-✅ **Start Simple**: Metrics Server → Prometheus → Full Stack
-✅ **Instrument Applications**: Add metrics, logs, and traces
-✅ **Centralize**: Collect all telemetry in one place
-✅ **Visualize**: Use Grafana for dashboards
-✅ **Alert**: Set up meaningful alerts
-✅ **Practice**: Test observability during incidents
+- **Three pillars**: metrics (what), logs (why), traces (how).
+- **Metrics Server** is the default path for near-real-time **resource** metrics and **`kubectl top`**; **Prometheus/Grafana** cover richer monitoring, history, and alerting.
+- **Centralize logs** and **instrument apps** deliberately.
+- Expand the stack as requirements grow; validate tooling in exercises and staging before production reliance.
 
-Observability is essential for running production Kubernetes clusters. Start with basics and expand as needed!
+Observability is essential for operating Kubernetes clusters; start with clear signals and add depth when teams can own the extra moving parts.

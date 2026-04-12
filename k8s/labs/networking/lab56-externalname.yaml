@@ -1,0 +1,9 @@
+# Lab 56 Exercise 3: ExternalName Service (CNAME record)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ext-example
+  namespace: lab56-dns
+spec:
+  type: ExternalName
+  externalName: example.com

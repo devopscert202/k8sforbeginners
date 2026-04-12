@@ -156,3 +156,13 @@ Since the second pod's **`requests.memory` (600Mi)** exceeds the available quota
 | `limits.memory`   | 2 Gi             | 800 Mi                  | 1.2 Gi        | 800 Mi                  | ✅ Yes          |
 
 By understanding how the Resource Quota calculates usage and availability, you can effectively manage resource constraints in Kubernetes clusters.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 37: Resource quotas and limits](../../labmanuals/lab37-resmgmt-resource-quotas-limits.md) | Create quotas, deploy Pods within limits, and observe admission failures when quotas are exceeded. |

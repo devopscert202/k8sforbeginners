@@ -1,262 +1,132 @@
 # **Lab: Deploying a Flask Application with Redis in Kubernetes**
 
-This tutorial guides you through deploying a Flask application integrated with Redis in a Kubernetes cluster. The Flask app will increment and display a counter stored in Redis.
+This page describes the **architecture and Kubernetes objects** typically used when running a small web application (Flask) backed by Redis for session or counter state. The pattern applies to many “app + cache/database” deployments.
 
 ---
 
-## **Objective**
-Deploy and verify a containerized Flask application integrated with Redis using Kubernetes resources.
+## **Objective (conceptual)**
+
+You run **two logical tiers** in the cluster:
+
+1. **Redis** — data store (ephemeral or persistent depending on how you operate it).
+2. **Flask** — HTTP service that talks to Redis over the cluster network.
+
+Each tier is usually modeled as a **Deployment** (desired Pod replicas) and a **ClusterIP Service** (stable DNS name and port for in-cluster clients). Building container images, pushing to a registry, and applying manifests step by step are covered in the linked lab.
 
 ---
 
-## **Prerequisites**
-1. A functional Kubernetes cluster (`kubeadm`, `kubectl`, `kubelet` installed).
-2. Docker installed for building images.
-3. A Docker Hub account for pushing images.
+## **Why Deployments and Services**
+
+- **Deployment**: Declares the container image, environment, and replica count for stateless app Pods; the controller reconciles actual state.
+- **Service**: Gives Redis and Flask **stable names** (for example `redis` on port `6379`) so the Flask Pod does not hardcode Pod IPs.
+
+The Flask app code typically connects to `redis:6379` when `REDIS_HOST` (or equivalent) is set to the Service name.
 
 ---
 
-## **Step-by-Step Guide**
+## **Illustrative manifests**
 
-### **Step 1: Prepare the Flask Application**
-1. Create a directory and navigate to it:
-   ```bash
-   mkdir redis_flask
-   cd redis_flask
-   ```
+### **Redis Deployment (concept)**
 
-2. Create the Flask app file:
-   ```bash
-   nano app.py
-   ```
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis
+```
 
-   **Content of `app.py`:**
-   ```python
-   from flask import Flask
-   from redis import Redis
+### **Redis Service**
 
-   app = Flask(__name__)
-   redis = Redis(host='redis', port=6379)
+A **ClusterIP** Service is enough for in-cluster access from Flask; **NodePort** or **Ingress** is only needed if something outside the cluster must reach Redis directly (uncommon).
 
-   @app.route('/')
-   def hello():
-       count = redis.incr('hits')
-       return 'Hello from Docker! I have been seen {} times.\n'.format(count)
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+```
 
-   if __name__ == "__main__":
-       app.run(host="0.0.0.0", debug=True)
-   ```
+### **Flask Deployment**
 
-3. Create a `Dockerfile`:
-   ```bash
-   nano Dockerfile
-   ```
+The image reference points at **your** registry image after you build and push it (placeholder shown as `example/flask-app:tag`).
 
-   **Content of `Dockerfile`:**
-   ```Dockerfile
-   FROM python:3.4-alpine
-   ADD . /code
-   WORKDIR /code
-   RUN pip install -r requirements.txt
-   CMD ["python", "app.py"]
-   ```
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask
+  template:
+    metadata:
+      labels:
+        app: flask
+    spec:
+      containers:
+      - name: flask
+        image: example/flask-app:tag
+```
 
-4. Create a `requirements.txt` file:
-   ```bash
-   nano requirements.txt
-   ```
+### **Flask Service**
 
-   **Content of `requirements.txt`:**
-   ```
-   flask
-   redis
-   ```
+Expose the container port your process listens on (often `5000` for Flask in examples):
 
----
-
-### **Step 2: Build and Push the Flask Image**
-1. Build the Docker image:
-   ```bash
-   sudo docker build -t flask_image .
-   ```
-
-2. Tag the image:
-   ```bash
-   sudo docker tag flask_image:latest <your-docker-id>/flask-image:flask_image_for_redis
-   ```
-
-   Replace `<your-docker-id>` with your Docker Hub username.
-
-3. Log in to Docker Hub:
-   ```bash
-   sudo docker login
-   ```
-
-4. Push the image to Docker Hub:
-   ```bash
-   sudo docker push <your-docker-id>/flask-image:flask_image_for_redis
-   ```
-
----
-
-### **Step 3: Create Redis and Flask Deployments**
-
-#### **3.1 Create Redis Deployment**
-1. Create the `redis.yaml` file:
-   ```bash
-   nano redis.yaml
-   ```
-
-   **Content of `redis.yaml`:**
-   ```yaml
-   apiVersion: apps/v1
-   kind: Deployment
-   metadata:
-     name: redis
-   spec:
-     replicas: 1
-     selector:
-       matchLabels:
-         app: redis
-     template:
-       metadata:
-         labels:
-           app: redis
-       spec:
-         containers:
-         - name: redis
-           image: redis
-   ```
-
-2. Deploy Redis:
-   ```bash
-   kubectl create -f redis.yaml
-   ```
-
----
-
-#### **3.2 Create Flask Deployment**
-1. Create the `flask.yaml` file:
-   ```bash
-   nano flask.yaml
-   ```
-
-   **Content of `flask.yaml`:**
-   ```yaml
-   apiVersion: apps/v1
-   kind: Deployment
-   metadata:
-     name: flask
-   spec:
-     replicas: 1
-     selector:
-       matchLabels:
-         app: flask
-     template:
-       metadata:
-         labels:
-           app: flask
-       spec:
-         containers:
-         - name: flask-image
-           image: <your-docker-id>/flask-image:flask_image_for_redis
-   ```
-
-   Replace `<your-docker-id>` with your Docker Hub username.
-
-2. Deploy Flask:
-   ```bash
-   kubectl create -f flask.yaml
-   ```
-
----
-
-### **Step 4: Create Services**
-
-#### **4.1 Create Redis Service**
-1. Create the `redis-svc.yaml` file:
-   ```bash
-   nano redis-svc.yaml
-   ```
-
-   **Content of `redis-svc.yaml`:**
-   ```yaml
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: redis
-   spec:
-     ports:
-     - port: 6379
-       targetPort: 6379
-     selector:
-       app: redis
-   ```
-
-2. Deploy the Redis service:
-   ```bash
-   kubectl create -f redis-svc.yaml
-   ```
-
----
-
-#### **4.2 Create Flask Service**
-1. Create the `flask-svc.yaml` file:
-   ```bash
-   nano flask-svc.yaml
-   ```
-
-   **Content of `flask-svc.yaml`:**
-   ```yaml
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: flask
-   spec:
-     ports:
-     - port: 5000
-       targetPort: 5000
-     selector:
-       app: flask
-   ```
-
-2. Deploy the Flask service:
-   ```bash
-   kubectl create -f flask-svc.yaml
-   ```
-
----
-
-### **Step 5: Verify the Deployment**
-
-1. Verify the services:
-   ```bash
-   kubectl get svc
-   ```
-
-   Note the `ClusterIP` and `Port` of the Flask service.
-
-2. Access the Flask application:
-   ```bash
-   curl <ClusterIP>:5000
-   ```
-
-   Replace `<ClusterIP>` with the IP address of the Flask service.
-
-3. Verify the counter increments with each request.
-
----
-
-### **Step 6: Clean Up**
-
-If you want to delete the resources after testing:
-```bash
-kubectl delete -f redis.yaml
-kubectl delete -f flask.yaml
-kubectl delete -f redis-svc.yaml
-kubectl delete -f flask-svc.yaml
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app: flask
 ```
 
 ---
 
-By following this tutorial, you will successfully deploy a Flask application integrated with Redis on Kubernetes, demonstrating containerized application orchestration and service management.
+## **Configuration and secrets**
+
+- Prefer **Secrets** (or external secret stores) for database passwords and Redis credentials instead of plain `env` literals in tracked YAML.
+- Non-sensitive settings can live in **ConfigMaps**; see the ConfigMaps doc and lab.
+
+---
+
+## **Operations notes**
+
+- **Scaling**: Flask Deployments scale horizontally; Redis as a single replica is a **single point of failure** unless you adopt HA Redis or a managed cache.
+- **Persistence**: The illustrative Redis Deployment uses empty container storage; production setups use **PersistentVolumes** or managed data services.
+- **Networking**: ClusterIP Services are reachable only inside the cluster unless you add Ingress, Gateway API, or `NodePort`/`LoadBalancer` for external users.
+
+---
+
+## Hands-On Labs
+
+Practice these concepts with guided lab exercises:
+
+| Lab | Description |
+|-----|-------------|
+| [Lab 24: Frontend deployment](../../labmanuals/lab24-deploy-frontend-deployment.md) | Build and push an image, deploy app and backing service, and verify connectivity with guided steps. |

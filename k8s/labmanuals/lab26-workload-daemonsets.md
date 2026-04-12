@@ -18,6 +18,16 @@ By the end of this lab, you will be able to:
 - Understand the difference between DaemonSets and Deployments
 - Use node selectors to control DaemonSet placement
 
+## Repository YAML Files
+
+Under `k8s/labs/workloads/`:
+
+| File | Description |
+|------|-------------|
+| `daemonset.yaml` | DaemonSet `node-nginx-simple` (nginx 1.25) — one Pod per node. |
+| `daemonset-nodeselect.yaml` | DaemonSet `nginx-ssd-only` with `nodeSelector: disktype: ssd` (label a node before applying). |
+| `daemonset-service.yaml` | NodePort Service `nginx-daemonset-svc` (port 80, nodePort 30080) selecting `app: node-nginx-simple`. |
+
 ---
 
 ## What is a DaemonSet?
