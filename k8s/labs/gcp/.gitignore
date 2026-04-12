@@ -1,0 +1,71 @@
+# Secrets and credentials
+*.json
+*.pem
+*.p12
+*.pfx
+*.key
+*.crt
+*.cer
+*.csr
+*.kubeconfig
+*.tfvars
+*.tfvars.json
+.env
+.env.*
+
+# Local data and exports
+*.csv
+*.tsv
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.tmp
+*.temp
+*.log
+*.out
+*.pid
+
+# Archives and packaged files
+*.zip
+*.tar
+*.gz
+*.tgz
+*.7z
+*.rar
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Terraform and IaC state
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Temporary and scratch directories
+tmp/
+temp/
+data/
+scratch/
+secrets/
+downloads/

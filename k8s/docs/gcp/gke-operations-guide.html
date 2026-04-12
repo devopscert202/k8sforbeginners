@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GKE Cluster Operations - Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --green: #22c55e;
+            --red: #dc2626;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: #f5f7fb;
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1360px; margin: 0 auto; }
+        .hero {
+            text-align: center;
+            background: white;
+            border-radius: 18px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 8px 28px rgba(15,23,42,0.08);
+            margin-bottom: 24px;
+            border: 1px solid rgba(50,108,229,0.12);
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #e8f1ff;
+            color: var(--kube-blue-deep);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 1.03rem;
+            color: var(--muted);
+            max-width: 980px;
+            margin: 0 auto 18px;
+        }
+        .lead-panel {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            border: 1px solid rgba(50,108,229,0.12);
+            border-radius: 14px;
+            padding: 18px 20px;
+            max-width: 1040px;
+            margin: 0 auto;
+            color: #334155;
+        }
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-top: 20px;
+        }
+        .hero-stat {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            padding: 14px 16px;
+        }
+        .hero-stat strong {
+            display: block;
+            color: var(--kube-blue-deep);
+            margin-bottom: 4px;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0 0 24px;
+        }
+        .btn {
+            border: 2px solid var(--kube-blue);
+            background: white;
+            color: var(--kube-blue-deep);
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+        }
+        .btn:hover, .btn.active {
+            background: var(--kube-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(50,108,229,0.3);
+            transform: translateY(-2px);
+        }
+        .view {
+            display: none;
+            background: var(--panel);
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(15,23,42,0.08);
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(15,23,42,0.04);
+        }
+        .view.active { display: block; }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .section-kicker {
+            color: var(--kube-blue-deep);
+            text-transform: uppercase;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+        .section-head h2 { font-size: 1.45rem; }
+        .section-note {
+            border-left: 4px solid var(--kube-blue);
+            background: #eff6ff;
+            color: #1e3a8a;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 18px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-top: 4px solid var(--kube-blue);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+        }
+        .card h3 {
+            color: var(--ink);
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+        .card p { color: #475569; font-size: 0.95rem; }
+        .card-badge {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-weight: 700;
+            margin-bottom: 14px;
+            font-size: 0.88rem;
+        }
+        .card-green { border-top-color: var(--green); }
+        .card-green .card-badge { background: var(--mint); color: #166534; }
+        .card-amber { border-top-color: #f59e0b; }
+        .card-amber .card-badge { background: var(--amber); color: #92400e; }
+        .card-red { border-top-color: var(--red); }
+        .card-red .card-badge { background: var(--rose); color: #be123c; }
+        .flow-track {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+        .flow-step {
+            border-radius: 16px;
+            padding: 22px 18px 18px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+        }
+        .step-number {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--kube-blue);
+            color: white;
+            font-weight: 800;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 20px rgba(50,108,229,0.22);
+        }
+        .flow-step h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+        .flow-step p {
+            color: #475569;
+            font-size: 0.95rem;
+        }
+        .example-stack {
+            display: grid;
+            gap: 18px;
+        }
+        .example-card {
+            border: 1px solid rgba(15,23,42,0.08);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+        }
+        pre {
+            margin-top: 10px;
+            background: #0f172a;
+            color: #dbeafe;
+            border-radius: 16px;
+            padding: 18px;
+            overflow-x: auto;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            border: 1px solid rgba(148,163,184,0.18);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        code { font-family: Consolas, "Cascadia Code", monospace; }
+        .copy-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+        .copy-btn {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--kube-blue-deep);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .copy-btn:hover { background: #eff6ff; }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+            font-size: 0.92rem;
+        }
+        th {
+            background: linear-gradient(180deg, #326CE5, #2557be);
+            color: white;
+            font-weight: 700;
+        }
+        tbody tr:nth-child(even) { background: #f8fbff; }
+        .footer-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 18px;
+        }
+        @media (max-width: 900px) {
+            body { padding: 14px; }
+            .hero, .view { padding: 22px; }
+            .controls { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <div class="eyebrow">Interactive GKE Walkthrough</div>
+            <h1>GKE Cluster Operations</h1>
+            <p class="subtitle">Step-by-step PowerShell guide for creating, resizing, deleting, and tearing down a regional GKE cluster using reusable scripts and clear pre-flight checks.</p>
+            <div class="lead-panel">
+                <p>Before cluster creation, make sure your project ID is updated to <strong>your-project</strong>, your service-account key file is configured correctly, and your credentials work either through <strong>gcloud auth login</strong> or <strong>gcloud auth activate-service-account --key-file="your-key.json"</strong>.</p>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat"><strong>Project</strong><span>your-project</span></div>
+                <div class="hero-stat"><strong>Cluster</strong><span>gcp-k8sdemo</span></div>
+                <div class="hero-stat"><strong>Region</strong><span>asia-south1</span></div>
+                <div class="hero-stat"><strong>Layout</strong><span>1 node per zone across 3 zones</span></div>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" data-view="prepare">Prepare</button>
+            <button class="btn" data-view="create">Create</button>
+            <button class="btn" data-view="resize">Resize</button>
+            <button class="btn" data-view="delete">Delete</button>
+            <button class="btn" data-view="teardown">Teardown</button>
+            <button class="btn" data-view="compare">Compare</button>
+        </div>
+
+        <section id="prepare" class="view active">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Pre-Flight</div>
+                    <h2>Prepare Your Environment First</h2>
+                </div>
+            </div>
+            <div class="grid">
+                <article class="card">
+                    <div class="card-badge">Project Setup</div>
+                    <h3>Update the script variables</h3>
+                    <p>Replace placeholder values like <code>your-project</code> and make sure the script variables point to your real project, cluster name, region, and key file.</p>
+                </article>
+                <article class="card card-green">
+                    <div class="card-badge">Authentication</div>
+                    <h3>Confirm login or key-based auth</h3>
+                    <p>You can use interactive login for a user session or use a service-account key when the scripts should run without manual prompts.</p>
+                </article>
+                <article class="card card-amber">
+                    <div class="card-badge">CLI Tools</div>
+                    <h3>Verify gcloud and kubectl</h3>
+                    <p>The create script checks for both commands. Install them and make sure they are available from the PowerShell session you use.</p>
+                </article>
+                <article class="card card-red">
+                    <div class="card-badge">File Placement</div>
+                    <h3>Keep the key with the scripts</h3>
+                    <p>The scripts resolve the key file relative to their own folder, so it is easiest to keep the JSON key in the same directory.</p>
+                </article>
+            </div>
+            <div class="example-stack" style="margin-top: 18px;">
+                <section class="example-card">
+                    <div class="section-kicker">Authentication Commands</div>
+                    <pre id="prepare-auth"><code>cd "C:\Users\pkart\OneDrive\Documents\Z\gcp"
+gcloud auth login
+gcloud auth activate-service-account --key-file="your-key.json"
+gcloud config set project your-project</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="prepare-auth">Copy</button></div>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Tool Check</div>
+                    <pre id="prepare-tools"><code>gcloud --version
+kubectl version --client</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="prepare-tools">Copy</button></div>
+                </section>
+            </div>
+            <div class="section-note">If you prefer to rely fully on the scripts, you can skip the manual auth commands, but verifying credentials before cluster creation makes troubleshooting much easier.</div>
+        </section>
+
+        <section id="create" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Cluster Build</div>
+                    <h2>Create The GKE Cluster</h2>
+                </div>
+            </div>
+            <div class="flow-track">
+                <article class="flow-step">
+                    <div class="step-number">1</div>
+                    <h3>Open PowerShell in the script folder</h3>
+                    <p>Run the scripts from the directory that contains the PowerShell files and your JSON key file.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">2</div>
+                    <h3>Validate access and tools</h3>
+                    <p>Make sure your credentials, project context, <code>gcloud</code>, and <code>kubectl</code> are all ready before cluster creation.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">3</div>
+                    <h3>Run the create script</h3>
+                    <p>The script checks prerequisites, enables APIs, creates the network if needed, then creates the cluster.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">4</div>
+                    <h3>Fetch credentials and verify nodes</h3>
+                    <p>The script finishes by pulling kubeconfig credentials and showing the node list with <code>kubectl</code>.</p>
+                </article>
+            </div>
+            <div class="example-stack" style="margin-top: 18px;">
+                <section class="example-card">
+                    <div class="section-kicker">Run The Script</div>
+                    <pre id="create-run"><code>powershell -ExecutionPolicy Bypass -File .\create-gke-k8sdemo.ps1</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="create-run">Copy</button></div>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">What The Script Does</div>
+                    <pre id="create-steps"><code>gcloud auth activate-service-account --key-file="your-key.json"
+gcloud config set project your-project
+gcloud services enable container.googleapis.com compute.googleapis.com iam.googleapis.com serviceusage.googleapis.com
+gcloud compute networks create default --project=your-project --subnet-mode=custom
+gcloud compute networks subnets create default-asia-south1 --project=your-project --network=default --region=asia-south1 --range=10.10.0.0/20 --secondary-range="gke-pods=10.20.0.0/16,gke-services=10.30.0.0/20"
+gcloud container clusters create gcp-k8sdemo --project=your-project --region=asia-south1 --node-locations=asia-south1-a,asia-south1-b,asia-south1-c --network=default --subnetwork=default-asia-south1 --cluster-secondary-range-name=gke-pods --services-secondary-range-name=gke-services --enable-ip-alias --num-nodes=1 --machine-type=e2-medium --release-channel=regular
+gcloud container clusters get-credentials gcp-k8sdemo --region=asia-south1 --project=your-project
+kubectl get nodes -o wide</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="create-steps">Copy</button></div>
+                </section>
+            </div>
+            <div class="section-note">This cluster is regional, so <code>--num-nodes=1</code> means one node in each selected zone, for three nodes total.</div>
+        </section>
+
+        <section id="resize" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Node Pool</div>
+                    <h2>Resize The Cluster</h2>
+                </div>
+            </div>
+            <div class="grid">
+                <article class="card">
+                    <div class="card-badge">When To Use</div>
+                    <h3>After the cluster already exists</h3>
+                    <p>Use the resize script when you want to change the node count for the default node pool without recreating the cluster.</p>
+                </article>
+                <article class="card card-green">
+                    <div class="card-badge">Current Target</div>
+                    <h3>1 node per zone</h3>
+                    <p>The current resize script sets the regional default pool to one node in each zone.</p>
+                </article>
+            </div>
+            <div class="example-stack" style="margin-top: 18px;">
+                <section class="example-card">
+                    <div class="section-kicker">Run The Script</div>
+                    <pre id="resize-run"><code>powershell -ExecutionPolicy Bypass -File .\resize-gke-k8sdemo.ps1</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="resize-run">Copy</button></div>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Manual Command</div>
+                    <pre id="resize-steps"><code>gcloud auth activate-service-account --key-file="your-key.json"
+gcloud config set project your-project
+gcloud container clusters resize gcp-k8sdemo --project=your-project --region=asia-south1 --node-pool=default-pool --num-nodes=1 --quiet</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="resize-steps">Copy</button></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="delete" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Cluster Removal</div>
+                    <h2>Delete Only The Cluster</h2>
+                </div>
+            </div>
+            <div class="grid">
+                <article class="card card-amber">
+                    <div class="card-badge">Confirmation</div>
+                    <h3>Delete asks for safety input</h3>
+                    <p>The delete script prompts you to type <code>DELETE</code> before it removes the cluster.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Scope</div>
+                    <h3>Cluster only</h3>
+                    <p>This script removes the GKE cluster and leaves project IAM access unchanged.</p>
+                </article>
+            </div>
+            <div class="example-stack" style="margin-top: 18px;">
+                <section class="example-card">
+                    <div class="section-kicker">Run The Script</div>
+                    <pre id="delete-run"><code>powershell -ExecutionPolicy Bypass -File .\delete-gke-k8sdemo.ps1</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="delete-run">Copy</button></div>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Manual Command</div>
+                    <pre id="delete-steps"><code>gcloud auth activate-service-account --key-file="your-key.json"
+gcloud config set project your-project
+gcloud container clusters delete gcp-k8sdemo --project=your-project --region=asia-south1 --quiet</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="delete-steps">Copy</button></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="teardown" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Full Cleanup</div>
+                    <h2>Teardown Cluster And Access</h2>
+                </div>
+            </div>
+            <div class="flow-track">
+                <article class="flow-step">
+                    <div class="step-number">1</div>
+                    <h3>Confirm intent</h3>
+                    <p>The wrapper asks you to type <code>TEARDOWN</code> so you do not accidentally remove both resources and access.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">2</div>
+                    <h3>Delete the cluster</h3>
+                    <p>The cluster is removed first from the configured region.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">3</div>
+                    <h3>Revoke editor access</h3>
+                    <p>The script then removes the <code>roles/editor</code> binding for <code>wayfairtest521@gmail.com</code>.</p>
+                </article>
+            </div>
+            <div class="example-stack" style="margin-top: 18px;">
+                <section class="example-card">
+                    <div class="section-kicker">Run The Wrapper</div>
+                    <pre id="teardown-run"><code>powershell -ExecutionPolicy Bypass -File .\teardown.ps1</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="teardown-run">Copy</button></div>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Manual Sequence</div>
+                    <pre id="teardown-steps"><code>gcloud auth activate-service-account --key-file="your-key.json"
+gcloud config set project your-project
+gcloud container clusters delete gcp-k8sdemo --project=your-project --region=asia-south1 --quiet
+gcloud projects remove-iam-policy-binding your-project --member="user:wayfairtest521@gmail.com" --role="roles/editor"</code></pre>
+                    <div class="copy-row"><button class="copy-btn" data-copy-target="teardown-steps">Copy</button></div>
+                </section>
+            </div>
+            <div class="section-note">Use the teardown wrapper when you want one command flow for cluster cleanup and access cleanup together.</div>
+        </section>
+
+        <section id="compare" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Decision Guide</div>
+                    <h2>Pick The Right Script Quickly</h2>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Script</th>
+                            <th>What it changes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Create a new cluster</td>
+                            <td><code>create-gke-k8sdemo.ps1</code></td>
+                            <td>Checks prerequisites, prepares network pieces, creates the cluster, fetches kubeconfig</td>
+                        </tr>
+                        <tr>
+                            <td>Change node count</td>
+                            <td><code>resize-gke-k8sdemo.ps1</code></td>
+                            <td>Resizes the default node pool only</td>
+                        </tr>
+                        <tr>
+                            <td>Remove just the cluster</td>
+                            <td><code>delete-gke-k8sdemo.ps1</code></td>
+                            <td>Deletes the cluster and leaves IAM access alone</td>
+                        </tr>
+                        <tr>
+                            <td>Remove cluster and editor access</td>
+                            <td><code>teardown.ps1</code></td>
+                            <td>Deletes the cluster and removes the project editor binding</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="section-note">If you later want this page to mirror a specific reference file even more closely, send me one preferred HTML filename from that folder and I can match its structure almost line for line.</div>
+        </section>
+
+        <p class="footer-note">Designed to match the teaching-page style used in your Kubernetes HTML reference set while staying focused on this GKE script workflow.</p>
+    </div>
+
+    <script>
+        const buttons = document.querySelectorAll('.btn');
+        const views = document.querySelectorAll('.view');
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const viewId = button.dataset.view;
+                buttons.forEach((item) => item.classList.remove('active'));
+                views.forEach((view) => view.classList.remove('active'));
+                button.classList.add('active');
+                document.getElementById(viewId).classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.copy-btn').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const target = document.getElementById(button.dataset.copyTarget);
+                if (!target) return;
+                const text = target.innerText.trim();
+                try {
+                    await navigator.clipboard.writeText(text);
+                    const original = button.textContent;
+                    button.textContent = 'Copied';
+                    setTimeout(() => { button.textContent = original; }, 1200);
+                } catch (error) {
+                    button.textContent = 'Copy failed';
+                    setTimeout(() => { button.textContent = 'Copy'; }, 1200);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
