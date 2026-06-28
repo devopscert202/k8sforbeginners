@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namespaces — Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --surface: #ffffff;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+            --rose: #ffe4e6;
+            --blue: #2563eb;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 1.03rem;
+            color: var(--muted);
+            max-width: 980px;
+            margin: 0 auto 18px;
+        }
+        .lead-panel {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            border: 1px solid rgba(50,108,229,0.12);
+            border-radius: 14px;
+            padding: 18px 20px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .lead-panel p { color: #334155; font-size: 0.98rem; }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0 0 24px;
+        }
+        .btn {
+            border: 2px solid #326CE5;
+            background: white;
+            color: var(--kube-blue-deep);
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+        }
+        .btn:hover, .btn.active {
+            background: var(--kube-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(50,108,229,0.3);
+            transform: translateY(-2px);
+        }
+        .view {
+            display: none;
+            background: var(--panel);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 26px;
+            border: 1px solid rgba(15,23,42,0.04);
+        }
+        .view.active { display: block; }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .section-head h2 { color: var(--ink); font-size: 1.45rem; }
+        .section-kicker {
+            color: var(--kube-blue-deep);
+            text-transform: uppercase;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+        .section-note {
+            border-left: 4px solid var(--kube-blue);
+            background: #eff6ff;
+            color: #1e3a8a;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 18px;
+        }
+        .concept-grid, .practice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-top: 4px solid #326CE5;
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 170px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover, .flow-step:hover, .example-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(15,23,42,0.1);
+        }
+        .card-badge {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .practice-card .card-badge { background: var(--mint); color: #166534; }
+        .practice-card { border-top-color: #22c55e; }
+        .card p { color: #475569; }
+        .flow-track {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            gap: 18px;
+        }
+        .flow-step {
+            position: relative;
+            border-radius: 16px;
+            padding: 22px 18px 18px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-number {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            display: grid; place-items: center;
+            background: var(--kube-blue);
+            color: white; font-weight: 800;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 20px rgba(50,108,229,0.22);
+        }
+        .flow-step h3 { font-size: 1rem; margin-bottom: 10px; color: #0f172a; }
+        .flow-step p { color: #475569; font-size: 0.95rem; }
+        .example-stack { display: grid; gap: 18px; }
+        .example-card {
+            border: 1px solid rgba(15,23,42,0.08);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        pre {
+            margin-top: 10px;
+            background: #0f172a;
+            color: #dbeafe;
+            border-radius: 16px;
+            padding: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            border: 1px solid rgba(148,163,184,0.18);
+        }
+        code { font-family: Consolas, 'Cascadia Code', monospace; }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: white;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+        th { background: linear-gradient(180deg, #326CE5, #2557be); color: white; font-weight: 700; }
+        tbody tr:nth-child(even) { background: #f8fbff; }
+        .warn-box {
+            background: #fef3c7;
+            border-left: 4px solid #d97706;
+            color: #92400e;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 14px;
+        }
+        @media (max-width: 900px) {
+            body { padding: 14px; }
+            .hero, .view { padding: 22px; }
+            .controls { justify-content: flex-start; }
+            .concept-grid, .practice-grid, .flow-track { grid-template-columns: 1fr; }
+        }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+            <h1>Namespaces</h1>
+            <p class="subtitle">How Kubernetes partitions a single cluster into logical boundaries for teams, environments, and workloads — and what isolation namespaces do and do not provide.</p>
+            <div class="lead-panel">
+                <p>A <strong>namespace</strong> is a virtual cluster inside a physical cluster. It scopes object names, DNS, RBAC, quotas, and policies — but all namespaces still share the same nodes, network, and control plane. Think of it as a folder system for Kubernetes resources.</p>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" data-view="concept">Concept</button>
+            <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="examples">Examples</button>
+            <button class="btn" data-view="comparison">Compare</button>
+            <button class="btn" data-view="practice">Practice</button>
+        </div>
+
+        <!-- TAB 1: CONCEPT -->
+        <section id="concept" class="view active">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Core Model</div>
+                    <h2>What Is a Namespace?</h2>
+                </div>
+            </div>
+            <div class="concept-grid">
+                <article class="card">
+                    <div class="card-badge">Logical isolation</div>
+                    <p>Namespaces group related resources (Pods, Services, Deployments, Secrets) under one name. Two Deployments named <code>web</code> can coexist in different namespaces.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Name scoping</div>
+                    <p>Resource names must be unique <em>within</em> a namespace, not cluster-wide. A Pod named <code>nginx</code> in <code>dev</code> and one in <code>prod</code> are separate objects.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Policy boundary</div>
+                    <p>RBAC Roles, ResourceQuotas, LimitRanges, NetworkPolicies, and Pod Security labels are commonly applied per namespace to govern who can do what and how much.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">DNS scoping</div>
+                    <p>Services get fully qualified DNS names: <code>&lt;service&gt;.&lt;namespace&gt;.svc.cluster.local</code>. Short names like <code>myservice</code> resolve only within the same namespace.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Not a security wall</div>
+                    <p>By default, Pods in any namespace can reach Pods in any other namespace over the network. True isolation requires NetworkPolicies, RBAC, and admission controls.</p>
+                </article>
+                <article class="card">
+                    <div class="card-badge">Shared infrastructure</div>
+                    <p>All namespaces share the same worker nodes, control plane, and cluster-scoped resources (Nodes, PersistentVolumes, ClusterRoles). Namespaces do not create separate clusters.</p>
+                </article>
+            </div>
+            <div class="section-note">
+                <strong>When to use namespaces:</strong> Separate teams (team-a, team-b), environments (dev, staging, prod), or application tiers (frontend, backend). Avoid creating hundreds of namespaces — they add management overhead without strong isolation by themselves.
+            </div>
+        </section>
+
+        <!-- TAB 2: FLOW -->
+        <section id="flow" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Cluster Layout</div>
+                    <h2>How Namespaces Fit in a Cluster</h2>
+                </div>
+            </div>
+
+            <!-- Cluster with namespaces SVG -->
+            <svg viewBox="0 0 920 520" style="width: 100%; max-width: 920px; margin: 20px auto; display: block;">
+                <text x="460" y="28" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">One Cluster, Multiple Namespaces</text>
+
+                <!-- Cluster boundary -->
+                <rect x="30" y="50" width="860" height="450" rx="12" fill="#f8fafc" stroke="#326CE5" stroke-width="3" stroke-dasharray="8,4"/>
+                <text x="460" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">Kubernetes Cluster (shared nodes &amp; control plane)</text>
+
+                <!-- Shared nodes bar -->
+                <rect x="60" y="90" width="800" height="36" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+                <text x="460" y="113" text-anchor="middle" font-size="11" fill="#475569">Worker Nodes (shared by all namespaces below)</text>
+
+                <!-- dev namespace -->
+                <rect x="60" y="145" width="250" height="330" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="185" y="170" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">dev</text>
+                <rect x="80" y="185" width="90" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="1"/>
+                <text x="125" y="205" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Pod</text>
+                <text x="125" y="220" text-anchor="middle" font-size="8" fill="white">web-abc</text>
+                <rect x="180" y="185" width="90" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="1"/>
+                <text x="225" y="205" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Pod</text>
+                <text x="225" y="220" text-anchor="middle" font-size="8" fill="white">api-xyz</text>
+                <rect x="80" y="250" width="190" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+                <text x="175" y="272" text-anchor="middle" font-size="10" fill="#92400e">Service: web-svc</text>
+                <rect x="80" y="300" width="190" height="55" rx="4" fill="white" stroke="#3b82f6" stroke-width="1"/>
+                <text x="175" y="320" text-anchor="middle" font-size="9" fill="#1e40af" font-family="monospace">Role + RoleBinding</text>
+                <text x="175" y="338" text-anchor="middle" font-size="9" fill="#1e40af" font-family="monospace">ResourceQuota</text>
+                <text x="185" y="380" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">web-svc.dev.svc.cluster.local</text>
+
+                <!-- staging namespace -->
+                <rect x="335" y="145" width="250" height="330" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                <text x="460" y="170" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">staging</text>
+                <rect x="355" y="185" width="90" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="1"/>
+                <text x="400" y="205" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Pod</text>
+                <text x="400" y="220" text-anchor="middle" font-size="8" fill="white">web-def</text>
+                <rect x="455" y="185" width="90" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="1"/>
+                <text x="500" y="205" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Pod</text>
+                <text x="500" y="220" text-anchor="middle" font-size="8" fill="white">api-uvw</text>
+                <rect x="355" y="250" width="190" height="35" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+                <text x="450" y="272" text-anchor="middle" font-size="10" fill="#1e40af">Service: web-svc</text>
+                <rect x="355" y="300" width="190" height="55" rx="4" fill="white" stroke="#f59e0b" stroke-width="1"/>
+                <text x="450" y="320" text-anchor="middle" font-size="9" fill="#92400e" font-family="monospace">NetworkPolicy</text>
+                <text x="450" y="338" text-anchor="middle" font-size="9" fill="#92400e" font-family="monospace">LimitRange</text>
+                <text x="460" y="380" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">web-svc.staging.svc.cluster.local</text>
+
+                <!-- prod namespace -->
+                <rect x="610" y="145" width="250" height="330" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="735" y="170" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">production</text>
+                <rect x="630" y="185" width="90" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="1"/>
+                <text x="675" y="205" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Pod</text>
+                <text x="675" y="220" text-anchor="middle" font-size="8" fill="white">web-ghi</text>
+                <rect x="730" y="185" width="90" height="50" rx="4" fill="#22c55e" stroke="#166534" stroke-width="1"/>
+                <text x="775" y="205" text-anchor="middle" font-size="9" fill="white" font-weight="bold">Pod</text>
+                <text x="775" y="220" text-anchor="middle" font-size="8" fill="white">api-rst</text>
+                <rect x="630" y="250" width="190" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+                <text x="725" y="272" text-anchor="middle" font-size="10" fill="#92400e">Service: web-svc</text>
+                <rect x="630" y="300" width="190" height="55" rx="4" fill="white" stroke="#22c55e" stroke-width="1"/>
+                <text x="725" y="320" text-anchor="middle" font-size="9" fill="#166534" font-family="monospace">pod-security: restricted</text>
+                <text x="725" y="338" text-anchor="middle" font-size="9" fill="#166534" font-family="monospace">ResourceQuota + RBAC</text>
+                <text x="735" y="380" text-anchor="middle" font-size="9" fill="#64748b" font-style="italic">web-svc.production.svc.cluster.local</text>
+
+                <!-- System namespaces -->
+                <rect x="60" y="420" width="800" height="65" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+                <text x="460" y="442" text-anchor="middle" font-size="11" font-weight="bold" fill="#475569">System Namespaces (do not deploy apps here)</text>
+                <text x="200" y="465" text-anchor="middle" font-size="10" fill="#64748b">kube-system</text>
+                <text x="380" y="465" text-anchor="middle" font-size="10" fill="#64748b">kube-public</text>
+                <text x="560" y="465" text-anchor="middle" font-size="10" fill="#64748b">kube-node-lease</text>
+                <text x="740" y="465" text-anchor="middle" font-size="10" fill="#64748b">default</text>
+            </svg>
+
+            <div class="flow-track">
+                <article class="flow-step">
+                    <div class="step-number">1</div>
+                    <h3>Create or select a namespace</h3>
+                    <p>Admins create namespaces for teams or environments. Users target a namespace with <code>-n</code> or set a default in kubeconfig.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">2</div>
+                    <h3>Deploy namespaced resources</h3>
+                    <p>Pods, Services, Deployments, ConfigMaps, and Secrets are created inside the namespace. Their names are scoped to that boundary.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">3</div>
+                    <h3>Apply namespace policies</h3>
+                    <p>Attach RBAC Roles, ResourceQuotas, LimitRanges, NetworkPolicies, and Pod Security labels to enforce access and resource rules.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">4</div>
+                    <h3>Discover via DNS</h3>
+                    <p>Pods reach Services in the same namespace by short name. Cross-namespace calls use the full DNS name: <code>service.namespace.svc.cluster.local</code>.</p>
+                </article>
+            </div>
+            <div class="warn-box">
+                <strong>Important:</strong> Namespaces provide organizational and policy boundaries, not hard multi-tenancy. For strong tenant isolation, combine namespaces with NetworkPolicies, RBAC, admission controllers, and optionally separate clusters.
+            </div>
+        </section>
+
+        <!-- TAB 3: EXAMPLES -->
+        <section id="examples" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">YAML and Commands</div>
+                    <h2>Working with Namespaces</h2>
+                </div>
+            </div>
+
+            <!-- DNS resolution SVG -->
+            <svg viewBox="0 0 850 280" style="width: 100%; max-width: 850px; margin: 20px auto; display: block;">
+                <text x="425" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e293b">Service DNS Within and Across Namespaces</text>
+
+                <!-- Same namespace -->
+                <rect x="40" y="50" width="360" height="200" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+                <text x="220" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Same Namespace (dev)</text>
+                <rect x="60" y="95" width="120" height="45" rx="4" fill="#22c55e" stroke="#166534"/>
+                <text x="120" y="115" text-anchor="middle" font-size="9" fill="white" font-weight="bold">client Pod</text>
+                <text x="120" y="130" text-anchor="middle" font-size="8" fill="white">in dev</text>
+                <line x1="180" y1="117" x2="230" y2="117" stroke="#166534" stroke-width="2" marker-end="url(#arrow-green)"/>
+                <rect x="240" y="95" width="140" height="45" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+                <text x="310" y="115" text-anchor="middle" font-size="9" fill="#92400e" font-weight="bold">web-svc</text>
+                <text x="310" y="130" text-anchor="middle" font-size="8" fill="#92400e">in dev</text>
+                <rect x="60" y="160" width="320" height="70" rx="4" fill="white" stroke="#22c55e"/>
+                <text x="220" y="182" text-anchor="middle" font-size="10" fill="#166534" font-family="monospace">curl http://web-svc</text>
+                <text x="220" y="200" text-anchor="middle" font-size="9" fill="#64748b">Short name works within same namespace</text>
+                <text x="220" y="218" text-anchor="middle" font-size="9" fill="#64748b">Resolves to web-svc.dev.svc.cluster.local</text>
+
+                <!-- Cross namespace -->
+                <rect x="450" y="50" width="360" height="200" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+                <text x="630" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">Cross Namespace</text>
+                <rect x="470" y="95" width="120" height="45" rx="4" fill="#22c55e" stroke="#166534"/>
+                <text x="530" y="115" text-anchor="middle" font-size="9" fill="white" font-weight="bold">client Pod</text>
+                <text x="530" y="130" text-anchor="middle" font-size="8" fill="white">in dev</text>
+                <line x1="590" y1="117" x2="640" y2="117" stroke="#1e40af" stroke-width="2" marker-end="url(#arrow-blue)"/>
+                <rect x="650" y="95" width="140" height="45" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+                <text x="720" y="115" text-anchor="middle" font-size="9" fill="#92400e" font-weight="bold">web-svc</text>
+                <text x="720" y="130" text-anchor="middle" font-size="8" fill="#92400e">in production</text>
+                <rect x="470" y="160" width="320" height="70" rx="4" fill="white" stroke="#3b82f6"/>
+                <text x="630" y="182" text-anchor="middle" font-size="10" fill="#1e40af" font-family="monospace">curl http://web-svc.production</text>
+                <text x="630" y="200" text-anchor="middle" font-size="9" fill="#64748b">Must include namespace in DNS name</text>
+                <text x="630" y="218" text-anchor="middle" font-size="9" fill="#64748b">Full: web-svc.production.svc.cluster.local</text>
+
+                <defs>
+                    <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#166534"/>
+                    </marker>
+                    <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#1e40af"/>
+                    </marker>
+                </defs>
+            </svg>
+
+            <div class="example-stack">
+                <section class="example-card">
+                    <div class="section-kicker">Create a Namespace</div>
+                    <pre><code>apiVersion: v1
+kind: Namespace
+metadata:
+  name: development
+  labels:
+    environment: dev
+    pod-security.kubernetes.io/enforce: baseline</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Deploy to a Namespace</div>
+                    <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: development    # target namespace
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Essential kubectl Commands</div>
+                    <pre><code># List all namespaces
+kubectl get namespaces
+kubectl get ns
+
+# Create namespace (imperative)
+kubectl create namespace staging
+
+# Run command in a specific namespace
+kubectl get pods -n development
+kubectl apply -f deployment.yaml -n production
+
+# Set default namespace for current context
+kubectl config set-context --current --namespace=development
+
+# View all resources in a namespace
+kubectl get all -n development
+
+# Delete a namespace (removes ALL resources inside it)
+kubectl delete namespace staging</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Namespace with ResourceQuota</div>
+                    <pre><code>apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-quota
+  namespace: development
+spec:
+  hard:
+    pods: "20"
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi</code></pre>
+                </section>
+            </div>
+        </section>
+
+        <!-- TAB 4: COMPARISON -->
+        <section id="comparison" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Decision Guide</div>
+                    <h2>Namespaced vs Cluster-Scoped Resources</h2>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+                <thead><tr>
+                    <th>Scope</th>
+                    <th>Examples</th>
+                    <th>Notes</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Namespaced</strong></td>
+                        <td>Pod, Service, Deployment, ReplicaSet, StatefulSet, DaemonSet, Job, CronJob, ConfigMap, Secret, Ingress, NetworkPolicy, Role, RoleBinding, ResourceQuota, LimitRange</td>
+                        <td>Must belong to exactly one namespace. Created with <code>metadata.namespace</code> or <code>-n</code> flag.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cluster-scoped</strong></td>
+                        <td>Node, Namespace, PersistentVolume, StorageClass, ClusterRole, ClusterRoleBinding, CustomResourceDefinition, PriorityClass</td>
+                        <td>Exist once per cluster. No namespace field. Visible from all namespaces (subject to RBAC).</td>
+                    </tr>
+                </tbody>
+            </table></div>
+
+            <div class="section-head" style="margin-top: 28px;">
+                <div>
+                    <div class="section-kicker">Built-in Namespaces</div>
+                    <h2>Default System Namespaces</h2>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+                <thead><tr>
+                    <th>Namespace</th>
+                    <th>Purpose</th>
+                    <th>Guidance</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>default</code></td>
+                        <td>Where resources land if no namespace is specified</td>
+                        <td>Convenient for learning; avoid in production — always set an explicit namespace</td>
+                    </tr>
+                    <tr>
+                        <td><code>kube-system</code></td>
+                        <td>Core cluster components: CoreDNS, kube-proxy, CNI, metrics-server</td>
+                        <td>Do not deploy application workloads here</td>
+                    </tr>
+                    <tr>
+                        <td><code>kube-public</code></td>
+                        <td>Readable by all users; rarely used for workloads</td>
+                        <td>Contains cluster info ConfigMap; generally leave empty</td>
+                    </tr>
+                    <tr>
+                        <td><code>kube-node-lease</code></td>
+                        <td>Node heartbeat Lease objects for health detection</td>
+                        <td>Managed automatically; do not modify</td>
+                    </tr>
+                </tbody>
+            </table></div>
+
+            <div class="section-note">
+                Quick check: run <code>kubectl api-resources --namespaced=true</code> and <code>kubectl api-resources --namespaced=false</code> to see the full list for your cluster version.
+            </div>
+        </section>
+
+        <!-- TAB 5: PRACTICE -->
+        <section id="practice" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Use It Well</div>
+                    <h2>Real-World Patterns and Exercises</h2>
+                </div>
+            </div>
+            <div class="practice-grid">
+                <article class="card practice-card">
+                    <div class="card-badge">Environment separation</div>
+                    <p>Create <code>dev</code>, <code>staging</code>, and <code>production</code> namespaces. Same app name in each — isolated by namespace boundaries and policies.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Team multi-tenancy</div>
+                    <p>Give each team a namespace with its own ResourceQuota and RBAC RoleBinding. Prevents one team from consuming all cluster resources.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Soft vs hard isolation</div>
+                    <p>Namespaces alone = soft isolation (naming + policy). Add NetworkPolicies for network isolation and OPA/Gatekeeper for admission enforcement.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Exercise 1</div>
+                    <p>Create three namespaces: <code>dev</code>, <code>staging</code>, <code>prod</code>. Deploy an nginx Pod named <code>web</code> in each. Verify with <code>kubectl get pods -A</code>.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Exercise 2</div>
+                    <p>Deploy a Service named <code>api</code> in <code>prod</code>. From a Pod in <code>dev</code>, test DNS: short name fails, <code>api.prod</code> resolves.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Exercise 3</div>
+                    <p>Apply a ResourceQuota limiting pods to 5 in <code>dev</code>. Try creating a 6th Pod and observe the admission rejection message.</p>
+                </article>
+            </div>
+            <div class="section-note">
+                <strong>Related topics:</strong> For namespace-scoped resource limits see <a href="resource-quotas-limits.html" style="color:#1d4ed8;font-weight:600;">Resource Quotas and Limits</a>. For access control per namespace see <a href="rbac-flow.html" style="color:#1d4ed8;font-weight:600;">RBAC Flow</a>. For network isolation between namespaces see <a href="network-policy.html" style="color:#1d4ed8;font-weight:600;">Network Policy</a>.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.view).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
