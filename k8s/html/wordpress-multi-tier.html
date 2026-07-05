@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress Multi-Tier on Kubernetes — Interactive Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --kube-blue: #326CE5;
+            --kube-blue-deep: #1d4ed8;
+            --kube-sky: #dbeafe;
+            --ink: #1a1a2e;
+            --muted: #64748b;
+            --panel: #ffffff;
+            --line: #dbe3f1;
+            --mint: #dcfce7;
+            --amber: #fef3c7;
+        }
+        body {
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+            color: var(--ink);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1380px; margin: 0 auto; }
+        .hero {
+            position: relative;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+            padding: 34px 32px 28px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+            margin-bottom: 26px;
+            border: 1px solid rgba(50,108,229,0.1);
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--kube-blue);
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+        .subtitle {
+            font-size: 1.03rem;
+            color: var(--muted);
+            max-width: 980px;
+            margin: 0 auto 18px;
+        }
+        .lead-panel {
+            background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+            border: 1px solid rgba(50,108,229,0.12);
+            border-radius: 14px;
+            padding: 18px 20px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .lead-panel p { color: #334155; font-size: 0.98rem; }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0 0 24px;
+        }
+        .btn {
+            border: 2px solid #326CE5;
+            background: white;
+            color: var(--kube-blue-deep);
+            padding: 11px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+        }
+        .btn:hover, .btn.active {
+            background: var(--kube-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(50,108,229,0.3);
+            transform: translateY(-2px);
+        }
+        .view {
+            display: none;
+            background: var(--panel);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 26px;
+            border: 1px solid rgba(15,23,42,0.04);
+        }
+        .view.active { display: block; }
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: end;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .section-head h2 { color: var(--ink); font-size: 1.45rem; }
+        .section-kicker {
+            color: var(--kube-blue-deep);
+            text-transform: uppercase;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+        }
+        .section-note {
+            border-left: 4px solid var(--kube-blue);
+            background: #eff6ff;
+            color: #1e3a8a;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 18px;
+        }
+        .concept-grid, .practice-grid, .object-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border: 1px solid var(--line);
+            border-top: 4px solid #326CE5;
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 150px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover, .flow-step:hover, .example-card:hover, .object-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(15,23,42,0.1);
+        }
+        .card-badge {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--kube-sky);
+            color: var(--kube-blue-deep);
+            font-weight: 700;
+            margin-bottom: 14px;
+            font-size: 0.85rem;
+        }
+        .card-tier-frontend { border-top-color: #3b82f6; }
+        .card-tier-backend { border-top-color: #22c55e; }
+        .card-tier-config { border-top-color: #f59e0b; }
+        .card-tier-network { border-top-color: #8b5cf6; }
+        .practice-card .card-badge { background: var(--mint); color: #166534; }
+        .practice-card { border-top-color: #22c55e; }
+        .card p, .object-card p { color: #475569; }
+        .object-card {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 20px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            border-top: 4px solid #326CE5;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .object-card h3 { font-size: 1.05rem; margin-bottom: 8px; color: #0f172a; }
+        .object-card .obj-kind {
+            font-family: Consolas, monospace;
+            font-size: 0.82rem;
+            color: var(--kube-blue-deep);
+            margin-bottom: 10px;
+        }
+        .flow-track {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .flow-step {
+            border-radius: 16px;
+            padding: 22px 18px 18px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: linear-gradient(160deg, #ffffff 0%, #eff6ff 100%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-number {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            display: grid; place-items: center;
+            background: var(--kube-blue);
+            color: white; font-weight: 800;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 20px rgba(50,108,229,0.22);
+        }
+        .flow-step h3 { font-size: 1rem; margin-bottom: 10px; color: #0f172a; }
+        .flow-step p { color: #475569; font-size: 0.95rem; }
+        .example-stack { display: grid; gap: 18px; }
+        .example-card {
+            border: 1px solid rgba(15,23,42,0.08);
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        pre {
+            margin-top: 10px;
+            background: #0f172a;
+            color: #dbeafe;
+            border-radius: 16px;
+            padding: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-x: hidden;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            border: 1px solid rgba(148,163,184,0.18);
+        }
+        code { font-family: Consolas, 'Cascadia Code', monospace; }
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: white;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+        th { background: linear-gradient(180deg, #326CE5, #2557be); color: white; font-weight: 700; }
+        tbody tr:nth-child(even) { background: #f8fbff; }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            margin: 16px 0 8px;
+            font-size: 0.82rem;
+            color: #475569;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-swatch { width: 14px; height: 14px; border-radius: 3px; }
+        @media (max-width: 900px) {
+            body { padding: 14px; }
+            .hero, .view { padding: 22px; }
+            .controls { justify-content: flex-start; }
+            .concept-grid, .practice-grid, .object-grid, .flow-track { grid-template-columns: 1fr; }
+        }
+        .home-link {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--kube-blue, #326CE5);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(50,108,229,0.18);
+            background: rgba(50,108,229,0.06);
+            transition: background 0.2s, color 0.2s;
+        }
+        .home-link:hover {
+            background: rgba(50,108,229,0.13);
+            color: var(--kube-blue-deep, #1d4ed8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <a href="index.html" class="home-link">&#8962; Home</a>
+            <h1>WordPress Multi-Tier on Kubernetes</h1>
+            <p class="subtitle">A production-like two-tier application — WordPress frontend and MySQL backend — deployed across a 2-node data plane with ConfigMaps, Secrets, and Service discovery.</p>
+            <div class="lead-panel">
+                <p>This guide walks through <strong>Lab 41</strong>: how a user reaches WordPress through a NodePort Service, how the WordPress Pod connects to MySQL via DNS (<code>mysql:3306</code>), and how ConfigMaps and Secrets inject configuration without hardcoding values in container images.</p>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button class="btn active" data-view="concept">Concept</button>
+            <button class="btn" data-view="architecture">Architecture</button>
+            <button class="btn" data-view="objects">Objects</button>
+            <button class="btn" data-view="flow">Flow</button>
+            <button class="btn" data-view="examples">Examples</button>
+            <button class="btn" data-view="practice">Practice</button>
+        </div>
+
+        <!-- TAB 1: CONCEPT -->
+        <section id="concept" class="view active">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Multi-Tier Model</div>
+                    <h2>What Is a Multi-Tier Application?</h2>
+                </div>
+            </div>
+            <div class="concept-grid">
+                <article class="card card-tier-frontend">
+                    <div class="card-badge">Presentation Tier</div>
+                    <p><strong>WordPress</strong> — Apache/PHP web server and user interface. Stateless at the Pod level; stores content in the database. Can be scaled horizontally (multiple replicas behind one Service).</p>
+                </article>
+                <article class="card card-tier-backend">
+                    <div class="card-badge">Data Tier</div>
+                    <p><strong>MySQL</strong> — Relational database storing posts, users, and settings. Stateful; typically one replica in this lab. Not exposed directly to the internet.</p>
+                </article>
+                <article class="card card-tier-config">
+                    <div class="card-badge">Configuration Layer</div>
+                    <p><strong>ConfigMaps</strong> hold non-sensitive settings (database name, host, user). <strong>Secrets</strong> hold passwords. Both inject values as environment variables at Pod startup.</p>
+                </article>
+                <article class="card card-tier-network">
+                    <div class="card-badge">Networking Layer</div>
+                    <p><strong>Services</strong> provide stable DNS names and load balancing. WordPress uses the Service name <code>mysql</code> — not a Pod IP — to reach the database through Kubernetes DNS.</p>
+                </article>
+            </div>
+            <div class="section-note">
+                <strong>Why separate tiers?</strong> Each layer can be updated, scaled, and secured independently. The database is never directly exposed to users — only the WordPress Service is reachable from outside the cluster (via NodePort in this lab).
+            </div>
+        </section>
+
+        <!-- TAB 2: ARCHITECTURE -->
+        <section id="architecture" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">2-Node Data Plane</div>
+                    <h2>Cluster Architecture Diagram</h2>
+                </div>
+            </div>
+
+            <div class="legend">
+                <span class="legend-item"><span class="legend-swatch" style="background:#3b82f6;"></span> Frontend tier</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#22c55e;"></span> Backend tier</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#fef3c7;border:1px solid #f59e0b;"></span> ConfigMap</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#ffe4e6;border:1px solid #e11d48;"></span> Secret</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#8b5cf6;"></span> Service (virtual IP)</span>
+            </div>
+
+            <svg viewBox="0 0 960 620" style="width: 100%; max-width: 960px; margin: 12px auto; display: block;">
+                <text x="480" y="28" text-anchor="middle" font-size="20" font-weight="bold" fill="#1e293b">WordPress + MySQL on a 2-Node Data Plane</text>
+
+                <!-- User -->
+                <rect x="400" y="45" width="160" height="50" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+                <text x="480" y="68" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">User Browser</text>
+                <text x="480" y="84" text-anchor="middle" font-size="10" fill="#64748b">http://&lt;node-ip&gt;:30123</text>
+
+                <!-- Arrow user to cluster -->
+                <line x1="480" y1="95" x2="480" y2="118" stroke="#64748b" stroke-width="2" marker-end="url(#arr-gray)"/>
+                <text x="520" y="112" font-size="9" fill="#64748b">NodePort :30123</text>
+
+                <!-- Cluster boundary -->
+                <rect x="30" y="125" width="900" height="475" rx="12" fill="#f8fafc" stroke="#326CE5" stroke-width="3" stroke-dasharray="8,4"/>
+                <text x="480" y="148" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">Kubernetes Cluster — Control Plane + Data Plane</text>
+
+                <!-- WordPress Service (cluster-level) -->
+                <rect x="340" y="160" width="280" height="55" rx="8" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="480" y="182" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">Service: wordpress-service</text>
+                <text x="480" y="200" text-anchor="middle" font-size="10" fill="#6d28d9">Type: NodePort | port 80 → targetPort 80 | selector: app=wordpress</text>
+
+                <line x1="480" y1="215" x2="480" y2="235" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arr-purple)"/>
+
+                <!-- Node 1 -->
+                <rect x="50" y="240" width="400" height="340" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+                <text x="250" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">Worker Node 1</text>
+                <text x="250" y="278" text-anchor="middle" font-size="10" fill="#64748b">kubelet schedules WordPress Pod here</text>
+
+                <!-- WordPress Pod on Node 1 -->
+                <rect x="80" y="295" width="340" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+                <text x="250" y="318" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">Pod: wordpress-xxxxx (Deployment)</text>
+                <rect x="100" y="330" width="140" height="70" rx="6" fill="#3b82f6" stroke="#1d4ed8"/>
+                <text x="170" y="355" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Container</text>
+                <text x="170" y="372" text-anchor="middle" font-size="9" fill="white">wordpress:latest</text>
+                <text x="170" y="388" text-anchor="middle" font-size="8" fill="#bfdbfe">Apache :80</text>
+
+                <!-- WordPress ConfigMap + Secret -->
+                <rect x="260" y="330" width="140" height="32" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+                <text x="330" y="350" text-anchor="middle" font-size="9" fill="#92400e" font-weight="bold">ConfigMap: wordpress-config</text>
+                <rect x="260" y="368" width="140" height="32" rx="4" fill="#ffe4e6" stroke="#e11d48" stroke-width="1"/>
+                <text x="330" y="388" text-anchor="middle" font-size="9" fill="#be123c" font-weight="bold">Secret: wordpress-secret</text>
+
+                <!-- env injection arrows -->
+                <line x1="260" y1="346" x2="240" y2="365" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <line x1="260" y1="384" x2="240" y2="375" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <text x="250" y="430" text-anchor="middle" font-size="9" fill="#475569" font-style="italic">envFrom + secretKeyRef → env vars</text>
+
+                <!-- WordPress env labels -->
+                <rect x="80" y="440" width="340" height="55" rx="4" fill="white" stroke="#93c5fd"/>
+                <text x="250" y="458" text-anchor="middle" font-size="8" fill="#1e40af" font-family="monospace">WORDPRESS_DB_HOST=mysql  WORDPRESS_DB_USER=root</text>
+                <text x="250" y="472" text-anchor="middle" font-size="8" fill="#1e40af" font-family="monospace">WORDPRESS_DB_NAME=database1  WORDPRESS_DB_PASSWORD=***</text>
+                <text x="250" y="486" text-anchor="middle" font-size="8" fill="#64748b">connects to mysql:3306 via cluster DNS</text>
+
+                <!-- Arrow WordPress to MySQL service -->
+                <path d="M 420 365 L 510 365 L 510 195 L 620 195" fill="none" stroke="#22c55e" stroke-width="2.5" marker-end="url(#arr-green)"/>
+                <text x="545" y="280" font-size="10" fill="#166534" font-weight="bold" transform="rotate(-90 545 280)">mysql:3306 DNS</text>
+
+                <!-- MySQL Service (cluster-level, between nodes) -->
+                <rect x="620" y="160" width="280" height="55" rx="8" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="760" y="182" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">Service: mysql</text>
+                <text x="760" y="200" text-anchor="middle" font-size="10" fill="#6d28d9">Type: NodePort | port 3306 → targetPort 3306 | selector: app=mysql</text>
+
+                <line x1="760" y1="215" x2="760" y2="235" stroke="#8b5cf6" stroke-width="2" marker-end="url(#arr-purple)"/>
+
+                <!-- Node 2 -->
+                <rect x="510" y="240" width="400" height="340" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+                <text x="710" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Worker Node 2</text>
+                <text x="710" y="278" text-anchor="middle" font-size="10" fill="#64748b">kubelet schedules MySQL Pod here</text>
+
+                <!-- MySQL Pod on Node 2 -->
+                <rect x="540" y="295" width="340" height="120" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                <text x="710" y="318" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">Pod: mysql-xxxxx (Deployment)</text>
+                <rect x="560" y="330" width="140" height="70" rx="6" fill="#22c55e" stroke="#15803d"/>
+                <text x="630" y="355" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Container</text>
+                <text x="630" y="372" text-anchor="middle" font-size="9" fill="white">mysql:8.0</text>
+                <text x="630" y="388" text-anchor="middle" font-size="8" fill="#bbf7d0">mysqld :3306</text>
+
+                <!-- MySQL ConfigMap + Secret -->
+                <rect x="720" y="330" width="140" height="32" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
+                <text x="790" y="350" text-anchor="middle" font-size="9" fill="#92400e" font-weight="bold">ConfigMap: mysql-config</text>
+                <rect x="720" y="368" width="140" height="32" rx="4" fill="#ffe4e6" stroke="#e11d48" stroke-width="1"/>
+                <text x="790" y="388" text-anchor="middle" font-size="9" fill="#be123c" font-weight="bold">Secret: mysql-secret</text>
+
+                <line x1="720" y1="346" x2="700" y2="365" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <line x1="720" y1="384" x2="700" y2="375" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+                <!-- MySQL env labels -->
+                <rect x="540" y="440" width="340" height="55" rx="4" fill="white" stroke="#86efac"/>
+                <text x="710" y="458" text-anchor="middle" font-size="8" fill="#166534" font-family="monospace">MYSQL_DATABASE=database1  MYSQL_ROOT_PASSWORD=***</text>
+                <text x="710" y="472" text-anchor="middle" font-size="8" fill="#64748b">creates database1 on first startup</text>
+                <text x="710" y="486" text-anchor="middle" font-size="8" fill="#64748b">stores wp_posts, wp_users, wp_options…</text>
+
+                <!-- Deployments note -->
+                <rect x="50" y="555" width="860" height="35" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+                <text x="480" y="577" text-anchor="middle" font-size="10" fill="#475569">Deployments (wordpress, mysql) manage ReplicaSets → Pods | Services route traffic by label selector, not Pod IP</text>
+
+                <defs>
+                    <marker id="arr-gray" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#64748b"/></marker>
+                    <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#8b5cf6"/></marker>
+                    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#22c55e"/></marker>
+                </defs>
+            </svg>
+
+            <div class="section-note">
+                Pods may land on the same node or different nodes — the scheduler decides. Services use label selectors and Endpoints to route traffic regardless of which node hosts the Pod. WordPress always reaches MySQL through the stable DNS name <code>mysql</code>, resolved to the Service ClusterIP.
+            </div>
+        </section>
+
+        <!-- TAB 3: OBJECTS -->
+        <section id="objects" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Resource Reference</div>
+                    <h2>Kubernetes Objects in This Stack</h2>
+                </div>
+            </div>
+            <div class="object-grid">
+                <article class="object-card" style="border-top-color:#f59e0b;">
+                    <div class="obj-kind">ConfigMap — mysql-config</div>
+                    <h3>MySQL non-sensitive config</h3>
+                    <p>Stores <code>MYSQL_DATABASE: database1</code>. Injected via <code>envFrom.configMapRef</code> into the MySQL container. Safe to version-control; change per environment without rebuilding the image.</p>
+                </article>
+                <article class="object-card" style="border-top-color:#e11d48;">
+                    <div class="obj-kind">Secret — mysql-secret</div>
+                    <h3>MySQL root password</h3>
+                    <p>Stores <code>MYSQL_ROOT_PASSWORD</code> (base64-encoded, not encrypted). Injected via <code>secretKeyRef</code>. Required for MySQL initialization. Protect with RBAC in production.</p>
+                </article>
+                <article class="object-card" style="border-top-color:#22c55e;">
+                    <div class="obj-kind">Deployment — mysql</div>
+                    <h3>Database workload controller</h3>
+                    <p>Runs one MySQL Pod (<code>replicas: 1</code>). Labels Pod with <code>app: mysql</code> so the Service can find it. Combines ConfigMap + Secret into container environment variables.</p>
+                </article>
+                <article class="object-card" style="border-top-color:#8b5cf6;">
+                    <div class="obj-kind">Service — mysql</div>
+                    <h3>Stable database endpoint</h3>
+                    <p>Exposes port 3306 with DNS name <code>mysql</code>. Selector <code>app: mysql</code> maps to Pod Endpoints. WordPress connects here — Kubernetes DNS resolves to ClusterIP automatically.</p>
+                </article>
+                <article class="object-card" style="border-top-color:#f59e0b;">
+                    <div class="obj-kind">ConfigMap — wordpress-config</div>
+                    <h3>WordPress DB connection settings</h3>
+                    <p>Defines <code>WORDPRESS_DB_HOST: mysql</code> (the Service name!), <code>WORDPRESS_DB_USER</code>, and <code>WORDPRESS_DB_NAME</code>. The host value is service discovery — not an IP address.</p>
+                </article>
+                <article class="object-card" style="border-top-color:#e11d48;">
+                    <div class="obj-kind">Secret — wordpress-secret</div>
+                    <h3>WordPress DB password</h3>
+                    <p>Stores <code>WORDPRESS_DB_PASSWORD</code>. Must match <code>MYSQL_ROOT_PASSWORD</code> in mysql-secret or authentication fails and WordPress shows "Error establishing database connection."</p>
+                </article>
+                <article class="object-card" style="border-top-color:#3b82f6;">
+                    <div class="obj-kind">Deployment — wordpress</div>
+                    <h3>Frontend workload controller</h3>
+                    <p>Runs the WordPress container. On startup, reads env vars, connects to MySQL, and initializes WordPress tables in <code>database1</code>. Can scale to multiple replicas — all share the same database.</p>
+                </article>
+                <article class="object-card" style="border-top-color:#8b5cf6;">
+                    <div class="obj-kind">Service — wordpress-service</div>
+                    <h3>External user entry point</h3>
+                    <p>NodePort Service exposing port 80. Users reach WordPress at <code>&lt;node-ip&gt;:&lt;nodePort&gt;</code>. Load-balances across all WordPress Pods matching <code>app: wordpress</code>.</p>
+                </article>
+            </div>
+
+            <div class="section-head" style="margin-top: 28px;">
+                <div>
+                    <div class="section-kicker">Object Summary</div>
+                    <h2>All 8 Resources at a Glance</h2>
+                </div>
+            </div>
+            <div class="table-wrap"><table>
+                <thead><tr><th>Object</th><th>Kind</th><th>Tier</th><th>Role</th></tr></thead>
+                <tbody>
+                    <tr><td>mysql-config</td><td>ConfigMap</td><td>Backend</td><td>Database name (non-sensitive)</td></tr>
+                    <tr><td>mysql-secret</td><td>Secret</td><td>Backend</td><td>MySQL root password</td></tr>
+                    <tr><td>mysql</td><td>Deployment</td><td>Backend</td><td>Runs MySQL container</td></tr>
+                    <tr><td>mysql</td><td>Service</td><td>Backend</td><td>DNS name for database access</td></tr>
+                    <tr><td>wordpress-config</td><td>ConfigMap</td><td>Frontend</td><td>DB host, user, database name</td></tr>
+                    <tr><td>wordpress-secret</td><td>Secret</td><td>Frontend</td><td>DB password for WordPress</td></tr>
+                    <tr><td>wordpress</td><td>Deployment</td><td>Frontend</td><td>Runs WordPress container</td></tr>
+                    <tr><td>wordpress-service</td><td>Service</td><td>Frontend</td><td>NodePort for browser access</td></tr>
+                </tbody>
+            </table></div>
+        </section>
+
+        <!-- TAB 4: FLOW -->
+        <section id="flow" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Request Path</div>
+                    <h2>End-to-End Communication Flow</h2>
+                </div>
+            </div>
+            <div class="flow-track">
+                <article class="flow-step">
+                    <div class="step-number">1</div>
+                    <h3>User hits NodePort</h3>
+                    <p>Browser sends HTTP to <code>&lt;node-ip&gt;:30123</code>. Any worker node accepts NodePort traffic and forwards it to the wordpress-service ClusterIP.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">2</div>
+                    <h3>Service routes to WordPress Pod</h3>
+                    <p><code>wordpress-service</code> selects Pods with <code>app: wordpress</code>. Traffic goes to port 80 on a healthy WordPress Pod (Node 1 in our diagram).</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">3</div>
+                    <h3>WordPress reads config</h3>
+                    <p>Container env vars from <code>wordpress-config</code> and <code>wordpress-secret</code> tell WordPress to connect to host <code>mysql</code>, user <code>root</code>, database <code>database1</code>.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">4</div>
+                    <h3>DNS resolves mysql</h3>
+                    <p>WordPress queries CoreDNS. <code>mysql</code> resolves to <code>mysql.default.svc.cluster.local</code> → MySQL Service ClusterIP (e.g. 10.96.123.45).</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">5</div>
+                    <h3>MySQL Service → MySQL Pod</h3>
+                    <p>Traffic on port 3306 is forwarded to the MySQL Pod Endpoint on Node 2. Service abstracts away the Pod IP.</p>
+                </article>
+                <article class="flow-step">
+                    <div class="step-number">6</div>
+                    <h3>MySQL stores data</h3>
+                    <p>MySQL uses env from <code>mysql-config</code> and <code>mysql-secret</code>. WordPress reads/writes <code>wp_posts</code>, <code>wp_users</code>, and other tables in <code>database1</code>.</p>
+                </article>
+            </div>
+
+            <!-- Simplified flow SVG -->
+            <svg viewBox="0 0 880 120" style="width: 100%; max-width: 880px; margin: 24px auto; display: block;">
+                <rect x="10" y="35" width="90" height="50" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+                <text x="55" y="58" text-anchor="middle" font-size="10" font-weight="bold" fill="#334155">User</text>
+                <text x="55" y="72" text-anchor="middle" font-size="8" fill="#64748b">Browser</text>
+
+                <line x1="100" y1="60" x2="130" y2="60" stroke="#64748b" stroke-width="2" marker-end="url(#f1)"/>
+
+                <rect x="135" y="35" width="110" height="50" rx="6" fill="#ede9fe" stroke="#8b5cf6"/>
+                <text x="190" y="55" text-anchor="middle" font-size="9" font-weight="bold" fill="#5b21b6">wordpress-</text>
+                <text x="190" y="68" text-anchor="middle" font-size="9" font-weight="bold" fill="#5b21b6">service</text>
+                <text x="190" y="80" text-anchor="middle" font-size="7" fill="#6d28d9">NodePort :80</text>
+
+                <line x1="245" y1="60" x2="275" y2="60" stroke="#3b82f6" stroke-width="2" marker-end="url(#f2)"/>
+
+                <rect x="280" y="35" width="100" height="50" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+                <text x="330" y="58" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">WordPress</text>
+                <text x="330" y="72" text-anchor="middle" font-size="8" fill="#3b82f6">Pod :80</text>
+
+                <line x1="380" y1="60" x2="410" y2="60" stroke="#22c55e" stroke-width="2" marker-end="url(#f3)"/>
+                <text x="395" y="50" text-anchor="middle" font-size="7" fill="#166534">mysql:3306</text>
+
+                <rect x="415" y="35" width="90" height="50" rx="6" fill="#ede9fe" stroke="#8b5cf6"/>
+                <text x="460" y="58" text-anchor="middle" font-size="10" font-weight="bold" fill="#5b21b6">mysql</text>
+                <text x="460" y="72" text-anchor="middle" font-size="8" fill="#6d28d9">Service</text>
+
+                <line x1="505" y1="60" x2="535" y2="60" stroke="#22c55e" stroke-width="2" marker-end="url(#f3)"/>
+
+                <rect x="540" y="35" width="100" height="50" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+                <text x="590" y="58" text-anchor="middle" font-size="10" font-weight="bold" fill="#166534">MySQL</text>
+                <text x="590" y="72" text-anchor="middle" font-size="8" fill="#15803d">Pod :3306</text>
+
+                <line x1="640" y1="60" x2="670" y2="60" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <rect x="675" y="30" width="95" height="28" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+                <text x="722" y="48" text-anchor="middle" font-size="8" fill="#92400e">ConfigMaps</text>
+                <rect x="675" y="62" width="95" height="28" rx="4" fill="#ffe4e6" stroke="#e11d48"/>
+                <text x="722" y="80" text-anchor="middle" font-size="8" fill="#be123c">Secrets</text>
+
+                <text x="722" y="18" text-anchor="middle" font-size="8" fill="#64748b">env injection</text>
+
+                <defs>
+                    <marker id="f1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><polygon points="0 0,7 3,0 6" fill="#64748b"/></marker>
+                    <marker id="f2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><polygon points="0 0,7 3,0 6" fill="#3b82f6"/></marker>
+                    <marker id="f3" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><polygon points="0 0,7 3,0 6" fill="#22c55e"/></marker>
+                </defs>
+            </svg>
+
+            <div class="section-note">
+                <strong>Key insight:</strong> Users never talk to MySQL directly. Only WordPress Pods connect to the database — through the internal Service name. This keeps the data tier off the public internet.
+            </div>
+        </section>
+
+        <!-- TAB 5: EXAMPLES -->
+        <section id="examples" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Manifests</div>
+                    <h2>YAML from Lab 41</h2>
+                </div>
+            </div>
+            <div class="example-stack">
+                <section class="example-card">
+                    <div class="section-kicker">MySQL ConfigMap + Secret</div>
+                    <pre><code>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+data:
+  MYSQL_DATABASE: "database1"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  MYSQL_ROOT_PASSWORD: c2ltcGxpZGVhcm4=  # k8slearning</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">MySQL Deployment + Service</div>
+                    <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        envFrom:
+        - configMapRef:
+            name: mysql-config
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  type: NodePort
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">WordPress ConfigMap + Secret</div>
+                    <pre><code>apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress-config
+data:
+  WORDPRESS_DB_HOST: "mysql"       # Service name — DNS discovery!
+  WORDPRESS_DB_USER: "root"
+  WORDPRESS_DB_NAME: "database1"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress-secret
+type: Opaque
+data:
+  WORDPRESS_DB_PASSWORD: c2ltcGxpZGVhcm4=  # must match mysql-secret</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">WordPress Deployment + Service</div>
+                    <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: wordpress
+        envFrom:
+        - configMapRef:
+            name: wordpress-config
+        env:
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress-secret
+              key: WORDPRESS_DB_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-service
+spec:
+  type: NodePort
+  selector:
+    app: wordpress
+  ports:
+  - port: 80
+    targetPort: 80</code></pre>
+                </section>
+                <section class="example-card">
+                    <div class="section-kicker">Deploy and Verify</div>
+                    <pre><code># Deploy entire stack (from k8s/labs/workloads/wordpress/)
+kubectl apply -f mysql-config.yaml
+kubectl apply -f mysql-secret.yaml
+kubectl apply -f mysql.yaml
+kubectl apply -f mysql-service.yaml
+kubectl apply -f wordpress-configmap.yaml
+kubectl apply -f wordpress-secret.yaml
+kubectl apply -f wordpress.yaml
+kubectl apply -f wordpress-service.yaml
+
+# Verify all resources
+kubectl get all,configmaps,secrets | grep -E '(mysql|wordpress)'
+
+# Get WordPress URL
+kubectl get svc wordpress-service
+# Open http://&lt;node-ip&gt;:&lt;nodePort&gt; in browser</code></pre>
+                </section>
+            </div>
+        </section>
+
+        <!-- TAB 6: PRACTICE -->
+        <section id="practice" class="view">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Hands-On</div>
+                    <h2>Lab Exercises and Production Notes</h2>
+                </div>
+            </div>
+            <div class="practice-grid">
+                <article class="card practice-card">
+                    <div class="card-badge">Lab 41</div>
+                    <p>Follow the full step-by-step lab: deploy MySQL first, then WordPress, test DNS from inside the WordPress Pod, and complete the browser-based WordPress setup wizard.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Scale WordPress</div>
+                    <p><code>kubectl scale deployment wordpress --replicas=3</code> — the Service load-balances across all three Pods. MySQL stays at one replica because it is stateful.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Test persistence</div>
+                    <p>Delete the WordPress Pod — a new one recreates and your posts remain because data lives in MySQL, not in the WordPress container filesystem.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Troubleshoot DNS</div>
+                    <p><code>kubectl exec -it -l app=wordpress -- nslookup mysql</code> — verify CoreDNS resolves the Service name to a ClusterIP before debugging connection errors.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Production gap</div>
+                    <p>This lab has no PersistentVolume for MySQL — data is lost if the MySQL Pod is deleted. Add a PVC mounted at <code>/var/lib/mysql</code> for production.</p>
+                </article>
+                <article class="card practice-card">
+                    <div class="card-badge">Production gap</div>
+                    <p>Replace NodePort with Ingress + TLS for external access. Add NetworkPolicies so only WordPress Pods can reach MySQL on port 3306.</p>
+                </article>
+            </div>
+            <div class="section-note">
+                <strong>Full lab manual:</strong> <a href="../labmanuals/lab41-adv-wordpress-on-kubernetes.md" style="color:#1d4ed8;font-weight:600;">Lab 41: Deploying WordPress on Kubernetes</a> — manifests in <code>k8s/labs/workloads/wordpress/</code>. Related guides: <a href="configmaps-patterns.html" style="color:#1d4ed8;font-weight:600;">ConfigMaps</a>, <a href="secrets-management.html" style="color:#1d4ed8;font-weight:600;">Secrets</a>, <a href="service-types-comparison.html" style="color:#1d4ed8;font-weight:600;">Service Types</a>, <a href="dns-resolution.html" style="color:#1d4ed8;font-weight:600;">DNS Resolution</a>.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.view).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
