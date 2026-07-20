@@ -199,14 +199,12 @@ hello-cronjob-28503720    1/1           5s         30s
 List all Jobs created by the CronJob:
 
 ```bash
-kubectl get jobs -l job-name
+kubectl get jobs | grep '^hello-cronjob-'
 ```
 
-Or more specifically:
-
-```bash
-kubectl get jobs | grep hello-cronjob
-```
+> CronJob-created Pods have `batch.kubernetes.io/job-name` and `job-name`
+> labels. Job objects do not have a `job-name` label; identify them by their
+> CronJob owner reference or generated name prefix.
 
 Expected output:
 ```
@@ -460,7 +458,8 @@ Manually delete old Jobs:
 
 ```bash
 # Delete all completed Jobs for a CronJob
-kubectl delete jobs -l job-name | grep hello-cronjob | grep Completed
+kubectl get jobs --field-selector status.successful=1 -o name | \
+  grep '^job.batch/hello-cronjob-' | xargs -r kubectl delete
 
 # Delete all Jobs older than 1 hour
 kubectl get jobs --field-selector status.successful=1 -o json | \
@@ -994,7 +993,7 @@ kubectl get cronjob <name> -o jsonpath='{.status.lastScheduleTime}'
 
 ```bash
 # Check Kubernetes version
-kubectl version --short
+kubectl version
 
 # Timezone support requires K8s 1.25+
 # If running older version, you'll see:
@@ -1077,7 +1076,7 @@ kubectl delete configmap cronjob-config
 kubectl delete secret cronjob-secret
 
 # Delete any remaining Jobs
-kubectl delete jobs -l job-name
+kubectl get jobs -o name | xargs -r kubectl delete
 
 # Verify cleanup
 kubectl get cronjobs
@@ -1191,8 +1190,8 @@ kubectl get cronjob <name> -o yaml
 # Edit CronJob
 kubectl edit cronjob <name>
 
-# Delete all Jobs for a CronJob
-kubectl delete jobs -l job-name=<cronjob-name>
+# Delete all Jobs for a CronJob (Jobs use the generated CronJob name prefix)
+kubectl get jobs -o name | grep '^job.batch/<cronjob-name>-' | xargs -r kubectl delete
 
 # Get all failed Pods
 kubectl get pods --field-selector status.phase=Failed
@@ -1240,7 +1239,7 @@ kubectl logs <pod-name>
 kubectl patch cronjob <name> -p '{"spec":{"successfulJobsHistoryLimit":1,"failedJobsHistoryLimit":1}}'
 
 # Manually clean up
-kubectl delete jobs -l job-name=<cronjob-name>
+kubectl get jobs -o name | grep '^job.batch/<cronjob-name>-' | xargs -r kubectl delete
 ```
 
 **Issue**: Job not starting at expected time
@@ -1262,7 +1261,7 @@ kubectl get cronjob <name> -o jsonpath='{.spec.timeZone}'
 
 ```bash
 # Check Kubernetes version
-kubectl version --short
+kubectl version
 
 # Timezone support requires Kubernetes 1.25 or later
 # If using older version, remove timeZone field and use UTC-based scheduling

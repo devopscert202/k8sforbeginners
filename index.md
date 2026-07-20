@@ -10,7 +10,8 @@ Welcome to the complete hands-on Kubernetes learning guide! This repository prov
 ## 🎯 Quick Links
 
 ### 📊 Interactive Architecture
-- **[Kubernetes Architecture Overview](k8s/docs/basics/k8s-architecture.md)** - Comprehensive architecture guide
+- **[Kubernetes Architecture Overview](k8s/html/k8s-architecture-interactive.html)** - Interactive control plane and worker node diagram
+- **[Architecture Concepts (markdown)](k8s/docs/basics/k8s-architecture.md)** - Comprehensive architecture guide
 - **[Interactive Diagram](k8s/docs/basics/interactive-k8s-architecture.html)** - Full-screen animated architecture
 
 ### 📚 Documentation
@@ -26,7 +27,7 @@ Welcome to the complete hands-on Kubernetes learning guide! This repository prov
 
 ## 🚀 Getting Started
 
-1. **Understand the Architecture** - Start with the [interactive architecture diagram](k8s/docs/basics/interactive-k8s-architecture.html)
+1. **Understand the Architecture** - Start with the [interactive architecture diagram](k8s/html/k8s-architecture-interactive.html)
 2. **Set up your environment** - Follow the setup guides
 3. **Run the labs** - Practice with hands-on exercises
 4. **Explore advanced topics** - Dive into networking, security, and more
@@ -55,4 +56,4 @@ Perfect for CKA/CKAD certification preparation:
 
 ---
 
-**Ready to learn Kubernetes?** Start with the [Architecture Overview](k8s/docs/basics/k8s-architecture.md)!
+**Ready to learn Kubernetes?** Start with the [Architecture Overview](k8s/html/k8s-architecture-interactive.html)!

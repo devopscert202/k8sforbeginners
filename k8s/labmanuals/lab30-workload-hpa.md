@@ -171,7 +171,7 @@ spec:
         run: php-apache
     spec:
       containers:
-      - image: k8s.gcr.io/hpa-example
+      - image: registry.k8s.io/hpa-example
         name: php-apache
         ports:
         - containerPort: 80
@@ -185,7 +185,7 @@ spec:
 - `kind: Service` - Exposes the application
 - `kind: Deployment` - Manages the Pods
 - `replicas: 1` - Starts with 1 Pod
-- `image: k8s.gcr.io/hpa-example` - Sample CPU-intensive application
+- `image: registry.k8s.io/hpa-example` - Sample CPU-intensive application
 - `resources.requests.cpu: 200m` - **Critical**: Requests 200 millicores (0.2 CPU)
   - HPA uses this as the baseline for percentage calculations
   - Without resource requests, HPA cannot calculate CPU percentage
@@ -435,7 +435,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: k8s.gcr.io/hpa-example
+        image: registry.k8s.io/hpa-example
         resources:
           requests:
             cpu: 200m

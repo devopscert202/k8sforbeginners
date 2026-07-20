@@ -466,18 +466,14 @@ Return to the first terminal and press `Ctrl+C` to stop the proxy.
 
 ### Step 1: Check Component Status
 
-View control-plane component health:
+View control-plane health (modern clusters):
 
 ```bash
-kubectl get componentstatuses
+kubectl get --raw='/readyz?verbose'
+kubectl get pods -n kube-system
 ```
 
-Or shorter:
-```bash
-kubectl get cs
-```
-
-**Note**: In recent Kubernetes versions, this may show deprecated warnings.
+**Legacy note:** `kubectl get componentstatuses` (alias `kubectl get cs`) was removed in Kubernetes 1.27. On older clusters you may still see scheduler, controller-manager, and etcd rows; on 1.27+ use `kube-system` pod status and `/readyz` instead.
 
 ### Step 2: Check Node Status
 
@@ -537,7 +533,7 @@ kubeadm version: &version.Info{Major:"1", Minor:"29", GitVersion:"v1.29.2", ...}
 ### Step 2: Check kubectl and Server Version
 
 ```bash
-kubectl version --short
+kubectl version
 ```
 
 Or:
@@ -626,7 +622,7 @@ kubectl config set-context --current --namespace=<namespace>
 ### Cluster Health
 ```bash
 kubectl get nodes
-kubectl get componentstatuses
+kubectl get --raw='/readyz?verbose'
 kubectl get pods -n kube-system
 kubectl version
 ```

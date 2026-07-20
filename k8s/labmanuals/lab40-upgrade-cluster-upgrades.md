@@ -94,7 +94,7 @@ Kubernetes components follow strict version compatibility rules:
 From the control plane node:
 
 ```bash
-kubectl version --short
+kubectl version
 ```
 
 Expected output:

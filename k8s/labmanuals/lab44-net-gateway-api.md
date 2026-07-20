@@ -117,7 +117,7 @@ Gateway API is not installed by default in Kubernetes. We must install the Custo
 Gateway API requires Kubernetes 1.26 or higher for GA features.
 
 ```bash
-kubectl version --short
+kubectl version
 ```
 
 Expected output:

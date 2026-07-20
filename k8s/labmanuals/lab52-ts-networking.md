@@ -701,7 +701,8 @@ kubectl config set-context --current --namespace=default
 ## Next Steps
 
 - [Lab 49: Cluster and Control Plane Troubleshooting](lab49-ts-cluster-control-plane.md)
-- Lab **50** and **53** (troubleshooting series) when published (`lab50-ts-*.md`, `lab53-ts-*.md`)
+- [Lab 50: Pod Failures](lab50-ts-pod-failures.md)
+- [Lab 53: Workload Debugging](lab53-ts-workload-debugging.md)
 - [Lab 45: DNS Configuration](lab45-net-dns-configuration.md)
-- [Lab 13: Advanced Network Policies](lab13-sec-network-policies.md)
+- [Lab 57: Advanced Network Policies](lab57-sec-network-policy-advanced.md)
 - [ts-networking.html](../html/ts-networking.html)

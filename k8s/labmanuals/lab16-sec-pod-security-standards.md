@@ -126,7 +126,7 @@ pod-security.kubernetes.io/<MODE>-version: <VERSION>
 Verify you're running Kubernetes 1.25 or higher:
 
 ```bash
-kubectl version --short
+kubectl version
 ```
 
 Expected output (version should be 1.25+):
