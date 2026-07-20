@@ -763,7 +763,7 @@ export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/server.key</pre>
                             <div class="step-title">Check Cluster Health</div>
                         </div>
                         <div class="step-description">Verify current cluster status before proceeding</div>
-<pre>kubectl version --short
+<pre>kubectl version
 kubectl get nodes -o wide
 kubectl get pods -A
 kubectl get --raw /metrics | grep apiserver_requested_deprecated_apis</pre>
@@ -958,7 +958,7 @@ kubectl get nodes -o wide</pre>
                             <div class="step-title">Verify All Nodes Upgraded</div>
                         </div>
                         <div class="step-description">Check that all nodes are running target version</div>
-<pre>kubectl version --short
+<pre>kubectl version
 kubectl get nodes -o wide</pre>
                         <div class="info">All nodes should show v1.32.0 and Ready status</div>
                     </div>
