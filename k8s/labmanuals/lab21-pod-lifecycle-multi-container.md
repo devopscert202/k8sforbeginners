@@ -1083,8 +1083,8 @@ EOF
 Deploy and monitor:
 ```bash
 kubectl apply -f service-mesh-pod.yaml
-kubectl logs service-mesh-pod -c application
-kubectl logs service-mesh-pod -c proxy -f
+kubectl logs service-mesh-demo -c application
+kubectl logs service-mesh-demo -c proxy -f
 ```
 
 ---
@@ -1254,7 +1254,7 @@ kubectl delete pod multicontainer-pod sidecar-logging sidecar-metrics --ignore-n
 kubectl delete pod modern-sidecar-demo --ignore-not-found
 
 # Delete pattern Pods
-kubectl delete pod ambassador-pattern adapter-pattern service-mesh-pod multi-pattern-demo --ignore-not-found
+kubectl delete pod ambassador-pattern adapter-pattern service-mesh-demo multi-pattern-demo --ignore-not-found
 
 # Delete repository examples if you applied them
 kubectl delete -f k8s/labs/workloads/podlifecycle.yaml --ignore-not-found
