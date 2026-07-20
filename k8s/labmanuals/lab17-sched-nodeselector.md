@@ -17,6 +17,17 @@ By the end of this lab, you will be able to:
 - Troubleshoot scheduling issues with NodeSelector
 - Understand the limitations of NodeSelector
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`nodeselector.yaml`](../labs/scheduling/nodeselector/nodeselector.yaml) | Pod with nodeSelector label match. |
+| [`notin-nodeselector.yaml`](../labs/scheduling/nodeselector/notin-nodeselector.yaml) | nodeSelector with `NotIn` operator. |
+| [`test-nodeselector.yaml`](../labs/scheduling/nodeselector/test-nodeselector.yaml) | Test pod for nodeSelector exercises. |
+| [`multi-selector.yaml`](../labs/scheduling/nodeselector/multi-selector.yaml) | Pod with multiple nodeSelector terms. |
+
+---
+
 ---
 
 ## Understanding NodeSelector

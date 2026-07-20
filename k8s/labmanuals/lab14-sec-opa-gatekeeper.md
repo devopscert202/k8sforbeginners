@@ -21,6 +21,22 @@ By the end of this lab, you will be able to:
 - Audit existing resources for policy violations
 - Troubleshoot policy issues
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`constraint-template.yaml`](../labs/security/gatekeeper/constraint-template.yaml) | Gatekeeper ConstraintTemplate. |
+| [`constraint.yaml`](../labs/security/gatekeeper/constraint.yaml) | Gatekeeper Constraint binding. |
+| [`compliant-pod.yaml`](../labs/security/gatekeeper/compliant-pod.yaml) | Pod that passes the constraint. |
+| [`noncompliant-pod.yaml`](../labs/security/gatekeeper/noncompliant-pod.yaml) | Pod that violates the constraint. |
+| [`namespace-prefix-template.yaml`](../labs/security/gatekeeper/namespace-prefix-template.yaml) | Namespace naming ConstraintTemplate. |
+| [`namespace-prefix-constraint.yaml`](../labs/security/gatekeeper/namespace-prefix-constraint.yaml) | Namespace prefix Constraint. |
+| [`cel-resource-limits.yaml`](../labs/security/gatekeeper/cel-resource-limits.yaml) | CEL-based resource limits template. |
+| [`cel-compliant-deployment.yaml`](../labs/security/gatekeeper/cel-compliant-deployment.yaml) | Deployment passing CEL validation. |
+| [`no-limits-deployment.yaml`](../labs/security/gatekeeper/no-limits-deployment.yaml) | Deployment missing limits (rejected). |
+
+---
+
 ---
 
 ## Understanding OPA Gatekeeper

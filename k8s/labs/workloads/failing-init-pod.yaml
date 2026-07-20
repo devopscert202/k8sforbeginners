@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: failing-init-pod
+spec:
+  initContainers:
+  - name: init-success
+    image: busybox
+    command: ['sh', '-c', 'echo "Init 1 succeeded"; exit 0']
+  - name: init-failure
+    image: busybox
+    command: ['sh', '-c', 'echo "Init 2 failed"; exit 1']
+  containers:
+  - name: main-container
+    image: busybox
+    command: ['sh', '-c', 'echo "Main container running"; sleep 3600']
+  restartPolicy: Never

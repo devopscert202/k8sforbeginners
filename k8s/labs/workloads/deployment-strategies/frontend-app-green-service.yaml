@@ -1,0 +1,12 @@
+# ClusterIP Service for testing the green deployment before traffic switch
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-app-green
+spec:
+  selector:
+    app: frontend
+    version: green
+  ports:
+  - port: 80
+    targetPort: 80

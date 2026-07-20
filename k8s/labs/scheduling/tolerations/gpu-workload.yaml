@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-workload
+spec:
+  tolerations:
+  - key: "hardware"
+    operator: "Equal"
+    value: "gpu"
+    effect: "NoSchedule"
+  nodeSelector:
+    hardware: gpu
+  containers:
+  - name: cuda-app
+    image: nvidia/cuda:11.0-base
+    command: ["sleep", "3600"]

@@ -20,16 +20,16 @@ By the end of this lab, you will be able to:
 
 ## Repository YAML Files
 
-Under `k8s/labs/workloads/`:
-
 | File | Description |
 |------|-------------|
-| `jobs.yaml` | Job `pi` (Perl calculates π to 2000 digits). |
-| `onemin-job.yaml` | Longer-running sample Job `one-minute-job` (busybox sleep). |
-| `cronjob.yaml` | CronJob `hello-cronjob` every 5 minutes (also used in Lab 29). |
-
-Other sample Jobs/CronJobs in this lab (`failing-job.yaml`, `parallel-job.yaml`, `backup-cronjob.yaml` for `backup-job`, `ttl-job.yaml`) are created inline with `cat <<EOF` in the exercises.
-
+| [`jobs.yaml`](../labs/workloads/jobs.yaml) | Job `pi` (Perl calculates π to 2000 digits). |
+| [`onemin-job.yaml`](../labs/workloads/onemin-job.yaml) | Longer-running sample Job `one-minute-job`. |
+| [`cronjob.yaml`](../labs/workloads/cronjob.yaml) | CronJob `hello-cronjob` every 5 minutes (also used in Lab 29). |
+| [`one-time-job.yaml`](../labs/workloads/one-time-job.yaml) | One-time completion Job. |
+| [`failing-job.yaml`](../labs/workloads/failing-job.yaml) | Job with intentional failure for debugging. |
+| [`parallel-job.yaml`](../labs/workloads/parallel-job.yaml) | Parallel Job with completions and parallelism. |
+| [`ttl-job.yaml`](../labs/workloads/ttl-job.yaml) | Job with `ttlSecondsAfterFinished` auto-cleanup. |
+| [`backup-cronjob.yaml`](../labs/workloads/backup-cronjob.yaml) | CronJob backup example. |
 ---
 
 ## What is a Job?
@@ -501,13 +501,12 @@ hello-cronjob   */5 * * * *   False     1        10s             5m
 
 List Jobs created by the CronJob:
 ```bash
-kubectl get jobs -l job-name
+kubectl get jobs | grep '^hello-cronjob-'
 ```
 
-Or more specifically:
-```bash
-kubectl get jobs | grep hello-cronjob
-```
+> CronJob-created **Pods** have `batch.kubernetes.io/job-name` and
+> `job-name` labels. Job objects do not have a `job-name` label; identify
+> them by their CronJob owner reference or generated name prefix.
 
 Expected output:
 ```
@@ -525,12 +524,13 @@ kubectl get pods | grep hello-cronjob
 
 View logs from the most recent execution:
 ```bash
-kubectl logs -l job-name --tail=20
+JOB_NAME=$(kubectl get jobs -o name --sort-by=.metadata.creationTimestamp | \
+  grep '^job.batch/hello-cronjob-' | tail -1 | cut -d/ -f2)
+kubectl logs -l batch.kubernetes.io/job-name="$JOB_NAME" --tail=20
 ```
 
 Or get logs from a specific Job:
 ```bash
-JOB_NAME=$(kubectl get jobs -l job-name -o jsonpath='{.items[-1].metadata.name}' | grep hello-cronjob)
 kubectl logs job/$JOB_NAME
 ```
 

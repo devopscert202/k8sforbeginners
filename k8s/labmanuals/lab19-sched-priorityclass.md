@@ -18,6 +18,25 @@ By the end of this lab, you will be able to:
 - Understand how priority affects scheduling decisions
 - Implement priority-based scheduling strategies
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`high-priority-class.yaml`](../labs/scheduling/priorityclass/high-priority-class.yaml) | High PriorityClass definition. |
+| [`low-priority-class.yaml`](../labs/scheduling/priorityclass/low-priority-class.yaml) | Low PriorityClass definition. |
+| [`high-priority-pod.yaml`](../labs/scheduling/priorityclass/high-priority-pod.yaml) | Pod using high priority. |
+| [`low-priority-pod.yaml`](../labs/scheduling/priorityclass/low-priority-pod.yaml) | Pod using low priority. |
+| [`default-priority-class.yaml`](../labs/scheduling/priorityclass/default-priority-class.yaml) | Default PriorityClass. |
+| [`high-priority-deployment.yaml`](../labs/scheduling/priorityclass/high-priority-deployment.yaml) | Deployment with high priority. |
+| [`low-priority-deployment.yaml`](../labs/scheduling/priorityclass/low-priority-deployment.yaml) | Deployment with low priority. |
+| [`no-priority-pod.yaml`](../labs/scheduling/priorityclass/no-priority-pod.yaml) | Pod without priorityClassName. |
+| [`preemption-test-pod.yaml`](../labs/scheduling/priorityclass/preemption-test-pod.yaml) | Preemption demonstration pod. |
+| [`resource-consumer.yaml`](../labs/scheduling/priorityclass/resource-consumer.yaml) | Resource-heavy pod for preemption tests. |
+| [`high-priority-besteffort.yaml`](../labs/scheduling/priorityclass/high-priority-besteffort.yaml) | BestEffort QoS high-priority pod. |
+| [`low-priority-guaranteed.yaml`](../labs/scheduling/priorityclass/low-priority-guaranteed.yaml) | Guaranteed QoS low-priority pod. |
+
+---
+
 ---
 
 ## Understanding PriorityClass

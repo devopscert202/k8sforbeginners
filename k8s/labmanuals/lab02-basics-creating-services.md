@@ -588,9 +588,9 @@ minikube service myservice --url
 
 ## Next Steps
 
-1. **Lab 03**: Learn about Ingress for HTTP/HTTPS routing
-2. **Lab 04**: Explore ConfigMaps and Secrets
-3. **Lab 05**: Implement persistent storage with Volumes
+1. [Lab 35: Ingress](lab35-net-ingress.md) — route HTTP/HTTPS traffic into Services
+2. [Lab 25: ConfigMaps](lab25-workload-configmaps.md) and [Lab 47: Secrets](lab47-workload-secrets.md) — configure applications
+3. [Lab 38: Basic Volumes](lab38-storage-basic-volumes.md) and [Lab 39: Persistent Storage](lab39-storage-persistent-storage.md) — add durable storage
 
 ---
 

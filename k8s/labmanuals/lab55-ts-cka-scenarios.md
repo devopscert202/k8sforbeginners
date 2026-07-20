@@ -405,11 +405,13 @@ spec:
           port: 8080
 ```
 
-Save as `allow-frontend-backend.yaml` and apply:
+Save as `allow-frontend-backend-local.yaml` and apply:
 
 ```bash
-kubectl apply -f allow-frontend-backend.yaml
+kubectl apply -f ../labs/troubleshooting/allow-frontend-backend.yaml
 ```
+
+Or copy the manifest above to a local file in your working directory (do not overwrite the tracked repo file).
 
 If the client lives in another namespace, add a `namespaceSelector` (and possibly labels on the namespace).
 
@@ -479,7 +481,7 @@ volumeBindingMode: WaitForFirstConsumer
 For cloud or dynamic provisioning, set the correct `provisioner` and parameters for your platform, then:
 
 ```bash
-kubectl apply -f storageclass-fast.yaml
+kubectl apply -f ../labs/troubleshooting/storageclass-fast.yaml
 ```
 
 **Option B — repoint** the PVC to an existing class:
@@ -775,7 +777,7 @@ rules:
 ```
 
 ```bash
-kubectl apply -f role-pod-reader.yaml
+kubectl apply -f ../labs/troubleshooting/role-pod-reader.yaml
 ```
 
 If the RoleBinding pointed at the wrong name, either **rename** the Role to match `roleRef` or **patch** the RoleBinding’s `roleRef.name` to `pod-reader`.
@@ -864,10 +866,11 @@ kubectl logs <pod> -n <ns> --previous
 
 ## Cleanup
 
-Remove scratch files you created on your laptop (examples):
+Remove only scratch copies you created in your current working directory (not the tracked files under `k8s/labs/troubleshooting/`):
 
 ```bash
-rm -f allow-frontend-backend.yaml role-pod-reader.yaml storageclass-fast.yaml
+# Local copies only — do NOT run this from k8s/labs/troubleshooting/
+rm -f ./allow-frontend-backend-local.yaml ./role-pod-reader-local.yaml ./storageclass-fast-local.yaml
 ```
 
 If you applied sample policies or PVCs in a dedicated lab namespace:
@@ -884,7 +887,7 @@ On nodes, **do not** leave broken manifests in `/etc/kubernetes/manifests/`; res
 
 ## Next steps
 
-- Revisit the fundamentals in order: [Lab 49](lab49-ts-cluster-control-plane.md) → [Lab 50](lab50-ts-pod-failures.md) → [Lab 51](lab51-ts-kubelet-node.md); continue with Labs **52–54** from your troubleshooting track (for example networking and storage deep-dives when those manuals exist in this repo).
+- Revisit the fundamentals in order: [Lab 49](lab49-ts-cluster-control-plane.md) → [Lab 50](lab50-ts-pod-failures.md) → [Lab 51](lab51-ts-kubelet-node.md) → [Lab 52](lab52-ts-networking.md) → [Lab 53](lab53-ts-workload-debugging.md) → [Lab 54](lab54-ts-commands-reference.md).
 - Drill the same ten scenarios in the browser: [ts-cka-scenarios.html](../html/ts-cka-scenarios.html).
 - Related topic labs already in this repository: [Lab 13: Network Policies](lab13-sec-network-policies.md), [Lab 27: Static Pods](lab27-workload-static-pods.md), [Lab 39: Persistent Storage](lab39-storage-persistent-storage.md), [Lab 11: RBAC](lab11-sec-rbac-security.md), [Lab 45: DNS](lab45-net-dns-configuration.md).
 - Timed practice: pick **three** scenarios at random, **15 minutes** total, and write only the commands you would run before checking answers.

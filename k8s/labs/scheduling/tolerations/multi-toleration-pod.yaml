@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-toleration-pod
+spec:
+  tolerations:
+  - key: "environment"
+    operator: "Equal"
+    value: "production"
+    effect: "NoSchedule"
+  - key: "tier"
+    operator: "Equal"
+    value: "frontend"
+    effect: "NoSchedule"
+  - key: "region"
+    operator: "Equal"
+    value: "us-west"
+    effect: "NoSchedule"
+  containers:
+  - name: nginx
+    image: nginx

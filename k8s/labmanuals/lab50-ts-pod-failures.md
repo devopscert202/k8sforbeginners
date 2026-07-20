@@ -779,6 +779,6 @@ kubectl config set-context --current --namespace=default
 
 ## Next Steps
 
-- Continue with [Lab 51: Kubelet and Node Troubleshooting](lab51-ts-kubelet-node.md) and [Lab 52: Network Troubleshooting](lab52-ts-networking.md) (Services, DNS, and paths through the cluster network). Add **Lab 53** to this sequence when your course materials publish that module.
+- Continue with [Lab 51: Kubelet and Node Troubleshooting](lab51-ts-kubelet-node.md), [Lab 52: Network Troubleshooting](lab52-ts-networking.md), and [Lab 53: Workload Debugging](lab53-ts-workload-debugging.md).
 - Revisit scheduling fundamentals in [Lab 17: Node Selector](lab17-sched-nodeselector.md) and resource governance in [Lab 37: Resource Quotas and Limits](lab37-resmgmt-resource-quotas-limits.md).
 - Open the interactive companion: [ts-pod-failures.html](../html/ts-pod-failures.html).

@@ -231,7 +231,7 @@ hello-cronjob-28503725-abcd2    0/1     Completed   0          1m
 View logs from a completed Pod:
 
 ```bash
-POD_NAME=$(kubectl get pods -l job-name --sort-by=.metadata.creationTimestamp | grep hello-cronjob | tail -1 | awk '{print $1}')
+POD_NAME=$(kubectl get pods -l batch.kubernetes.io/job-name --sort-by=.metadata.creationTimestamp | grep hello-cronjob | tail -1 | awk '{print $1}')
 kubectl logs $POD_NAME
 ```
 

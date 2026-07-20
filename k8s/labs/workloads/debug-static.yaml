@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-pod
+  labels:
+    purpose: emergency-debug
+spec:
+  hostNetwork: true
+  hostPID: true
+  containers:
+  - name: debug
+    image: nicolaka/netshoot:latest
+    command: ["/bin/bash"]
+    args: ["-c", "sleep infinity"]
+    securityContext:
+      privileged: true

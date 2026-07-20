@@ -18,6 +18,19 @@ By the end of this lab, you will be able to:
 - Verify security settings inside containers
 - Apply security best practices to your workloads
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`security-context.yaml`](../labs/security/security-context.yaml) | Baseline Pod security context example. |
+| [`no-security-context.yaml`](../labs/security/no-security-context.yaml) | Pod without security context (comparison). |
+| [`readonly-rootfs.yaml`](../labs/security/readonly-rootfs.yaml) | Read-only root filesystem demonstration. |
+| [`allow-escalation.yaml`](../labs/security/allow-escalation.yaml) | Privilege escalation allowed. |
+| [`deny-escalation.yaml`](../labs/security/deny-escalation.yaml) | Privilege escalation denied. |
+| [`capabilities-demo.yaml`](../labs/security/capabilities-demo.yaml) | Linux capabilities drop/add example. |
+
+---
+
 ---
 
 ## Understanding Security Context

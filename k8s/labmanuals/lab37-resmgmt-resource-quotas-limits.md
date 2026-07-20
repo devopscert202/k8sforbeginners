@@ -19,6 +19,20 @@ By the end of this lab, you will be able to:
 - Implement resource management best practices
 - Monitor resource usage and quota consumption
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`resourcequota-pod1.yaml`](../labs/workloads/resourcequota-pod1.yaml) | Pod within namespace quota. |
+| [`resourcequota-pod2.yaml`](../labs/workloads/resourcequota-pod2.yaml) | Second pod for quota testing. |
+| [`resource-limits-pod.yaml`](../labs/workloads/resource-limits-pod.yaml) | Pod with CPU/memory requests and limits. |
+| [`limitrange.yaml`](../labs/workloads/limitrange.yaml) | LimitRange for default container limits. |
+| [`quota-pod-no-resources.yaml`](../labs/workloads/quota-pod-no-resources.yaml) | Pod missing resources (rejected by LimitRange). |
+| [`quota-pod-reduced.yaml`](../labs/workloads/quota-pod-reduced.yaml) | Pod with reduced resource requests. |
+| [`quota-pod2-reduced.yaml`](../labs/workloads/quota-pod2-reduced.yaml) | Second reduced pod for quota fit. |
+
+---
+
 ---
 
 ## What are Resource Quotas and Limits?

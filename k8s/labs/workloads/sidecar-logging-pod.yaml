@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sidecar-logging
+  labels:
+    app: myapp
+spec:
+  containers:
+  # Main application container
+  - name: application
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Application starting..."
+      while true; do
+        echo "\$(date): Processing request ID \$RANDOM" >> /var/log/app.log
+        sleep 5
+      done
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+
+  # Sidecar container for log shipping
+  - name: log-shipper
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Log shipper started"
+      while true; do
+        if [ -f /var/log/app.log ]; then
+          echo "=== Shipping logs to central system ==="
+          tail -n 5 /var/log/app.log
+          echo "=== End of log batch ==="
+          sleep 10
+        else
+          echo "Waiting for log file..."
+          sleep 2
+        fi
+      done
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log
+
+  volumes:
+  - name: log-volume
+    emptyDir: {}

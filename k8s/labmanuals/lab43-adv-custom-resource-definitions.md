@@ -992,7 +992,7 @@ kubectl patch website corporate-site --subresource=status --type=merge -p '{"sta
 
 ## Next Steps
 
-- **Lab 44** (if available) - Continue with advanced topics
+- [Lab 44: Gateway API](lab44-net-gateway-api.md) — continue with advanced Kubernetes networking
 - **Practice CRDs** on your local cluster
 - **Explore existing operators** - Install Prometheus or Cert-Manager and examine their CRDs
 - **Learn Kubebuilder** - Build a simple operator for the Website CRD

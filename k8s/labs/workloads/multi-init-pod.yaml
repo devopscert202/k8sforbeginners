@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-init-pod
+spec:
+  initContainers:
+  - name: init-stage1
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Stage 1: Checking system requirements..."
+      sleep 5
+      echo "Stage 1 complete!" > /shared/stage1.txt
+      date >> /shared/stage1.txt
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+  - name: init-stage2
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Stage 2: Setting up database schema..."
+      cat /shared/stage1.txt
+      sleep 5
+      echo "Stage 2 complete!" > /shared/stage2.txt
+      date >> /shared/stage2.txt
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+  - name: init-stage3
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Stage 3: Loading initial data..."
+      cat /shared/stage2.txt
+      sleep 5
+      echo "Stage 3 complete!" > /shared/stage3.txt
+      date >> /shared/stage3.txt
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+  containers:
+  - name: application
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Application starting..."
+      echo "Initialization history:"
+      cat /shared/stage*.txt
+      echo "Application ready!"
+      sleep 3600
+    volumeMounts:
+    - name: shared-data
+      mountPath: /shared
+  volumes:
+  - name: shared-data
+    emptyDir: {}

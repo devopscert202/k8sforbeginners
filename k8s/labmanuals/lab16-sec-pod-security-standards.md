@@ -21,6 +21,21 @@ By the end of this lab, you will be able to:
 - Troubleshoot Pod Security Standard violations
 - Apply PSS best practices for CKA exam scenarios
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`pss-namespace.yaml`](../labs/security/pss-namespace.yaml) | Namespace with Pod Security Admission labels. |
+| [`privileged-pod.yaml`](../labs/security/privileged-pod.yaml) | Pod violating restricted PSS. |
+| [`baseline-compliant-pod.yaml`](../labs/security/baseline-compliant-pod.yaml) | Pod compliant with baseline PSS. |
+| [`baseline-test-privileged.yaml`](../labs/security/baseline-test-privileged.yaml) | Privileged container test for baseline namespace. |
+| [`restricted-compliant-pod.yaml`](../labs/security/restricted-compliant-pod.yaml) | Pod compliant with restricted PSS. |
+| [`restricted-test-baseline.yaml`](../labs/security/restricted-test-baseline.yaml) | Baseline pod in restricted namespace (rejected). |
+| [`mixed-mode-test.yaml`](../labs/security/mixed-mode-test.yaml) | Mixed PSA enforce/audit/warn demonstration. |
+| [`pss-with-context.yaml`](../labs/security/pss-with-context.yaml) | PSS combined with security context. |
+
+---
+
 ---
 
 ## Understanding Pod Security Standards

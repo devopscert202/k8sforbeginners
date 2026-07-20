@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ttl-example
+spec:
+  ttlSecondsAfterFinished: 100  # Delete 100 seconds after completion
+  template:
+    spec:
+      containers:
+      - name: cleanup-test
+        image: busybox
+        command: ["sh", "-c", "echo 'This Job will auto-delete'; sleep 10"]
+      restartPolicy: Never

@@ -21,6 +21,14 @@ By the end of this lab, you will be able to:
 - Integrate scanning into development workflows
 - Compare Trivy with other security scanning tools
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`pod.yaml`](../labs/security/pod.yaml) | Sample Pod manifest for Trivy image scanning exercises. |
+
+---
+
 ---
 
 ## Understanding Container Security Scanning

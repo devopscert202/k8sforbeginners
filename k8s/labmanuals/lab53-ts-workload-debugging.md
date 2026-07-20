@@ -69,7 +69,7 @@ kubectl run web-nginx --image=nginx:1.25 --labels='app=web,tier=frontend'
 
 ```bash
 kubectl run web-logger --image=busybox:1.36 --labels='app=web,tier=support' \
-  -- sh -c 'i=0; while true; do i=$((i+1)); echo "tick $$i $$(date -Iseconds)"; sleep 2; done'
+  -- sh -c 'i=0; while true; do i=$((i+1)); echo "tick $i $(date -Iseconds)"; sleep 2; done'
 ```
 
 Wait until both are `Running`:
@@ -600,7 +600,7 @@ spec:
       echo "backend starting..."
       if [ -z "$API_TOKEN" ]; then echo "MISSING API_TOKEN"; exit 1; fi
       while true; do
-        echo "ok $$(date -Iseconds)" | nc -l -p 8080
+        echo "ok $(date -Iseconds)" | nc -l -p 8080
       done
 ---
 apiVersion: v1

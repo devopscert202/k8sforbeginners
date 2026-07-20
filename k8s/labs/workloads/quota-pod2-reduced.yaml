@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quota-mem-cpu-demo-2
+  namespace: quotaz
+spec:
+  containers:
+  - name: quota-mem-cpu-demo-ctr
+    image: nginx
+    resources:
+      limits:
+        memory: "500Mi"
+        cpu: "600m"
+      requests:
+        memory: "400Mi"
+        cpu: "300m"

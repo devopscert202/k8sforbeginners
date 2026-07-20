@@ -18,6 +18,24 @@ By the end of this lab, you will be able to:
 - Understand topology keys and their role in affinity rules
 - Troubleshoot affinity scheduling issues
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`node-affinity.yaml`](../labs/scheduling/affinity/node-affinity.yaml) | Required node affinity rule. |
+| [`node-affinity-2.yaml`](../labs/scheduling/affinity/node-affinity-2.yaml) | Preferred node affinity rule. |
+| [`pod-anti-affinity.yaml`](../labs/scheduling/affinity/pod-anti-affinity.yaml) | Pod anti-affinity spreading. |
+| [`pod-anti-affinity-2.yaml`](../labs/scheduling/affinity/pod-anti-affinity-2.yaml) | Zone-based pod anti-affinity. |
+| [`advanced-node-affinity.yaml`](../labs/scheduling/affinity/advanced-node-affinity.yaml) | Complex node affinity expressions. |
+| [`preferred-affinity.yaml`](../labs/scheduling/affinity/preferred-affinity.yaml) | Soft (preferred) affinity weights. |
+| [`pod-affinity.yaml`](../labs/scheduling/affinity/pod-affinity.yaml) | Pod affinity co-location. |
+| [`combined-affinity.yaml`](../labs/scheduling/affinity/combined-affinity.yaml) | Combined node and pod affinity. |
+| [`production-labeled-pod.yaml`](../labs/scheduling/affinity/production-labeled-pod.yaml) | Production-labeled pod for affinity tests. |
+| [`staging-labeled-pod.yaml`](../labs/scheduling/affinity/staging-labeled-pod.yaml) | Staging-labeled pod for affinity tests. |
+| [`zone-anti-affinity.yaml`](../labs/scheduling/affinity/zone-anti-affinity.yaml) | Topology spread / zone anti-affinity. |
+
+---
+
 ---
 
 ## Understanding Affinity and Anti-Affinity

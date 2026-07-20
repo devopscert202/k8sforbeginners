@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lifecycle-observable
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - sh
+          - -c
+          - |
+            echo "\$(date): postStart hook started" | tee -a /usr/share/message.log
+            sleep 2
+            echo "\$(date): postStart hook completed" | tee -a /usr/share/message.log
+      preStop:
+        exec:
+          command:
+          - sh
+          - -c
+          - |
+            echo "\$(date): preStop hook started" | tee -a /usr/share/message.log
+            echo "Draining connections..."
+            sleep 5
+            echo "\$(date): preStop hook completed" | tee -a /usr/share/message.log
+    volumeMounts:
+    - name: shared-logs
+      mountPath: /usr/share
+  - name: log-watcher
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Log watcher started"
+      tail -f /usr/share/message.log
+    volumeMounts:
+    - name: shared-logs
+      mountPath: /usr/share
+  volumes:
+  - name: shared-logs
+    emptyDir: {}

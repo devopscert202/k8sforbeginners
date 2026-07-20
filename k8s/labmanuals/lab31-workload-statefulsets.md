@@ -777,8 +777,8 @@ kubectl get pvc
 # Delete specific PVCs
 kubectl delete pvc <pvc-name>
 
-# Delete all PVCs for a StatefulSet (CAUTION: Data loss!)
-kubectl delete pvc -l app=<statefulset-label>
+# Delete PVCs created by volumeClaimTemplates (named <volume>-<statefulset>-<ordinal>)
+kubectl delete pvc www-web-storage-0 www-web-storage-1 www-web-storage-2
 ```
 
 ### Issue 5: Rolling Update Stuck
@@ -896,14 +896,28 @@ kubectl delete statefulset web
 kubectl delete service nginx-headless
 
 # Delete the StatefulSet with storage
-kubectl delete statefulset web-storage
-kubectl delete service nginx-storage
-kubectl delete pvc -l app=nginx-storage
+kubectl delete statefulset web-storage --ignore-not-found
+kubectl delete service nginx-storage --ignore-not-found
+kubectl delete pvc www-web-storage-{0..4} --ignore-not-found
 
 # Delete MySQL StatefulSet
-kubectl delete statefulset mysql
-kubectl delete service mysql-headless
-kubectl delete pvc -l app=mysql
+kubectl delete statefulset mysql --ignore-not-found
+kubectl delete service mysql-headless mysql --ignore-not-found
+kubectl delete pvc mysql-data-mysql-0 --ignore-not-found
+
+# If you bulk-applied the repository examples, delete every matching manifest
+kubectl delete -f k8s/labs/workloads/headless-service.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/statefulset-partition-update.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/postgres-statefulset.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/redis-statefulset.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/basic-statefulset.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/statefulset-with-storage.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/mysql-statefulset.yaml --ignore-not-found
+
+# StatefulSet deletion retains PVCs; remove the known claims explicitly
+kubectl delete pvc app-data-canary-app-{0..4} \
+  postgres-data-postgres-0 redis-data-redis-{0..2} \
+  www-web-storage-{0..4} mysql-data-mysql-0 --ignore-not-found
 
 # Verify cleanup
 kubectl get statefulsets
@@ -947,9 +961,9 @@ kubectl patch statefulset <name> -p '<json-patch>'
 # Delete StatefulSet (keeps PVCs)
 kubectl delete statefulset <name>
 
-# Delete StatefulSet and PVCs
-kubectl delete statefulset <name>
-kubectl delete pvc -l app=<label>
+# Delete StatefulSet and PVCs (volumeClaimTemplates use <volume>-<sts-name>-<ordinal>)
+kubectl delete statefulset web-storage
+kubectl delete pvc www-web-storage-{0..2}
 
 # Get StatefulSet YAML
 kubectl get statefulset <name> -o yaml

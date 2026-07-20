@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mixed-mode-test
+  namespace: pss-mixed
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:alpine
+    securityContext:
+      runAsUser: 0  # Root - baseline OK, restricted violation
+      allowPrivilegeEscalation: false

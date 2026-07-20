@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: baseline-test-privileged
+  namespace: pss-baseline
+spec:
+  hostNetwork: true
+  containers:
+  - name: test-container
+    image: nginx:alpine
+    securityContext:
+      privileged: true

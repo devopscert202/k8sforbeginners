@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: http-lifecycle
+spec:
+  containers:
+  - name: app-server
+    image: nginx
+    ports:
+    - containerPort: 80
+    lifecycle:
+      postStart:
+        httpGet:
+          path: /startup
+          port: 80
+          scheme: HTTP
+      preStop:
+        httpGet:
+          path: /shutdown
+          port: 80
+          scheme: HTTP
+  - name: lifecycle-handler
+    image: hashicorp/http-echo
+    args:
+    - "-text=Lifecycle handler running"
+    ports:
+    - containerPort: 5678

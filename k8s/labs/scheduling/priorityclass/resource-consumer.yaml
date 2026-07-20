@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-consumer
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: resource-consumer
+  template:
+    metadata:
+      labels:
+        app: resource-consumer
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command: ["sh", "-c", "sleep 7200"]
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+      priorityClassName: low-priority

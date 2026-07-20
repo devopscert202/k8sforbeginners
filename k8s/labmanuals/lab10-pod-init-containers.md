@@ -18,6 +18,22 @@ By the end of this lab, you will be able to:
 - Debug Init Container failures
 - Apply Init Containers to real-world scenarios
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`init2-container.yaml`](../labs/workloads/init2-container.yaml) | Pod with two init containers waiting for DNS (`myservice`, `mydb`). |
+| [`init-config-pod.yaml`](../labs/workloads/init-config-pod.yaml) | Init container downloads config before main app starts. |
+| [`multi-init-pod.yaml`](../labs/workloads/multi-init-pod.yaml) | Sequential multi-stage init containers. |
+| [`failing-init-pod.yaml`](../labs/workloads/failing-init-pod.yaml) | Init container that fails (debugging exercise). |
+| [`fixed-init-pod.yaml`](../labs/workloads/fixed-init-pod.yaml) | Corrected init container manifest. |
+| [`db-migration-pod.yaml`](../labs/workloads/db-migration-pod.yaml) | Database schema migration via init container. |
+| [`resource-limited-init.yaml`](../labs/workloads/resource-limited-init.yaml) | Init container with resource requests/limits. |
+
+Apply from `k8s/labmanuals/`: `kubectl apply -f ../labs/workloads/<file>`
+
+---
+
 ---
 
 ## What are Init Containers?

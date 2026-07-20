@@ -42,6 +42,14 @@ By the end of this lab, you will be able to:
 - Apply production-ready considerations
 - Evaluate cost vs benefit of HA setups
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`kubeadm-config.yaml`](../labs/installation/kubeadm-config.yaml) | Sample kubeadm ClusterConfiguration for HA setup. |
+
+---
+
 ---
 
 ## Understanding High Availability in Kubernetes

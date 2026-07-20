@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zone-spread-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zone-spread
+  template:
+    metadata:
+      labels:
+        app: zone-spread
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - zone-spread
+              topologyKey: topology.kubernetes.io/zone
+      containers:
+      - name: nginx
+        image: nginx

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spa-runtime-config
+data:
+  config.js: |
+    window.APP_CONFIG = {
+      apiUrl: 'https://api.example.com/v1',
+      environment: 'production',
+      features: {
+        analytics: true,
+        darkMode: true,
+        newDashboard: false
+      },
+      version: '1.0.0'
+    };

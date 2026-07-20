@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-app-configured
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend-configured
+  template:
+    metadata:
+      labels:
+        app: frontend-configured
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21-alpine
+        ports:
+        - containerPort: 80
+
+        # Environment variables from ConfigMap
+        env:
+        - name: API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: API_URL
+        - name: API_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: API_VERSION
+        - name: APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: APP_NAME
+
+        # Mount ConfigMap as files
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: cache
+          mountPath: /var/cache/nginx
+        - name: run
+          mountPath: /var/run
+
+      volumes:
+      - name: config-volume
+        configMap:
+          name: frontend-config
+          items:
+          - key: nginx.conf
+            path: default.conf
+      - name: cache
+        emptyDir: {}
+      - name: run
+        emptyDir: {}

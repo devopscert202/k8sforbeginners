@@ -25,7 +25,9 @@ Under `k8s/labs/workloads/`:
 
 | File | Description |
 |------|-------------|
-| `staticapache.yaml` | Example static Pod manifest (`Pod` `staticapache`, httpd) to copy to the node `staticPodPath` (e.g. Minikube `/etc/kubernetes/manifests/`). |
+| [`staticapache.yaml`](../labs/workloads/staticapache.yaml) | Example static Pod manifest (`Pod` `staticapache`, httpd) to copy to the node `staticPodPath` (e.g. Minikube `/etc/kubernetes/manifests/`). |
+| [`node-exporter-static.yaml`](../labs/workloads/node-exporter-static.yaml) | Node exporter static Pod manifest for monitoring exercises. |
+| [`debug-static.yaml`](../labs/workloads/debug-static.yaml) | Debug static Pod for troubleshooting exercises. |
 
 ---
 

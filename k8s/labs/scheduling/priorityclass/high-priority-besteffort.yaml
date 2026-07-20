@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: high-priority-besteffort
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+  priorityClassName: high-priority

@@ -18,6 +18,23 @@ By the end of this lab, you will be able to:
 - Use taints for dedicated nodes and workload isolation
 - Troubleshoot taint-related scheduling issues
 
+## Repository YAML Files
+
+| File | Description |
+|------|-------------|
+| [`tolerations-pod.yaml`](../labs/scheduling/tolerations/tolerations-pod.yaml) | Pod with toleration matching node taint. |
+| [`no-tolerations-pod.yaml`](../labs/scheduling/tolerations/no-tolerations-pod.yaml) | Pod without tolerations (stays Pending). |
+| [`test-pods.yaml`](../labs/scheduling/tolerations/test-pods.yaml) | Test pods for taint exercises. |
+| [`multiple-pods.yaml`](../labs/scheduling/tolerations/multiple-pods.yaml) | Multiple pods with varied tolerations. |
+| [`multi-toleration-pod.yaml`](../labs/scheduling/tolerations/multi-toleration-pod.yaml) | Pod with multiple tolerations. |
+| [`noexecute-toleration-pod.yaml`](../labs/scheduling/tolerations/noexecute-toleration-pod.yaml) | NoExecute effect toleration. |
+| [`exists-toleration-pod.yaml`](../labs/scheduling/tolerations/exists-toleration-pod.yaml) | Exists operator toleration. |
+| [`wildcard-toleration-pod.yaml`](../labs/scheduling/tolerations/wildcard-toleration-pod.yaml) | Wildcard key toleration. |
+| [`delayed-eviction-pod.yaml`](../labs/scheduling/tolerations/delayed-eviction-pod.yaml) | tolerationSeconds delayed eviction. |
+| [`gpu-workload.yaml`](../labs/scheduling/tolerations/gpu-workload.yaml) | GPU-tainted node workload. |
+
+---
+
 ---
 
 ## Understanding Taints and Tolerations

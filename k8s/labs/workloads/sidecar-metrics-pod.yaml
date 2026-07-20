@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sidecar-metrics
+spec:
+  containers:
+  # Main application
+  - name: webapp
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      mkdir -p /tmp/metrics
+      echo "Web application started"
+      while true; do
+        # Simulate application metrics
+        REQUESTS=\$((RANDOM % 1000))
+        LATENCY=\$((RANDOM % 500))
+        echo "requests_total \$REQUESTS" > /tmp/metrics/metrics.txt
+        echo "request_latency_ms \$LATENCY" >> /tmp/metrics/metrics.txt
+        sleep 5
+      done
+    volumeMounts:
+    - name: metrics-volume
+      mountPath: /tmp/metrics
+
+  # Metrics exporter sidecar
+  - name: metrics-exporter
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Metrics exporter started on port 9090"
+      mkdir -p /www
+      while true; do
+        if [ -f /tmp/metrics/metrics.txt ]; then
+          cp /tmp/metrics/metrics.txt /www/metrics
+          echo "Metrics updated: \$(cat /www/metrics)"
+        fi
+        sleep 3
+      done
+    volumeMounts:
+    - name: metrics-volume
+      mountPath: /tmp/metrics
+    ports:
+    - containerPort: 9090
+      name: metrics
+
+  volumes:
+  - name: metrics-volume
+    emptyDir: {}

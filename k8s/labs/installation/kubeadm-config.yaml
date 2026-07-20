@@ -1,0 +1,30 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+kubernetesVersion: v1.29.0
+# Load balancer endpoint
+controlPlaneEndpoint: "k8s-api.example.com:6443"
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+etcd:
+  local:
+    # External etcd example (comment out for stacked)
+    # external:
+    #   endpoints:
+    #     - https://10.0.0.31:2379
+    #     - https://10.0.0.32:2379
+    #     - https://10.0.0.33:2379
+    #   caFile: /etc/kubernetes/pki/etcd/ca.crt
+    #   certFile: /etc/kubernetes/pki/apiserver-etcd-client.crt
+    #   keyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "10.0.0.11"
+  bindPort: 6443
+nodeRegistration:
+  criSocket: unix:///var/run/containerd/containerd.sock
+  taints:
+    - key: node-role.kubernetes.io/control-plane
+      effect: NoSchedule

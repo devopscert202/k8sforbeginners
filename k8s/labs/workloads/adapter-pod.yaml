@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adapter-pattern
+spec:
+  containers:
+  # Main application with non-standard log format
+  - name: legacy-app
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Legacy application started"
+      mkdir -p /var/log/app
+      while true; do
+        # Logs in custom format: TIMESTAMP|LEVEL|MESSAGE
+        echo "\$(date +%s)|\$((RANDOM % 4))|User action: operation_\$RANDOM" >> /var/log/app/legacy.log
+        sleep 3
+      done
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log/app
+
+  # Adapter container that transforms logs to JSON
+  - name: log-adapter
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Log adapter started"
+      echo "Converting legacy logs to JSON format"
+      while true; do
+        if [ -f /var/log/app/legacy.log ]; then
+          # Read last line and convert to JSON
+          tail -n 1 /var/log/app/legacy.log | while IFS='|' read timestamp level message; do
+            if [ -n "\$timestamp" ]; then
+              echo "{\"timestamp\": \$timestamp, \"level\": \$level, \"message\": \"\$message\"}"
+            fi
+          done
+          sleep 3
+        else
+          sleep 1
+        fi
+      done
+    volumeMounts:
+    - name: log-volume
+      mountPath: /var/log/app
+
+  volumes:
+  - name: log-volume
+    emptyDir: {}

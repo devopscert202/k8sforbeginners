@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ambassador-pattern
+spec:
+  containers:
+  # Main application
+  - name: application
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Application started"
+      echo "Connecting to database via ambassador at localhost:3306"
+      while true; do
+        echo "\$(date): Executing query via localhost:3306"
+        # In real scenario, app connects to localhost:3306
+        # Ambassador forwards to actual database
+        sleep 10
+      done
+
+  # Ambassador proxy container
+  - name: db-ambassador
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Ambassador proxy started"
+      echo "Listening on port 3306"
+      echo "Forwarding to mysql-service:3306"
+      while true; do
+        echo "\$(date): Ambassador: Proxying database connection"
+        echo "         - Connection pooling enabled"
+        echo "         - Circuit breaker: CLOSED"
+        echo "         - Active connections: \$((RANDOM % 10))"
+        sleep 15
+      done
+    ports:
+    - containerPort: 3306
+      name: mysql-proxy

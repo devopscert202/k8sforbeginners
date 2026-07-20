@@ -24,13 +24,22 @@ By the end of this lab, you will be able to:
 
 ## Repository YAML Files
 
-Under `k8s/labs/workloads/`:
-
 | File | Description |
 |------|-------------|
-| `frontend-app.yaml` | Deployment `frontend-app` (3 replicas, nginx) used in Exercise 1. |
+| [`frontend-app.yaml`](../labs/workloads/frontend-app.yaml) | Deployment `frontend-app` (3 replicas, nginx) used in Exercise 1. |
+| [`frontend-production.yaml`](../labs/workloads/frontend-production.yaml) | Production-ready Deployment `frontend-app-prod` with probes, resources, and `version: blue` label. |
+| [`frontend-config.yaml`](../labs/workloads/frontend-config.yaml) | ConfigMap with API URLs, feature flags, and nginx server block. |
+| [`frontend-with-config.yaml`](../labs/workloads/frontend-with-config.yaml) | Deployment mounting ConfigMap as env vars and nginx config file. |
+| [`spa-runtime-config.yaml`](../labs/workloads/spa-runtime-config.yaml) | Runtime `config.js` ConfigMap for SPA frontends. |
+| [`spa-deployment.yaml`](../labs/workloads/spa-deployment.yaml) | SPA Deployment with runtime config injection. |
+| [`frontend-hpa-advanced.yaml`](../labs/workloads/frontend-hpa-advanced.yaml) | HPA with CPU and memory metrics. |
+| [`frontend-green.yaml`](../labs/workloads/deployment-strategies/frontend-green.yaml) | Green deployment for blue-green strategy. |
+| [`frontend-app-green-service.yaml`](../labs/workloads/deployment-strategies/frontend-app-green-service.yaml) | Service to test green deployment before traffic switch. |
+| [`frontend-canary.yaml`](../labs/workloads/deployment-strategies/frontend-canary.yaml) | Canary deployment (20% traffic split). |
+| [`frontend-ingress.yaml`](../labs/workloads/frontend-ingress.yaml) | Ingress for frontend routing. |
+| [`frontend-ingress-tls.yaml`](../labs/workloads/frontend-ingress-tls.yaml) | Ingress with TLS termination. |
 
-Other exercises build manifests with shell heredocs (`frontend-production.yaml`, ConfigMaps, Ingress, etc.); those filenames are created locally when you run the `cat <<EOF` steps.
+Exercises use `kubectl apply -f ../labs/...` from the `k8s/labmanuals/` directory, or equivalent heredocs that write the same filenames locally.
 
 ---
 
@@ -207,7 +216,7 @@ spec:
       labels:
         app: frontend
         tier: web
-        version: v1
+        version: blue
     spec:
       containers:
       - name: nginx
@@ -447,8 +456,8 @@ spec:
         # Mount ConfigMap as files
         volumeMounts:
         - name: config-volume
-          mountPath: /etc/nginx/conf.d
-          subPath: nginx.conf
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
         - name: cache
           mountPath: /var/cache/nginx
         - name: run
@@ -719,25 +728,42 @@ EOF
 
 kubectl apply -f frontend-green.yaml
 
-# Test green deployment
+# Create a temporary Service that selects only the green Pods
+kubectl expose deployment frontend-app-green \
+  --name=frontend-app-green \
+  --port=80 \
+  --target-port=80
+
+# Test green deployment through its dedicated Service
 kubectl run test-pod --rm -it --image=busybox --restart=Never -- wget -q -O- http://frontend-app-green
 
-# Switch traffic to green
-kubectl patch service frontend-service -p '{"spec":{"selector":{"version":"green"}}}'
+# Replace the original Service selector so it no longer retains run=frontend-app
+kubectl patch service frontend-service --type=json \
+  -p='[{"op":"replace","path":"/spec/selector","value":{"app":"frontend","version":"green"}}]'
 
 # Verify traffic switch
 kubectl describe service frontend-service | grep Selector
 
-# Rollback if needed
-kubectl patch service frontend-service -p '{"spec":{"selector":{"version":"blue"}}}'
+# Roll back to the original blue Deployment if needed
+kubectl patch service frontend-service --type=json \
+  -p='[{"op":"replace","path":"/spec/selector","value":{"app":"frontend","version":"blue"}}]'
 
-# Delete old blue deployment after verification
-kubectl delete deployment frontend-app-prod
+# Remove the temporary green-only test Service
+kubectl delete service frontend-app-green
 ```
+
+Keep `frontend-app-prod` running for the canary exercise below. Delete the blue
+Deployment only after the canary has been fully promoted.
 
 ### Strategy 3: Canary Deployment
 
+> **Standalone / after blue-green:** If you deleted `frontend-app-prod` in the blue-green step, re-create it first: `kubectl apply -f ../labs/workloads/frontend-production.yaml` (and ensure `frontend-service` exists from Exercise 1).
+
 ```bash
+# Route by app label so both stable and canary Pods can receive traffic
+kubectl patch service frontend-service --type=json \
+  -p='[{"op":"replace","path":"/spec/selector","value":{"app":"frontend"}}]'
+
 # Scale down main deployment to 8 replicas
 kubectl scale deployment frontend-app-prod --replicas=8
 
@@ -774,7 +800,7 @@ kubectl top pods -l version=canary
 kubectl scale deployment frontend-app-canary --replicas=10
 kubectl scale deployment frontend-app-prod --replicas=0
 
-# Delete old deployment
+# Delete the old deployment only after the canary is healthy
 kubectl delete deployment frontend-app-prod
 ```
 

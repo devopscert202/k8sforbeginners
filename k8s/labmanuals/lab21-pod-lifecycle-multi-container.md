@@ -1032,7 +1032,7 @@ cat > service-mesh-pod.yaml <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
-  name: service-mesh-demo
+  name: service-mesh-pod
   labels:
     app: myservice
     version: v1
@@ -1215,13 +1215,23 @@ The following pre-built YAML manifests are available in the repository for this 
 
 | File | Description |
 |------|-------------|
-| `k8s/labs/workloads/podlifecycle.yaml` | Simple nginx Pod named `webserver` in namespace `test` with labels `app`, `tier`, `version`, and `env`; exposes container port 80. Use as a starting point for lifecycle, labeling, or namespace-scoped exercises (create namespace `test` if needed). |
-| `k8s/labs/workloads/multi-pod.yaml` | Two-container Pod `multicontainer-pod` (nginx + redis) for localhost networking exercises. |
-| `k8s/labs/workloads/sidecar-container-spec.yaml` | Pod `modern-sidecar-demo` using initContainer sidecar with `restartPolicy: Always` (Kubernetes 1.28+). |
+| [`podlifecycle.yaml`](../labs/workloads/podlifecycle.yaml) | Simple nginx Pod named `webserver` in namespace `test` with labels `app`, `tier`, `version`, and `env`; exposes container port 80. |
+| [`multi-pod.yaml`](../labs/workloads/multi-pod.yaml) | Two-container Pod `multicontainer-pod` (nginx + redis) for localhost networking exercises. |
+| [`sidecar-container-spec.yaml`](../labs/workloads/sidecar-container-spec.yaml) | Pod `modern-sidecar-demo` using initContainer sidecar with `restartPolicy: Always` (Kubernetes 1.28+). |
+| [`lifecycle-hooks-pod.yaml`](../labs/workloads/lifecycle-hooks-pod.yaml) | Pod with postStart and preStop exec hooks. |
+| [`lifecycle-hooks-observable.yaml`](../labs/workloads/lifecycle-hooks-observable.yaml) | Observable lifecycle hooks with log-watcher sidecar. |
+| [`failing-poststart.yaml`](../labs/workloads/failing-poststart.yaml) | postStart hook failure demonstration. |
+| [`sidecar-logging-pod.yaml`](../labs/workloads/sidecar-logging-pod.yaml) | Sidecar log shipping pattern. |
+| [`sidecar-metrics-pod.yaml`](../labs/workloads/sidecar-metrics-pod.yaml) | Sidecar metrics exporter pattern. |
+| [`ambassador-pod.yaml`](../labs/workloads/ambassador-pod.yaml) | Ambassador proxy pattern. |
+| [`adapter-pod.yaml`](../labs/workloads/adapter-pod.yaml) | Adapter log format conversion pattern. |
+| [`service-mesh-pod.yaml`](../labs/workloads/service-mesh-pod.yaml) | Service mesh sidecar simulation Pod `service-mesh-pod`. |
+| [`multi-pattern-pod.yaml`](../labs/workloads/multi-pattern-pod.yaml) | Combined init, sidecar, and adapter patterns. |
 
 You can apply these directly (from repo root):
 
 ```bash
+kubectl create namespace test --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f k8s/labs/workloads/podlifecycle.yaml
 kubectl apply -f k8s/labs/workloads/multi-pod.yaml
 kubectl apply -f k8s/labs/workloads/sidecar-container-spec.yaml
@@ -1235,19 +1245,22 @@ Remove all resources created in this lab:
 
 ```bash
 # Delete lifecycle Pods
-kubectl delete pod lifecycle-demo lifecycle-observable http-lifecycle-working failing-poststart
+kubectl delete pod lifecycle-demo lifecycle-observable http-lifecycle-working failing-poststart --ignore-not-found
 
 # Delete multi-container Pods
-kubectl delete pod multicontainer-pod sidecar-logging sidecar-metrics
+kubectl delete pod multicontainer-pod sidecar-logging sidecar-metrics --ignore-not-found
 
 # Delete modern sidecar Pod
-kubectl delete pod modern-sidecar-demo
+kubectl delete pod modern-sidecar-demo --ignore-not-found
 
 # Delete pattern Pods
-kubectl delete pod ambassador-pattern adapter-pattern service-mesh-demo multi-pattern-demo
+kubectl delete pod ambassador-pattern adapter-pattern service-mesh-pod multi-pattern-demo --ignore-not-found
 
-# Delete from YAML files
-kubectl delete -f multi-pod.yaml
+# Delete repository examples if you applied them
+kubectl delete -f k8s/labs/workloads/podlifecycle.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/multi-pod.yaml --ignore-not-found
+kubectl delete -f k8s/labs/workloads/sidecar-container-spec.yaml --ignore-not-found
+kubectl delete namespace test --ignore-not-found
 
 # Verify cleanup
 kubectl get pods

@@ -1,0 +1,31 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: "require-resource-limits"
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+    - apiGroups: ["apps"]
+      apiVersions: ["v1"]
+      operations: ["CREATE", "UPDATE"]
+      resources: ["deployments"]
+  validations:
+  - expression: "object.spec.template.spec.containers.all(c, has(c.resources.limits.memory))"
+    message: "All containers must have memory limits"
+  - expression: "object.spec.template.spec.containers.all(c, has(c.resources.limits.cpu))"
+    message: "All containers must have CPU limits"
+  - expression: "object.spec.replicas <= 10"
+    message: "Deployment cannot have more than 10 replicas"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: "require-resource-limits-binding"
+spec:
+  policyName: "require-resource-limits"
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        cel-validation: "enabled"

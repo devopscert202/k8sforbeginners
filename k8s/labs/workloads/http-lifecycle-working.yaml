@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: http-lifecycle-working
+spec:
+  containers:
+  - name: main-app
+    image: busybox
+    command:
+    - sh
+    - -c
+    - |
+      echo "Starting web server..."
+      mkdir -p /www
+      cat > /www/index.html <<HTML
+      <html><body>Main Application</body></html>
+      HTML
+      cd /www
+      httpd -f -p 8080
+    ports:
+    - containerPort: 8080
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - sh
+          - -c
+          - |
+            # Wait for server to be ready
+            sleep 3
+            echo "Application registered with service mesh"
+      preStop:
+        exec:
+          command:
+          - sh
+          - -c
+          - |
+            echo "Deregistering from service mesh"
+            sleep 5
+            echo "Deregistration complete"

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: resource-init-pod
+spec:
+  initContainers:
+  - name: data-processor
+    image: busybox
+    command: ['sh', '-c', 'echo "Processing data..."; sleep 10; echo "Done"']
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "100m"
+      limits:
+        memory: "64Mi"
+        cpu: "200m"
+  containers:
+  - name: application
+    image: busybox
+    command: ['sh', '-c', 'echo "App running"; sleep 3600']
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
