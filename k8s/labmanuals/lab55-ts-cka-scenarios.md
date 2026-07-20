@@ -13,7 +13,7 @@ Work through scenarios in order or jump using the index. Treat each scenario lik
 - Running Kubernetes cluster (**kubeadm-based** preferred so you can use static pod paths, `kubeadm certs`, and node SSH patterns shown here)
 - `kubectl` configured; **SSH** to control plane and worker nodes (sudo where noted)
 - Solid comfort with pods, Deployments, Services, Namespaces, and `kubectl describe` / events
-- Completed the troubleshooting fundamentals track: [Lab 49: Cluster and Control Plane](lab49-ts-cluster-control-plane.md), [Lab 50: Pod Failures](lab50-ts-pod-failures.md), [Lab 51: Kubelet and Node](lab51-ts-kubelet-node.md), and companion labs **52–54** in your curriculum (networking, storage, workloads/security as your course defines them)
+- Completed the troubleshooting fundamentals track: [Lab 49: Cluster and Control Plane](lab49-ts-cluster-control-plane.md), [Lab 50: Pod Failures](lab50-ts-pod-failures.md), [Lab 51: Kubelet and Node](lab51-ts-kubelet-node.md), [Lab 52: Networking](lab52-ts-networking.md), [Lab 53: Workload Debugging](lab53-ts-workload-debugging.md), and [Lab 54: Troubleshooting Command Reference](lab54-ts-commands-reference.md)
 
 > **Safety:** Several scenarios intentionally describe destructive or disruptive states. Use a **lab cluster** only. Do not run certificate renewals or manifest surgery on production without change control.
 
@@ -28,6 +28,24 @@ Work through scenarios in order or jump using the index. Treat each scenario lik
 | [`allow-frontend-backend.yaml`](../labs/troubleshooting/allow-frontend-backend.yaml) | Scenario 5 (NetworkPolicy allow; namespace `app`) |
 | [`storageclass-fast.yaml`](../labs/troubleshooting/storageclass-fast.yaml) | Scenario 6 (illustrative `StorageClass`; adjust provisioner for your cluster) |
 | [`role-pod-reader.yaml`](../labs/troubleshooting/role-pod-reader.yaml) | Scenario 10 (`Role` in namespace `dev`) |
+| [`lab55-networkpolicy-setup.yaml`](../labs/troubleshooting/lab55-networkpolicy-setup.yaml) | Runnable broken frontend/backend policy setup for Scenario 5 |
+| [`lab55-pvc-setup.yaml`](../labs/troubleshooting/lab55-pvc-setup.yaml) | PVC and Pod that request the missing `fast` class for Scenario 6 |
+| [`lab55-rollout-setup.yaml`](../labs/troubleshooting/lab55-rollout-setup.yaml) | Known-good `web` Deployment used to create a bad rollout in Scenario 7 |
+| [`lab55-rbac-setup.yaml`](../labs/troubleshooting/lab55-rbac-setup.yaml) | RoleBinding that references a missing Role for Scenario 10 |
+
+Before starting, copy the three solution manifests to a scratch directory. This
+keeps all learner edits and cleanup outside the tracked repository:
+
+```bash
+mkdir -p /tmp/lab55
+cp k8s/labs/troubleshooting/allow-frontend-backend.yaml /tmp/lab55/
+cp k8s/labs/troubleshooting/storageclass-fast.yaml /tmp/lab55/
+cp k8s/labs/troubleshooting/role-pod-reader.yaml /tmp/lab55/
+```
+
+Scenarios 1–4, 8, and 9 are node/control-plane drills whose setup depends on
+your kubeadm lab environment. Scenarios 5–7 and 10 have the runnable setup
+manifests listed above.
 
 ---
 
@@ -353,6 +371,13 @@ Expect a successful answer for `kubernetes.default.svc.cluster.local`.
 
 In namespace `app`, a **frontend** Deployment could reach **backend** before someone applied NetworkPolicies. After the change, `curl` from frontend to the backend Service fails (timeout or connection refused at the network layer), while Endpoints still exist.
 
+Create that broken state from the repository root:
+
+```bash
+kubectl apply -f k8s/labs/troubleshooting/lab55-networkpolicy-setup.yaml
+kubectl wait -n app --for=condition=available deployment/frontend deployment/backend --timeout=90s
+```
+
 ### Task
 
 Restore **frontend → backend** connectivity **without** removing all security—add an explicit allow that matches your intent.
@@ -405,13 +430,11 @@ spec:
           port: 8080
 ```
 
-Save as `allow-frontend-backend-local.yaml` and apply:
+Apply the scratch copy prepared under `/tmp`:
 
 ```bash
-kubectl apply -f ../labs/troubleshooting/allow-frontend-backend.yaml
+kubectl apply -f /tmp/lab55/allow-frontend-backend.yaml
 ```
-
-Or copy the manifest above to a local file in your working directory (do not overwrite the tracked repo file).
 
 If the client lives in another namespace, add a `namespaceSelector` (and possibly labels on the namespace).
 
@@ -434,6 +457,12 @@ Expect HTTP success (or your app’s health response). Confirm you did not attac
 ### Setup
 
 A workload pod stays **Pending**. Events mention the **PersistentVolumeClaim** cannot bind.
+
+Create the broken state from the repository root:
+
+```bash
+kubectl apply -f k8s/labs/troubleshooting/lab55-pvc-setup.yaml
+```
 
 ### Task
 
@@ -481,13 +510,22 @@ volumeBindingMode: WaitForFirstConsumer
 For cloud or dynamic provisioning, set the correct `provisioner` and parameters for your platform, then:
 
 ```bash
-kubectl apply -f ../labs/troubleshooting/storageclass-fast.yaml
+kubectl apply -f /tmp/lab55/storageclass-fast.yaml
 ```
 
-**Option B — repoint** the PVC to an existing class:
+The repository example uses `kubernetes.io/no-provisioner`, so it does not
+dynamically create a volume. Supply a matching static PV, or change the scratch
+copy to a provisioner installed in your lab cluster, before expecting the claim
+to bind.
+
+**Option B — recreate** the PVC with an existing class. `storageClassName` is
+immutable after a PVC is created, so an in-place patch is not valid:
 
 ```bash
-kubectl patch pvc data-vol -n dev -p '{"spec":{"storageClassName":"standard"}}'
+kubectl delete pod storage-demo -n dev
+kubectl delete pvc data-vol -n dev
+sed 's/storageClassName: fast/storageClassName: standard/' \
+  k8s/labs/troubleshooting/lab55-pvc-setup.yaml | kubectl apply -f -
 ```
 
 ### Verification
@@ -515,6 +553,9 @@ The pod should leave `Pending` (assuming no other constraints).
 ### Setup
 
 ```bash
+kubectl apply -f k8s/labs/troubleshooting/lab55-rollout-setup.yaml
+kubectl rollout status deployment/web
+kubectl set image deployment/web web=nginx:definitely-not-a-real-tag
 kubectl rollout status deployment/web
 ```
 
@@ -722,6 +763,12 @@ Pending pods that are otherwise schedulable should transition to **Running**.
 
 User **dev-user** receives API errors when listing pods in namespace **dev**:
 
+Create the broken RoleBinding from the repository root:
+
+```bash
+kubectl apply -f k8s/labs/troubleshooting/lab55-rbac-setup.yaml
+```
+
 ```text
 User "dev-user" cannot list resource "pods" in API group "" in the namespace "dev"
 ```
@@ -777,7 +824,7 @@ rules:
 ```
 
 ```bash
-kubectl apply -f ../labs/troubleshooting/role-pod-reader.yaml
+kubectl apply -f /tmp/lab55/role-pod-reader.yaml
 ```
 
 If the RoleBinding pointed at the wrong name, either **rename** the Role to match `roleRef` or **patch** the RoleBinding’s `roleRef.name` to `pod-reader`.
@@ -866,20 +913,26 @@ kubectl logs <pod> -n <ns> --previous
 
 ## Cleanup
 
-Remove only scratch copies you created in your current working directory (not the tracked files under `k8s/labs/troubleshooting/`):
+Delete the namespaced objects created by the runnable setups:
 
 ```bash
-# Local copies only — do NOT run this from k8s/labs/troubleshooting/
-rm -f ./allow-frontend-backend-local.yaml ./role-pod-reader-local.yaml ./storageclass-fast-local.yaml
+kubectl delete deployment frontend backend -n app --ignore-not-found
+kubectl delete service backend -n app --ignore-not-found
+kubectl delete networkpolicy deny-all-ingress allow-frontend-to-backend -n app --ignore-not-found
+kubectl delete pod storage-demo -n dev --ignore-not-found
+kubectl delete pvc data-vol -n dev --ignore-not-found
+kubectl delete rolebinding dev-readonly -n dev --ignore-not-found
+kubectl delete role pod-reader -n dev --ignore-not-found
+kubectl delete deployment web --ignore-not-found
+kubectl delete storageclass fast --ignore-not-found
 ```
 
-If you applied sample policies or PVCs in a dedicated lab namespace:
+Remove only the `/tmp` scratch directory. This command cannot remove the
+tracked manifests under `k8s/labs/troubleshooting/`:
 
 ```bash
-kubectl delete namespace lab55-cka-scenarios
+rm -rf /tmp/lab55
 ```
-
-(Only if you used that namespace for experiments.)
 
 On nodes, **do not** leave broken manifests in `/etc/kubernetes/manifests/`; restore from backup after drills.
 

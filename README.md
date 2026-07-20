@@ -6,9 +6,9 @@
 ![Labs](https://img.shields.io/badge/Labs-62-blueviolet)
 ![HTML Guides](https://img.shields.io/badge/Interactive%20HTML-86-orange)
 ![Docs](https://img.shields.io/badge/Concept%20Docs-65-green)
-![YAML](https://img.shields.io/badge/YAML%20Manifests-216-yellow)
+![YAML](https://img.shields.io/badge/YAML%20Manifests-301-yellow)
 
-**A structured, hands-on Kubernetes learning resource — 62 lab manuals, 86 interactive HTML pages, 65 concept documents, and 216 ready-to-deploy YAML manifests.**
+**A structured, hands-on Kubernetes learning resource — 62 lab manuals, 86 interactive HTML pages, 65 concept documents, and 301 ready-to-deploy YAML manifests.**
 
 </div>
 
@@ -24,7 +24,7 @@ This repository is a self-contained Kubernetes curriculum built around three pil
 | **Lab Manuals** | `k8s/labmanuals/` | The *how* — step-by-step exercises you run on a real cluster |
 | **Interactive HTML** | `k8s/html/` | The *visual* — self-contained browser pages with diagrams, tabs, and interactive walkthroughs |
 
-Supporting these are **216 YAML manifests** (`k8s/labs/`) that every lab references, so you always apply real files rather than pasting inline snippets.
+Supporting these are **301 YAML manifests** (`k8s/labs/`) that every lab references, so you always apply real files rather than pasting inline snippets.
 
 ### Who Is This For?
 
@@ -59,7 +59,7 @@ k8sforbeginners/
 │   ├── html/                  86 interactive HTML pages (work offline)
 │   │   ├── index.html         Visual catalog of all HTML explainers
 │   │   └── README.md          HTML page inventory by category
-│   ├── labs/                  216 YAML manifests organized by category
+│   ├── labs/                  301 YAML manifests organized by category
 │   │   ├── basics/            Pods, Services
 │   │   ├── workloads/         Deployments, Jobs, CronJobs, StatefulSets
 │   │   ├── networking/        DNS, Ingress, Gateway API, EndpointSlices
@@ -205,7 +205,7 @@ Every doc focuses on concepts, comparisons, and best practices. Hands-on steps l
 
 ---
 
-## YAML Manifests (216 Files)
+## YAML Manifests (301 Files)
 
 All manifests live under `k8s/labs/` in 18 subdirectories. They are:
 
@@ -264,7 +264,7 @@ When submitting changes, test all commands on a real cluster and follow the exis
 
 <div align="center">
 
-**62 labs** | **86 interactive HTML pages** | **65 concept docs** | **216 YAML manifests** | **Kubernetes v1.24–v1.32**
+**62 labs** | **86 interactive HTML pages** | **65 concept docs** | **301 YAML manifests** | **Kubernetes v1.24–v1.32**
 
 Last updated: July 2026
 
