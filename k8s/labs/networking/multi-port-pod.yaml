@@ -6,12 +6,19 @@ metadata:
     app: multi-port-app
 spec:
   containers:
-  - name: multi-port-container
-    image: hashicorp/http-echo
+  - name: http
+    image: hashicorp/http-echo:1.0
     args:
-    - "-text=Hello, Multi-Port Service!"
+    - "-listen=:8080"
+    - "-text=Hello on port 8080!"
     ports:
     - containerPort: 8080
       name: http
+  - name: custom
+    image: hashicorp/http-echo:1.0
+    args:
+    - "-listen=:9090"
+    - "-text=Hello on port 9090!"
+    ports:
     - containerPort: 9090
       name: custom

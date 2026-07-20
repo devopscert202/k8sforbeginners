@@ -28,6 +28,8 @@ Under `k8s/labs/workloads/`:
 | `daemonset-nodeselect.yaml` | DaemonSet `nginx-ssd-only` with `nodeSelector: disktype: ssd` (label a node before applying). |
 | `daemonset-service.yaml` | NodePort Service `nginx-daemonset-svc` (port 80, nodePort 30080) selecting `app: node-nginx-simple`. |
 
+For optional multi-node Kind testing (Exercise 3), use [`kind-multinode.yaml`](../labs/installation/kind-multinode.yaml) from `k8s/labs/installation/`.
+
 ---
 
 ## What is a DaemonSet?
@@ -250,8 +252,11 @@ If you're using a cluster where you can add nodes:
 # For Minikube
 minikube node add
 
-# For Kind (create multi-node cluster)
-kind create cluster --config=multi-node-config.yaml
+# For Kind (create a multi-node cluster — use a new cluster name if you already have `kind` default)
+cd k8s/labs/installation
+kind create cluster --name daemonset-lab --config=kind-multinode.yaml
+kubectl cluster-info --context kind-daemonset-lab
+cd ../workloads
 ```
 
 After adding a node:

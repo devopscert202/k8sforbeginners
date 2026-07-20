@@ -76,13 +76,20 @@ metadata:
     app: multi-port-app
 spec:
   containers:
-  - name: multi-port-container
-    image: hashicorp/http-echo
+  - name: http
+    image: hashicorp/http-echo:1.0
     args:
-    - "-text=Hello, Multi-Port Service!"
+    - "-listen=:8080"
+    - "-text=Hello on port 8080!"
     ports:
     - containerPort: 8080
       name: http
+  - name: custom
+    image: hashicorp/http-echo:1.0
+    args:
+    - "-listen=:9090"
+    - "-text=Hello on port 9090!"
+    ports:
     - containerPort: 9090
       name: custom
 ```
@@ -90,14 +97,11 @@ spec:
 **Understanding the manifest:**
 
 - `metadata.labels.app: multi-port-app` - Label for Service selector
-- `containers[0].image: hashicorp/http-echo` - Simple HTTP server
-- `args` - Sets the response text
+- Two containers in one Pod, each running `hashicorp/http-echo` on a different port via `-listen=:PORT`
 - `ports` - Declares multiple ports:
   - `containerPort: 8080, name: http` - Primary HTTP port
   - `containerPort: 9090, name: custom` - Secondary custom port
-- **Port names** - Optional but recommended for clarity
-
-**Note**: The hashicorp/http-echo image only actually listens on one port (5678 by default), but this manifest demonstrates the pattern.
+- **Port names** - Optional but recommended for clarity; required when a Service exposes multiple ports
 
 ### Step 3: Review the Multi-Port Service Manifest
 
@@ -149,7 +153,7 @@ spec:
 
 ### Step 1: Create a Working Multi-Port Pod
 
-Since hashicorp/http-echo only listens on one port, let's create a more realistic example:
+The repository demo uses two `http-echo` listeners. For a production-style pattern with HTTP and metrics, create:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -771,7 +775,7 @@ The following pre-built YAML manifests are available in the repository for this 
 
 | File | Description |
 |------|-------------|
-| `k8s/labs/networking/multi-port-pod.yaml` | Demo Pod with two named container ports (`http` 8080, `custom` 9090) using `hashicorp/http-echo` and label `app: multi-port-app` for Service selection. |
+| `k8s/labs/networking/multi-port-pod.yaml` | Demo Pod with two `http-echo` containers listening on ports 8080 and 9090; label `app: multi-port-app` for Service selection. |
 | `k8s/labs/networking/multi-port-service.yaml` | NodePort Service exposing both ports (8080→30080, 9090→30090) with named ports; selector `app: multi-port-app`. Pairs with the demo Pod manifest. |
 
 You can apply these directly:
