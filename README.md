@@ -4,11 +4,11 @@
 
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.24--1.32-326CE5?logo=kubernetes&logoColor=white)
 ![Labs](https://img.shields.io/badge/Labs-62-blueviolet)
-![HTML Guides](https://img.shields.io/badge/Interactive%20HTML-83-orange)
-![Docs](https://img.shields.io/badge/Concept%20Docs-66-green)
-![YAML](https://img.shields.io/badge/YAML%20Manifests-207-yellow)
+![HTML Guides](https://img.shields.io/badge/Interactive%20HTML-86-orange)
+![Docs](https://img.shields.io/badge/Concept%20Docs-65-green)
+![YAML](https://img.shields.io/badge/YAML%20Manifests-216-yellow)
 
-**A structured, hands-on Kubernetes learning resource — 62 lab manuals, 83 interactive HTML explainers, 66 concept documents, and 207 ready-to-deploy YAML manifests.**
+**A structured, hands-on Kubernetes learning resource — 62 lab manuals, 86 interactive HTML pages, 65 concept documents, and 216 ready-to-deploy YAML manifests.**
 
 </div>
 
@@ -24,7 +24,7 @@ This repository is a self-contained Kubernetes curriculum built around three pil
 | **Lab Manuals** | `k8s/labmanuals/` | The *how* — step-by-step exercises you run on a real cluster |
 | **Interactive HTML** | `k8s/html/` | The *visual* — self-contained browser pages with diagrams, tabs, and interactive walkthroughs |
 
-Supporting these are **207 YAML manifests** (`k8s/labs/`) that every lab references, so you always apply real files rather than pasting inline snippets.
+Supporting these are **216 YAML manifests** (`k8s/labs/`) that every lab references, so you always apply real files rather than pasting inline snippets.
 
 ### Who Is This For?
 
@@ -42,8 +42,8 @@ k8sforbeginners/
 ├── README.md                  ← you are here
 ├── k8s/
 │   ├── labmanuals/            62 step-by-step lab manuals (Lab 01–62)
-│   │   └── README.md          Lab catalog with 7 learning paths
-│   ├── docs/                  66 concept documents organized by topic
+│   │   └── README.md          Lab catalog with 8 learning paths
+│   ├── docs/                  65 concept documents organized by topic
 │   │   ├── basics/            Architecture, YAML, kubectl, APIs, crictl
 │   │   ├── security/          RBAC, NetworkPolicy, Gatekeeper, PSS, hardening
 │   │   ├── networking/        Services, DNS, Ingress, EndpointSlices
@@ -56,10 +56,10 @@ k8sforbeginners/
 │   │   ├── aks/               Azure AKS guides
 │   │   ├── aws/               AWS EKS / EC2 guides
 │   │   └── gcp/               Google GKE guide
-│   ├── html/                  83 interactive HTML pages (work offline)
+│   ├── html/                  86 interactive HTML pages (work offline)
 │   │   ├── index.html         Visual catalog of all HTML explainers
 │   │   └── README.md          HTML page inventory by category
-│   ├── labs/                  207 YAML manifests organized by category
+│   ├── labs/                  216 YAML manifests organized by category
 │   │   ├── basics/            Pods, Services
 │   │   ├── workloads/         Deployments, Jobs, CronJobs, StatefulSets
 │   │   ├── networking/        DNS, Ingress, Gateway API, EndpointSlices
@@ -101,12 +101,12 @@ You need a Kubernetes cluster to follow the labs. The recommended setup:
 
 ### 3. Pick a Learning Path
 
-The [Lab Manuals README](k8s/labmanuals/README.md) defines **7 learning paths**. Here are the most common starting points:
+The [Lab Manuals README](k8s/labmanuals/README.md) defines **8 learning paths**. Here are the most common starting points:
 
 | Goal | Path | Where to Start |
 |------|------|---------------|
 | **Brand new to Kubernetes** | Complete Beginner | [Lab 01: Creating Pods](k8s/labmanuals/lab01-basics-creating-pods.md) |
-| **CKA exam preparation** | CKA Certification | [Lab Manuals README](k8s/labmanuals/README.md) — Path 2 |
+| **CKA exam preparation** | CKA Certification | [Lab Manuals README](k8s/labmanuals/README.md) — Path 8 |
 | **Security focus** | Security Specialist | Labs 11–16 + 57 |
 | **Day-to-day operations** | Production Readiness | Labs 09, 36, 30, 37, 40 |
 
@@ -160,15 +160,15 @@ Full catalog with descriptions: [Lab Manuals README](k8s/labmanuals/README.md)
 
 ---
 
-## Interactive HTML Pages (83 Pages)
+## Interactive HTML Pages (86 Pages)
 
 All pages are self-contained, work offline, and require no build step — just open in a browser.
 
 | Category | Pages | Highlights |
 |----------|-------|-----------|
-| Foundations | 9 | Architecture, pod concepts, YAML syntax (3-part series) |
-| Installation | 4 | Kind, kubeadm, kubeconfig contexts |
-| Workloads | 13 | Deployments, DaemonSets, StatefulSets, Jobs, CronJobs, HPA, init containers |
+| Foundations | 10 | Architecture, namespaces, pod concepts, YAML syntax (3-part series) |
+| Installation | 5 | Kind, kubeadm, kubeconfig contexts, regional GKE |
+| Workloads | 14 | Deployments, DaemonSets, StatefulSets, Jobs, CronJobs, HPA, init containers, WordPress |
 | Networking | 11 | Services, DNS, Ingress, Gateway API, EndpointSlices, NetworkPolicy |
 | Configuration | 4 | ConfigMaps patterns, multi-container pods |
 | Security | 6 | RBAC, security context, PSS, Gatekeeper, NetworkPolicy |
@@ -184,13 +184,13 @@ Browse them all: [open the Interactive HTML catalog](https://devopscert202.githu
 
 ---
 
-## Concept Documents (66 Docs)
+## Concept Documents (65 Docs)
 
 Concept docs live under `k8s/docs/` in topic-based subdirectories:
 
 | Directory | Docs | Coverage |
 |-----------|------|----------|
-| `basics/` | 11 | Architecture, intro, objects, YAML, kubectl, crictl, APIs, Kind |
+| `basics/` | 9 | Architecture, intro, objects, YAML, kubectl, crictl, APIs, Kind |
 | `security/` | 10 | RBAC, NetworkPolicy, Gatekeeper, PSS, hardening, scanning, contexts, policies |
 | `networking/` | 7 | Services, DNS, Ingress, EndpointSlices, advanced networking |
 | `workloads/` | 12 | Deployments, DaemonSets, HPA, ConfigMaps, CronJobs, observability, tuning, UIs |
@@ -199,13 +199,13 @@ Concept docs live under `k8s/docs/` in topic-based subdirectories:
 | `upgrade/` | 6 | Upgrade procedure, version skew, v1.27→v1.28 through v1.31→v1.32 |
 | `troubleshooting/` | 1 | Consolidated issues and debugging reference |
 | `deployment/` | 1 | Rollout strategies |
-| `aks/` `aws/` `gcp/` | 7 | Cloud-provider-specific guides |
+| `aks/` `aws/` | 6 | Cloud-provider-specific guides |
 
 Every doc focuses on concepts, comparisons, and best practices. Hands-on steps live in the lab manuals, and each doc links to its related labs at the bottom.
 
 ---
 
-## YAML Manifests (207 Files)
+## YAML Manifests (216 Files)
 
 All manifests live under `k8s/labs/` in 18 subdirectories. They are:
 
@@ -264,8 +264,8 @@ When submitting changes, test all commands on a real cluster and follow the exis
 
 <div align="center">
 
-**62 labs** | **83 interactive HTML pages** | **66 concept docs** | **207 YAML manifests** | **Kubernetes v1.24–v1.32**
+**62 labs** | **86 interactive HTML pages** | **65 concept docs** | **216 YAML manifests** | **Kubernetes v1.24–v1.32**
 
-Last updated: March 2026
+Last updated: July 2026
 
 </div>

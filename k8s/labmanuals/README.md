@@ -50,7 +50,7 @@ Every lab follows a consistent format:
 
 ## Complete Lab Index
 
-Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–58)**.
+Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curriculum order (01–62)**.
 
 | S. No | Category | Lab Name | Description | Link |
 |-------|----------|----------|-------------|------|
@@ -87,7 +87,7 @@ Filenames use **`labNN-{category}-{slug}.md`** where **`NN` is the global curric
 | 31 | Workloads | StatefulSets & Stateful Applications | Deploy and manage stateful applications using StatefulSets with volumeClaimTemplates for persistent data. | [lab31-workload-statefulsets.md](lab31-workload-statefulsets.md) |
 | 32 | Workloads | Headlamp Kubernetes UI | Install Headlamp in-cluster with Helm, access it through port-forward, and validate Kubernetes UI workflows. | [lab32-workload-headlamp-kubernetes-ui.md](lab32-workload-headlamp-kubernetes-ui.md) |
 | 33 | Workloads | Kubernetes Dashboard (Legacy) | Legacy reference for the deprecated Dashboard UI. Prefer Lab 32 (Headlamp) for a current in-cluster UI path. | [lab33-workload-kubernetes-dashboard-legacy.md](lab33-workload-kubernetes-dashboard-legacy.md) |
-| 34 | Networking | Multi-Port Services | Create Services that expose multiple ports for applications with different endpoints. | [lab34-net-multi-port-services.md](lab34-net-multi-port-services.md) |
+| 34 | Networking | Multi-Port Services | Deploy nginx with a Prometheus metrics sidecar and expose HTTP and metrics through a named-port NodePort Service. | [lab34-net-multi-port-services.md](lab34-net-multi-port-services.md) |
 | 35 | Networking | Ingress Controllers | Configure Ingress controllers for HTTP/HTTPS routing with path-based, host-based, and TLS termination. | [lab35-net-ingress.md](lab35-net-ingress.md) |
 | 36 | Observability | Metrics Server | Install and use Metrics Server for resource usage monitoring and metrics collection. | [lab36-observe-metrics-server.md](lab36-observe-metrics-server.md) |
 | 37 | Resource Management | Resource Quotas and Limits | Set resource quotas and limits at namespace and Pod levels for resource governance. | [lab37-resmgmt-resource-quotas-limits.md](lab37-resmgmt-resource-quotas-limits.md) |
@@ -357,7 +357,7 @@ kubectl delete namespace <namespace-name>
 
 ## Summary
 
-- **58 comprehensive labs** covering Kubernetes from basics to advanced topics
+- **62 comprehensive labs** covering Kubernetes from basics to advanced topics
 - **Logical categories** (see index): Basics, Install, Cluster, Pod, Security, Scheduling, Deploy, Workloads, Networking, Observability, Resource Management, Storage, Upgrade, Advanced, Tools, Troubleshooting
 - **8 curated learning paths** for different goals and experience levels
 - **Complete cross-references** between related labs
@@ -370,8 +370,8 @@ kubectl delete namespace <namespace-name>
 
 **Happy Learning!**
 
-*Last Updated: March 29, 2026*
-*Total Labs: 58*
+*Last Updated: July 20, 2026*
+*Total Labs: 62*
 *Kubernetes Compatibility: 1.24+ (with K8s 1.25-1.28+ advanced features)*
 
 For questions, issues, or contributions, please submit a Pull Request or open an issue in the repository.

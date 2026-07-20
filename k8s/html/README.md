@@ -9,13 +9,13 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 
 ## Current Coverage
 
-- 83 HTML pages total in this folder
-- 82 concept explainers plus the home page
+- 86 HTML pages total in this folder
+- 85 concept explainers plus the home page
 - All pages are self-contained and work offline
 
 ## Diagram Catalog (13 Categories)
 
-### 1. Foundations (9 pages)
+### 1. Foundations (10 pages)
 
 - `k8s-architecture-interactive.html` - Control plane and worker node overview
 - `k8s-objects-reference.html` - Kubernetes object quick reference
@@ -25,16 +25,18 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `pod-lifecycle.html` - Pod phases, restarts, and lifecycle transitions
 - `pods-vs-deployments.html` - Beginner path from Pods to Deployments
 - `workloads-pod-concepts.html` - Pod and workload concept landscape
+- `k8s-namespaces.html` - Namespace isolation, scoping, and resource organization
 - `linux-cheat-sheet.html` - Ubuntu Linux basics for K8s learners
 
-### 2. Installation (4 pages)
+### 2. Installation (5 pages)
 
 - `kubernetes-installation.html` - Cluster installation and bootstrap flow
 - `kind-local-kubernetes.html` - Learning-focused local Kubernetes with Kind
 - `helm-charts-overview.html` - Helm chart overview, architecture, and commands
 - `kubeconfig-contexts.html` - Kubeconfig structure, context switching, and multi-cluster management
+- `gke-regional-cluster-interactive.html` - Regional GKE setup and WordPress deployment flow
 
-### 3. Workload Management (13 pages)
+### 3. Workload Management (14 pages)
 
 - `deployment-hierarchy.html` - Deployment to ReplicaSet to Pod hierarchy
 - `replicaset-scaling.html` - ReplicaSet scaling behavior
@@ -49,6 +51,7 @@ This folder contains self-contained interactive HTML explainers for Kubernetes c
 - `jobs-batch-processing.html` - Jobs and run-to-completion workloads
 - `cronjobs-scheduling.html` - CronJob scheduling flow
 - `static-pods.html` - Kubelet-managed static Pod model
+- `wordpress-multi-tier.html` - WordPress and MySQL multi-tier deployment on a two-node cluster
 
 ### 4. Networking (11 pages)
 
@@ -154,4 +157,4 @@ start index.html
 
 ## Last Updated
 
-March 2026
+July 2026
