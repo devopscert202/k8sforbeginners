@@ -6,19 +6,24 @@ metadata:
     app: multi-port-app
 spec:
   containers:
-  - name: http
-    image: hashicorp/http-echo:1.0
-    args:
-    - "-listen=:8080"
-    - "-text=Hello on port 8080!"
+  - name: nginx
+    image: nginx:1.25-alpine
     ports:
-    - containerPort: 8080
+    - containerPort: 80
       name: http
-  - name: custom
-    image: hashicorp/http-echo:1.0
+    volumeMounts:
+    - name: nginx-config
+      mountPath: /etc/nginx/conf.d/default.conf
+      subPath: default.conf
+      readOnly: true
+  - name: metrics
+    image: nginx/nginx-prometheus-exporter:1.1.0
     args:
-    - "-listen=:9090"
-    - "-text=Hello on port 9090!"
+    - -nginx.scrape-uri=http://127.0.0.1/stub_status
     ports:
-    - containerPort: 9090
-      name: custom
+    - containerPort: 9113
+      name: metrics
+  volumes:
+  - name: nginx-config
+    configMap:
+      name: multi-port-nginx-config

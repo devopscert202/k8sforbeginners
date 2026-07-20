@@ -388,7 +388,7 @@
 <h1>Multi-Port Services</h1>
             <p class="subtitle">Interactive guide to named ports, service port mapping, and exposing multi-port applications clearly.</p>
             <div class="lead-panel">
-                <p>Many applications expose more than one interface: app traffic, admin endpoints, metrics, or health ports. Multi-port Services organize those interfaces cleanly.</p>
+                <p>Many applications expose more than one interface: HTTP for users and a separate metrics port for Prometheus. This lab uses nginx on port 80 and nginx-prometheus-exporter on 9113.</p>
             </div>
         </header>
 
@@ -504,161 +504,77 @@
                     <text x="120" y="400" fill="#334155" font-size="12">• Traffic flows: Client → Service Port 8080 → Pod Container Port 80</text>
                 </svg>
 
-                <!-- Multi-Port Service Diagram -->
-                <svg class="svg-diagram" id="multi-port" viewBox="0 0 1000 550" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Title -->
-                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Multi-Port Service Architecture</text>
-
-                    <!-- Clients -->
-                    <g class="diagram-node" data-tooltip="Client accessing HTTP interface">
-                        <circle cx="100" cy="100" r="35" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
-                        <text x="100" y="98" text-anchor="middle" fill="white" font-weight="bold" font-size="12">HTTP</text>
-                        <text x="100" y="110" text-anchor="middle" fill="#fef3c7" font-size="10">Client</text>
+                <!-- Multi-Port Service Diagram (Lab 34: nginx http:80 + metrics:9113) -->
+                <svg class="svg-diagram" id="multi-port" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg">
+                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Multi-Port Service — HTTP + Metrics (Lab 34)</text>
+                    <g class="diagram-node" data-tooltip="Browser or API client hitting the http Service port">
+                        <circle cx="100" cy="130" r="38" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+                        <text x="100" y="128" text-anchor="middle" fill="white" font-weight="bold" font-size="12">HTTP</text>
+                        <text x="100" y="143" text-anchor="middle" fill="#fef3c7" font-size="10">Client</text>
                     </g>
-
-                    <g class="diagram-node" data-tooltip="Prometheus scraping metrics">
-                        <circle cx="100" cy="200" r="35" fill="#10b981" stroke="#059669" stroke-width="2"/>
-                        <text x="100" y="198" text-anchor="middle" fill="white" font-weight="bold" font-size="11">Metrics</text>
-                        <text x="100" y="210" text-anchor="middle" fill="#d1fae5" font-size="10">Client</text>
+                    <g class="diagram-node" data-tooltip="Prometheus or curl scraping the metrics Service port">
+                        <circle cx="100" cy="250" r="38" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <text x="100" y="248" text-anchor="middle" fill="white" font-weight="bold" font-size="11">Prometheus</text>
+                        <text x="100" y="263" text-anchor="middle" fill="#d1fae5" font-size="10">Client</text>
                     </g>
-
-                    <g class="diagram-node" data-tooltip="Admin accessing management interface">
-                        <circle cx="100" cy="300" r="35" fill="#6366f1" stroke="#4f46e5" stroke-width="2"/>
-                        <text x="100" y="298" text-anchor="middle" fill="white" font-weight="bold" font-size="12">Admin</text>
-                        <text x="100" y="310" text-anchor="middle" fill="#e0e7ff" font-size="10">Client</text>
+                    <line x1="138" y1="130" x2="230" y2="150" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="170" y="125" fill="#d97706" font-size="10" font-weight="600">svc:80</text>
+                    <line x1="138" y1="250" x2="230" y2="220" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <text x="165" y="255" fill="#059669" font-size="10" font-weight="600">svc:9113</text>
+                    <g class="diagram-node" data-tooltip="NodePort Service multi-port-service with named ports http and metrics">
+                        <rect x="230" y="100" width="340" height="180" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
+                        <text x="400" y="125" text-anchor="middle" fill="white" font-weight="bold" font-size="15">Service: multi-port-service</text>
+                        <rect x="250" y="140" width="300" height="52" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="270" y="162" fill="#92400e" font-weight="bold" font-size="12">name: http</text>
+                        <text x="270" y="180" fill="#92400e" font-size="11">port: 80 → targetPort: http → nodePort: 30080</text>
+                        <rect x="250" y="205" width="300" height="52" rx="6" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
+                        <text x="270" y="227" fill="#166534" font-weight="bold" font-size="12">name: metrics</text>
+                        <text x="270" y="245" fill="#166534" font-size="11">port: 9113 → targetPort: metrics → nodePort: 30113</text>
                     </g>
-
-                    <!-- Arrows to Service -->
-                    <line x1="135" y1="100" x2="230" y2="120" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <text x="165" y="105" text-anchor="start" fill="#d97706" font-size="10" font-weight="600">8080</text>
-
-                    <line x1="135" y1="200" x2="230" y2="200" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <text x="165" y="195" text-anchor="start" fill="#059669" font-size="10" font-weight="600">9090</text>
-
-                    <line x1="135" y1="300" x2="230" y2="280" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <text x="165" y="295" text-anchor="start" fill="#4f46e5" font-size="10" font-weight="600">8081</text>
-
-                    <!-- Service -->
-                    <g class="diagram-node" data-tooltip="Multi-port service with named ports for different interfaces">
-                        <rect x="230" y="80" width="360" height="240" rx="8" fill="#326CE5" stroke="#1d4ed8" stroke-width="2"/>
-                        <text x="410" y="105" text-anchor="middle" fill="white" font-weight="bold" font-size="16">Service: my-app (Multi-Port)</text>
-
-                        <!-- Port 1: HTTP -->
-                        <rect x="250" y="120" width="320" height="50" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                        <text x="280" y="140" text-anchor="start" fill="#92400e" font-weight="bold" font-size="12">name: http</text>
-                        <text x="280" y="157" text-anchor="start" fill="#92400e" font-size="11">port: 8080 → targetPort: 8080</text>
-
-                        <!-- Port 2: Metrics -->
-                        <rect x="250" y="180" width="320" height="50" rx="6" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
-                        <text x="280" y="200" text-anchor="start" fill="#166534" font-weight="bold" font-size="12">name: metrics</text>
-                        <text x="280" y="217" text-anchor="start" fill="#166534" font-size="11">port: 9090 → targetPort: 9090</text>
-
-                        <!-- Port 3: Admin -->
-                        <rect x="250" y="240" width="320" height="50" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
-                        <text x="280" y="260" text-anchor="start" fill="#4338ca" font-weight="bold" font-size="12">name: admin</text>
-                        <text x="280" y="277" text-anchor="start" fill="#4338ca" font-size="11">port: 8081 → targetPort: 8081</text>
+                    <line x1="570" y1="166" x2="660" y2="166" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <line x1="570" y1="231" x2="660" y2="231" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <rect x="660" y="90" width="280" height="200" rx="8" fill="#f8fbff" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="800" y="115" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="12">Pod: multi-port-pod</text>
+                    <g class="diagram-node" data-tooltip="nginx container serving HTTP on port 80">
+                        <rect x="690" y="135" width="220" height="55" rx="6" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
+                        <text x="800" y="158" text-anchor="middle" fill="white" font-weight="bold" font-size="13">nginx</text>
+                        <text x="800" y="176" text-anchor="middle" fill="#ede9fe" font-size="11">containerPort http: 80</text>
                     </g>
-
-                    <!-- Arrows to Pods -->
-                    <line x1="590" y1="145" x2="680" y2="145" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <text x="615" y="138" text-anchor="start" fill="#d97706" font-size="10" font-weight="600">:8080</text>
-
-                    <line x1="590" y1="205" x2="680" y2="205" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <text x="615" y="198" text-anchor="start" fill="#059669" font-size="10" font-weight="600">:9090</text>
-
-                    <line x1="590" y1="265" x2="680" y2="265" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <text x="615" y="258" text-anchor="start" fill="#4f46e5" font-size="10" font-weight="600">:8081</text>
-
-                    <!-- Pods Container -->
-                    <rect x="680" y="80" width="260" height="240" rx="8" fill="#f8fbff" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5,5"/>
-                    <text x="810" y="105" text-anchor="middle" fill="#64748b" font-weight="bold" font-size="12">Backend Pods</text>
-
-                    <!-- Pod with multiple ports -->
-                    <g class="diagram-node" data-tooltip="Pod exposing multiple container ports">
-                        <rect x="710" y="130" width="200" height="170" rx="8" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2"/>
-                        <text x="810" y="155" text-anchor="middle" fill="white" font-weight="bold" font-size="14">Pod: app-pod-1</text>
-
-                        <!-- Container Ports -->
-                        <rect x="730" y="170" width="160" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1"/>
-                        <text x="810" y="192" text-anchor="middle" fill="#92400e" font-size="11">http: 8080</text>
-
-                        <rect x="730" y="215" width="160" height="35" rx="4" fill="#dcfce7" stroke="#10b981" stroke-width="1"/>
-                        <text x="810" y="237" text-anchor="middle" fill="#166534" font-size="11">metrics: 9090</text>
-
-                        <rect x="730" y="260" width="160" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
-                        <text x="810" y="282" text-anchor="middle" fill="#4338ca" font-size="11">admin: 8081</text>
+                    <g class="diagram-node" data-tooltip="nginx-prometheus-exporter scraping stub_status on localhost">
+                        <rect x="690" y="210" width="220" height="55" rx="6" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <text x="800" y="233" text-anchor="middle" fill="white" font-weight="bold" font-size="13">metrics sidecar</text>
+                        <text x="800" y="251" text-anchor="middle" fill="#d1fae5" font-size="11">containerPort metrics: 9113</text>
                     </g>
-
-                    <!-- Info Box -->
-                    <rect x="50" y="380" width="900" height="140" rx="8" fill="#f0f9ff" stroke="#326CE5" stroke-width="2"/>
-                    <text x="500" y="410" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Multi-Port Service Benefits</text>
-                    <text x="70" y="435" fill="#334155" font-size="12">• Separate interfaces for different responsibilities (HTTP traffic, monitoring metrics, admin operations)</text>
-                    <text x="70" y="455" fill="#334155" font-size="12">• Named ports required for clarity and valid configuration</text>
-                    <text x="70" y="475" fill="#334155" font-size="12">• Each port name must be unique within the Service</text>
-                    <text x="70" y="495" fill="#334155" font-size="12">• Enables protocol separation and targeted access control via NetworkPolicies</text>
+                    <rect x="50" y="330" width="900" height="120" rx="8" fill="#f0f9ff" stroke="#326CE5" stroke-width="2"/>
+                    <text x="500" y="358" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="14">Lab 34 repository manifests</text>
+                    <text x="70" y="382" fill="#334155" font-size="12">• multi-port-configmap.yaml — nginx stub_status for the exporter</text>
+                    <text x="70" y="402" fill="#334155" font-size="12">• multi-port-pod.yaml — nginx + nginx-prometheus-exporter in one Pod</text>
+                    <text x="70" y="422" fill="#334155" font-size="12">• multi-port-service.yaml — named ports http and metrics (targetPort by name)</text>
                 </svg>
 
                 <!-- Named Port Mapping Diagram -->
-                <svg class="svg-diagram" id="named-ports" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Title -->
-                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Named Port Mapping Flow</text>
-
-                    <!-- Left Side: Service Definition -->
-                    <rect x="50" y="70" width="400" height="330" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
-                    <text x="250" y="100" text-anchor="middle" fill="#4338ca" font-weight="bold" font-size="15">Service Specification</text>
-
-                    <rect x="80" y="120" width="340" height="260" rx="6" fill="white" stroke="#6366f1" stroke-width="1"/>
-                    <text x="250" y="145" text-anchor="middle" fill="#1d4ed8" font-family="monospace" font-size="11" font-weight="bold">kind: Service</text>
-                    <text x="250" y="165" text-anchor="middle" fill="#1d4ed8" font-family="monospace" font-size="11" font-weight="bold">metadata:</text>
-                    <text x="250" y="182" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  name: my-app-service</text>
-                    <text x="250" y="202" text-anchor="middle" fill="#1d4ed8" font-family="monospace" font-size="11" font-weight="bold">spec:</text>
-                    <text x="250" y="219" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  selector:</text>
-                    <text x="250" y="236" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">    app: myapp</text>
-                    <text x="250" y="256" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  ports:</text>
-
-                    <!-- HTTP Port -->
-                    <rect x="100" y="265" width="300" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                    <text x="250" y="285" text-anchor="middle" fill="#92400e" font-family="monospace" font-size="10">  - name: http  port: 80  targetPort: http</text>
-
-                    <!-- Metrics Port -->
-                    <rect x="100" y="310" width="300" height="35" rx="4" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
-                    <text x="250" y="330" text-anchor="middle" fill="#166534" font-family="monospace" font-size="10">  - name: metrics  port: 9090  targetPort: metrics</text>
-
-                    <!-- Admin Port -->
-                    <rect x="100" y="355" width="300" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
-                    <text x="250" y="375" text-anchor="middle" fill="#4338ca" font-family="monospace" font-size="10">  - name: admin  port: 8081  targetPort: admin</text>
-
-                    <!-- Arrows to Pod -->
-                    <line x1="450" y1="282" x2="530" y2="200" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <line x1="450" y1="327" x2="530" y2="250" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-                    <line x1="450" y1="372" x2="530" y2="300" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
-
-                    <!-- Right Side: Pod Definition -->
-                    <rect x="530" y="70" width="420" height="330" rx="8" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
-                    <text x="740" y="100" text-anchor="middle" fill="#be185d" font-weight="bold" font-size="15">Pod Specification</text>
-
-                    <rect x="560" y="120" width="360" height="260" rx="6" fill="white" stroke="#ec4899" stroke-width="1"/>
-                    <text x="740" y="145" text-anchor="middle" fill="#be185d" font-family="monospace" font-size="11" font-weight="bold">kind: Pod</text>
-                    <text x="740" y="165" text-anchor="middle" fill="#be185d" font-family="monospace" font-size="11" font-weight="bold">spec:</text>
-                    <text x="740" y="182" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  containers:</text>
-                    <text x="740" y="199" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">  - name: app-container</text>
-                    <text x="740" y="216" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">    image: myapp:1.0</text>
-                    <text x="740" y="236" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">    ports:</text>
-
-                    <!-- Container Ports -->
-                    <rect x="580" y="245" width="320" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
-                    <text x="740" y="265" text-anchor="middle" fill="#92400e" font-family="monospace" font-size="10">    - name: http  containerPort: 8080</text>
-
-                    <rect x="580" y="290" width="320" height="35" rx="4" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
-                    <text x="740" y="310" text-anchor="middle" fill="#166534" font-family="monospace" font-size="10">    - name: metrics  containerPort: 9090</text>
-
-                    <rect x="580" y="335" width="320" height="35" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
-                    <text x="740" y="355" text-anchor="middle" fill="#4338ca" font-family="monospace" font-size="10">    - name: admin  containerPort: 8081</text>
-
-                    <!-- Info Box -->
-                    <rect x="100" y="430" width="800" height="50" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="2"/>
-                    <text x="500" y="452" text-anchor="middle" fill="#059669" font-weight="bold" font-size="13">Named Port Resolution</text>
-                    <text x="500" y="470" text-anchor="middle" fill="#166534" font-size="11">Service targetPort name matches Pod containerPort name → Kubernetes automatically resolves to the correct port number</text>
+                <svg class="svg-diagram" id="named-ports" viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg">
+                    <text x="500" y="35" text-anchor="middle" fill="#1d4ed8" font-weight="bold" font-size="18">Named Port Mapping (Lab 34)</text>
+                    <rect x="50" y="70" width="400" height="280" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+                    <text x="250" y="100" text-anchor="middle" fill="#4338ca" font-weight="bold" font-size="15">Service: multi-port-service</text>
+                    <rect x="80" y="120" width="340" height="210" rx="6" fill="white" stroke="#6366f1" stroke-width="1"/>
+                    <text x="250" y="150" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">selector: app: multi-port-app</text>
+                    <rect x="100" y="170" width="300" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="250" y="192" text-anchor="middle" fill="#92400e" font-family="monospace" font-size="10">- name: http  port: 80  targetPort: http</text>
+                    <rect x="100" y="215" width="300" height="35" rx="4" fill="#dcfce7" stroke="#10b981" stroke-width="2"/>
+                    <text x="250" y="237" text-anchor="middle" fill="#166534" font-family="monospace" font-size="10">- name: metrics  port: 9113  targetPort: metrics</text>
+                    <line x1="450" y1="187" x2="530" y2="175" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <line x1="450" y1="232" x2="530" y2="245" stroke="#10b981" stroke-width="2" marker-end="url(#arrowhead)" class="diagram-arrow"/>
+                    <rect x="530" y="70" width="420" height="280" rx="8" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
+                    <text x="740" y="100" text-anchor="middle" fill="#be185d" font-weight="bold" font-size="15">Pod: multi-port-pod</text>
+                    <rect x="560" y="120" width="360" height="210" rx="6" fill="white" stroke="#ec4899" stroke-width="1"/>
+                    <text x="740" y="150" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">container nginx → port name http : 80</text>
+                    <text x="740" y="175" text-anchor="middle" fill="#334155" font-family="monospace" font-size="11">container metrics → port name metrics : 9113</text>
+                    <rect x="580" y="195" width="320" height="35" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="740" y="217" text-anchor="middle" fill="#92400e" font-family="monospace" font-size="10">exporter scrapes http://127.0.0.1/stub_status</text>
+                    <rect x="100" y="380" width="800" height="50" rx="6" fill="#f0fdf4" stroke="#10b981" stroke-width="2"/>
+                    <text x="500" y="402" text-anchor="middle" fill="#059669" font-weight="bold" font-size="13">targetPort name → containerPort name</text>
+                    <text x="500" y="420" text-anchor="middle" fill="#166534" font-size="11">Kubernetes resolves Service port mappings without hard-coding container port numbers in the Service</text>
                 </svg>
             </div>
 
@@ -707,8 +623,12 @@
             </div>
             <div class="example-stack">
             <section class="example-card">
-                <div class="section-kicker">Multi-Port Service Example</div>
-                <pre><code>ports:<br>- name: http<br>  port: 8080<br>  targetPort: 8080<br>- name: custom<br>  port: 9090<br>  targetPort: 9090</code></pre>
+                <div class="section-kicker">Lab 34 Service (named targetPort)</div>
+                <pre><code>ports:<br>- name: http<br>  port: 80<br>  targetPort: http<br>  nodePort: 30080<br>- name: metrics<br>  port: 9113<br>  targetPort: metrics<br>  nodePort: 30113</code></pre>
+            </section>
+            <section class="example-card">
+                <div class="section-kicker">Apply repository manifests</div>
+                <pre><code>kubectl apply -f multi-port-configmap.yaml<br>kubectl apply -f multi-port-pod.yaml<br>kubectl apply -f multi-port-service.yaml<br>kubectl get endpoints multi-port-service</code></pre>
             </section>
             <section class="example-card">
                 <div class="section-kicker">Useful Commands</div>

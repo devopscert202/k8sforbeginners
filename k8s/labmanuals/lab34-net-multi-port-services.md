@@ -1,1012 +1,346 @@
 # Lab 34: Multi-Port Services in Kubernetes
 
 ## Overview
-In this lab, you will learn how to configure and expose applications that use multiple ports in Kubernetes. You'll work with multi-port Pods and Services, understand port naming conventions, and explore real-world use cases for multi-port configurations.
+
+In this lab you deploy a **realistic multi-port Pod** (nginx HTTP + Prometheus metrics sidecar) and expose both interfaces through a single **NodePort Service** with **named ports**. The manifests follow the [Kubernetes multi-port Service documentation](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services).
 
 ## Prerequisites
+
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
-- `kubectl` CLI tool installed and configured
+- `kubectl` configured
 - Completion of [Lab 02: Creating Services](lab02-basics-creating-services.md)
-- Basic understanding of Kubernetes Services
 
 ## Learning Objectives
+
 By the end of this lab, you will be able to:
-- Create Pods with multiple container ports
-- Configure Services with multiple port mappings
-- Understand port naming conventions and best practices
-- Access different ports of the same application
-- Troubleshoot multi-port service configurations
-- Apply multi-port patterns to real-world scenarios
 
----
-
-## Understanding Multi-Port Services
-
-### What are Multi-Port Services?
-
-Many applications require multiple ports for different purposes:
-
-- **Web applications**: HTTP (80) and HTTPS (443)
-- **Databases**: Main connection port and admin/metrics port
-- **Microservices**: Application port and health check port
-- **Monitoring**: Application port and metrics/prometheus port
-
-### Single Port vs Multi-Port
-
-**Single Port Service:**
-```yaml
-ports:
-- port: 80
-  targetPort: 8080
-```
-
-**Multi-Port Service:**
-```yaml
-ports:
-- name: http
-  port: 8080
-  targetPort: 8080
-- name: custom
-  port: 9090
-  targetPort: 9090
-```
-
-**Key difference**: Multi-port services REQUIRE named ports for clarity.
-
----
-
-## Exercise 1: Review Multi-Port Configuration
-
-### Step 1: Navigate to Lab Directory
-
-```bash
-cd k8s/labs/networking
-```
-
-### Step 2: Review the Multi-Port Pod Manifest
-
-Let's examine `multi-port-pod.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: multi-port-pod
-  labels:
-    app: multi-port-app
-spec:
-  containers:
-  - name: http
-    image: hashicorp/http-echo:1.0
-    args:
-    - "-listen=:8080"
-    - "-text=Hello on port 8080!"
-    ports:
-    - containerPort: 8080
-      name: http
-  - name: custom
-    image: hashicorp/http-echo:1.0
-    args:
-    - "-listen=:9090"
-    - "-text=Hello on port 9090!"
-    ports:
-    - containerPort: 9090
-      name: custom
-```
-
-**Understanding the manifest:**
-
-- `metadata.labels.app: multi-port-app` - Label for Service selector
-- Two containers in one Pod, each running `hashicorp/http-echo` on a different port via `-listen=:PORT`
-- `ports` - Declares multiple ports:
-  - `containerPort: 8080, name: http` - Primary HTTP port
-  - `containerPort: 9090, name: custom` - Secondary custom port
-- **Port names** - Optional but recommended for clarity; required when a Service exposes multiple ports
-
-### Step 3: Review the Multi-Port Service Manifest
-
-Let's examine `multi-port-service.yaml`:
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: multi-port-service
-spec:
-  selector:
-    app: multi-port-app
-  type: NodePort
-  ports:
-  - protocol: TCP
-    port: 8080
-    targetPort: 8080
-    nodePort: 30080
-    name: http
-  - protocol: TCP
-    port: 9090
-    targetPort: 9090
-    nodePort: 30090
-    name: custom
-```
-
-**Understanding the manifest:**
-
-- `selector.app: multi-port-app` - Selects Pods with this label
-- `type: NodePort` - Exposes service externally
-- `ports` - Multiple port configurations:
-  - **First port (http)**:
-    - `port: 8080` - Service port (ClusterIP access)
-    - `targetPort: 8080` - Pod port
-    - `nodePort: 30080` - External access port
-    - `name: http` - Port identifier
-  - **Second port (custom)**:
-    - `port: 9090` - Service port
-    - `targetPort: 9090` - Pod port
-    - `nodePort: 30090` - External access port
-    - `name: custom` - Port identifier
-
-**Important**: When a Service has multiple ports, each port MUST have a unique name.
-
----
-
-## Exercise 2: Deploy Multi-Port Application
-
-### Step 1: Create a Working Multi-Port Pod
-
-The repository demo uses two `http-echo` listeners. For a production-style pattern with HTTP and metrics, create:
-
-```bash
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Pod
-metadata:
-  name: multi-port-pod
-  labels:
-    app: multi-port-app
-spec:
-  containers:
-  - name: nginx
-    image: nginx:latest
-    ports:
-    - containerPort: 80
-      name: http
-  - name: metrics
-    image: nginx/nginx-prometheus-exporter:latest
-    args:
-    - "-nginx.scrape-uri=http://localhost/nginx_status"
-    ports:
-    - containerPort: 9113
-      name: metrics
-EOF
-```
-
-**This Pod has:**
-- **nginx container** - Serves web traffic on port 80
-- **metrics container** - Exposes Prometheus metrics on port 9113
-
-Expected output:
-```
-pod/multi-port-pod created
-```
-
-### Step 2: Verify Pod Status
-
-```bash
-kubectl get pod multi-port-pod
-```
-
-Expected output:
-```
-NAME             READY   STATUS    RESTARTS   AGE
-multi-port-pod   2/2     Running   0          30s
-```
-
-**Notice**: READY shows 2/2 (both containers running)
-
-### Step 3: View Detailed Pod Information
-
-```bash
-kubectl describe pod multi-port-pod
-```
-
-Look for the **Containers** section - you should see both containers and their ports:
-
-```
-Containers:
-  nginx:
-    Port:          80/TCP
-  metrics:
-    Port:          9113/TCP
-```
-
----
-
-## Exercise 3: Create Multi-Port Service
-
-### Step 1: Create the Service
-
-```bash
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Service
-metadata:
-  name: multi-port-service
-spec:
-  selector:
-    app: multi-port-app
-  type: NodePort
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
-    nodePort: 30080
-    name: http
-  - protocol: TCP
-    port: 9113
-    targetPort: 9113
-    nodePort: 30113
-    name: metrics
-EOF
-```
-
-Expected output:
-```
-service/multi-port-service created
-```
-
-### Step 2: Verify the Service
-
-```bash
-kubectl get service multi-port-service
-```
-
-Expected output:
-```
-NAME                 TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                        AGE
-multi-port-service   NodePort   10.96.200.100   <none>        80:30080/TCP,9113:30113/TCP    15s
-```
-
-**Notice**: PORT(S) shows both port mappings: `80:30080/TCP,9113:30113/TCP`
-
-### Step 3: View Detailed Service Information
-
-```bash
-kubectl describe service multi-port-service
-```
-
-Key sections:
-
-```
-Port:                     http  80/TCP
-TargetPort:               80/TCP
-NodePort:                 http  30080/TCP
-Endpoints:                10.244.0.5:80
-
-Port:                     metrics  9113/TCP
-TargetPort:               9113/TCP
-NodePort:                 metrics  30113/TCP
-Endpoints:                10.244.0.5:9113
-```
-
-**Notice**: Each port has:
-- A unique name (http, metrics)
-- Its own port mapping
-- Separate endpoint
-
-### Step 4: Check Service Endpoints
-
-```bash
-kubectl get endpoints multi-port-service
-```
-
-Expected output:
-```
-NAME                 ENDPOINTS                              AGE
-multi-port-service   10.244.0.5:80,10.244.0.5:9113          1m
-```
-
-Both ports on the same Pod IP are registered as endpoints!
-
----
-
-## Exercise 4: Access Multi-Port Service
-
-### Step 1: Test From Within Cluster
-
-Create a test Pod:
-
-```bash
-kubectl run test-pod --image=busybox --rm -it --restart=Never -- /bin/sh
-```
-
-Inside the test Pod:
-
-```bash
-# Test HTTP port (port 80)
-wget -qO- http://multi-port-service:80
-
-# Test metrics port (port 9113)
-wget -qO- http://multi-port-service:9113/metrics
-```
-
-Both should work!
-
-Exit the Pod:
-```bash
-exit
-```
-
-### Step 2: Test Using Port-Forward
-
-**Port-forward the HTTP port:**
-
-```bash
-kubectl port-forward service/multi-port-service 8080:80
-```
-
-In another terminal or browser:
-```bash
-curl http://localhost:8080
-```
-
-You should see the nginx welcome page!
-
-**Port-forward the metrics port:**
-
-Press `Ctrl+C` to stop the previous port-forward, then:
-
-```bash
-kubectl port-forward service/multi-port-service 9113:9113
-```
-
-In another terminal:
-```bash
-curl http://localhost:9113/metrics
-```
-
-You should see Prometheus metrics!
-
-### Step 3: Test Using NodePort (Minikube)
-
-Get Minikube IP:
-```bash
-minikube ip
-```
-
-**Access HTTP port:**
-```bash
-curl http://<minikube-ip>:30080
-```
-
-**Access metrics port:**
-```bash
-curl http://<minikube-ip>:30113/metrics
-```
-
-### Step 4: Test Using Minikube Service
-
-```bash
-# Open HTTP port in browser
-minikube service multi-port-service --url
-```
-
-This returns both URLs:
-```
-http://192.168.49.2:30080
-http://192.168.49.2:30113
-```
-
----
-
-## Exercise 5: Port Naming Best Practices
-
-### Why Name Ports?
-
-**Requirements:**
-1. Services with multiple ports MUST name each port
-2. Port names must be unique within the Service
-3. Port names help with Ingress and service mesh configurations
-
-### Standard Port Names
-
-Use descriptive, conventional names:
-
-| Port Name | Common Use | Example Port |
-|-----------|------------|--------------|
-| `http` | HTTP traffic | 80, 8080, 8000 |
-| `https` | HTTPS traffic | 443, 8443 |
-| `grpc` | gRPC traffic | 50051 |
-| `metrics` | Prometheus metrics | 9090, 9113 |
-| `admin` | Admin interface | 8081, 9000 |
-| `health` | Health check endpoint | 8086 |
-| `postgres` | PostgreSQL | 5432 |
-| `mysql` | MySQL/MariaDB | 3306 |
-| `redis` | Redis | 6379 |
-| `mongodb` | MongoDB | 27017 |
-
-### Port Naming Rules
-
-```yaml
-# Good: descriptive names
-ports:
-- name: http
-  port: 80
-- name: https
-  port: 443
-- name: metrics
-  port: 9090
-
-# Bad: generic names
-ports:
-- name: port1
-  port: 80
-- name: port2
-  port: 443
-
-# Bad: no names (only allowed for single port)
-ports:
-- port: 80
-- port: 443  # ERROR: second port requires name
-```
-
-**Naming conventions:**
-- Use lowercase
-- Use hyphens for multi-word names (e.g., `admin-api`)
-- Keep it short but descriptive
-- Follow protocol conventions when applicable
-
----
-
-## Exercise 6: Real-World Multi-Port Patterns
-
-### Pattern 1: Web Application with Metrics
-
-**Use case**: Application serving HTTP traffic + Prometheus metrics
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: web-app
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: web-app
-  template:
-    metadata:
-      labels:
-        app: web-app
-    spec:
-      containers:
-      - name: app
-        image: my-web-app:v1.0
-        ports:
-        - containerPort: 8080
-          name: http
-        - containerPort: 9090
-          name: metrics
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: web-app-service
-spec:
-  selector:
-    app: web-app
-  ports:
-  - name: http
-    port: 80
-    targetPort: http
-  - name: metrics
-    port: 9090
-    targetPort: metrics
-```
-
-**Benefits:**
-- HTTP traffic on standard port 80
-- Metrics on separate port for Prometheus scraping
-- Port names enable ServiceMonitor (Prometheus Operator)
-
-### Pattern 2: Database with Admin Interface
-
-**Use case**: Database with separate admin/monitoring port
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres-service
-spec:
-  selector:
-    app: postgres
-  ports:
-  - name: postgres
-    port: 5432
-    targetPort: 5432
-  - name: metrics
-    port: 9187
-    targetPort: 9187  # postgres_exporter
-  type: ClusterIP
-```
-
-**Benefits:**
-- Main database port for application connections
-- Separate metrics port for monitoring
-- ClusterIP keeps it internal
-
-### Pattern 3: Microservice with gRPC and HTTP
-
-**Use case**: Service exposing both gRPC and REST APIs
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: api-service
-spec:
-  selector:
-    app: api-server
-  ports:
-  - name: grpc
-    port: 50051
-    targetPort: 50051
-  - name: http
-    port: 8080
-    targetPort: 8080
-  - name: metrics
-    port: 9090
-    targetPort: 9090
-```
-
-**Benefits:**
-- gRPC for internal service-to-service communication
-- HTTP/REST for external clients
-- Metrics for observability
-
-### Pattern 4: HTTP and HTTPS
-
-**Use case**: Service supporting both HTTP and HTTPS
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: secure-web-service
-spec:
-  selector:
-    app: web-server
-  type: LoadBalancer
-  ports:
-  - name: http
-    port: 80
-    targetPort: 8080
-  - name: https
-    port: 443
-    targetPort: 8443
-```
-
-**Benefits:**
-- Support legacy HTTP clients
-- HTTPS for secure communication
-- LoadBalancer for external access
-
----
-
-## Exercise 7: Advanced Multi-Port Scenarios
-
-### Scenario 1: Named Port References
-
-You can reference Pod ports by name in Services:
-
-**Pod with named ports:**
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: app-pod
-  labels:
-    app: myapp
-spec:
-  containers:
-  - name: app
-    image: myapp:latest
-    ports:
-    - containerPort: 8080
-      name: web
-    - containerPort: 9090
-      name: admin
-```
-
-**Service using port names:**
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: app-service
-spec:
-  selector:
-    app: myapp
-  ports:
-  - name: web-port
-    port: 80
-    targetPort: web      # References Pod port name
-  - name: admin-port
-    port: 9000
-    targetPort: admin    # References Pod port name
-```
-
-**Benefits:**
-- Decouple Service from specific port numbers
-- Change Pod ports without updating Service
-- More maintainable
-
-### Scenario 2: Multiple Services for Same Pod
-
-You can create separate Services for different ports:
-
-**Application Pod:**
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: app
-  labels:
-    app: myapp
-spec:
-  containers:
-  - name: app
-    image: myapp:latest
-    ports:
-    - containerPort: 8080
-      name: public
-    - containerPort: 9090
-      name: internal
-```
-
-**Public Service (external):**
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: app-public
-spec:
-  selector:
-    app: myapp
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: public
-```
-
-**Internal Service (internal only):**
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: app-internal
-spec:
-  selector:
-    app: myapp
-  type: ClusterIP
-  ports:
-  - port: 9090
-    targetPort: internal
-```
-
-**Benefits:**
-- Different access controls per port
-- Public port exposed via LoadBalancer
-- Internal port only accessible within cluster
-- Separate DNS names
-
-### Test This Pattern
-
-Create the resources:
-
-```bash
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Pod
-metadata:
-  name: dual-service-pod
-  labels:
-    app: dual-service
-spec:
-  containers:
-  - name: nginx
-    image: nginx:latest
-    ports:
-    - containerPort: 80
-      name: web
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: external-service
-spec:
-  selector:
-    app: dual-service
-  type: NodePort
-  ports:
-  - port: 80
-    targetPort: web
-    nodePort: 30088
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: internal-service
-spec:
-  selector:
-    app: dual-service
-  type: ClusterIP
-  ports:
-  - port: 8080
-    targetPort: web
-EOF
-```
-
-Verify both services:
-
-```bash
-# Check services
-kubectl get service external-service internal-service
-
-# Both services point to same Pod!
-kubectl get endpoints external-service internal-service
-```
-
-Test access:
-
-```bash
-# Test internal service
-kubectl run test --image=busybox --rm -it --restart=Never -- wget -qO- http://internal-service:8080
-
-# Test external service (Minikube)
-minikube service external-service --url
-```
+- Declare multiple named `containerPort` entries on a Pod
+- Configure a Service with multiple named `ports`
+- Use `targetPort` by **port name** (not only by number)
+- Verify Endpoints for each Service port
+- Access HTTP and metrics traffic independently
 
 ---
 
 ## Repository YAML Files
 
-The following pre-built YAML manifests are available in the repository for this lab:
+Under `k8s/labs/networking/`:
 
 | File | Description |
 |------|-------------|
-| `k8s/labs/networking/multi-port-pod.yaml` | Demo Pod with two `http-echo` containers listening on ports 8080 and 9090; label `app: multi-port-app` for Service selection. |
-| `k8s/labs/networking/multi-port-service.yaml` | NodePort Service exposing both ports (8080→30080, 9090→30090) with named ports; selector `app: multi-port-app`. Pairs with the demo Pod manifest. |
+| [`multi-port-configmap.yaml`](../labs/networking/multi-port-configmap.yaml) | nginx config with `/` response and `/stub_status` for the exporter |
+| [`multi-port-pod.yaml`](../labs/networking/multi-port-pod.yaml) | Pod with **nginx** (`http:80`) and **nginx-prometheus-exporter** (`metrics:9113`) |
+| [`multi-port-service.yaml`](../labs/networking/multi-port-service.yaml) | NodePort Service mapping `http` → 30080 and `metrics` → 30113 |
 
-You can apply these directly:
+**Pattern:** application traffic and observability traffic share one Pod but use **separate Service ports** — the same model used with Prometheus `ServiceMonitor` and NetworkPolicy rules in production.
+
+---
+
+## Exercise 1: Review the Manifests
+
+### Step 1: Navigate to the lab directory
 
 ```bash
-kubectl apply -f k8s/labs/networking/multi-port-pod.yaml
-kubectl apply -f k8s/labs/networking/multi-port-service.yaml
+cd k8s/labs/networking
 ```
+
+### Step 2: Review the ConfigMap
+
+`multi-port-configmap.yaml` enables `stub_status` on localhost so the metrics sidecar can scrape nginx without exposing admin data on the Service:
+
+```yaml
+location /stub_status {
+    stub_status;
+    allow 127.0.0.1;
+    deny all;
+}
+```
+
+### Step 3: Review the Pod
+
+`multi-port-pod.yaml` defines **two containers** in one Pod:
+
+| Container | Image | Port name | Port |
+|-----------|-------|-----------|------|
+| `nginx` | `nginx:1.25-alpine` | `http` | 80 |
+| `metrics` | `nginx/nginx-prometheus-exporter:1.1.0` | `metrics` | 9113 |
+
+Both containers share the Pod network namespace, so the exporter reaches nginx at `http://127.0.0.1/stub_status`.
+
+### Step 4: Review the Service
+
+`multi-port-service.yaml` exposes both container ports through one Service:
+
+```yaml
+ports:
+- name: http
+  port: 80
+  targetPort: http      # resolves to containerPort name on the Pod
+  nodePort: 30080
+- name: metrics
+  port: 9113
+  targetPort: metrics
+  nodePort: 30113
+```
+
+**Rule:** When a Service lists more than one port, **every port must have a unique `name`**.
+
+---
+
+## Exercise 2: Deploy the Stack
+
+### Step 1: Apply all manifests
+
+```bash
+kubectl apply -f multi-port-configmap.yaml
+kubectl apply -f multi-port-pod.yaml
+kubectl apply -f multi-port-service.yaml
+```
+
+Expected output:
+
+```
+configmap/multi-port-nginx-config created
+pod/multi-port-pod created
+service/multi-port-service created
+```
+
+### Step 2: Verify Pod readiness
+
+```bash
+kubectl get pod multi-port-pod
+```
+
+Expected:
+
+```
+NAME             READY   STATUS    RESTARTS   AGE
+multi-port-pod   2/2     Running   0          30s
+```
+
+`2/2` means both containers are running.
+
+### Step 3: Verify the Service
+
+```bash
+kubectl get svc multi-port-service
+```
+
+Expected (NodePorts may vary if 30080/30113 are taken):
+
+```
+NAME                 TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                       AGE
+multi-port-service   NodePort   10.96.x.x       <none>        80:30080/TCP,9113:30113/TCP   1m
+```
+
+### Step 4: Inspect Endpoints
+
+```bash
+kubectl get endpoints multi-port-service -o wide
+```
+
+Both `80` and `9113` should point to the **same Pod IP**:
+
+```
+NAME                 ENDPOINTS                         AGE
+multi-port-service   10.244.x.x:80,10.244.x.x:9113     2m
+```
+
+If either endpoint is missing, run `kubectl describe pod multi-port-pod` and check container logs.
+
+---
+
+## Exercise 3: Test Each Port
+
+### Step 1: Test HTTP from a debug Pod
+
+```bash
+kubectl run curl-test --image=curlimages/curl:8.5.0 --rm -it --restart=Never -- \
+  curl -s http://multi-port-service:80
+```
+
+Expected: `Hello from nginx on port 80`
+
+### Step 2: Test metrics from the same debug Pod
+
+```bash
+kubectl run curl-metrics --image=curlimages/curl:8.5.0 --rm -it --restart=Never -- \
+  curl -s http://multi-port-service:9113/metrics | head
+```
+
+Expected: Prometheus text lines starting with `# HELP nginx_` or similar.
+
+### Step 3: Port-forward each Service port
+
+HTTP:
+
+```bash
+kubectl port-forward service/multi-port-service 8080:80
+```
+
+In another terminal:
+
+```bash
+curl http://localhost:8080
+```
+
+Metrics (stop the previous forward first):
+
+```bash
+kubectl port-forward service/multi-port-service 9113:9113
+curl http://localhost:9113/metrics | head
+```
+
+### Step 4: NodePort access (Minikube)
+
+```bash
+minikube ip
+curl http://$(minikube ip):30080
+curl http://$(minikube ip):30113/metrics | head
+```
+
+---
+
+## Exercise 4: Named Port Mapping
+
+### Why names matter
+
+`targetPort: http` tells Kubernetes to forward Service port `80` to whichever container port is named `http` on the Pod. You can change `containerPort: 80` to another number later and only update the Pod — the Service keeps using the name.
+
+### Step 1: Describe the Service
+
+```bash
+kubectl describe svc multi-port-service
+```
+
+Confirm two port blocks:
+
+```
+Port:                     http  80/TCP
+TargetPort:               http/TCP
+NodePort:                 http  30080/TCP
+
+Port:                     metrics  9113/TCP
+TargetPort:               metrics/TCP
+NodePort:                 metrics  30113/TCP
+```
+
+### Step 2: Compare with a single-port Service
+
+| Aspect | Single-port Service | Multi-port Service |
+|--------|---------------------|--------------------|
+| `ports` entries | One | Two or more |
+| Port `name` | Optional | **Required** |
+| Typical use | Simple web API | HTTP + metrics, HTTP + gRPC, etc. |
+| Endpoints | One port per Pod IP | Multiple ports per Pod IP |
+
+---
+
+## Exercise 5: Optional — Separate Services per Port
+
+Some teams expose **public HTTP** via a LoadBalancer and keep **metrics** on an internal ClusterIP Service only.
+
+Create a metrics-only Service (same selector, one port):
+
+```bash
+cat <<'EOF' | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-port-metrics-internal
+spec:
+  type: ClusterIP
+  selector:
+    app: multi-port-app
+  ports:
+  - name: metrics
+    port: 9113
+    targetPort: metrics
+EOF
+```
+
+Verify both Services select the same Pod:
+
+```bash
+kubectl get endpoints multi-port-service multi-port-metrics-internal
+```
+
+Cleanup this optional Service when done:
+
+```bash
+kubectl delete service multi-port-metrics-internal --ignore-not-found
+```
+
+---
+
+## Troubleshooting
+
+### One port works, the other does not
+
+```bash
+kubectl logs multi-port-pod -c nginx
+kubectl logs multi-port-pod -c metrics
+kubectl describe pod multi-port-pod
+kubectl get endpoints multi-port-service -o yaml
+```
+
+Common causes:
+
+- ConfigMap not mounted — exporter cannot reach `/stub_status`
+- `targetPort` name typo — Endpoints missing for that port
+- Hitting the wrong Service `port` (Service port vs container port)
+
+### Service validation error: port name required
+
+```
+Service "my-svc" is invalid: spec.ports[1].name: Required value
+```
+
+Add a unique `name` to every port when `ports` has more than one entry.
 
 ---
 
 ## Lab Cleanup
 
-Remove all resources created in this lab:
-
 ```bash
-# Delete the multi-port application
-kubectl delete pod multi-port-pod --ignore-not-found=true
-kubectl delete service multi-port-service --ignore-not-found=true
+kubectl delete -f multi-port-service.yaml --ignore-not-found
+kubectl delete -f multi-port-pod.yaml --ignore-not-found
+kubectl delete -f multi-port-configmap.yaml --ignore-not-found
+kubectl delete service multi-port-metrics-internal --ignore-not-found
 
-# Delete dual-service example
-kubectl delete pod dual-service-pod --ignore-not-found=true
-kubectl delete service external-service internal-service --ignore-not-found=true
-
-# Verify cleanup
-kubectl get pods,services
-```
-
----
-
-## Troubleshooting Multi-Port Services
-
-### Issue 1: Port Not Accessible
-
-**Symptoms**: One port works, another doesn't
-
-**Diagnosis:**
-```bash
-# Check if Pod is listening on all ports
-kubectl exec <pod-name> -- netstat -tlnp
-
-# Check Service endpoints
-kubectl get endpoints <service-name> -o yaml
-
-# Check if container port is exposed
-kubectl describe pod <pod-name> | grep -A 5 Ports
-```
-
-**Common causes:**
-- Container not actually listening on the port
-- Port number mismatch between Pod and Service
-- Firewall/security group blocking the port
-
-### Issue 2: Wrong Port Mapping
-
-**Symptoms**: Accessing port gives unexpected response
-
-**Diagnosis:**
-```bash
-# Verify port mappings
-kubectl describe service <service-name>
-
-# Check which port is which
-kubectl get service <service-name> -o yaml | grep -A 5 ports
-```
-
-**Solution**: Verify targetPort matches containerPort
-
-### Issue 3: Service Without Port Names
-
-**Error message:**
-```
-Service "my-service" is invalid: spec.ports[1].name: Required value
-```
-
-**Solution**: Add unique names to all ports:
-```yaml
-ports:
-- name: http
-  port: 80
-- name: metrics
-  port: 9090
-```
-
-### Issue 4: Duplicate Port Names
-
-**Error message:**
-```
-Service "my-service" is invalid: spec.ports[1].name: Duplicate value: "http"
-```
-
-**Solution**: Ensure each port has a unique name:
-```yaml
-ports:
-- name: http
-  port: 80
-- name: http-alt  # Changed from 'http'
-  port: 8080
+kubectl get pods,svc,configmap | grep multi-port || echo "Cleanup complete"
 ```
 
 ---
 
 ## Key Takeaways
 
-1. **Multi-port Services** enable complex application architectures
-2. **Port names** are REQUIRED when a Service has multiple ports
-3. Use **descriptive port names** (http, metrics, admin, etc.)
-4. Each port in a Service can have different configurations
-5. **targetPort** can reference Pod port names for flexibility
-6. Create **separate Services** for different access patterns
-7. Multi-port is common for apps with metrics/admin endpoints
-8. Always **test each port** independently
-9. Use `kubectl describe` to verify port mappings
-10. Consider security implications of exposing multiple ports
-
----
-
-## Best Practices
-
-### 1. Use Named Ports in Pods
-
-```yaml
-# Good
-ports:
-- containerPort: 8080
-  name: http
-- containerPort: 9090
-  name: metrics
-
-# Then reference by name in Service
-targetPort: http
-```
-
-### 2. Follow Naming Conventions
-
-```yaml
-# Standard names everyone understands
-- name: http
-- name: https
-- name: grpc
-- name: metrics
-- name: admin
-```
-
-### 3. Separate Public and Private Ports
-
-```yaml
-# Public service (LoadBalancer)
-ports:
-- name: http
-  port: 80
-  targetPort: 8080
-
-# Private service (ClusterIP)
-ports:
-- name: admin
-  port: 9090
-  targetPort: 9090
-- name: metrics
-  port: 9091
-  targetPort: 9091
-```
-
-### 4. Document Port Purposes
-
-```yaml
-metadata:
-  annotations:
-    description: "Port 80 for public HTTP, Port 9090 for Prometheus metrics"
-```
-
-### 5. Use Consistent Port Numbers
-
-```yaml
-# All microservices use same metrics port
-- name: metrics
-  port: 9090
-  targetPort: 9090
-```
-
----
-
-## Additional Commands Reference
-
-```bash
-# Create multi-port service from CLI
-kubectl expose pod my-pod --port=80,8080 --name=multi-service
-
-# Get service with custom columns
-kubectl get service -o custom-columns=NAME:.metadata.name,PORTS:.spec.ports[*].port
-
-# Test specific port
-kubectl port-forward service/my-service 8080:80
-kubectl port-forward service/my-service 9090:9090
-
-# View all endpoints
-kubectl get endpoints --all-namespaces
-
-# Check which port a container is listening on
-kubectl exec <pod-name> -- netstat -tlnp
-
-# Test connectivity to specific port
-kubectl run test --image=nicolaka/netshoot --rm -it -- bash
-# Inside pod:
-nc -zv my-service 8080
-nc -zv my-service 9090
-
-# Get Service YAML showing all ports
-kubectl get service <service-name> -o yaml | grep -A 20 ports
-```
+1. Multi-port Services map **several Service ports** to **several container ports** on the same Pod set.
+2. Each Service port **must be named** when there is more than one.
+3. Use **`targetPort: <name>`** to reference Pod `containerPort` names.
+4. **HTTP + metrics** is a common production pattern (sidecar or second container).
+5. Endpoints list **every `(Pod IP, port)` pair** the Service forwards to — verify both appear.
+6. You can use **one multi-port Service** or **multiple single-port Services** with the same selector.
 
 ---
 
 ## Next Steps
 
-1. **[Lab 35: Ingress](lab35-net-ingress.md)** — Learn about Ingress controllers for HTTP routing
-2. **[Lab 58: EndpointSlices](lab58-net-endpointslices.md)** — Understand EndpointSlice discovery and scaling
-2. **Advanced**: Implement service mesh (Istio/Linkerd) for advanced multi-port scenarios
-3. **Practice**: Deploy a real application with HTTP, gRPC, and metrics ports
+1. **[Lab 35: Ingress](lab35-net-ingress.md)** — HTTP routing at L7 (typically the `http` port only)
+2. **[Lab 58: EndpointSlices](lab58-net-endpointslices.md)** — how large clusters track Service backends
+3. **Concept doc:** [Multi-Port Services](../docs/networking/multiport-service.md)
+4. **Interactive guide:** [Multi-Port Services HTML](../html/multi-port-services.html)
 
 ---
 
 ## Additional Reading
 
-- [Kubernetes Services Documentation](https://kubernetes.io/docs/concepts/services-networking/service/)
-- [Service Ports Configuration](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services)
-- [Port Naming Best Practices](https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service)
-- [Service Discovery Patterns](https://kubernetes.io/docs/concepts/services-networking/service/#discovering-services)
+- [Kubernetes Services — multi-port Services](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services)
+- [nginx-prometheus-exporter](https://github.com/nginxinc/nginx-prometheus-exporter)
+- [Service port and targetPort](https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service)
 
 ---
 
-**Lab Created**: March 2026
-**Compatible with**: Kubernetes 1.24+
-**Tested on**: Minikube, Kind, AWS EKS, GCP GKE
+**Lab updated:** July 2026  
+**Compatible with:** Kubernetes 1.24+  
+**Tested on:** Minikube, Kind

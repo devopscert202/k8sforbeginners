@@ -1,20 +1,21 @@
 # Multi-Port Services in Kubernetes
 
-Applications often expose **more than one port**—for example HTTP on one port and metrics or gRPC on another. Kubernetes models this by declaring **multiple `containerPort` entries** on the Pod (or workload) and **multiple `ports` entries** on the Service, optionally with **names** for stable references in probes and Ingress backends.
+## Objective (conceptual)
+
+Many workloads expose **more than one network interface** on the same Pod — for example user-facing HTTP and a separate Prometheus metrics endpoint. Kubernetes models this with multiple `containerPort` entries on the Pod and multiple named `ports` on the Service. When a Service defines more than one port, **each port must have a unique `name`**.
+
+The mental model: one Pod, multiple listeners; one Service, multiple stable front doors (`port`) each mapped to the correct container listener (`targetPort`).
+
+**Interactive reference:** [Multi-Port Services](../../html/multi-port-services.html)
 
 ---
 
-## Why multiple ports?
+## Pod: HTTP + metrics sidecar
 
-- **Protocols or roles**: Separate admin, metrics, or secondary APIs from user-facing HTTP.
-- **Contract with clients**: Different Service `port` values can map to different `targetPort` values on the same Pods.
-- **Named ports**: Using `name` on Service ports aligns with `targetPort: <name>` and makes manifests easier to refactor than raw numbers alone.
+This repository uses the common **nginx + nginx-prometheus-exporter** pattern from production tutorials:
 
----
-
-## Pod with multiple container ports
-
-Each listening process in the container should have a corresponding `containerPort` (and name, when you want stable references).
+- **nginx** serves HTTP on port `80` (`name: http`)
+- **metrics** scrapes `stub_status` on localhost and exposes Prometheus format on `9113` (`name: metrics`)
 
 ```yaml
 apiVersion: v1
@@ -25,22 +26,25 @@ metadata:
     app: multi-port-app
 spec:
   containers:
-  - name: multi-port-container
-    image: hashicorp/http-echo
-    args:
-    - "-text=Hello, Multi-Port Service!"
+  - name: nginx
+    image: nginx:1.25-alpine
     ports:
-    - containerPort: 8080
+    - containerPort: 80
       name: http
-    - containerPort: 9090
-      name: custom
+  - name: metrics
+    image: nginx/nginx-prometheus-exporter:1.1.0
+    args:
+    - -nginx.scrape-uri=http://127.0.0.1/stub_status
+    ports:
+    - containerPort: 9113
+      name: metrics
 ```
 
 ---
 
-## Service exposing multiple ports
+## Service: named ports and targetPort by name
 
-A **NodePort**, **ClusterIP**, or **LoadBalancer** Service can list several port mappings. The `selector` must match the Pod labels; each `port`/`targetPort` pair defines one forwarded path.
+Per [Kubernetes multi-port Services](https://kubernetes.io/docs/concepts/services-networking/service/#multi-port-services), reference Pod port **names** in `targetPort` so Service definitions stay stable if container port numbers change.
 
 ```yaml
 apiVersion: v1
@@ -48,37 +52,51 @@ kind: Service
 metadata:
   name: multi-port-service
 spec:
+  type: NodePort
   selector:
     app: multi-port-app
-  type: NodePort
   ports:
-  - protocol: TCP
-    port: 8080
+  - name: http
+    port: 80
     targetPort: http
     nodePort: 30080
-    name: http
-  - protocol: TCP
-    port: 9090
-    targetPort: custom
-    nodePort: 30090
-    name: custom
+  - name: metrics
+    port: 9113
+    targetPort: metrics
+    nodePort: 30113
 ```
 
-**Notes:**
-
-- **`nodePort`** must be in the allowed NodePort range if you set it explicitly; omit it to auto-assign.
-- **`port`** is what clients use against the Service ClusterIP; **`targetPort`** is the container port (number or name).
-- For **LoadBalancer** Services, cloud controllers publish each port according to provider behavior.
+| Field | Meaning |
+|-------|---------|
+| `port` | Port clients use on the Service ClusterIP / DNS name |
+| `targetPort` | Container port number **or name** on selected Pods |
+| `name` | Required when the Service exposes multiple ports |
+| `nodePort` | Optional fixed NodePort (omit to auto-assign) |
 
 ---
 
-## Summary
+## Verify endpoints
 
-| **Resource** | **Role** |
-|--------------|----------|
-| **Pod / workload** | Declares every port the container listens on. |
-| **Service** | Load-balances each declared Service port to the matching `targetPort` on selected Pods. |
-| **Named ports** | Reduce coupling to numeric ports and align Services, probes, and Ingress. |
+```bash
+kubectl get svc multi-port-service
+kubectl get endpoints multi-port-service
+kubectl describe svc multi-port-service
+```
+
+Both `80` and `9113` should appear on the same Pod IP in Endpoints.
+
+---
+
+## Operational commands (reference)
+
+```bash
+kubectl apply -f k8s/labs/networking/multi-port-configmap.yaml
+kubectl apply -f k8s/labs/networking/multi-port-pod.yaml
+kubectl apply -f k8s/labs/networking/multi-port-service.yaml
+
+kubectl port-forward service/multi-port-service 8080:80
+kubectl port-forward service/multi-port-service 9113:9113
+```
 
 ---
 
@@ -88,4 +106,4 @@ Practice these concepts with guided lab exercises:
 
 | Lab | Description |
 |-----|-------------|
-| [Lab 34: Multi-Port Services in Kubernetes](../../labmanuals/lab34-net-multi-port-services.md) | Build multi-port Pods and Services, verify NodePort access, and explore naming conventions. |
+| [Lab 34: Multi-Port Services in Kubernetes](../../labmanuals/lab34-net-multi-port-services.md) | Deploy nginx + metrics sidecar, apply a multi-port NodePort Service, and test HTTP and `/metrics` separately. |

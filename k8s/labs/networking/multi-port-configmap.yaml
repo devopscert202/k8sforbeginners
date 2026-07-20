@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: multi-port-nginx-config
+  labels:
+    app: multi-port-app
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            return 200 'Hello from nginx on port 80\n';
+            add_header Content-Type text/plain;
+        }
+
+        location /stub_status {
+            stub_status;
+            allow 127.0.0.1;
+            deny all;
+        }
+    }
