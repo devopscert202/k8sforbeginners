@@ -7,7 +7,7 @@ In this lab, you will learn about StatefulSets, a Kubernetes workload type desig
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
 - Basic understanding of Pods, Deployments, and Services (Lab 01, Lab 02)
-- Understanding of Persistent Volumes and Persistent Volume Claims (Lab 14)
+- Understanding of Persistent Volumes and Persistent Volume Claims ([Lab 38: Basic Storage Volumes](lab38-storage-basic-volumes.md) and [Lab 39: Persistent Storage](lab39-storage-persistent-storage.md))
 - Storage provisioner configured in your cluster
 
 ## Learning Objectives

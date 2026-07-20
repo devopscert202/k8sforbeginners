@@ -6,7 +6,7 @@ In this comprehensive lab, you will deploy a production-like multi-tier WordPres
 ## Prerequisites
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
-- Completion of Lab 09 (ConfigMaps) is recommended
+- Completion of [Lab 25: ConfigMaps](lab25-workload-configmaps.md) is recommended
 - Basic understanding of Deployments, Services, ConfigMaps, and Secrets
 - At least 2GB of available cluster memory
 

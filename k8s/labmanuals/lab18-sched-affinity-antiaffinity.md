@@ -6,7 +6,7 @@ In this lab, you will learn advanced pod scheduling techniques using Node Affini
 ## Prerequisites
 - A running Kubernetes cluster with multiple nodes
 - `kubectl` CLI tool installed and configured
-- Completion of Lab 09 (NodeSelector) recommended
+- Completion of [Lab 17: NodeSelector](lab17-sched-nodeselector.md) recommended
 - Basic understanding of Pods and labels
 
 ## Learning Objectives

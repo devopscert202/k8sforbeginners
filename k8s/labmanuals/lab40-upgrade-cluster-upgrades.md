@@ -8,7 +8,7 @@ In this lab, you will learn how to safely upgrade a Kubernetes cluster from one 
 - Admin access to all nodes (SSH with sudo privileges)
 - Cluster installed using kubeadm
 - Basic understanding of Kubernetes architecture
-- Completion of Lab 03 (ETCD Backup and Restore) recommended
+- Completion of [Lab 07: ETCD Backup and Restore](lab07-cluster-etcd-backup-restore.md) recommended
 - Current cluster running Kubernetes 1.29.x (or similar)
 
 ## Learning Objectives
@@ -802,7 +802,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart kubelet
 ```
 
-Refer to Lab 03 for detailed etcd restore procedures.
+Refer to [Lab 07: ETCD Backup and Restore](lab07-cluster-etcd-backup-restore.md) for detailed etcd restore procedures.
 
 ---
 

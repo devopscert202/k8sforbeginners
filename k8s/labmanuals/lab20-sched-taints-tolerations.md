@@ -7,7 +7,7 @@ In this lab, you will learn how to use Taints and Tolerations to control which p
 - A running Kubernetes cluster with multiple nodes
 - `kubectl` CLI tool installed and configured
 - Basic understanding of Pods and scheduling
-- Completion of Lab 09 (NodeSelector) recommended
+- Completion of [Lab 17: NodeSelector](lab17-sched-nodeselector.md) recommended
 
 ## Learning Objectives
 By the end of this lab, you will be able to:

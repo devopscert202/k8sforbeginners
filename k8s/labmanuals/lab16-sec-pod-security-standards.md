@@ -7,7 +7,7 @@ In this lab, you will learn how to implement Pod Security Standards (PSS) and Po
 - A running Kubernetes cluster (version 1.25 or higher)
 - kubectl CLI tool installed and configured
 - Cluster admin access
-- Basic understanding of Pod security contexts (Lab 09 recommended)
+- Basic understanding of Pod security contexts ([Lab 12: Pod Security Context](lab12-sec-security-context.md) recommended)
 - Familiarity with Kubernetes namespaces
 
 ## Learning Objectives
@@ -1347,6 +1347,6 @@ spec:
 **Lab Created**: March 2026
 **Compatible with**: Kubernetes 1.25+
 **Replaces**: PodSecurityPolicy (deprecated in 1.21, removed in 1.25)
-**Prerequisites**: Lab 09 (Security Context) recommended
+**Prerequisites**: [Lab 12: Pod Security Context](lab12-sec-security-context.md) recommended
 **Estimated Time**: 60-75 minutes
 **CKA Exam Domain**: Cluster Hardening (15%)

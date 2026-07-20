@@ -486,7 +486,7 @@ The node should appear **Ready** after the kubelet registers and CNI is ready.
 
 ## Key Takeaways
 
-- **Learning path:** Pair this lab with [Lab 49: Cluster and Control Plane Troubleshooting](lab49-ts-cluster-control-plane.md) for API/etcd issues, and with [Lab 52: Networking and Connectivity Troubleshooting](lab52-ts-network-connectivity.md) when the node is `Ready` but workload traffic still fails across the cluster.
+- **Learning path:** Pair this lab with [Lab 49: Cluster and Control Plane Troubleshooting](lab49-ts-cluster-control-plane.md) for API/etcd issues, and with [Lab 52: Network Troubleshooting](lab52-ts-networking.md) when the node is `Ready` but workload traffic still fails across the cluster.
 - **Node health** is an **API projection** of kubelet heartbeats and conditions—start with **`kubectl describe node`**, then SSH when signals are stale or contradictory.
 - **`NotReady`** usually reduces to **kubelet process**, **container runtime**, **network to API**, or **CNI**—use **`systemctl`** + **`journalctl`** to distinguish them quickly.
 - **`crictl`** is the operator’s window into **CRI** state: images, sandboxes, and containers **as the kubelet sees them**.
@@ -500,7 +500,7 @@ The node should appear **Ready** after the kubelet registers and CNI is ready.
 - **`crictl`** requires matching **socket** configuration; if commands fail, compare with **`systemctl cat containerd`** and kubelet flags.
 - After **`kubeadm reset`**, ensure the old **Node** object is removed from etcd if you reuse the same name—otherwise objects can conflict with expectations.
 - For **control-plane** symptoms (API flakes, `etcd` alarms), pivot to [Lab 49: Cluster and Control Plane Troubleshooting](lab49-ts-cluster-control-plane.md) instead of tuning kubelet indefinitely.
-- When **nodes are healthy** but **Pods** misbehave (probes, image pulls, `CrashLoopBackOff`), use [Lab 50: Pod Failures](lab50-ts-pod-failures.md) first, then [Lab 52: Networking and Connectivity Troubleshooting](lab52-ts-network-connectivity.md) for Service, Endpoint, and DNS paths.
+- When **nodes are healthy** but **Pods** misbehave (probes, image pulls, `CrashLoopBackOff`), use [Lab 50: Pod Failures](lab50-ts-pod-failures.md) first, then [Lab 52: Network Troubleshooting](lab52-ts-networking.md) for Service, Endpoint, and DNS paths.
 
 ## Cleanup
 
@@ -521,7 +521,7 @@ kubectl get nodes
 
 - **Previous in series:** [Lab 49: Cluster and Control Plane Troubleshooting](lab49-ts-cluster-control-plane.md) — separates API, scheduler, controller-manager, and etcd issues from kubelet symptoms.
 - **Related workload layer:** [Lab 50: Pod Failures](lab50-ts-pod-failures.md) — `describe pod`, events, image pull, and probe failures before you assume the node is at fault.
-- **Continue troubleshooting:** [Lab 52: Networking and Connectivity Troubleshooting](lab52-ts-network-connectivity.md) — when pods and Services fail across nodes (add this manual to the repo when published; filename may vary).
+- **Continue troubleshooting:** [Lab 52: Network Troubleshooting](lab52-ts-networking.md) — when pods and Services fail across nodes.
 - **Interactive review:** [Kubelet & Node Troubleshooting (HTML)](../html/ts-kubelet-node.html).
 - **Related:** [Lab 36: Metrics Server](lab36-observe-metrics-server.md) for **`kubectl top`**, [Lab 27: Static Pods](lab27-workload-static-pods.md) for kubelet-managed manifests, [Lab 06: kubeadm install](lab06-install-kubernetes-kubeadm.md) for baseline cluster wiring.
 

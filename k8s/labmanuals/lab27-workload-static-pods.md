@@ -713,7 +713,7 @@ In this lab, you've learned about Kubernetes Static Pods - a fundamental concept
 Static pods are essential for Kubernetes control plane operations and provide a reliable way to run node-specific infrastructure components. While most application workloads should use Deployments or StatefulSets, static pods remain crucial for the foundational components that make Kubernetes work.
 
 **Next Steps:**
-- Explore Lab 36 for frontend application deployment patterns
+- Explore [Lab 24: Frontend Application Deployment](lab24-deploy-frontend-deployment.md) for frontend application deployment patterns
 - Review DaemonSet lab for cluster-wide service deployment
 - Study control plane architecture to understand static pod usage
 - Practice troubleshooting static pod issues in a test cluster

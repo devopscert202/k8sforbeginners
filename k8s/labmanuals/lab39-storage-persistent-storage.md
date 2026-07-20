@@ -6,7 +6,7 @@ In this lab, you will learn about Kubernetes persistent storage concepts includi
 ## Prerequisites
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
-- Completed Lab 09 (Basic Storage Volumes)
+- Completed [Lab 38: Basic Storage Volumes](lab38-storage-basic-volumes.md)
 - For NFS exercises: NFS server access or ability to set one up
 
 ## Learning Objectives

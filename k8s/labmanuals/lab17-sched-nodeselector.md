@@ -459,7 +459,7 @@ kubectl get nodes -L env,disktype,region
    - Only equality-based matching
    - Cannot use OR logic
    - Cannot express "not equal" or "greater than"
-6. For complex requirements, use **Node Affinity** (see Lab 10)
+6. For complex requirements, use **Node Affinity** (see [Lab 18: Node and Pod Affinity](lab18-sched-affinity-antiaffinity.md))
 
 ---
 

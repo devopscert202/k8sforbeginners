@@ -8,7 +8,7 @@ In this lab, you will learn best practices for deploying frontend applications i
 - `kubectl` CLI tool installed and configured
 - Basic understanding of Deployments (Lab 01)
 - Familiarity with Services (Lab 02)
-- Understanding of ConfigMaps and Secrets (Lab 04)
+- Understanding of ConfigMaps and Secrets ([Lab 25: ConfigMaps](lab25-workload-configmaps.md) and [Lab 47: Secrets](lab47-workload-secrets.md))
 
 ## Learning Objectives
 By the end of this lab, you will be able to:

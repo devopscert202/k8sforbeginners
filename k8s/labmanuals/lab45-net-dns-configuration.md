@@ -26,13 +26,13 @@ By the end of this lab, you will be able to:
 >
 > | File | Description | Exercise |
 > |------|-------------|----------|
-> | [`dnsdefault.yaml`](../../labs/networking/dnsdefault.yaml) | Pod with `dnsPolicy: Default` (node DNS) | Exercise 3 |
-> | [`dnspolicy.yaml`](../../labs/networking/dnspolicy.yaml) | Pod with `hostNetwork` + `ClusterFirstWithHostNet` | Exercise 4 |
-> | [`dnsconfig.yaml`](../../labs/networking/dnsconfig.yaml) | Pod with `dnsPolicy: None` (custom DNS) | Exercise 5 |
-> | [`hostaliases.yaml`](../../labs/networking/hostaliases.yaml) | Pod with custom `/etc/hosts` via hostAliases | Exercise 6 |
-> | [`custom-dns-working.yaml`](../../labs/networking/custom-dns-working.yaml) | Working custom DNS with Google/Cloudflare resolvers | Exercise 5 |
-> | [`hostalias-test.yaml`](../../labs/networking/hostalias-test.yaml) | Long-running Pod with hostAliases for testing | Exercise 6 |
-> | [`dns-debug.yaml`](../../labs/networking/dns-debug.yaml) | DNS debug Pod with `dig`, `host`, `nslookup` tools | Exercise 7 |
+> | [`dnsdefault.yaml`](../labs/networking/dnsdefault.yaml) | Pod with `dnsPolicy: Default` (node DNS) | Exercise 3 |
+> | [`dnspolicy.yaml`](../labs/networking/dnspolicy.yaml) | Pod with `hostNetwork` + `ClusterFirstWithHostNet` | Exercise 4 |
+> | [`dnsconfig.yaml`](../labs/networking/dnsconfig.yaml) | Pod with `dnsPolicy: None` (custom DNS) | Exercise 5 |
+> | [`hostaliases.yaml`](../labs/networking/hostaliases.yaml) | Pod with custom `/etc/hosts` via hostAliases | Exercise 6 |
+> | [`custom-dns-working.yaml`](../labs/networking/custom-dns-working.yaml) | Working custom DNS with Google/Cloudflare resolvers | Exercise 5 |
+> | [`hostalias-test.yaml`](../labs/networking/hostalias-test.yaml) | Long-running Pod with hostAliases for testing | Exercise 6 |
+> | [`dns-debug.yaml`](../labs/networking/dns-debug.yaml) | DNS debug Pod with `dig`, `host`, `nslookup` tools | Exercise 7 |
 
 ---
 
@@ -970,8 +970,9 @@ kubectl logs -n kube-system -l k8s-app=kube-dns --tail=100 -f
 
 ## Next Steps
 
-1. **Lab 11**: Learn about Multi-Port Services
-2. **Lab 12**: Explore Ingress Controllers and EndpointSlices
+1. **[Lab 34: Multi-Port Services](lab34-net-multi-port-services.md)** — Learn about multi-port Service definitions
+2. **[Lab 35: Ingress](lab35-net-ingress.md)** — Explore Ingress controllers and HTTP routing
+3. **[Lab 58: EndpointSlices](lab58-net-endpointslices.md)** — Understand EndpointSlice discovery
 3. **Advanced**: Implement NodeLocal DNSCache for improved DNS performance
 
 ---

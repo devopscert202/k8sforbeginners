@@ -987,7 +987,8 @@ kubectl get service <service-name> -o yaml | grep -A 20 ports
 
 ## Next Steps
 
-1. **Lab 12**: Learn about Ingress and EndpointSlices for advanced routing
+1. **[Lab 35: Ingress](lab35-net-ingress.md)** — Learn about Ingress controllers for HTTP routing
+2. **[Lab 58: EndpointSlices](lab58-net-endpointslices.md)** — Understand EndpointSlice discovery and scaling
 2. **Advanced**: Implement service mesh (Istio/Linkerd) for advanced multi-port scenarios
 3. **Practice**: Deploy a real application with HTTP, gRPC, and metrics ports
 

@@ -33,7 +33,7 @@ By the end of this lab, you will be able to:
 
 Manifests used in this lab are versioned in the repository. From the repo root, you can open or apply:
 
-- [endpointslices.yaml](../../labs/networking/endpointslices.yaml) — custom EndpointSlice example referenced in Exercise 2
+- [endpointslices.yaml](../labs/networking/endpointslices.yaml) — custom EndpointSlice example referenced in Exercise 2
 
 ---
 

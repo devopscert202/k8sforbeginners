@@ -7,7 +7,7 @@ In this lab, you will learn how to implement advanced network policies for names
 - A running Kubernetes cluster with a CNI plugin that supports NetworkPolicy (Calico, Cilium, or Weave)
 - kubectl CLI tool installed and configured
 - Basic understanding of Kubernetes namespaces
-- Completion of Lab 07 (RBAC) recommended
+- Completion of [Lab 11: RBAC Security](lab11-sec-rbac-security.md) recommended
 
 ## Learning Objectives
 By the end of this lab, you will be able to:

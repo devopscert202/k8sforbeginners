@@ -838,9 +838,9 @@ kubectl rollout restart deployment/apache-deployment
 
 ## Next Steps
 
-1. **Lab 10**: Explore DNS Configuration in Kubernetes
-2. **Lab 11**: Learn about Multi-Port Services
-3. **Lab 12**: Implement Ingress Controllers for HTTP routing
+1. **[Lab 45: DNS Configuration](lab45-net-dns-configuration.md)** — Explore DNS resolution and CoreDNS behavior in Kubernetes
+2. **[Lab 34: Multi-Port Services](lab34-net-multi-port-services.md)** — Learn about multi-port Service definitions
+3. **[Lab 35: Ingress](lab35-net-ingress.md)** — Implement Ingress controllers for HTTP routing
 
 ---
 

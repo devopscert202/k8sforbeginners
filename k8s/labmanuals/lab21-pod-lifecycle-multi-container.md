@@ -6,7 +6,7 @@ In this lab, you will learn about Pod lifecycle hooks (postStart and preStop) an
 ## Prerequisites
 - A running Kubernetes cluster (Minikube, Kind, or any K8s cluster)
 - `kubectl` CLI tool installed and configured
-- Completion of Lab 01 (Creating Pods) and Lab 25 (Init Containers) is recommended
+- Completion of [Lab 01: Creating Pods](lab01-basics-creating-pods.md) and [Lab 10: Init Containers](lab10-pod-init-containers.md) is recommended
 - Basic understanding of container networking and logging
 
 ## Learning Objectives
